@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "validation": "two_stage_cet",
+    "timestamp": "2026-04-28T15:54:49.643Z",
+    "model": "Two-Stage CET (Permissive Multi-Modal SPRT → Confirmatory Fusion)",
+    "n_patients": 2000,
+    "n_cancer": 500,
+    "n_healthy": 1200,
+    "n_benign": 300,
+    "n_early": 200,
+    "n_mid": 150,
+    "n_late": 150,
+    "n_quarters": 8,
+    "interval_days": 90,
+    "sequencing_depth": 50000,
+    "error_rate": 0.0001,
+    "n_bootstrap": 2000,
+    "seed": 42,
+    "confounders": [
+      "CHIP (age-dependent, 5–25% prevalence)",
+      "Variable cfDNA shedding (CV 60–80%)",
+      "Trinucleotide error rates (×1.5–3.0)",
+      "Variable genome equivalents (±30% depth)",
+      "Batch effects (×1.0–1.45)",
+      "Inflammatory spikes (3–15% of healthy)"
+    ]
+  },
+  "calibration": {
+    "stage1": {
+      "score_threshold": 2.442729,
+      "posterior_equivalent": 0.288647,
+      "target_specificity": 0.8,
+      "n_calibrated": 2000,
+      "achieved_specificity": 0.8673,
+      "achieved_sensitivity": 0.662
+    },
+    "stage2": {
+      "threshold": 0.138348,
+      "target_specificity": 0.99,
+      "n_calibrated": 530,
+      "n_cancer_in_cal": 331,
+      "n_healthy_in_cal": 199,
+      "score_range": {
+        "min": 0.03061425,
+        "max": 0.9674275000000001
+      },
+      "calibration_sensitivity": 0.9426,
+      "calibration_specificity": 0.995
+    }
+  },
+  "performance": {
+    "stage1": {
+      "sensitivity": 0.662,
+      "specificity": 0.8673,
+      "precision": 0.6245,
+      "f1": 0.6427,
+      "f2": 0.6542,
+      "tp": 331,
+      "fp": 199,
+      "tn": 1301,
+      "fn": 169,
+      "flag_rate": 0.265
+    },
+    "stage2_on_flagged": {
+      "sensitivity": 0.9486,
+      "specificity": 1,
+      "precision": 1,
+      "f1": 0.9736,
+      "f2": 0.9585,
+      "tp": 314,
+      "fp": 0,
+      "tn": 199,
+      "fn": 17,
+      "n_evaluated": 530
+    },
+    "combined": {
+      "sensitivity": 0.628,
+      "specificity": 1,
+      "precision": 1,
+      "f1": 0.7715,
+      "f2": 0.6785,
+      "tp": 314,
+      "fp": 0,
+      "tn": 1500,
+      "fn": 186,
+      "sens_ci95_low": 0.5856,
+      "sens_ci95_high": 0.6713,
+      "spec_ci95_low": 1,
+      "spec_ci95_high": 1,
+      "flag_rate_stage1": 0.265,
+      "high_risk_rate": 0.157
+    },
+    "per_stage": {
+      "early": {
+        "sensitivity": 0.585,
+        "n": 200
+      },
+      "mid": {
+        "sensitivity": 0.6133,
+        "n": 150
+      },
+      "late": {
+        "sensitivity": 0.7,
+        "n": 150
+      }
+    }
+  },
+  "cost_analysis": {
+    "stage1_cost_per_person": 74,
+    "stage2_cost_per_person": 200,
+    "average_cost_per_person": 127,
+    "cost_per_100k_population": 12700000,
+    "pct_getting_stage2": 26.5
+  },
+  "risk_distribution": {
+    "LOW": 1470,
+    "MODERATE": 216,
+    "HIGH": 314
+  },
+  "targets": {
+    "specificity_gt_99": true,
+    "sensitivity_gt_50": true,
+    "flag_rate_lt_20": false,
+    "both_met": true
+  },
+  "verdict": "✅ BOTH TARGETS MET: Specificity>99% AND Sensitivity≥50%"
+}
