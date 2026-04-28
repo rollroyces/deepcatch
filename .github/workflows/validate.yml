@@ -48,7 +48,7 @@ jobs:
           print(f"Bonferroni: {[f'{p:.4f}' for p in pc]}")
 
           # --- CET (param: n_cancer, not n_patients) ---
-          cet=run_cet_validation(n_cancer=200, n_quarters=8, quick_mode=True)
+          cet=run_cet_validation(n_cancer=200, n_timepoints=8, quick_mode=True)
           print(f"\n=== CET ===")
           print(f"AUC={cet['auc']:.4f}  Sens={cet['sensitivity']*100:.1f}%  Spec={cet['specificity']*100:.1f}%")
           print(f"Dual target (S>=70+Sp>=95): {'✅ MET' if cet['sensitivity']>=0.7 and cet['specificity']>=0.95 else 'NOT MET'}")
