@@ -1,0 +1,245 @@
+{
+  "analysis_date": "2026-04-28",
+  "methodology": "Analytical sensitivity analysis varying key assumptions within biologically plausible ranges",
+  "note": "Values are PREDICTED based on understanding of model structure, not from re-running experiments. Full computational sensitivity analysis would require 50+ simulation runs.",
+  "parameters": [
+    {
+      "parameter": "cross_modality_correlation_alpha",
+      "baseline": 0.3,
+      "description": "Shared signal weight α in latent factor model. Controls signal correlation across modalities.",
+      "sensitivity": {
+        "0.0": {
+          "gnn_auc_predicted": 0.52,
+          "fusion_benefit": 0.0,
+          "interpretation": "At α=0, modalities are independent → fusion provides ZERO benefit. GNN AUC would be ~0.52 (random).",
+          "claim_breakage": "The 11.9% GNN improvement claim breaks at α=0. All fusion models collapse to random. The ENTIRE multi-modal fusion narrative depends on α > 0."
+        },
+        "0.1": {
+          "gnn_auc_predicted": 0.58,
+          "fusion_benefit": 0.04,
+          "interpretation": "Very weak correlation → minimal fusion benefit. GNN only marginally better than single modality.",
+          "claim_breakage": "Fusion benefit is within noise range. Statistical significance unlikely."
+        },
+        "0.3": {
+          "gnn_auc": 0.692,
+          "fusion_benefit": 0.073,
+          "interpretation": "BASELINE. Reported 11.9% relative improvement.",
+          "claim_breakage": "Already marginal — benefit may not be significant at n=90"
+        },
+        "0.5": {
+          "gnn_auc_predicted": 0.75,
+          "fusion_benefit": 0.12,
+          "interpretation": "Strong correlation makes fusion clearly beneficial. However, ensemble with correlated detectors DEGRADES.",
+          "claim_breakage": "Ensemble cost-savings claim may break at α > 0.5"
+        },
+        "0.7": {
+          "gnn_auc_predicted": 0.80,
+          "fusion_benefit": 0.18,
+          "interpretation": "Very high correlation. Fusion improves but ensemble becomes counterproductive.",
+          "claim_breakage": "Ensemble sensitivity gain becomes NEGATIVE. The ensemble + fusion approach becomes self-defeating."
+        }
+      },
+      "real_world_concern": "α is UNKNOWN at 0.001% ctDNA. No empirical measurement exists. If α < 0.1, multi-modal fusion provides negligible benefit."
+    },
+    {
+      "parameter": "ctdna_shedding_rate",
+      "baseline": 1e-7,
+      "description": "Effective ctDNA genome equivalents per tumor cell (incorporates shedding + clearance + survival).",
+      "sensitivity": {
+        "0.3x_baseline": {
+          "cet_sensitivity_predicted": 0.85,
+          "detection_time_days": 400,
+          "interpretation": "Lower shedding → slower signal rise → CET needs more measurements → some cancers fail to cross threshold in 730-day window.",
+          "claim_breakage": "100% sensitivity claim breaks. CET still outperforms single-timepoint but not perfectly."
+        },
+        "0.5x_baseline": {
+          "cet_sensitivity_predicted": 0.93,
+          "detection_time_days": 350,
+          "interpretation": "Moderate reduction. Most cancers still detected but later.",
+          "claim_breakage": "Sensitivity claim weakened (93% vs 100%)"
+        },
+        "baseline_1e-7": {
+          "cet_sensitivity": 1.0,
+          "detection_time_days": 306,
+          "interpretation": "BASELINE.",
+          "claim_breakage": "N/A (baseline)"
+        },
+        "2x_baseline": {
+          "cet_sensitivity_predicted": 1.0,
+          "detection_time_days": 220,
+          "interpretation": "Higher shedding → faster detection. CET maintains perfect sensitivity.",
+          "claim_breakage": "No breakage but assumptions even more optimistic"
+        }
+      },
+      "real_world_concern": "Effective ctDNA shedding rate varies 10-100× across tumor types. At the low end (e.g., gliomas), ctDNA-based screening may be impossible regardless of method."
+    },
+    {
+      "parameter": "tumor_doubling_time",
+      "baseline": 200,
+      "description": "Tumor doubling time in days (uniform 100-300 distribution in simulation).",
+      "sensitivity": {
+        "100_days": {
+          "cet_sensitivity_predicted": 1.0,
+          "detection_time_days": 150,
+          "interpretation": "Fast-growing tumors detected very early. No sensitivity impact.",
+          "claim_breakage": "Makes detection time claims more impressive"
+        },
+        "300_days": {
+          "cet_sensitivity_predicted": 0.92,
+          "detection_time_days": 450,
+          "interpretation": "Slow-growing tumors may not cross threshold within 730-day study window.",
+          "claim_breakage": "100% sensitivity claim breaks. ~8% of slow-growing tumors missed."
+        },
+        "400_days": {
+          "cet_sensitivity_predicted": 0.75,
+          "detection_time_days": 580,
+          "interpretation": "Very slow growth → most tumors don't produce enough trajectory for CET.",
+          "claim_breakage": "Sensitivity claim severely broken. CET advantage over single-timepoint largely disappears."
+        },
+        "500_days": {
+          "cet_sensitivity_predicted": 0.55,
+          "detection_time_days": 700,
+          "interpretation": "Extremely indolent cancers. CET provides minimal benefit over single-timepoint.",
+          "claim_breakage": "CET no longer clearly superior to single-timepoint screening"
+        }
+      },
+      "real_world_concern": "Many screen-detected cancers (especially prostate, thyroid) have doubling times > 500 days. For these, quarterly CET screening may be ineffective."
+    },
+    {
+      "parameter": "sequencing_depth",
+      "baseline": 50000,
+      "description": "Sequencing depth at each genomic position.",
+      "sensitivity": {
+        "10000x": {
+          "cet_sensitivity_predicted": 0.65,
+          "variant_sensitivity_predicted": 0.01,
+          "interpretation": "At 10,000×, Poisson noise is 5× worse. Few mutant molecules captured. CET benefit severely diminished.",
+          "claim_breakage": "100% sensitivity claim broken. 1.55× improvement may drop to <1.2×. Cost-effectiveness argument collapses."
+        },
+        "20000x": {
+          "cet_sensitivity_predicted": 0.85,
+          "variant_sensitivity_predicted": 0.05,
+          "interpretation": "Moderate depth. CET still works but with reduced performance.",
+          "claim_breakage": "Sensitivity claim weakened"
+        },
+        "50000x": {
+          "cet_sensitivity": 1.0,
+          "variant_sensitivity": 0.17,
+          "interpretation": "BASELINE. Ultra-deep sequencing.",
+          "claim_breakage": "N/A (baseline)"
+        },
+        "100000x": {
+          "cet_sensitivity_predicted": 1.0,
+          "variant_sensitivity_predicted": 0.30,
+          "interpretation": "Even deeper sequencing. Better variant calling. CET remains at ceiling.",
+          "claim_breakage": "No breakage but cost becomes even more prohibitive"
+        }
+      },
+      "real_world_concern": "50,000× across a broad panel costs $2000-5000. For POPULATION SCREENING (not high-risk surveillance), this is economically infeasible. The model's assumptions are for high-risk surveillance, not population screening."
+    },
+    {
+      "parameter": "blood_volume",
+      "baseline": 10,
+      "description": "Blood draw volume in mL.",
+      "sensitivity": {
+        "5mL": {
+          "cet_sensitivity_predicted": 0.80,
+          "interpretation": "Half the genome equivalents → 2× worse Poisson noise. Significantly impacts sensitivity.",
+          "claim_breakage": "100% sensitivity claim broken at standard clinical draw volumes"
+        },
+        "8mL": {
+          "cet_sensitivity_predicted": 0.93,
+          "interpretation": "Standard clinical tube size. Moderate impact.",
+          "claim_breakage": "Sensitivity claim weakened"
+        },
+        "10mL": {
+          "cet_sensitivity": 1.0,
+          "interpretation": "BASELINE. Requires larger-than-standard tube.",
+          "claim_breakage": "N/A (baseline)"
+        }
+      },
+      "real_world_concern": "Standard clinical tubes are 8-10mL. Real-world draws often yield 6-8mL after processing. The 10mL in simulation represents optimal conditions."
+    },
+    {
+      "parameter": "chip_prevalence",
+      "baseline": 0.0,
+      "description": "Fraction of patients with clonal hematopoiesis of indeterminate potential (CHIP).",
+      "sensitivity": {
+        "0percent": {
+          "cet_specificity": 0.9995,
+          "interpretation": "BASELINE. No CHIP.",
+          "claim_breakage": "N/A (baseline)"
+        },
+        "5percent": {
+          "cet_specificity_predicted": 0.96,
+          "interpretation": "5% CHIP prevalence (age ~50-60). Moderate false positive rate from CHIP mutations.",
+          "claim_breakage": "99.95% specificity claim broken. Real-world specificity much worse."
+        },
+        "10percent": {
+          "cet_specificity_predicted": 0.92,
+          "interpretation": "10% CHIP prevalence (age >60). CHIP mutations (DNMT3A, TET2, ASXL1) produce stable-but-elevated VAF signals.",
+          "claim_breakage": "Specificity broken. PPV drops to near-zero. Population screening infeasible without CHIP filtering."
+        },
+        "15percent": {
+          "cet_specificity_predicted": 0.88,
+          "interpretation": "15% CHIP prevalence (age >70). Severe false positive problem.",
+          "claim_breakage": "Complete failure of specificity claims. Requires matched WBC sequencing."
+        }
+      },
+      "real_world_concern": "CHIP is UNAVOIDABLE in any screening population aged >50. CET's streak/trend bonuses are partially robust to CHIP (stable signal → no rising trend → lower score), but the model hasn't tested this. This is the SINGLE BIGGEST THREAT to real-world specificity."
+    },
+    {
+      "parameter": "benign_spike_amplitude",
+      "baseline": "0.00002 (0.002% VAF)",
+      "description": "Amplitude of benign transient spikes (inflammation, infection).",
+      "sensitivity": {
+        "2x_baseline": {
+          "cet_specificity_predicted": 0.997,
+          "interpretation": "Larger benign spikes more likely to trigger false detections.",
+          "claim_breakage": "Minor specificity impact — CET's streak bonus partially robust to single spikes"
+        },
+        "5x_baseline": {
+          "cet_specificity_predicted": 0.985,
+          "interpretation": "Very large benign spikes (e.g., severe infection, surgery) could trigger CET if consecutive.",
+          "claim_breakage": "Specificity significantly degraded if spike frequency is correlated with time"
+        },
+        "10x_baseline": {
+          "cet_specificity_predicted": 0.96,
+          "interpretation": "Extreme benign conditions (major surgery, sepsis) produce sustained trajectory-like signals.",
+          "claim_breakage": "Specificity claim broken for patients with severe intercurrent illness"
+        }
+      },
+      "real_world_concern": "Real benign cfDNA spikes from surgery, trauma, or severe infection can reach 5-20× baseline and persist for weeks. Consecutive quarterly draws during such episodes could trigger false CET detections."
+    },
+    {
+      "parameter": "poisson_noise_multiplier",
+      "baseline": 1.0,
+      "description": "Multiplier on Poisson sampling noise (captures additional technical variation beyond pure Poisson).",
+      "sensitivity": {
+        "1x": {
+          "cet_sensitivity": 1.0,
+          "interpretation": "BASELINE. Pure Poisson.",
+          "claim_breakage": "N/A"
+        },
+        "2x": {
+          "cet_sensitivity_predicted": 0.88,
+          "interpretation": "Additional overdispersion from library prep, PCR bias, etc.",
+          "claim_breakage": "Sensitivity claim broken"
+        },
+        "3x": {
+          "cet_sensitivity_predicted": 0.72,
+          "interpretation": "Realistic technical noise level for ultra-low input cfDNA libraries.",
+          "claim_breakage": "CET advantage over single-timepoint severely diminished"
+        }
+      },
+      "real_world_concern": "Real cfDNA sequencing has overdispersion beyond Poisson (Negative Binomial with dispersion ~0.05-0.1). The pure Poisson model is optimistic."
+    }
+  ],
+  "key_findings": [
+    "The CET 100% sensitivity claim is FRAGILE — it breaks under realistic perturbations to sequencing depth, blood volume, tumor doubling time, or ctDNA shedding rate",
+    "The GNN fusion benefit is PARAMETER-DEPENDENT — it disappears entirely if cross-modality correlation (α) approaches zero",
+    "CHIP (clonal hematopoiesis) is the SINGLE MOST IMPORTANT missing factor — not modeling CHIP is a critical omission for any ctDNA-based screening method",
+    "The 1.55× improvement is NOT a stable effect size — it varies from ~1.0× to 1.8× depending on parameter settings",
+    "At the very parameter values most likely in real-world screening (lower depth, smaller volume, slower-growing tumors), CET performance degrades toward single-timepoint levels"
+  ]
+}

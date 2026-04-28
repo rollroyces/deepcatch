@@ -1,0 +1,257 @@
+{
+  "audit_date": "2026-04-28",
+  "claims": [
+    {
+      "id": 1,
+      "claim": "Variant caller achieves 17% sensitivity for variants at 0.001% VAF with 99.1% specificity",
+      "source": "Paper Abstract, Table 1",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "5/30 variants detected in simulation with single seed=42",
+      "falsification_condition": "Re-run with different seeds shows sensitivity < 5% at this VAF",
+      "issues": [
+        "n=30 per VAF level is too small for reliable estimate (95% CI: [6%, 35%])",
+        "Contrastive learner was trained on full data including test (data leakage in evaluate.py line 104-106)",
+        "Only one random seed tested",
+        "Performance at 0.01 VAF is 0/30, which is WORSE than at 0.001 VAF (5/30) — physically impossible"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "The contrastive learner detected 17% (5/30) of variants at 0.001% VAF in a single simulation run (95% CI: 6-35%); this result requires cross-validation"
+    },
+    {
+      "id": 2,
+      "claim": "GNN fusion AUC 0.692, 11.9% relative improvement over best single modality (CTC, AUC 0.619)",
+      "source": "Paper Abstract, Table 2",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "GNN model evaluated on 90-patient test set (420/90/90 split)",
+      "falsification_condition": "DeLong test p > 0.05 for ΔAUC; different seed produces ΔAUC < 0",
+      "issues": [
+        "Test set of only 90 patients (~45 cancer) gives 95% CI on AUC of approximately [0.58, 0.80]",
+        "95% CI on ΔAUC spans approximately [-0.03, +0.18] — the improvement is NOT statistically significant",
+        "GNN graph edges are random (np.random.RandomState(42)), not biologically structured as claimed",
+        "Single random seed; graph structure may differ with different seeds"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "The GNN achieved AUC 0.692 on a 90-patient synthetic test set; this difference from the best single modality (AUC 0.619) requires larger validation to establish statistical significance"
+    },
+    {
+      "id": 3,
+      "claim": "CET achieves 100% sensitivity at 99.95% specificity (F1 = 0.9995)",
+      "source": "Paper Abstract, Results Section 2.3, Table 3",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "Single run on 3000-patient cohort (1000 cancer, 2000 non-cancer) with seed=42",
+      "falsification_condition": "Cross-validation with different seeds produces sensitivity < 97% or specificity < 99.5%",
+      "issues": [
+        "NO CROSS-VALIDATION — single seed, single threshold",
+        "CET threshold (6.0) was calibrated on the SAME data used for evaluation (run_final.py line 84)",
+        "100% sensitivity with n=1000 has 95% CI [0.9963, 1.0000] — but this is reported as perfect",
+        "Streak bonus (0.5*n) and trend bonus (3.0*slope) are arbitrary hard-coded values — possible p-hacking",
+        "No bootstrap confidence intervals reported",
+        "Benign spike model is oversimplified (Gaussian spike with fixed probability)",
+        "No CHIP modeling (would affect ~10-15% of screening-age population)"
+      ],
+      "severity": "CRITICAL",
+      "fixed_claim": "In a single simulation run, CET detected 100% of cancer cases with 99.95% specificity; cross-validation across multiple random seeds and independent threshold calibration is needed"
+    },
+    {
+      "id": 4,
+      "claim": "1.55× improvement over single-timepoint screening",
+      "source": "Paper Abstract, Results, Discussion",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "Computed as 1.000/0.643 (CET sensitivity / single-timepoint TPR at 1% FPR)",
+      "falsification_condition": "This claim is ambiguous — what does 1.55× improvement mean?",
+      "issues": [
+        "Compares sensitivities at DIFFERENT operating points: CET at 99.95% spec, single-timepoint at 99% spec",
+        "The paper uses '1.55×' to mean both sensitivity improvement AND detection time improvement interchangeably",
+        "The ratio depends on the specific CET threshold chosen (which was optimized on test data)",
+        "Different CET threshold → different 'improvement' ratio",
+        "This is not a validated effect size — it's a ratio of two point estimates from different conditions"
+      ],
+      "severity": "MODERATE",
+      "fixed_claim": "At matched 99% specificity, CET achieved perfect sensitivity in simulation while single-timepoint VAF thresholding achieved 64.3%; the longitudinal design enables detection below single-timepoint noise floors"
+    },
+    {
+      "id": 5,
+      "claim": "5.3× better Stage I sensitivity than Grail Galleri (88% vs 16.7%)",
+      "source": "validation/cfdna/cfdna_validation_report.md",
+      "verdict": "UNVERIFIED",
+      "evidence": "CET 88% is projected (100% sim → degraded by assumed factors); Grail 16.7% is from CCGA3 clinical study",
+      "falsification_condition": "Head-to-head comparison on the same patient cohort",
+      "issues": [
+        "88% is NOT measured — it's 100% simulation sensitivity minus assumed 12% degradation",
+        "Degradation factors (-8% sensitivity, -1.5% specificity) are estimated, not empirically derived",
+        "Grail was validated on real clinical samples; CET is validated on synthetic data",
+        "Different patient populations, different ctDNA fractions, different assay designs",
+        "Comparing simulation projections to clinical trial results is not scientifically valid"
+      ],
+      "severity": "CRITICAL",
+      "fixed_claim": "DELETE THIS CLAIM or rephrase as: 'Based on simulation, CET could theoretically improve Stage I sensitivity, but this requires prospective clinical validation'"
+    },
+    {
+      "id": 6,
+      "claim": "17-34× improvement in detection earliness (2.9mm³ vs 50-100mm³ tumor volume)",
+      "source": "validation/cfdna/cfdna_validation_report.md",
+      "verdict": "UNVERIFIED",
+      "evidence": "Extrapolated from exponential growth model and VAF↔tumor_volume mapping",
+      "falsification_condition": "Empirical measurement of VAF at known tumor volumes",
+      "issues": [
+        "VAF↔tumor_volume model is unvalidated (tumor_volume_to_vaf() in simulation.py)",
+        "Model assumes constant 1e-7 effective ctDNA per tumor cell — this varies 100× in literature",
+        "Tumor volume itself is a model estimate, not measured",
+        "Comparison to '50-100mm³' for single-timepoint is an estimate, not from data"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "Under simulation assumptions, CET could detect tumors at smaller volumes than single-timepoint approaches; the absolute volume estimates require empirical validation"
+    },
+    {
+      "id": 7,
+      "claim": "3mm³ tumor detection by CET",
+      "source": "Paper Results, Agent 3 SUMMARY",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "CET detection at day 306, tumor volume computed from growth model",
+      "falsification_condition": "True VAF at detection (3e-5) is below background VAF (3e-4) in the model — detection relies on trajectory, not signal amplitude",
+      "issues": [
+        "The true VAF at detection is ~0.00003% which is 10× LOWER than the simulated background VAF (0.0003%)",
+        "Detection is purely based on trajectory pattern, not any measurement exceeding background",
+        "This means ANY rising pattern, even completely within the noise floor, triggers detection",
+        "Real-world: noise at 3e-5 VAF is dominated by Poisson sampling (expected ~1 mutant molecule per 10mL)",
+        "The claim is mathematically correct under the model but physically questionable"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "In simulation, CET detects a rising ctDNA trajectory at approximately day 306, corresponding to an estimated tumor volume of ~3mm³ under the assumed growth model; this represents trajectory-based detection within the Poisson noise floor"
+    },
+    {
+      "id": 8,
+      "claim": "Projected real-world performance: 92% sensitivity, 98.5% specificity",
+      "source": "validation/cfdna/cfdna_validation_report.md Section 5",
+      "verdict": "UNVERIFIED",
+      "evidence": "Applied assumed degradation factors (-8% sens, -1.5% spec) to simulated 100% sens, 99.95% spec",
+      "falsification_condition": "Actual clinical validation study",
+      "issues": [
+        "Degradation factors are estimated, not measured",
+        "No empirical basis for the specific -8% and -1.5% numbers",
+        "CHIP alone could reduce specificity by 5-10% in the >60 age group",
+        "All real-world ctDNA assays show larger simulation-to-reality gaps than assumed"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "Projected real-world performance under stated assumptions is 92% sensitivity at 98.5% specificity; actual clinical performance may differ substantially"
+    },
+    {
+      "id": 9,
+      "claim": "Ensemble reduces screening costs by approximately 40%",
+      "source": "Paper Abstract, Results Section 2.4",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "4-tier risk stratification cost model in agent6-ensemble/decision_threshold.py",
+      "falsification_condition": "Detailed health economics analysis with real cost data",
+      "issues": [
+        "Cost model is simplified — only considers FP workup costs and FN societal costs",
+        "Does not account for: confirmatory testing costs, patient anxiety, overdiagnosis, infrastructure setup",
+        "No sensitivity analysis on cost parameters",
+        "40% reduction is relative to a simplistic 'binary screen/no-screen' comparator"
+      ],
+      "severity": "MODERATE",
+      "fixed_claim": "A 4-tier risk stratification approach may reduce per-cancer-found costs compared to binary screening, with estimated savings of ~40% under simplified cost assumptions"
+    },
+    {
+      "id": 10,
+      "claim": "MAML achieves 99%+ balanced accuracy even with 1-shot adaptation to novel cancer types",
+      "source": "agent6-ensemble/SUMMARY.md, Paper Results",
+      "verdict": "FALSE",
+      "evidence": "MAML in ensemble_core.py uses same data for meta-training and testing",
+      "falsification_condition": "The MAML implementation does not have separate meta-train and meta-test tasks",
+      "issues": [
+        "MAML trains on all data with no held-out meta-test tasks",
+        "The '1-shot' adaptation uses samples from the SAME distribution as meta-training",
+        "This is circular — the model is tested on what it already learned",
+        "A proper MAML evaluation requires held-out cancer subtypes not seen during meta-training"
+      ],
+      "severity": "CRITICAL",
+      "fixed_claim": "DELETE THIS CLAIM or re-evaluate with proper held-out cancer subtypes"
+    },
+    {
+      "id": 11,
+      "claim": "6-18 month lead-time advantage for aggressive malignancies",
+      "source": "Paper Abstract, Discussion",
+      "verdict": "UNVERIFIED",
+      "evidence": "Extrapolated from growth model: detection at ~3mm³ vs clinical detection at >10,000mm³",
+      "falsification_condition": "Prospective study showing actual lead time",
+      "issues": [
+        "Lead-time depends on tumor growth rate, which is highly variable",
+        "Clinical detection volume varies enormously by cancer type and location",
+        "No data on what fraction of cancers shed detectable ctDNA at 3mm³",
+        "Many cancers < 10mm³ may not shed detectable ctDNA at all"
+      ],
+      "severity": "MODERATE",
+      "fixed_claim": "Under idealized growth assumptions, CET-level detection could provide a lead-time advantage of 6-18 months; actual lead times depend on tumor biology, shedding rates, and cancer type"
+    },
+    {
+      "id": 12,
+      "claim": "Temporal transformer achieves 100% sensitivity and 100% specificity",
+      "source": "Paper Table 3, agent3-longitudinal/SUMMARY.md",
+      "verdict": "NEEDS QUALIFICATION",
+      "evidence": "final_results.json confusion matrix: STABLE=0%, RISING=100%, FALLING=100%",
+      "falsification_condition": "The 100% specificity is on binary classification (RISING vs not-RISING), not clinical cancer detection",
+      "issues": [
+        "STABLE class accuracy is 0% (all healthy patients classified as FALLING)",
+        "RISING class accuracy is 100% (all cancer patients correctly identified as rising)",
+        "The '100% sensitivity, 100% specificity' claim is for the binary task RISING vs. other, NOT cancer vs. healthy",
+        "Cannot distinguish healthy (stable VAF) from benign conditions (transient spikes)"
+      ],
+      "severity": "MAJOR",
+      "fixed_claim": "The temporal transformer achieved perfect classification of rising vs. non-rising trajectories but failed to distinguish stable healthy patterns from benign transient spikes; this model is a trajectory classifier, not a clinical cancer detector"
+    },
+    {
+      "id": 13,
+      "claim": "Multi-modal fusion provides additive value over single-modality approaches",
+      "source": "validation/tcga/tcga_validation_report.md",
+      "verdict": "VERIFIED",
+      "evidence": "Consistent ΔAUC positive across all ctDNA fractions in TCGA validation",
+      "falsification_condition": "ΔAUC ≤ 0 when cross-modality correlation is 0",
+      "issues": [
+        "Effect size varies dramatically: +0.010 at 0.001% ctDNA to +0.300 at 1% ctDNA",
+        "At the target 0.001% ctDNA, the benefit is near-zero (AUC 0.531 vs 0.522)",
+        "Direction is consistently correct across all tests"
+      ],
+      "severity": "MINOR",
+      "fixed_claim": "Claim is supported; add effect size quantification and note that benefit is minimal at 0.001% ctDNA"
+    },
+    {
+      "id": 14,
+      "claim": "Poisson sampling limit makes single-timepoint detection fundamentally impossible below 0.001% VAF",
+      "source": "Paper Introduction, Discussion",
+      "verdict": "VERIFIED",
+      "evidence": "Expected mutant molecules ~0.3 per 10mL draw at 0.001% VAF with 30,000 GE",
+      "falsification_condition": "Would require larger blood volumes or higher ctDNA concentrations than standard",
+      "issues": [
+        "Well-established physical principle",
+        "Supported by published literature (Avanzini 2020, Bettegowda 2014)",
+        "This is the strongest claim in the paper — it's backed by basic statistics"
+      ],
+      "severity": "NONE",
+      "fixed_claim": "No change needed; this claim is well-supported"
+    },
+    {
+      "id": 15,
+      "claim": "Ensemble sensitivity gain of +6.8 percentage points at ρ=0.3",
+      "source": "agent6-ensemble/SUMMARY.md, Paper Results",
+      "verdict": "VERIFIED",
+      "evidence": "Monte Carlo simulation with 100,000 samples and bootstrap CIs",
+      "falsification_condition": "Correlation structure is wrong (ρ=0.3 is assumed, not measured)",
+      "issues": [
+        "ρ=0.3 is an assumption, not an empirical measurement",
+        "Gain depends critically on ρ — at ρ=0.7, ensemble DEGRADES performance",
+        "The mathematical framework is sound; it's the parameter that's uncertain"
+      ],
+      "severity": "MINOR",
+      "fixed_claim": "At assumed detector correlation ρ=0.3, the ensemble provides +6.8pp sensitivity gain; empirical measurement of ρ is needed"
+    }
+  ],
+  "summary": {
+    "total_claims": 15,
+    "verified": 3,
+    "needs_qualification": 7,
+    "unverified": 3,
+    "false": 2,
+    "critical_findings": 3,
+    "major_findings": 6
+  }
+}

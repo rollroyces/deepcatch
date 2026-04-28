@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "validation_type": "improved_multi_modal_fusion",
+    "version": "2.0.0",
+    "n_samples": 500,
+    "n_modalities": 5,
+    "modalities": [
+      "mutations",
+      "methylation",
+      "fragment_size",
+      "copy_number",
+      "ctc_count"
+    ],
+    "shared_latent_factor": 0.3,
+    "cancer_prevalence": 0.15,
+    "n_folds": 5,
+    "n_bootstrap": 2000,
+    "n_cancer": 72,
+    "n_healthy": 428,
+    "train_samples": 349,
+    "test_samples": 151,
+    "timestamp": "2026-04-28T07:25:56.581Z"
+  },
+  "correlation_matrix": {
+    "mutations": {
+      "mutations": 1,
+      "methylation": 0.1942,
+      "fragment_size": -0.1361,
+      "copy_number": 0.1915,
+      "ctc_count": 0.3678
+    },
+    "methylation": {
+      "mutations": 0.1942,
+      "methylation": 1,
+      "fragment_size": -0.182,
+      "copy_number": 0.169,
+      "ctc_count": 0.2863
+    },
+    "fragment_size": {
+      "mutations": -0.1361,
+      "methylation": -0.182,
+      "fragment_size": 1,
+      "copy_number": -0.091,
+      "ctc_count": -0.2061
+    },
+    "copy_number": {
+      "mutations": 0.1915,
+      "methylation": 0.169,
+      "fragment_size": -0.091,
+      "copy_number": 1,
+      "ctc_count": 0.1761
+    },
+    "ctc_count": {
+      "mutations": 0.3678,
+      "methylation": 0.2863,
+      "fragment_size": -0.2061,
+      "copy_number": 0.1761,
+      "ctc_count": 1
+    }
+  },
+  "single_modality_results": [
+    {
+      "modality": "mutations",
+      "auc": 0.9346,
+      "ci95_low": 0.8347,
+      "ci95_high": 0.9996
+    },
+    {
+      "modality": "methylation",
+      "auc": 0.1619,
+      "ci95_low": 0.0846,
+      "ci95_high": 0.2527
+    },
+    {
+      "modality": "fragment_size",
+      "auc": 0.5,
+      "ci95_low": 0.5,
+      "ci95_high": 0.5
+    },
+    {
+      "modality": "copy_number",
+      "auc": 0.7031,
+      "ci95_low": 0.5106,
+      "ci95_high": 0.8729
+    },
+    {
+      "modality": "ctc_count",
+      "auc": 0.9278,
+      "ci95_low": 0.8415,
+      "ci95_high": 0.9975
+    }
+  ],
+  "naive_fusion": {
+    "auc": 0.5,
+    "ci95_low": 0.5,
+    "ci95_high": 0.5,
+    "delta_vs_best_single": -0.4346,
+    "p_value_vs_best_single": 1
+  },
+  "performance_weighted_fusion": {
+    "auc": 0.9667,
+    "ci95_low": 0.8865,
+    "ci95_high": 1,
+    "weights": [
+      0.2722,
+      0,
+      0.1684,
+      0.2681,
+      0.2913
+    ],
+    "raw_validation_aucs": [
+      0.8084,
+      0.1236,
+      0.5,
+      0.7962,
+      0.8649
+    ],
+    "delta_vs_best_single": 0.0322,
+    "p_value_vs_best_single": 0.019
+  },
+  "stacked_meta_learner": {
+    "auc": 0.9631,
+    "ci95_low": 0.8751,
+    "ci95_high": 1,
+    "meta_weights": [
+      0.1516,
+      -0.2708,
+      0,
+      -0.2451,
+      0.3317
+    ],
+    "meta_bias": -1.5232,
+    "delta_vs_best_single": 0.0286,
+    "p_value_vs_best_single": 0.281
+  },
+  "selective_fusion": {
+    "best_n": 5,
+    "best_modalities": [
+      "ctc_count",
+      "copy_number",
+      "mutations",
+      "fragment_size",
+      "methylation"
+    ],
+    "best_auc_val": 0.9827,
+    "test_auc": 0.5,
+    "test_ci95_low": 0.5,
+    "test_ci95_high": 0.5,
+    "ranking": [
+      {
+        "name": "ctc_count",
+        "val_auc": 0.8835
+      },
+      {
+        "name": "copy_number",
+        "val_auc": 0.7981
+      },
+      {
+        "name": "mutations",
+        "val_auc": 0.7849
+      },
+      {
+        "name": "fragment_size",
+        "val_auc": 0.5
+      },
+      {
+        "name": "methylation",
+        "val_auc": 0.1455
+      }
+    ],
+    "by_n": [
+      {
+        "n_modalities": 1,
+        "modalities": [
+          "ctc_count"
+        ],
+        "individual_aucs": [
+          0.8835
+        ],
+        "fusion_auc_val": 0.8835
+      },
+      {
+        "n_modalities": 2,
+        "modalities": [
+          "ctc_count",
+          "copy_number"
+        ],
+        "individual_aucs": [
+          0.8835,
+          0.7981
+        ],
+        "fusion_auc_val": 0.9098
+      },
+      {
+        "n_modalities": 3,
+        "modalities": [
+          "ctc_count",
+          "copy_number",
+          "mutations"
+        ],
+        "individual_aucs": [
+          0.8835,
+          0.7981,
+          0.7849
+        ],
+        "fusion_auc_val": 0.8943
+      },
+      {
+        "n_modalities": 4,
+        "modalities": [
+          "ctc_count",
+          "copy_number",
+          "mutations",
+          "fragment_size"
+        ],
+        "individual_aucs": [
+          0.8835,
+          0.7981,
+          0.7849,
+          0.5
+        ],
+        "fusion_auc_val": 0.5
+      },
+      {
+        "n_modalities": 5,
+        "modalities": [
+          "ctc_count",
+          "copy_number",
+          "mutations",
+          "fragment_size",
+          "methylation"
+        ],
+        "individual_aucs": [
+          0.8835,
+          0.7981,
+          0.7849,
+          0.5,
+          0.1455
+        ],
+        "fusion_auc_val": 0.9827
+      }
+    ],
+    "delta_vs_best_single": -0.4346,
+    "p_value_vs_best_single": 1
+  },
+  "strategy_comparison": [
+    {
+      "strategy": "Best Single (mutations)",
+      "auc": 0.9346,
+      "ci95_low": 0.8347,
+      "ci95_high": 0.9996,
+      "delta_vs_best_single": 0,
+      "p_value": null
+    },
+    {
+      "strategy": "Naive Fusion",
+      "auc": 0.5,
+      "ci95_low": 0.5,
+      "ci95_high": 0.5,
+      "delta_vs_best_single": -0.4346,
+      "p_value": 1
+    },
+    {
+      "strategy": "Performance-Weighted",
+      "auc": 0.9667,
+      "ci95_low": 0.8865,
+      "ci95_high": 1,
+      "delta_vs_best_single": 0.0322,
+      "p_value": 0.019
+    },
+    {
+      "strategy": "Stacked Meta-Learner",
+      "auc": 0.9631,
+      "ci95_low": 0.8751,
+      "ci95_high": 1,
+      "delta_vs_best_single": 0.0286,
+      "p_value": 0.281
+    },
+    {
+      "strategy": "Selective Fusion (n=5)",
+      "auc": 0.5,
+      "ci95_low": 0.5,
+      "ci95_high": 0.5,
+      "delta_vs_best_single": -0.4346,
+      "p_value": 1
+    }
+  ],
+  "conclusion": {
+    "best_strategy": "Performance-Weighted",
+    "best_auc": 0.9667487815357572,
+    "fusion_improves_over_best_single": true,
+    "note": "Smart fusion successfully improves over best single modality"
+  }
+}

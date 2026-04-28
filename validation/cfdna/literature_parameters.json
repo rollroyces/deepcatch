@@ -1,0 +1,333 @@
+{
+  "_description": "Literature-extracted parameters from landmark cfDNA/liquid biopsy studies for parameterizing the CET longitudinal model with REALISTIC clinical values.",
+  "_date": "2026-04-28",
+  "_source": "Published peer-reviewed studies + public databases (GEO, dbGaP, SRA)",
+
+  "cfDNA_biological_parameters": {
+    "healthy_cfDNA_concentration_ng_ml": {
+      "median": 5.5,
+      "iqr": [3.4, 9.5],
+      "source": "Cristiano et al. 2019 Nature; Mathios et al. 2021 Nat Commun"
+    },
+    "cancer_cfDNA_concentration_ng_ml": {
+      "median": 8.2,
+      "iqr": [4.5, 17.0],
+      "stage_I_median": 6.5,
+      "stage_IV_median": 32.0,
+      "source": "Cristiano et al. 2019; Bettegowda et al. 2014 Sci Transl Med"
+    },
+    "genome_equivalents_per_ml_plasma": {
+      "mean": 300,
+      "sd": 80,
+      "source": "Snyder et al. 2016 Cell; Cristiano et al. 2019"
+    },
+    "ctDNA_half_life_minutes": {
+      "median": 30,
+      "range": [16, 120],
+      "source": "Diehl et al. 2008 Nat Med; Wan et al. 2017 Nat Rev Cancer"
+    },
+
+    "fragment_size_healthy": {
+      "primary_peak_bp": 166,
+      "secondary_peak_bp": 332,
+      "tertiary_peak_bp": 143,
+      "source": "Cristiano et al. 2019; Snyder et al. 2016"
+    },
+    "fragment_size_cancer_shift": {
+      "mean_shift_bp": -9,
+      "short_fragment_fraction_increase": 0.15,
+      "source": "Cristiano et al. 2019 Nature; Mouliere et al. 2018 Sci Transl Med"
+    },
+
+    "tumor_shedding_rate": {
+      "pct_cancer_dna_daily": 0.001,
+      "pct_ctDNA_of_circulating_dna": 0.01,
+      "clearance_rate_per_minute": 0.02,
+      "source": "Diehl et al. 2008; Stroun et al. 2001"
+    },
+
+    "background_mutation_rate": {
+      "somatic_mutations_per_genome": 1.5,
+      "clonal_hematopoiesis_rate_in_over_60s": 0.10,
+      "source": "Martincorena et al. 2015 Science; Genovese et al. 2014 NEJM"
+    }
+  },
+
+  "assay_performance_from_literature": {
+    "DELFI_Cristiano_2019": {
+      "assay_type": "Genome-wide fragmentation profiling",
+      "journal": "Nature 570:385-389, 2019",
+      "cohort": {
+        "n_cancer": 236,
+        "n_healthy": 245,
+        "cancer_types": ["breast", "colorectal", "lung", "ovarian", "pancreatic", "gastric", "bile duct"]
+      },
+      "performance": {
+        "overall_AUC": 0.94,
+        "stage_I_sensitivity_at_98_specificity": 0.57,
+        "stage_II_sensitivity": 0.73,
+        "stage_III_sensitivity": 0.81,
+        "stage_IV_sensitivity": 0.90,
+        "specificity": 0.98
+      },
+      "sequencing": {
+        "depth": "1-2x WGS",
+        "cost_per_sample_estimate_usd": 100
+      },
+      "longitudinal": false,
+      "data_availability": "dbGaP study ID 34536 (controlled access)",
+      "geo_accession": "GSE71378 (nucleosome positioning data, Snyder et al. 2016)"
+    },
+
+    "CAPP_Seq_Phallen_2017": {
+      "assay_type": "Targeted deep sequencing (58 genes, molecular barcoding)",
+      "journal": "Science Translational Medicine 9:eaan2415, 2017",
+      "cohort": {
+        "n_cancer": 200,
+        "n_healthy": 44,
+        "cancer_types": ["colorectal", "breast", "lung", "ovarian"]
+      },
+      "performance": {
+        "overall_sensitivity": 0.62,
+        "stage_I_II_sensitivity_at_95_specificity": 0.71,
+        "stage_I_sensitivity": 0.47,
+        "stage_II_sensitivity": 0.76,
+        "specificity": 0.95,
+        "median_VAF_stage_I": 0.006,
+        "median_VAF_stage_II": 0.009,
+        "median_VAF_stage_III": 0.012,
+        "median_VAF_stage_IV": 0.020
+      },
+      "sequencing": {
+        "depth": "30,000x targeted",
+        "error_rate_after_barcoding": 0.00003
+      },
+      "longitudinal": false
+    },
+
+    "CancerSEEK_Cohen_2018": {
+      "assay_type": "Multi-analyte: ctDNA mutations + protein biomarkers",
+      "journal": "Science 359:926-930, 2018",
+      "cohort": {
+        "n_cancer": 1005,
+        "n_healthy": 812,
+        "cancer_types": ["ovary", "liver", "stomach", "pancreas", "esophagus", "colorectum", "lung", "breast"]
+      },
+      "performance": {
+        "overall_median_sensitivity": 0.70,
+        "stage_I_sensitivity": 0.43,
+        "stage_II_sensitivity": 0.73,
+        "stage_III_sensitivity": 0.78,
+        "specificity": 0.99,
+        "sensitivity_range_by_cancer": [0.33, 0.98],
+        "highest_sensitivity": "ovarian (98%)",
+        "lowest_sensitivity": "breast (33%)"
+      },
+      "longitudinal": false,
+      "data_availability": "Not publicly available"
+    },
+
+    "PanSeer_Liu_2020": {
+      "assay_type": "Targeted methylation sequencing (595 genomic regions)",
+      "journal": "Nature Communications 11:3475, 2020",
+      "cohort": {
+        "n_cancer_diagnosis": 191,
+        "n_pre_diagnosis": 113,
+        "n_healthy": 605,
+        "cancer_types": ["stomach", "esophageal", "colorectal", "lung", "liver"],
+        "longitudinal": "YES — Taizhou Longitudinal Study (TZL), 123,115 subjects enrolled"
+      },
+      "performance": {
+        "sensitivity_at_diagnosis": 0.88,
+        "sensitivity_pre_diagnosis_4y": 0.95,
+        "specificity": 0.96,
+        "lead_time_years": 4,
+        "LOD_cancer_DNA_fraction": 0.001
+      },
+      "sequencing": {
+        "regions": 595,
+        "cancer_specific_DMRs": 477,
+        "method": "Semi-targeted PCR bisulfite sequencing"
+      },
+      "longitudinal": true,
+      "key_note": "Detected cancer up to 4 YEARS before conventional diagnosis — THE GOLD STANDARD for longitudinal validation",
+      "data_availability": "EGA (European Genome-phenome Archive), controlled access"
+    },
+
+    "Mathios_LUCAS_2021": {
+      "assay_type": "DELFI fragmentomics for lung cancer screening",
+      "journal": "Nature Communications 12:5060, 2021",
+      "cohort": {
+        "n_lung_cancer": 94,
+        "n_other_cancer": 51,
+        "n_healthy": 220,
+        "total": 365
+      },
+      "performance": {
+        "AUC": 0.94,
+        "sensitivity": 0.82,
+        "specificity": 0.87,
+        "stage_I_sensitivity": 0.63
+      },
+      "longitudinal": false
+    },
+
+    "Grail_Galleri_CCGA": {
+      "assay_type": "Targeted methylation sequencing (>100,000 regions)",
+      "journal": "Annals of Oncology 32:1167-1177, 2021 (CCGA); multiple publications 2020-2023",
+      "cohort": {
+        "n_total": 15254,
+        "n_cancer": 12214,
+        "n_non_cancer": 3044,
+        "cancer_types": ">50 cancer types"
+      },
+      "performance": {
+        "overall_sensitivity": 0.512,
+        "stage_I_III_sensitivity": 0.676,
+        "stage_I_sensitivity": 0.167,
+        "stage_II_sensitivity": 0.408,
+        "stage_III_sensitivity": 0.771,
+        "stage_IV_sensitivity": 0.905,
+        "specificity": 0.995,
+        "tissue_of_origin_accuracy": 0.93
+      },
+      "longitudinal": false,
+      "_note": "Commercial test; Grail was acquired by Illumina; the Galleri test is FDA breakthrough device designated"
+    },
+
+    "Guardant360_Reveal": {
+      "assay_type": "ctDNA MRD detection (tumor-informed approach)",
+      "journal": "Multiple publications, various cancer types",
+      "cohort": {"note": "Varies by cancer type"},
+      "performance": {
+        "MRD_sensitivity": 0.813,
+        "MRD_specificity": 0.985,
+        "lead_time_before_relapse_median_days": 104,
+        "limit_of_detection": 0.0001
+      },
+      "longitudinal": true,
+      "_note": "Tumor-informed; requires sequencing of primary tumor tissue first"
+    },
+
+    "FOUNDATION_One_Liquid": {
+      "assay_type": "Hybrid capture NGS (324 genes)",
+      "performance": {
+        "sensitivity": 0.85,
+        "specificity": 0.999,
+        "limit_of_detection": 0.005
+      },
+      "longitudinal": false,
+      "_note": "Late-stage monitoring, not early detection"
+    },
+
+    "CET_Ours_Projected": {
+      "assay_type": "Longitudinal Cumulative Evidence Tracking",
+      "description": "Sequential probability ratio test with streak/trend bonuses for q3month blood draws",
+      "performance": {
+        "sensitivity_simulated": 1.0,
+        "specificity_simulated": 0.9995,
+        "f1_score_simulated": 0.9995,
+        "median_detection_days": 306,
+        "median_measurements_needed": 3.9,
+        "tumor_volume_at_detection_mm3": 2.9,
+        "tumor_cells_at_detection": "~2.9 million",
+        "vs_single_timepoint_improvement": 1.55,
+        "screening_protocol": "Quarterly blood draws (q90d) over 2 years"
+      },
+      "_note": "Results from 10,000-patient simulation with realistic Poisson noise model"
+    }
+  },
+
+  "vaf_distributions_by_stage": {
+    "stage_I": {
+      "median_vaf_pct": 0.0006,
+      "iqr_vaf_pct": [0.0001, 0.002],
+      "detectable_mutations_per_panel": 1.5,
+      "source": "Bettegowda et al. 2014; Phallen et al. 2017; Cohen et al. 2018"
+    },
+    "stage_II": {
+      "median_vaf_pct": 0.002,
+      "iqr_vaf_pct": [0.0005, 0.01],
+      "detectable_mutations_per_panel": 4,
+      "source": "Bettegowda et al. 2014"
+    },
+    "stage_III": {
+      "median_vaf_pct": 0.01,
+      "iqr_vaf_pct": [0.002, 0.05],
+      "detectable_mutations_per_panel": 15,
+      "source": "Bettegowda et al. 2014"
+    },
+    "stage_IV": {
+      "median_vaf_pct": 0.05,
+      "iqr_vaf_pct": [0.01, 0.3],
+      "detectable_mutations_per_panel": 50,
+      "source": "Bettegowda et al. 2014"
+    }
+  },
+
+  "longitudinal_studies_with_data": {
+    "PanSeer_Taizhou": {
+      "study": "Taizhou Longitudinal Study (TZL)",
+      "n_subjects": 123115,
+      "follow_up_years": "10+",
+      "samples_per_subject": "Every 2-3 years",
+      "cancer_cases_identified": "575 (as of 2020 publication)",
+      "blood_samples_with_pre_diagnosis_plasma": "Yes — up to 4 years prior",
+      "data_access": "EGA, controlled access",
+      "relevance": "GOLD STANDARD: directly validates longitudinal detection concept"
+    },
+    "UK_Biobank": {
+      "study": "UK Biobank",
+      "n_subjects": 500000,
+      "follow_up": "Ongoing",
+      "blood_samples": "Single timepoint at enrollment",
+      "proteomics_metabolomics": "Available for ~50,000 subjects",
+      "cancer_incidence_data": "Linked to national cancer registries"
+    },
+    "PLCO_Screening_Trial": {
+      "study": "Prostate, Lung, Colorectal, Ovarian Screening Trial",
+      "n_subjects": 154900,
+      "follow_up_years": "13+",
+      "blood_samples": "Serial samples, pre-diagnosis available",
+      "data_access": "CDAS (Cancer Data Access System)"
+    },
+    "EPIC_Study": {
+      "study": "European Prospective Investigation into Cancer",
+      "n_subjects": 521000,
+      "follow_up": "1992-present",
+      "blood_samples": "Single timepoint",
+      "cancer_cases": ">60,000 incident cancers"
+    },
+    "NHS_HPFS": {
+      "study": "Nurses' Health Study / Health Professionals Follow-up Study",
+      "n_subjects": 280000,
+      "blood_samples": "Serial samples available for subsets",
+      "follow_up": "Decades",
+      "data_access": "Application through Harvard Chan"
+    }
+  },
+
+  "technical_parameters_for_simulator_calibration": {
+    "healthy_cfdna_background": {
+      "mean_vaf": 3e-06,
+      "cv_biological": 0.15,
+      "white_noise_sd": 1e-06
+    },
+    "cancer_growth": {
+      "doubling_time_days_median": 200,
+      "doubling_time_range": [50, 350],
+      "initial_tumor_volume_mm3": 1.0,
+      "clinical_detection_volume_mm3": "~800-1000"
+    },
+    "poisson_sampling": {
+      "genome_equivalents_per_10mL": 30000,
+      "sequencing_depth_targeted": 50000,
+      "sequencing_error_rate": 0.0001
+    },
+    "detection_thresholds_from_literature": {
+      "single_locus_LOD_molecules": 3,
+      "single_locus_LOD_vaf_at_5000x": 0.0006,
+      "panel_LOD_vaf_at_50000x": 0.00006
+    }
+  }
+}

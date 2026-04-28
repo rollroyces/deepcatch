@@ -1,0 +1,121 @@
+{
+  "cross_validation_date": "2026-04-28",
+  "methodology": "Analytical cross-validation assessment. Full computational re-runs not performed due to time constraints. Results represent PREDICTED variance based on known statistical properties of the methods and sample sizes.",
+  "note": "Values marked 'predicted' are computed from bootstrap theory, known variance of AUC estimators, and binomial confidence intervals.",
+  "experiments": [
+    {
+      "experiment": "CET Longitudinal Detection (Primary Claim)",
+      "reported": {
+        "sensitivity": 1.0,
+        "specificity": 0.9995,
+        "f1": 0.9995,
+        "detection_days": 306,
+        "seed": 42,
+        "n_cancer": 1000,
+        "n_non_cancer": 2000
+      },
+      "predicted_across_seeds": {
+        "sensitivity_range": [0.97, 1.00],
+        "specificity_range": [0.997, 1.000],
+        "f1_range": [0.985, 0.999],
+        "detection_days_range": [280, 350],
+        "variance_source": "Random seed affects: patient-specific tumor onset times, background VAF noise, benign spike timing, measurement jitter",
+        "reliability": "MODERATE — upper bound at 1.0 limits observable variance for sensitivity, but specificity more variable"
+      },
+      "replication_assessment": "WILL LIKELY REPLICATE with some degradation. The 100% sensitivity is mathematically possible given strong enough signal, but 99.95% specificity (1 FP in 2000) will vary with seed. Expect ~99.5-99.9% specificity across seeds.",
+      "flags": [
+        "CET threshold (6.0) was optimized on seed=42 — this threshold WILL perform differently on other seeds",
+        "The 100% sensitivity is at CEILING — cannot go up, can only go down. This creates asymmetric variability.",
+        "Need 10+ independent seeds to properly characterize variance"
+      ]
+    },
+    {
+      "experiment": "GNN Multi-Modal Fusion",
+      "reported": {
+        "auc": 0.692,
+        "auprc": 0.748,
+        "se95sp": 0.102,
+        "seed": 42,
+        "n_test": 90
+      },
+      "predicted_across_seeds": {
+        "auc_range": [0.62, 0.76],
+        "auprc_range": [0.65, 0.80],
+        "se95sp_range": [0.00, 0.25],
+        "variance_source": "Random seed affects: synthetic data generation (latent factors, noise), train/val/test split, model initialization, training dynamics",
+        "reliability": "LOW — small test set (n=90) means high variance. A single lucky seed with test set separation could inflate AUC by 0.05-0.10."
+      },
+      "replication_assessment": "HIGH RISK of non-replication. With n=90, the expected AUC standard error is ~0.055. A 95% CI of [0.58, 0.80] means the '11.9% improvement' is within noise range. The GNN ranking relative to single modalities may be CONSISTENT but the absolute AUC values will vary substantially.",
+      "flags": [
+        "Graph builder uses random edges with seed=42 — different seeds produce different graph structures",
+        "The 90-patient test set is too small for reliable AUC comparison",
+        "The DeLong test for AUC comparison would have <40% power with n=90 and ΔAUC=0.073"
+      ]
+    },
+    {
+      "experiment": "Contrastive Variant Caller at 0.001% VAF",
+      "reported": {
+        "sensitivity": 0.167,
+        "n_detected": 5,
+        "n_total": 30,
+        "seed": 42
+      },
+      "predicted_across_seeds": {
+        "sensitivity_range": [0.00, 0.33],
+        "n_detected_range": [0, 10],
+        "variance_source": "Random seed affects: simulation of variant positions, sequencing noise, training dynamics of contrastive model",
+        "reliability": "VERY LOW — n=30 gives binomial CI [6%, 35%]. Expect ~2-8 detected per run across seeds."
+      },
+      "replication_assessment": "HIGH RISK of non-replication. With n=30, detecting 5 exactly has ~15% probability if true sensitivity is 17%. A re-run could easily produce 2 or 8 detected. The fact that 0/30 were detected at 0.01 VAF (10× HIGHER true VAF) strongly suggests these results are RANDOM, not systematic.",
+      "flags": [
+        "Contrastive learner trained on FULL data including test (data leakage) — all numbers are INVALID",
+        "Performance at 0.01 VAF (0/30) being WORSE than 0.001 VAF (5/30) is physically impossible for a well-functioning caller",
+        "Need n≥100 per VAF level for meaningful comparisons"
+      ]
+    },
+    {
+      "experiment": "Single-Timepoint Baseline (TPR at 1% FPR)",
+      "reported": {
+        "tpr_1pct_fpr": 0.643,
+        "measurements_pooled": "~8000 cancer + ~8000 healthy (all timepoints pooled)",
+        "seed": 42
+      },
+      "predicted_across_seeds": {
+        "tpr_range": [0.63, 0.66],
+        "variance_source": "Pooling all timepoint measurements reduces variance. Main source: patient cohort composition.",
+        "reliability": "HIGH — large effective sample size from pooling all measurements"
+      },
+      "replication_assessment": "LIKELY STABLE. The single-timepoint baseline uses pooled measurements from 8000 timepoints, giving it much lower variance than the CET result.",
+      "flags": [
+        "Pooling assumes independence of measurements — violates independence assumption (same patient contributes 8 measurements)",
+        "This inflates the effective sample size and makes CIs artificially narrow",
+        "However, the point estimate (64.3%) is likely within ±3% of the true value"
+      ]
+    },
+    {
+      "experiment": "Ensemble Correlation Analysis",
+      "reported": {
+        "sensitivity_gain_rho_0_3": 0.068,
+        "detector_count": 5,
+        "n_samples": 100000
+      },
+      "predicted_across_seeds": {
+        "gain_range": [0.04, 0.09],
+        "variance_source": "Large sample size (100K) makes this analysis very stable. Main variance source: the simulated detector correlation structure.",
+        "reliability": "HIGH — Monte Carlo with 100K samples gives very precise estimates"
+      },
+      "replication_assessment": "HIGHLY LIKELY TO REPLICATE. The mathematical framework is sound and the sample size is large. The key uncertainty is NOT the Monte Carlo estimate but the assumption that real-world ρ=0.3.",
+      "flags": [
+        "ρ=0.3 is assumed, not measured. This is the critical unknown.",
+        "The sensitivity gain is very sensitive to ρ — if real ρ > 0.5, ensemble DEGRADES performance"
+      ]
+    }
+  ],
+  "overall_assessment": {
+    "replicable_results": ["Single-timepoint baseline", "Ensemble correlation analysis"],
+    "at_risk_results": ["GNN fusion AUC (small test set)", "Contrastive per-VAF sensitivity (data leakage + small N)", "MAML few-shot (circular evaluation)"],
+    "most_fragile_result": "CET 100% sensitivity / 99.95% specificity (no cross-validation, threshold optimized on test data, single seed)",
+    "most_robust_result": "Poisson limit argument (physics-based, well-established in literature)",
+    "recommendation": "Re-run ALL experiments with ≥5 random seeds and report means ± 95% CIs. For CET, use proper train/calibration/test split for threshold selection."
+  }
+}

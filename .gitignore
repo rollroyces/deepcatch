@@ -1,0 +1,105 @@
+# =============================================================================
+# DeepCatch .gitignore
+# =============================================================================
+
+# ── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+venv/
+env/
+.env
+.venv
+pip-wheel-metadata/
+pip-log.txt
+
+# ── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# ── Jupyter Notebooks ───────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Machine Learning ────────────────────────────────────────────────────────
+*.pt
+*.pth
+*.h5
+*.ckpt
+*.pb
+*.onnx
+
+# ── Data files (large) ──────────────────────────────────────────────────────
+*.vcf.gz
+*.vcf.gz.tbi
+*.bam
+*.bam.bai
+*.fastq.gz
+*.fastq
+*.fq.gz
+*.fq
+*.bed
+data/
+db/
+
+# ── Results (keep reports, ignore raw dumps) ────────────────────────────────
+results/*.json
+results/*.png
+results/*.csv
+results/*.tsv
+results/*.h5
+!results/README.md
+!results/**/README.md
+
+# ── OS files ────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+\#*\#
+*.tmp
+*.bak
+
+# ── IDE ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.sublime-*
+.cursor/
+
+# ── LaTeX intermediate ──────────────────────────────────────────────────────
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.lot
+paper/*.lof
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.synctex.gz
+paper/*.pdf
+
+# ── Docker ──────────────────────────────────────────────────────────────────
+.dockerignore
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+
+# ── Secrets ─────────────────────────────────────────────────────────────────
+*.env
+*.secret
+*.key
+credentials.json
+token.json

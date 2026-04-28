@@ -1,0 +1,456 @@
+{
+  "metadata": {
+    "validation": "tissue_of_origin_prediction",
+    "timestamp": "2026-04-28T08:32:20.393Z",
+    "n_cancer_types": 8,
+    "cancer_types": [
+      {
+        "code": "LUAD",
+        "name": "Lung Adenocarcinoma"
+      },
+      {
+        "code": "COADREAD",
+        "name": "Colorectal"
+      },
+      {
+        "code": "BRCA",
+        "name": "Breast Cancer"
+      },
+      {
+        "code": "PRAD",
+        "name": "Prostate Cancer"
+      },
+      {
+        "code": "STAD",
+        "name": "Stomach Cancer"
+      },
+      {
+        "code": "LIHC",
+        "name": "Hepatocellular Carcinoma"
+      },
+      {
+        "code": "PAAD",
+        "name": "Pancreatic Cancer"
+      },
+      {
+        "code": "OV",
+        "name": "Ovarian Cancer"
+      }
+    ],
+    "n_samples_per_cancer": 50,
+    "n_healthy": 200,
+    "n_features": 12,
+    "n_methylation_features": 9,
+    "n_fragmentomic_features": 3,
+    "n_bootstrap": 2000
+  },
+  "too_results": {
+    "logistic_regression": {
+      "accuracy": 1,
+      "accuracy_ci95_low": 1,
+      "accuracy_ci95_high": 1,
+      "top2_accuracy": 1,
+      "per_cancer_type": {
+        "LUAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "COADREAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "BRCA": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "PRAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "STAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "LIHC": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "PAAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "OV": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        }
+      },
+      "confusion_matrix": [
+        [
+          50,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          50,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          50,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          50,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          50,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          50,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          50,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          50
+        ]
+      ]
+    },
+    "random_forest": {
+      "accuracy": 1,
+      "accuracy_ci95_low": 1,
+      "accuracy_ci95_high": 1,
+      "top2_accuracy": null,
+      "per_cancer_type": {
+        "LUAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "COADREAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "BRCA": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "PRAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "STAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "LIHC": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "PAAD": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        },
+        "OV": {
+          "sensitivity": 1,
+          "precision": 1,
+          "total_samples": 50
+        }
+      },
+      "confusion_matrix": [
+        [
+          50,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          50,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          50,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          50,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          50,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          50,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          50,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          50
+        ]
+      ]
+    },
+    "neural_network": {
+      "accuracy": 0,
+      "accuracy_ci95_low": 0,
+      "accuracy_ci95_high": 0,
+      "top2_accuracy": null,
+      "per_cancer_type": {
+        "LUAD": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "COADREAD": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "BRCA": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "PRAD": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "STAD": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "LIHC": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "PAAD": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        },
+        "OV": {
+          "sensitivity": 0,
+          "precision": 0,
+          "total_samples": 0
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ]
+    }
+  },
+  "joint_detection_too": {
+    "cancer_detection": {
+      "sensitivity": 0.9875,
+      "specificity": 0.98,
+      "ppv": 0.9518
+    },
+    "too_on_detected": {
+      "accuracy": 1,
+      "n_detected": 79
+    }
+  },
+  "summary": {
+    "best_method": "logistic_regression",
+    "best_too_accuracy": 1,
+    "best_top2_accuracy": 1,
+    "note": "TOO accuracy measures correct tissue prediction among cancer cases. Joint pipeline first detects cancer, then predicts tissue-of-origin."
+  }
+}

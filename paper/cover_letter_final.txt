@@ -1,0 +1,74 @@
+================================================================================
+COVER LETTER
+DeepCatch: Performance-Weighted Multi-Modal Fusion with Cumulative Evidence
+Tracking for Ultra-Early Cancer Detection from Cell-Free DNA
+================================================================================
+
+Date: April 28, 2026
+
+To: The Editors
+Bioinformatics (Oxford Academic)
+Computational Methods Track
+
+Dear Editors,
+
+We are pleased to submit our manuscript entitled "DeepCatch: Performance-Weighted Multi-Modal Fusion with Cumulative Evidence Tracking for Ultra-Early Cancer Detection from Cell-Free DNA" for consideration as an Original Article in the Computational Methods track of Bioinformatics.
+
+SUMMARY
+
+This manuscript presents a computational framework for multi-modal, longitudinal cancer detection from cell-free DNA. The core methodological contributions are:
+
+1. Performance-weighted multi-modal fusion: a mathematically simple but previously unexploited principle—modalities contribute to the fusion decision in proportion to their independently measured signal-to-noise ratio (AUC). This statistically significantly outperforms the simple averaging used by Bie et al. (Nature Communications, 2023), with ΔAUC = +0.1434 at 1% ctDNA fraction (DeLong p < 0.0001).
+
+2. Cumulative Evidence Tracking (CET): a sequential probability ratio testing framework for longitudinal ctDNA monitoring. We honestly report that mutation-only CET achieves only 2.5% sensitivity at 97.0% specificity—identifying multi-analyte tracking as the critical next step and establishing the mathematical architecture for future development.
+
+SIGNIFICANCE
+
+The performance-weighted fusion strategy is immediately applicable to any multi-modal classification problem in computational biology. The method is mathematically defined, statistically validated (5-fold CV, 2,000 bootstrap, DeLong test), and released as open-source software.
+
+HONEST REPORTING
+
+We explicitly document:
+- All results are simulation-based; 0 clinical samples were used
+- CET sensitivity (2.5%) is too low for clinical screening
+- The framework requires 50,000× sequencing depth (~10× clinical standard)
+- Tissue-of-origin prediction is not validated on real data
+- 6 literature-parameterized confounders are modeled but interaction effects are unvalidated
+
+The manuscript includes a comprehensive comparison table with published clinical assays (Guardant360, FoundationOne, Grail Galleri, CancerSEEK, DELFI, PanSeer) with explicit caveats about the simulation-to-reality gap.
+
+FORMAT
+
+- LaTeX manuscript prepared for Bioinformatics journal style
+- 40 references covering the liquid biopsy literature
+- All tables numerically verified against the accompanying validation reports
+- Fully reproducible via RUN_ALL.sh
+
+CONFLICTS OF INTEREST
+
+The authors declare no competing interests. This work was conducted independently without institutional affiliation or commercial funding.
+
+DATA AVAILABILITY
+
+- Source code: https://github.com/deepcatch-consortium/deepcatch (MIT license)
+- Real data: COSMIC v99, TCGA PanCancer Atlas (both publicly available)
+- No protected health information; no real patient data
+
+SUGGESTED REVIEWERS
+
+- Dr. Arash Alizadeh, Stanford University (CAPP-Seq, ctDNA detection)
+- Dr. Maximilian Diehn, Stanford University (ctDNA biology, iDES)
+- Dr. Victor Velculescu, Johns Hopkins University (CancerSEEK, DELFI)
+- Dr. Nitzan Rosenfeld, Cancer Research UK Cambridge (ctDNA methods)
+
+ALTERNATE JOURNAL
+
+If not suitable for Bioinformatics, we suggest PLOS Computational Biology as an alternate venue, where the openly reported simulation methodology and honest limitation documentation align with the journal's standards.
+
+Thank you for considering our manuscript. We look forward to your response.
+
+Sincerely,
+Royce [Surname]
+Independent Researcher
+Corresponding Author
+royce@deepcatch.org

@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "validation": "multicancer_expansion_10_types",
+    "timestamp": "2026-04-28T08:43:08.291Z",
+    "n_patients": 5100,
+    "n_cancer": 2600,
+    "n_healthy": 2500,
+    "n_cancer_types": 10,
+    "cancer_types": [
+      {
+        "code": "LUAD",
+        "name": "Lung Adenocarcinoma",
+        "n": 350
+      },
+      {
+        "code": "COADREAD",
+        "name": "Colorectal Adenocarcinoma",
+        "n": 350
+      },
+      {
+        "code": "BRCA",
+        "name": "Breast Invasive Carcinoma",
+        "n": 400
+      },
+      {
+        "code": "PRAD",
+        "name": "Prostate Adenocarcinoma",
+        "n": 300
+      },
+      {
+        "code": "STAD",
+        "name": "Stomach Adenocarcinoma",
+        "n": 250
+      },
+      {
+        "code": "LIHC",
+        "name": "Liver Hepatocellular Carcinoma",
+        "n": 250
+      },
+      {
+        "code": "PAAD",
+        "name": "Pancreatic Adenocarcinoma",
+        "n": 200
+      },
+      {
+        "code": "OV",
+        "name": "Ovarian Serous Cystadenocarcinoma",
+        "n": 200
+      },
+      {
+        "code": "BLCA",
+        "name": "Bladder Urothelial Carcinoma",
+        "n": 150
+      },
+      {
+        "code": "HNSC",
+        "name": "Head and Neck Squamous Cell Carcinoma",
+        "n": 150
+      }
+    ],
+    "n_modalities": 5,
+    "modalities": [
+      "cfDNA_mutations",
+      "methylation",
+      "fragment_size",
+      "copy_number",
+      "ctc_count"
+    ],
+    "n_folds": 5,
+    "n_bootstrap": 2000
+  },
+  "single_modality": {
+    "cfDNA_mutations": {
+      "auc": 0.9965,
+      "auc_ci95_low": 0.9952,
+      "auc_ci95_high": 0.9976
+    },
+    "methylation": {
+      "auc": 0.9965,
+      "auc_ci95_low": 0.9951,
+      "auc_ci95_high": 0.9977
+    },
+    "fragment_size": {
+      "auc": 0.4237,
+      "auc_ci95_low": 0.4076,
+      "auc_ci95_high": 0.4393
+    },
+    "copy_number": {
+      "auc": 0.9175,
+      "auc_ci95_low": 0.9091,
+      "auc_ci95_high": 0.9258
+    },
+    "ctc_count": {
+      "auc": 0.8178,
+      "auc_ci95_low": 0.8062,
+      "auc_ci95_high": 0.83
+    }
+  },
+  "cross_validation": {
+    "single_modality_mean_auc": {
+      "cfDNA_mutations": 0.9965,
+      "methylation": 0.9966,
+      "fragment_size": 0.4237,
+      "copy_number": 0.9173,
+      "ctc_count": 0.8177
+    },
+    "naive_fusion_mean_auc": 1,
+    "performance_weighted_fusion_mean_auc": 1,
+    "delta_vs_best_single": 0.0034
+  },
+  "test_set_evaluation": {
+    "auc": 1,
+    "auc_ci95_low": 1,
+    "auc_ci95_high": 1,
+    "specificity_levels": {
+      "spec_95": {
+        "threshold": 0.255283,
+        "sensitivity": 1,
+        "specificity": 0.95
+      },
+      "spec_98": {
+        "threshold": 0.328336,
+        "sensitivity": 1,
+        "specificity": 0.98
+      },
+      "spec_99": {
+        "threshold": 0.385913,
+        "sensitivity": 1,
+        "specificity": 0.99
+      }
+    }
+  },
+  "per_cancer_type": {
+    "LUAD": {
+      "name": "Lung Adenocarcinoma",
+      "n_samples": 350,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "COADREAD": {
+      "name": "Colorectal Adenocarcinoma",
+      "n_samples": 350,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "BRCA": {
+      "name": "Breast Invasive Carcinoma",
+      "n_samples": 400,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "PRAD": {
+      "name": "Prostate Adenocarcinoma",
+      "n_samples": 300,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "STAD": {
+      "name": "Stomach Adenocarcinoma",
+      "n_samples": 250,
+      "mean_auc": 1,
+      "mean_sensitivity": 0.9965,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        0.9825,
+        1
+      ]
+    },
+    "LIHC": {
+      "name": "Liver Hepatocellular Carcinoma",
+      "n_samples": 250,
+      "mean_auc": 0.9999,
+      "mean_sensitivity": 0.996,
+      "auc_range": [
+        0.9995,
+        1
+      ],
+      "sens_range": [
+        0.98,
+        1
+      ]
+    },
+    "PAAD": {
+      "name": "Pancreatic Adenocarcinoma",
+      "n_samples": 200,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "OV": {
+      "name": "Ovarian Serous Cystadenocarcinoma",
+      "n_samples": 200,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        1,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    },
+    "BLCA": {
+      "name": "Bladder Urothelial Carcinoma",
+      "n_samples": 150,
+      "mean_auc": 0.9999,
+      "mean_sensitivity": 0.9926,
+      "auc_range": [
+        0.9995,
+        1
+      ],
+      "sens_range": [
+        0.963,
+        1
+      ]
+    },
+    "HNSC": {
+      "name": "Head and Neck Squamous Cell Carcinoma",
+      "n_samples": 150,
+      "mean_auc": 1,
+      "mean_sensitivity": 1,
+      "auc_range": [
+        0.9999,
+        1
+      ],
+      "sens_range": [
+        1,
+        1
+      ]
+    }
+  },
+  "summary": {
+    "overall_auc": 1,
+    "overall_auc_ci95": [
+      1,
+      1
+    ],
+    "best_single_modality": {
+      "modality": "cfDNA_mutations",
+      "auc": 0.9965,
+      "auc_ci95_low": 0.9952,
+      "auc_ci95_high": 0.9976
+    },
+    "weighted_fusion_improvement": 0.0035,
+    "cancer_types_covered": 10,
+    "note": "Performance-weighted fusion integrates 5 modalities across 10 cancer types with realistic TCGA-based mutation frequencies."
+  }
+}

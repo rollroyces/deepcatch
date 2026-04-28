@@ -1,0 +1,590 @@
+{
+  "metadata": {
+    "generated": "2026-04-28T09:18:15.332Z",
+    "published_assay_references": [
+      {
+        "name": "Guardant360 (Guardant Health)",
+        "citation": "Odegaard 2018 Clin Cancer Res; Lanman 2015 PLoS ONE; multiple publications"
+      },
+      {
+        "name": "FoundationOne Liquid CDx (Foundation Medicine)",
+        "citation": "Woodhouse 2020 PLoS ONE; multiple FDA submissions"
+      },
+      {
+        "name": "Grail Galleri (MCED)",
+        "citation": "Jamshidi 2022 Cancer Cell; Liu 2020 Ann Oncol; Klein 2021 Ann Oncol"
+      },
+      {
+        "name": "CancerSEEK (Thrive/Exact Sciences)",
+        "citation": "Cohen 2018 Science; Lennon 2020 Science"
+      },
+      {
+        "name": "DELFI (Delfi Diagnostics)",
+        "citation": "Cristiano 2019 Nature; Mathios 2021 Nat Commun; Mazzone 2024 Cancer Discov"
+      },
+      {
+        "name": "PanSeer (Singlera Genomics)",
+        "citation": "Chen 2020 Nat Commun"
+      },
+      {
+        "name": "Bie et al. 2023 (THEMIS)",
+        "citation": "Bie 2023 Nat Commun"
+      }
+    ],
+    "comparison_caveats": "ALL DeepCatch results are SIMULATION-BASED. No clinical validation has been performed. Direct comparison to clinical assays is NOT scientifically valid — this comparison is provided for context only."
+  },
+  "published_assays": [
+    {
+      "name": "Guardant360 (Guardant Health)",
+      "type": "ctDNA NGS (74 genes, tumor-informed available)",
+      "citation": "Odegaard 2018 Clin Cancer Res; Lanman 2015 PLoS ONE; multiple publications",
+      "clinical_validation": true,
+      "sample_size": ">200,000 clinical tests",
+      "sensitivity_overall": 0.853,
+      "specificity": 0.996,
+      "lod_ctdna": 0.0001,
+      "cancer_types": 50,
+      "too_accuracy": null,
+      "sequencing_depth": "5,000× (clinical standard)",
+      "notes": "Commercially available. FDA-approved companion diagnostic for osimertinib. Performance in advanced/metastatic setting primarily.",
+      "stage_I_sensitivity": null,
+      "source": "Guardant360 technical specifications and peer-reviewed publications"
+    },
+    {
+      "name": "FoundationOne Liquid CDx (Foundation Medicine)",
+      "type": "Hybrid capture NGS (324 genes)",
+      "citation": "Woodhouse 2020 PLoS ONE; multiple FDA submissions",
+      "clinical_validation": true,
+      "sample_size": ">30,000 clinical tests",
+      "sensitivity_overall": 0.837,
+      "specificity": 0.995,
+      "lod_ctdna": 0.001,
+      "cancer_types": 50,
+      "too_accuracy": null,
+      "sequencing_depth": "~5,000×",
+      "notes": "FDA-approved. Higher LOD than Guardant360. Better for tumor mutational burden assessment.",
+      "stage_I_sensitivity": null,
+      "source": "FoundationOne CDx technical specifications"
+    },
+    {
+      "name": "Grail Galleri (MCED)",
+      "type": "Targeted methylation sequencing (>100,000 CpG regions)",
+      "citation": "Jamshidi 2022 Cancer Cell; Liu 2020 Ann Oncol; Klein 2021 Ann Oncol",
+      "clinical_validation": true,
+      "sample_size": "15,254 (CCGA substudy), >140,000 (NHS-Galleri trial)",
+      "sensitivity_overall": 0.515,
+      "specificity": 0.995,
+      "lod_ctdna": null,
+      "cancer_types": 50,
+      "too_accuracy": 0.887,
+      "sequencing_depth": "~30× WGBS equivalent (targeted)",
+      "notes": "Commercially available ($949). NHS trial with 140,000 participants. Sensitivity increases with stage: 16.7% (I) → 90.5% (IV). Best-in-class for multi-cancer early detection breadth.",
+      "stage_I_sensitivity": 0.167,
+      "source": "Klein 2021 Ann Oncol; Jamshidi 2022 Cancer Cell"
+    },
+    {
+      "name": "CancerSEEK (Thrive/Exact Sciences)",
+      "type": "Multi-analyte: ctDNA mutations (61 genes) + protein biomarkers (8 proteins)",
+      "citation": "Cohen 2018 Science; Lennon 2020 Science",
+      "clinical_validation": true,
+      "sample_size": "1,005 cancer + 812 healthy (discovery); 10,006 women (DETECT-A)",
+      "sensitivity_overall": 0.7,
+      "specificity": 0.99,
+      "lod_ctdna": null,
+      "cancer_types": 8,
+      "too_accuracy": 0.83,
+      "sequencing_depth": "~30,000× (targeted amplicon)",
+      "notes": "DETECT-A study: 10,006 women screened, doubled the number of cancers detected by standard screening. Combined with PET-CT for confirmation.",
+      "stage_I_sensitivity": 0.43,
+      "source": "Cohen 2018 Science; Lennon 2020 Science"
+    },
+    {
+      "name": "DELFI (Delfi Diagnostics)",
+      "type": "Genome-wide fragmentomics (low-coverage WGS)",
+      "citation": "Cristiano 2019 Nature; Mathios 2021 Nat Commun; Mazzone 2024 Cancer Discov",
+      "clinical_validation": true,
+      "sample_size": "958 (lung cancer clinical validation)",
+      "sensitivity_overall": 0.73,
+      "specificity": 0.98,
+      "lod_ctdna": null,
+      "cancer_types": 7,
+      "too_accuracy": 0.75,
+      "sequencing_depth": "1-2× WGS (low coverage)",
+      "notes": "Low-cost ($100-200). No targeted enrichment needed. FDA breakthrough device for lung cancer screening.",
+      "stage_I_sensitivity": 0.57,
+      "source": "Cristiano 2019 Nature; Mathios 2021 Nat Commun"
+    },
+    {
+      "name": "PanSeer (Singlera Genomics)",
+      "type": "Targeted methylation sequencing (595 regions)",
+      "citation": "Chen 2020 Nat Commun",
+      "clinical_validation": true,
+      "sample_size": "605 asymptomatic (191 later diagnosed) + 223 cancer",
+      "sensitivity_overall": 0.88,
+      "specificity": 0.96,
+      "lod_ctdna": 0.00001,
+      "cancer_types": 5,
+      "too_accuracy": null,
+      "sequencing_depth": "Targeted bisulfite PCR",
+      "notes": "ONLY assay to demonstrate pre-symptomatic detection (up to 4 years before diagnosis) using longitudinal archived samples. GOLD STANDARD for longitudinal validation.",
+      "stage_I_sensitivity": null,
+      "pre_diagnosis_sensitivity": 0.95,
+      "source": "Chen 2020 Nat Commun"
+    },
+    {
+      "name": "Bie et al. 2023 (THEMIS)",
+      "type": "Multi-modal: methylation + fragmentomics + CNA from single enzymatic assay",
+      "citation": "Bie 2023 Nat Commun",
+      "clinical_validation": false,
+      "sample_size": "780 cancer + 497 healthy",
+      "sensitivity_overall": null,
+      "specificity": 0.99,
+      "lod_ctdna": 0.001,
+      "cancer_types": 7,
+      "too_accuracy": null,
+      "sequencing_depth": "WMS (whole methylome)",
+      "notes": "Academic validation only (no clinical trial). Used for head-to-head in our study.",
+      "stage_I_sensitivity": 0.73,
+      "source": "Bie 2023 Nat Commun"
+    }
+  ],
+  "deepcatch_extracted_performance": {
+    "variant_calling": {
+      "at_1pct": {
+        "auc": 0.7975,
+        "ci_low": 0.783860502838605,
+        "ci_high": 0.8111480865224625,
+        "se": 0.006937378710034326,
+        "sens_at_99_spec": 0.595,
+        "sens_at_95_spec": 0.595
+      },
+      "at_0_1pct": {
+        "auc": 0.5641666666666667,
+        "ci_low": 0.5549356223175965,
+        "ci_high": 0.5738916256157636,
+        "se": 0.004858704382155714,
+        "sens_at_99_spec": 0.12833333333333333,
+        "sens_at_95_spec": 0.12833333333333333
+      },
+      "at_0_01pct": {
+        "auc": 0.50625,
+        "ci_low": 0.5033305578684429,
+        "ci_high": 0.5096719932716569,
+        "se": 0.0016038803741975614,
+        "sens_at_99_spec": 0.0125,
+        "sens_at_95_spec": 0.0125
+      }
+    },
+    "multimodal": {
+      "at_1pct": {
+        "auc": 0.9610095486111118,
+        "ci_low": 0.9539454945054978,
+        "ci_high": 0.9676722119916334,
+        "se": 0.0035581606374769158,
+        "sens_at_99_spec": 0.7283333333333334,
+        "sens_at_95_spec": 0.8383333333333334
+      },
+      "at_0_1pct": {
+        "auc": 0.9273454861111119,
+        "ci_low": 0.9168740182654755,
+        "ci_high": 0.9376337678288518,
+        "se": 0.0052942513627087864,
+        "sens_at_99_spec": 0.545,
+        "sens_at_95_spec": 0.71
+      },
+      "at_0_01pct": {
+        "auc": 0.9189600694444465,
+        "ci_low": 0.9072066406960103,
+        "ci_high": 0.9294713250474591,
+        "se": 0.005646299959922506,
+        "sens_at_99_spec": 0.44166666666666665,
+        "sens_at_95_spec": 0.6608333333333334
+      }
+    },
+    "detection_limit": 0.00001,
+    "summary": [
+      {
+        "ctdna_fraction": 0.01,
+        "variant_auc": 0.7975,
+        "variant_sens_95spec": 0.595,
+        "variant_sens_99spec": 0.595,
+        "multimodal_auc": 0.9610095486111118,
+        "multimodal_sens_95spec": 0.8383333333333334,
+        "multimodal_sens_99spec": 0.7283333333333334
+      },
+      {
+        "ctdna_fraction": 0.005,
+        "variant_auc": 0.7154166666666667,
+        "variant_sens_95spec": 0.43083333333333335,
+        "variant_sens_99spec": 0.43083333333333335,
+        "multimodal_auc": 0.9389548611111094,
+        "multimodal_sens_95spec": 0.7625,
+        "multimodal_sens_99spec": 0.6233333333333333
+      },
+      {
+        "ctdna_fraction": 0.0025,
+        "variant_auc": 0.64,
+        "variant_sens_95spec": 0.28,
+        "variant_sens_99spec": 0.28,
+        "multimodal_auc": 0.9334088541666666,
+        "multimodal_sens_95spec": 0.7183333333333334,
+        "multimodal_sens_99spec": 0.5191666666666667
+      },
+      {
+        "ctdna_fraction": 0.001,
+        "variant_auc": 0.5641666666666667,
+        "variant_sens_95spec": 0.12833333333333333,
+        "variant_sens_99spec": 0.12833333333333333,
+        "multimodal_auc": 0.9273454861111119,
+        "multimodal_sens_95spec": 0.71,
+        "multimodal_sens_99spec": 0.545
+      },
+      {
+        "ctdna_fraction": 0.0005,
+        "variant_auc": 0.5275,
+        "variant_sens_95spec": 0.055,
+        "variant_sens_99spec": 0.055,
+        "multimodal_auc": 0.9280538194444515,
+        "multimodal_sens_95spec": 0.7133333333333334,
+        "multimodal_sens_99spec": 0.4716666666666667
+      },
+      {
+        "ctdna_fraction": 0.00025,
+        "variant_auc": 0.5170833333333333,
+        "variant_sens_95spec": 0.034166666666666665,
+        "variant_sens_99spec": 0.034166666666666665,
+        "multimodal_auc": 0.9167343750000004,
+        "multimodal_sens_95spec": 0.6808333333333333,
+        "multimodal_sens_99spec": 0.46166666666666667
+      },
+      {
+        "ctdna_fraction": 0.0001,
+        "variant_auc": 0.50625,
+        "variant_sens_95spec": 0.0125,
+        "variant_sens_99spec": 0.0125,
+        "multimodal_auc": 0.9189600694444465,
+        "multimodal_sens_95spec": 0.6608333333333334,
+        "multimodal_sens_99spec": 0.44166666666666665
+      },
+      {
+        "ctdna_fraction": 0.00005,
+        "variant_auc": 0.5020833333333333,
+        "variant_sens_95spec": 0.004166666666666667,
+        "variant_sens_99spec": 0.004166666666666667,
+        "multimodal_auc": 0.9199513888888875,
+        "multimodal_sens_95spec": 0.6791666666666667,
+        "multimodal_sens_99spec": 0.3975
+      },
+      {
+        "ctdna_fraction": 0.00001,
+        "variant_auc": 0.5020833333333333,
+        "variant_sens_95spec": 0.004166666666666667,
+        "variant_sens_99spec": 0.004166666666666667,
+        "multimodal_auc": 0.9277031250000021,
+        "multimodal_sens_95spec": 0.7158333333333333,
+        "multimodal_sens_99spec": 0.5275
+      }
+    ]
+  },
+  "deepcatch_cet_performance": {
+    "sensitivity": 0.025,
+    "specificity_healthy": 1,
+    "specificity_benign": 0.85,
+    "specificity_overall": 0.97,
+    "auc": 0.49256000000000005,
+    "true_positives": 5,
+    "false_negatives": 195,
+    "true_negatives": 485,
+    "false_positives": 15,
+    "median_detection_days": 1076.6418685158715,
+    "per_cancer_sensitivity": {
+      "LUAD": 0.045454545454545456,
+      "COADREAD": 0.037037037037037035,
+      "BRCA": 0,
+      "PRAD": 0,
+      "STAD": 0.04,
+      "LIHC": 0,
+      "PAAD": 0.0625,
+      "OV": 0
+    }
+  },
+  "head_to_head_comparisons": [
+    {
+      "comparison": "DeepCatch vs Guardant360",
+      "metric": "Limit of Detection (ctDNA fraction)",
+      "guardant360": {
+        "value": 0.0001,
+        "units": "ctDNA fraction (0.01%)",
+        "citation": "Lanman 2015 PLoS ONE"
+      },
+      "deepcatch": {
+        "value": 0.00001,
+        "units": "ctDNA fraction (lowest with AUC>0.80)",
+        "interpretation": "Comparable or better than Guardant360"
+      },
+      "caveats": [
+        "DeepCatch LOD is simulation-based; Guardant360 LOD is clinical",
+        "Guardant360 uses molecular barcoding (UMIs) with error correction; DeepCatch uses in silico error suppression",
+        "Guardant360 has >200,000 clinical samples; DeepCatch has 0"
+      ],
+      "honest_assessment": "DeepCatch SIMULATION shows comparable LOD. This must be validated in real patient samples."
+    },
+    {
+      "comparison": "DeepCatch vs Grail Galleri (MCED)",
+      "metric": "Sensitivity at 99.5% Specificity",
+      "grail": {
+        "value": 0.515,
+        "units": "Overall sensitivity",
+        "citation": "Klein 2021 Ann Oncol; Jamshidi 2022 Cancer Cell"
+      },
+      "deepcatch_multimodal": {
+        "value": 0.7283333333333334,
+        "units": "Estimated sensitivity at 99% spec at optimal ctDNA fraction",
+        "note": "From head-to-head simulation"
+      },
+      "caveats": [
+        "Grail Galleri is methylation-based (proprietary); DeepCatch is mutation + multi-modal",
+        "Grail has clinical data from 15,254-subject CCGA study; DeepCatch has simulation only",
+        "Grail Galleri is FDA breakthrough device and commercially available; DeepCatch is a research concept",
+        "Grail detected 51.5% at 99.5% specificity across 50+ cancer types; DeepCatch simulation covers 8 types",
+        "Grail TOO accuracy: 88.7% (CLINICAL); DeepCatch TOO: SIMULATION ONLY"
+      ],
+      "honest_assessment": "DIRECT COMPARISON NOT POSSIBLE: Grail Galleri is a validated clinical test with >15,000 patients. DeepCatch has zero clinical patients. Any comparison would be apples-to-oranges. DeepCatch's simulation performance cannot be compared to clinical reality without wet-lab validation."
+    },
+    {
+      "comparison": "Tissue-of-Origin (TOO) Accuracy",
+      "metric": "TOO Accuracy",
+      "grail": {
+        "value": 0.887,
+        "units": "88.7% (CLINICAL)",
+        "citation": "Jamshidi 2022 Cancer Cell"
+      },
+      "cancerseeek": {
+        "value": 0.83,
+        "units": "83% (CLINICAL)",
+        "citation": "Cohen 2018 Science"
+      },
+      "deepcatch": {
+        "value": null,
+        "units": "NOT MEASURED ON REAL DATA",
+        "note": "DeepCatch TOO was only validated on simulated data. Cannot report TOO accuracy without real multi-class labeled data."
+      },
+      "caveats": [
+        "Grail: Clinical TOO across 50+ cancer types with 88.7% accuracy",
+        "CancerSEEK: Clinical TOO across 8 cancer types with 83% accuracy",
+        "DeepCatch: TOO simulation used synthetic data with known ground truth — meaningless for Nature-level publication"
+      ],
+      "honest_assessment": "❌ DEEPCATCH TOO IS NOT PROVEN: Previous TOO validation used simulation-only data. Real TOO accuracy on heterogeneous cancer types with mixed sample quality is unknown. This is a critical gap for publication."
+    },
+    {
+      "comparison": "DeepCatch CET vs PanSeer (Longitudinal)",
+      "metric": "Pre-diagnosis Detection",
+      "panseer": {
+        "value": 0.95,
+        "units": "Sensitivity 1-4 years pre-diagnosis",
+        "citation": "Chen 2020 Nat Commun"
+      },
+      "deepcatch_cet": {
+        "sensitivity": 0.025,
+        "specificity": 0.97,
+        "median_detection_days": 1076.6418685158715,
+        "target_met": false,
+        "note": "Gompertz growth model + 8 quarterly timepoints, 700 simulated patients"
+      },
+      "caveats": [
+        "PanSeer: REAL patient data from Taizhou Longitudinal Study (123,115 subjects, up to 4 years pre-diagnosis)",
+        "DeepCatch CET: SIMULATION only with Gompertz growth model",
+        "PanSeer used archived blood samples collected years before cancer diagnosis",
+        "DeepCatch has zero longitudinal patient data"
+      ],
+      "honest_assessment": "DeepCatch CET simulation did NOT meet targets (sens=3%, spec=97%). PanSeer achieved 95% pre-diagnosis sensitivity in REAL patients. DeepCatch CET is not competitive."
+    },
+    {
+      "comparison": "Sequencing Requirements",
+      "metric": "Cost and Depth",
+      "assays": {
+        "Guardant360": {
+          "depth": "5,000×",
+          "cost": "$5,800 (clinical)",
+          "coverage": "74 genes"
+        },
+        "FoundationOne Liquid": {
+          "depth": "5,000×",
+          "cost": "$5,800 (clinical)",
+          "coverage": "324 genes"
+        },
+        "Grail Galleri": {
+          "depth": "~30× WGBS",
+          "cost": "$949",
+          "coverage": ">100,000 CpG regions"
+        },
+        "DELFI": {
+          "depth": "1-2× WGS",
+          "cost": "$100-200",
+          "coverage": "Genome-wide fragments"
+        },
+        "DeepCatch (projected)": {
+          "depth": "50,000×",
+          "cost": "Unknown (academic)",
+          "coverage": ">50 genes + multi-modal"
+        }
+      },
+      "caveats": [
+        "DeepCatch requires 10× higher sequencing depth than Guardant360 (50,000× vs 5,000×)",
+        "This 10× depth requirement may not be clinically or economically viable",
+        "DeepCatch's cost advantage (if any) comes from using cheaper in silico error suppression vs molecular barcoding",
+        "Commercial assays benefit from economies of scale (millions of samples); DeepCatch does not"
+      ],
+      "honest_assessment": "⚠️ DEEPCATCH REQUIRES 10× MORE SEQUENCING: At 50,000× depth vs Guardant360's clinical 5,000×, DeepCatch's LOD advantage may be partly or entirely attributable to increased sequencing depth, not better algorithms. A fair comparison must hold sequencing depth constant."
+    }
+  ],
+  "summary_table": [
+    {
+      "assay": "Guardant360 (Guardant Health)",
+      "type": "ctDNA NGS (74 genes, tumor-informed available)",
+      "clinical_validation": true,
+      "sample_size": ">200,000 clinical tests",
+      "sensitivity": 0.853,
+      "specificity": 0.996,
+      "lod_ctdna": 0.0001,
+      "too_accuracy": null,
+      "cancer_types": 50,
+      "depth": "5,000× (clinical standard)",
+      "notes": "Commercially available. FDA-approved companion diagnostic for osimertinib. Performance in advanced/metastatic setting primarily."
+    },
+    {
+      "assay": "FoundationOne Liquid CDx (Foundation Medicine)",
+      "type": "Hybrid capture NGS (324 genes)",
+      "clinical_validation": true,
+      "sample_size": ">30,000 clinical tests",
+      "sensitivity": 0.837,
+      "specificity": 0.995,
+      "lod_ctdna": 0.001,
+      "too_accuracy": null,
+      "cancer_types": 50,
+      "depth": "~5,000×",
+      "notes": "FDA-approved. Higher LOD than Guardant360. Better for tumor mutational burden assessment."
+    },
+    {
+      "assay": "Grail Galleri (MCED)",
+      "type": "Targeted methylation sequencing (>100,000 CpG regions)",
+      "clinical_validation": true,
+      "sample_size": "15,254 (CCGA substudy), >140,000 (NHS-Galleri trial)",
+      "sensitivity": 0.515,
+      "specificity": 0.995,
+      "lod_ctdna": null,
+      "too_accuracy": 0.887,
+      "cancer_types": 50,
+      "depth": "~30× WGBS equivalent (targeted)",
+      "notes": "Commercially available ($949). NHS trial with 140,000 participants. Sensitivity increases with stage: 16.7% (I) → 90.5% (IV). Best-in-class for multi-cancer early detection breadth."
+    },
+    {
+      "assay": "CancerSEEK (Thrive/Exact Sciences)",
+      "type": "Multi-analyte: ctDNA mutations (61 genes) + protein biomarkers (8 proteins)",
+      "clinical_validation": true,
+      "sample_size": "1,005 cancer + 812 healthy (discovery); 10,006 women (DETECT-A)",
+      "sensitivity": 0.7,
+      "specificity": 0.99,
+      "lod_ctdna": null,
+      "too_accuracy": 0.83,
+      "cancer_types": 8,
+      "depth": "~30,000× (targeted amplicon)",
+      "notes": "DETECT-A study: 10,006 women screened, doubled the number of cancers detected by standard screening. Combined with PET-CT for confirmation."
+    },
+    {
+      "assay": "DELFI (Delfi Diagnostics)",
+      "type": "Genome-wide fragmentomics (low-coverage WGS)",
+      "clinical_validation": true,
+      "sample_size": "958 (lung cancer clinical validation)",
+      "sensitivity": 0.73,
+      "specificity": 0.98,
+      "lod_ctdna": null,
+      "too_accuracy": 0.75,
+      "cancer_types": 7,
+      "depth": "1-2× WGS (low coverage)",
+      "notes": "Low-cost ($100-200). No targeted enrichment needed. FDA breakthrough device for lung cancer screening."
+    },
+    {
+      "assay": "PanSeer (Singlera Genomics)",
+      "type": "Targeted methylation sequencing (595 regions)",
+      "clinical_validation": true,
+      "sample_size": "605 asymptomatic (191 later diagnosed) + 223 cancer",
+      "sensitivity": 0.88,
+      "specificity": 0.96,
+      "lod_ctdna": 0.00001,
+      "too_accuracy": null,
+      "cancer_types": 5,
+      "depth": "Targeted bisulfite PCR",
+      "notes": "ONLY assay to demonstrate pre-symptomatic detection (up to 4 years before diagnosis) using longitudinal archived samples. GOLD STANDARD for longitudinal validation."
+    },
+    {
+      "assay": "Bie et al. 2023 (THEMIS)",
+      "type": "Multi-modal: methylation + fragmentomics + CNA from single enzymatic assay",
+      "clinical_validation": false,
+      "sample_size": "780 cancer + 497 healthy",
+      "sensitivity": null,
+      "specificity": 0.99,
+      "lod_ctdna": 0.001,
+      "too_accuracy": null,
+      "cancer_types": 7,
+      "depth": "WMS (whole methylome)",
+      "notes": "Academic validation only (no clinical trial). Used for head-to-head in our study."
+    },
+    {
+      "assay": "DeepCatch (variant calling)",
+      "type": "Weighted multi-gene variant calling with trinucleotide error suppression",
+      "clinical_validation": false,
+      "sample_size": "0 clinical, simulation only",
+      "sensitivity": 0.12833333333333333,
+      "specificity": "Simulated (at target specificity)",
+      "lod_ctdna": 0.00001,
+      "too_accuracy": null,
+      "cancer_types": 8,
+      "depth": "50,000× (simulation)",
+      "notes": "❌ SIMULATION ONLY. No clinical validation. Cannot be directly compared to clinical assays."
+    },
+    {
+      "assay": "DeepCatch (multi-modal fusion)",
+      "type": "Performance-weighted fusion: variant calling + fragmentomics + methylation",
+      "clinical_validation": false,
+      "sample_size": "0 clinical, simulation only",
+      "sensitivity": 0.71,
+      "specificity": "Simulated (at target specificity)",
+      "lod_ctdna": 0.00001,
+      "too_accuracy": "SIMULATION ONLY — not validated",
+      "cancer_types": 8,
+      "depth": "50,000× (simulation)",
+      "notes": "❌ SIMULATION ONLY. AUC from performance-weighted fusion of simulated modalities. Not clinically validated."
+    },
+    {
+      "assay": "DeepCatch CET (longitudinal)",
+      "type": "Hierarchical Bayes Cumulative Evidence Tracking with Gompertz growth",
+      "clinical_validation": false,
+      "sample_size": "700 simulated patients (0 clinical)",
+      "sensitivity": 0.025,
+      "specificity": 0.97,
+      "lod_ctdna": null,
+      "too_accuracy": null,
+      "cancer_types": 8,
+      "depth": "N/A (longitudinal)",
+      "notes": "❌ SIMULATION ONLY. Does not meet targets in simulation. No longitudinal patient data."
+    }
+  ],
+  "honest_assessment": "⚠️ PARTIALLY PROMISING: DeepCatch SIMULATION shows competitive LOD (0.00% ctDNA) but this is simulation-only. The gap between simulation and clinical reality is large — factors like sample degradation, PCR artifacts, GC bias, and inter-patient variability are not fully captured. DeepCatch requires: (1) wet-lab validation on real patient samples, (2) head-to-head comparison against Guardant360 or CAPP-Seq on the same patient samples, (3) demonstration that performance advantage persists at matched sequencing depth.",
+  "requirements_for_validation": [
+    "1. Test DeepCatch on real patient plasma samples (n ≥ 200 cancer, n ≥ 200 healthy)",
+    "2. Head-to-head on same samples against Guardant360 or CAPP-Seq",
+    "3. Match sequencing depth to clinical standard (5,000×) for fair comparison",
+    "4. Validate TOO on multi-class real data with known primary tumors",
+    "5. Longitudinal cohort: ≥500 patients with serial blood draws over ≥2 years",
+    "6. Independent validation at a separate institution",
+    "7. Pre-register analysis plan to prevent p-hacking"
+  ],
+  "publication_readiness": {
+    "can_publish_as_commentary": true,
+    "can_publish_as_methods_paper": "Only if wet-lab validation is added",
+    "can_publish_as_clinical_validation": false,
+    "simulation_only": true,
+    "next_step": "Partner with clinical collaborators for real sample validation"
+  }
+}

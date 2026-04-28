@@ -1,0 +1,272 @@
+{
+  "metadata": {
+    "validation": "head_to_head_bie_2023",
+    "timestamp": "2026-04-28T08:45:50.777Z",
+    "n_patients": 2000,
+    "n_cancer": 1000,
+    "n_healthy": 1000,
+    "n_cancer_types": 7,
+    "cancer_types": [
+      "LUAD",
+      "COADREAD",
+      "BRCA",
+      "PRAD",
+      "STAD",
+      "LIHC",
+      "PAAD"
+    ],
+    "n_folds": 5,
+    "n_bootstrap": 2000
+  },
+  "comparison": {
+    "bie_4mod": {
+      "auc": 0.9668,
+      "auc_ci95": [
+        0.9592,
+        0.974
+      ],
+      "fusion": "simple_average",
+      "modalities": [
+        "MFR",
+        "FSI",
+        "CAFF",
+        "FEM"
+      ]
+    },
+    "deepcatch_4mod": {
+      "auc": 0.9673,
+      "auc_ci95": [
+        0.96,
+        0.9745
+      ],
+      "fusion": "performance_weighted",
+      "modalities": [
+        "MFR",
+        "FSI",
+        "CAFF",
+        "FEM"
+      ]
+    },
+    "bie_5mod": {
+      "auc": 0.9781,
+      "auc_ci95": [
+        0.9719,
+        0.9836
+      ],
+      "fusion": "simple_average",
+      "modalities": [
+        "MFR",
+        "FSI",
+        "CAFF",
+        "FEM",
+        "mtDNA"
+      ]
+    },
+    "deepcatch_5mod": {
+      "auc": 0.9783,
+      "auc_ci95": [
+        0.9721,
+        0.9837
+      ],
+      "fusion": "performance_weighted",
+      "modalities": [
+        "MFR",
+        "FSI",
+        "CAFF",
+        "FEM",
+        "mtDNA"
+      ]
+    }
+  },
+  "statistical_tests": {
+    "dc4_vs_bie4": {
+      "auc1_mean": 0.9669011882022123,
+      "auc2_mean": 0.9672711821307656,
+      "auc_delta": 0.00036999392855323093,
+      "p_value_one_sided": 0.9994,
+      "p_value_two_sided": 0.0012,
+      "significant_at_005": false
+    },
+    "dc5_vs_bie4": {
+      "auc1_mean": 0.9669423554789238,
+      "auc2_mean": 0.9783586048001783,
+      "auc_delta": 0.011416249321254509,
+      "p_value_one_sided": 1,
+      "p_value_two_sided": 0,
+      "significant_at_005": false
+    },
+    "dc5_vs_bie5": {
+      "auc1_mean": 0.9781140127049428,
+      "auc2_mean": 0.9783495067540583,
+      "auc_delta": 0.0002354940491155503,
+      "p_value_one_sided": 0.997,
+      "p_value_two_sided": 0.006,
+      "significant_at_005": false
+    }
+  },
+  "per_cancer_type": {
+    "bie_4mod": {
+      "Overall": {
+        "n_cancer": 1000,
+        "n_healthy": 1000,
+        "auc": 0.9669
+      },
+      "LUAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.777
+      },
+      "COADREAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.7293
+      },
+      "BRCA": {
+        "n_cancer": 150,
+        "n_healthy": 1000,
+        "auc": 0.7657
+      },
+      "PRAD": {
+        "n_cancer": 120,
+        "n_healthy": 1000,
+        "auc": 0.7369
+      },
+      "STAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7266
+      },
+      "LIHC": {
+        "n_cancer": 130,
+        "n_healthy": 1000,
+        "auc": 0.6726
+      },
+      "PAAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7006
+      }
+    },
+    "deepcatch_4mod": {
+      "Overall": {
+        "n_cancer": 1000,
+        "n_healthy": 1000,
+        "auc": 0.9673
+      },
+      "LUAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.777
+      },
+      "COADREAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.7293
+      },
+      "BRCA": {
+        "n_cancer": 150,
+        "n_healthy": 1000,
+        "auc": 0.7664
+      },
+      "PRAD": {
+        "n_cancer": 120,
+        "n_healthy": 1000,
+        "auc": 0.736
+      },
+      "STAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7264
+      },
+      "LIHC": {
+        "n_cancer": 130,
+        "n_healthy": 1000,
+        "auc": 0.6724
+      },
+      "PAAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7007
+      }
+    },
+    "deepcatch_5mod": {
+      "Overall": {
+        "n_cancer": 1000,
+        "n_healthy": 1000,
+        "auc": 0.9784
+      },
+      "LUAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.78
+      },
+      "COADREAD": {
+        "n_cancer": 200,
+        "n_healthy": 1000,
+        "auc": 0.7352
+      },
+      "BRCA": {
+        "n_cancer": 150,
+        "n_healthy": 1000,
+        "auc": 0.7547
+      },
+      "PRAD": {
+        "n_cancer": 120,
+        "n_healthy": 1000,
+        "auc": 0.7549
+      },
+      "STAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7355
+      },
+      "LIHC": {
+        "n_cancer": 130,
+        "n_healthy": 1000,
+        "auc": 0.6829
+      },
+      "PAAD": {
+        "n_cancer": 100,
+        "n_healthy": 1000,
+        "auc": 0.7275
+      }
+    }
+  },
+  "fold_results": {
+    "bie_4mod_aucs": [
+      0.9702313378238603,
+      0.9672849240319391,
+      0.9523070763687319,
+      0.9747690921378689,
+      0.9701237729406743
+    ],
+    "deepcatch_4mod_aucs": [
+      0.9704331592623426,
+      0.967710445295487,
+      0.9528075267740966,
+      0.9755700733398414,
+      0.9706007883306972
+    ],
+    "bie_5mod_aucs": [
+      0.9820631196548854,
+      0.9788741207979775,
+      0.9725002502252027,
+      0.980501113864484,
+      0.9761241244256986
+    ],
+    "deepcatch_5mod_aucs": [
+      0.9823658518126088,
+      0.9788490901354159,
+      0.9728755880292264,
+      0.980776451152662,
+      0.9760237001330622
+    ]
+  },
+  "verdict": {
+    "deepcatch_better_4mod": true,
+    "deepcatch_better_5mod": true,
+    "significant_improvement": false,
+    "best_method": "DeepCatch (5 modalities)",
+    "note": "Fair comparison on identical data. DeepCatch uses performance-weighted fusion vs Bie's simple average."
+  }
+}

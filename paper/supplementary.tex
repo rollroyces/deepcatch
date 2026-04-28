@@ -1,0 +1,211 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{\textbf{DeepCatch: Supplementary Information}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\newpage
+
+\section{Supplementary Figures}
+
+\subsection*{Figure S1: Per-Base Error Rate Distributions}
+\textbf{Description:} Distribution of estimated per-position sequencing error rates across 100,000 genomic positions. Panel A: Histogram of Beta-Binomial posterior mean error rates (log scale), showing the heavy-tailed distribution with most positions below $10^{-4}$ and a long tail extending to $10^{-2}$. Panel B: Error rates stratified by trinucleotide context (96 categories), demonstrating the sequence-dependent nature of sequencing errors. Panel C: Correlation between forward-strand and reverse-strand error rates per position. These distributions inform the Bayesian prior for the variant caller.
+
+\subsection*{Figure S2: Contrastive Embedding Visualization}
+\textbf{Description:} t-SNE projection of the 128-dimensional contrastive embedding space for 1,000 candidate variants (500 true positives, 500 false positives). True variants from the same patient (same color) cluster together in the embedding space, while false positives from different patients are interspersed. Silhouette score: 0.31 (patient-level), 0.18 (variant-level). The embedding reveals that the contrastive model learns patient-specific features beyond simple VAF thresholds.
+
+\subsection*{Figure S3: ROC Curves for All Single-Modality and Fusion Models}
+\textbf{Description:} Overlaid ROC curves for 9 models: 6 single-modality baselines (variants, methylation, fragmentomics, copy number, CTC, miRNA) and 3 fusion approaches (late fusion, cross-attention, GNN heterogeneous). AUC values are annotated. The GNN curve (AUC 0.692) consistently dominates across most operating points but crosses the CTC curve at high-specificity regions ($\geq$95\%), where the CTC-only model achieves higher sensitivity. Inset: zoom on 0.95--1.00 specificity region.
+
+\subsection*{Figure S4: Calibration Curves}
+\textbf{Description:} Reliability diagrams comparing Platt scaling vs. isotonic regression calibration. Panel A: Raw (uncalibrated) scores from the stacked ensemble. Panel B: Platt-scaled probabilities (ECE = $6.0 \times 10^{-4}$). Panel C: Isotonic-regression-calibrated probabilities (ECE = $5.5 \times 10^{-5}$). Both methods substantially improve calibration over raw scores, but isotonic regression achieves marginally lower ECE and guarantees monotonicity—critical for clinical risk communication where higher scores must always correspond to higher risk.
+
+\subsection*{Figure S5: Ensemble Sensitivity vs. Inter-Detector Correlation}
+\textbf{Description:} Sensitivity of the stacked ensemble as a function of inter-detector correlation $\rho$, at fixed 95\% specificity. Blue line: ensemble sensitivity (mean $\pm$ 95\% CI from 500 bootstrap samples). Red dashed line: best individual detector sensitivity. Green shaded region: ensemble gain (positive when ensemble > best individual). At $\rho > 0.5$, ensemble performance degrades below the best individual detector. Inset formula: $\text{Var}_{\text{ensemble}} = \sigma^2(\rho + (1-\rho)/n)$.
+
+\subsection*{Figure S6: Detector Count Scaling}
+\textbf{Description:} Ensemble sensitivity vs. number of detectors at $\rho = 0.3$ and $\rho = 0.6$. Sensitivity saturates after 5--7 detectors at $\rho = 0.3$ but continues to improve slowly up to 20 detectors. Dashed horizontal line: theoretical asymptotic limit $1/\sqrt{\rho}$. Error bars represent 95\% confidence intervals from 100 bootstrap resamples. The diminishing marginal return per additional detector illustrates the economic trade-off in test panel design.
+
+\subsection*{Figure S7: CET Score Trajectories}
+\textbf{Description:} Representative CET score trajectories over 730 days for three patient archetypes. Panel A: Healthy patient—CET score oscillates near zero with no systematic trend. Panel B: Cancer patient (200-day doubling time)—CET score begins accumulating after day 180, crosses the detection threshold at day 306 (highlighted with red star). Panel C: Benign condition—transient spike at day 270 temporarily elevates CET score, but score returns to baseline as subsequent measurements are stable. The streak bonus and trend bonus mechanisms prevent flagging single-spike benign conditions.
+
+\subsection*{Figure S8: Detection Time by Tumor Doubling Time}
+\textbf{Description:} CET detection time as a function of tumor doubling time (50--500 days). Panel A: Scatter plot of individual patient detection times with LOESS smoothing. Faster-growing tumors (shorter doubling time) are detected earlier. Panel B: Kaplan-Meier-style curve of cumulative detection probability over time, stratified by doubling time quartile. Median detection times: 180 days (doubling time $<$ 150 days), 306 days (150--250 days), 520 days (250--400 days), $>$730 days (not detected within study window for doubling time $>$ 400 days).
+
+\subsection*{Figure S9: MAML Few-Shot Adaptation}
+\textbf{Description:} Balanced accuracy on held-out ovarian cancer subtype as a function of the number of adaptation examples (1, 3, 5, 10). MAML-adapted model (blue) achieves $>$99\% balanced accuracy even with 1-shot adaptation. Random initialization (red) requires $>$50 examples to reach comparable performance. Standard transfer learning with frozen feature extractor (green) achieves intermediate performance. MAML benefit is largest in the extreme low-data regime ($\leq$5 examples), precisely the clinical scenario for rare cancer subtypes.
+
+\subsection*{Figure S10: Risk Score Distributions by Tier}
+\textbf{Description:} Histogram of ensemble risk scores on a screening population of 100,000 individuals (prevalence 1:10,000). Panel A: Log-scale histogram showing the extreme right-skew of risk scores—most individuals have scores near zero. Panel B: Zoom of the top 5\% tail with overlaid cancer cases (red ticks). Vertical dashed lines indicate tier boundaries at the 90th, 97.5th, and 99.7th percentiles. Tier 4 (highest risk, top 0.3\%) captures 40\% of all cancer cases despite comprising only 0.3\% of the screened population.
+
+\newpage
+
+\section{Supplementary Tables}
+
+\subsection*{Table S1: Full Per-VAF Variant Calling Confusion Matrices}
+\textbf{Description:} For each VAF level ($5\times10^{-5}$ to 0.01) and each caller (SimpleVAF, MuTect2-like, VarDict-like, UMI Simple, Fisher Exact, Bayesian, Contrastive, Ensemble), report: TP, FP, FN, TN, sensitivity, specificity, precision, F1, and MCC. This table provides the raw counts underlying the summary in Main Table 1.
+
+\subsection*{Table S2: Per-Modality Encoder Architecture Details}
+\textbf{Description:} For each of the 6 modality encoders, report: input dimensions, hidden layer sizes, activation functions, dropout rates, batch normalization configuration, output dimension (all 96), and total parameter count. Also include the training hyperparameters used: learning rate, batch size, optimizer, weight decay, and number of training epochs.
+
+\subsection*{Table S3: Heterogeneous GNN Edge Types}
+\textbf{Description:} For each of the 9 edge types: source node type, target node type, edge density (fraction of possible edges present), biological rationale, and whether the edge direction is symmetric or directed. Also report the sparsity patterns (e.g., variant-CpG edges exist only when the variant locus is within 5 kb of the CpG site).
+
+\subsection*{Table S4: CET Hyperparameter Sensitivity Analysis}
+\textbf{Description:} Grid search results for CET hyperparameters: streak length threshold (2, 3, 4, 5), streak bonus weight $\beta_s$ (0.5, 1.0, 1.5, 2.0, 3.0), trend bonus weight $\beta_t$ (0.5, 1.0, 2.0, 3.0, 4.0), and detection threshold $\tau$ (varying to achieve 95\%, 99\%, 99.5\%, 99.9\% specificity). Report sensitivity, mean detection time, and mean measurements needed for each hyperparameter combination. Sensitivity is most sensitive to $\tau$ (calibrated to target specificity); $\beta_s$ and $\beta_t$ primarily affect detection speed.
+
+\subsection*{Table S5: Ensemble Weight Stability}
+\textbf{Description:} Ensemble weights (mean $\pm$ SD) for each detector across 10 random seeds, demonstrating stability of the learned weight distribution. The dominant detector weights (variant calling, fragmentomics, methylation) are consistent across seeds while the lower-weighted detectors (multi-modal fusion, longitudinal) show greater variability, reflecting their more limited contribution to the ensemble.
+
+\subsection*{Table S6: Cost-Effectiveness Model Parameters}
+\textbf{Description:} Parameters used in the cost-effectiveness analysis: cost per liquid biopsy (\$200--500), cost per Tier 2 follow-up (\$500--1,000), cost per diagnostic imaging (\$2,000--5,000), cost per invasive diagnostic (\$10,000--20,000), cost of false positive cascade (\$5,000--10,000), societal cost of missed cancer (\$200,000--500,000), cancer prevalence (1:10,000 for general population, 1:100 for high-risk cohorts), screening interval (quarterly vs. annual), and target population size. Sensitivity analysis across all parameters with tornado plot.
+
+\newpage
+
+\section{Supplementary Notes}
+
+\subsection*{Supplementary Note 1: CET Sequential Testing Derivations}
+
+\textbf{CET Score Decomposition.} The Cumulative Evidence Tracker score at time $t$ is:
+
+\begin{equation}
+S_t = \underbrace{\sum_{i: t_i \leq t} \log \frac{P(m_i \mid \lambda_{\text{grow}}(t_i))}{P(m_i \mid \lambda_{\text{stable}})}}_{\text{Sequential Probability Ratio}} + \underbrace{\beta_s \cdot \mathbb{I}(C_t \geq 3)}_{\text{Streak Bonus}} + \underbrace{\beta_t \cdot \hat{\beta}_{\text{log-linear}}}_{\text{Trend Bonus}}
+\end{equation}
+
+\textbf{Sequential Probability Ratio.} Under the Poisson model, the per-measurement log-likelihood ratio is:
+
+\begin{align}
+\text{LLR}_i &= \log \frac{\text{Poisson}(m_i \mid \lambda_{\text{grow}}(t_i) \cdot d_i)}{\text{Poisson}(m_i \mid \lambda_{\text{stable}} \cdot d_i)} \\
+&= m_i \log \frac{\lambda_{\text{grow}}(t_i)}{\lambda_{\text{stable}}} - d_i(\lambda_{\text{grow}}(t_i) - \lambda_{\text{stable}})
+\end{align}
+
+where $\lambda_{\text{grow}}(t) = \text{VAF}_{\text{est}}(t)$ is the estimated ctDNA fraction under the growing model, and $\lambda_{\text{stable}} = \bar{\text{VAF}}_{\text{baseline}}$ is the mean baseline VAF estimated from healthy controls.
+
+\textbf{Stopping Rule.} Detection is declared when $S_t > \tau$ for the first time. By Wald's approximation, the threshold $\tau$ is related to the target error rates:
+
+\begin{equation}
+\tau \approx \log \frac{1 - \beta}{\alpha}
+\end{equation}
+
+where $\alpha$ is the target false positive rate and $\beta$ is the target false negative rate. For $\alpha = 5 \times 10^{-4}$ (specificity 99.95\%) and $\beta = 10^{-4}$ (sensitivity 99.99\%), $\tau \approx \log(0.9999 / 0.0005) \approx 7.6$.
+
+\textbf{Streak Bonus.} The streak counter $C_t$ increments when the observed VAF exceeds the baseline by more than one standard deviation and resets to zero otherwise. The bonus is applied only when $C_t \geq 3$, preventing single-spike benign conditions from triggering detection. This mechanism is motivated by the observation that true tumor growth produces sustained upward trends while benign conditions typically produce isolated spikes.
+
+\textbf{Trend Bonus.} The log-linear trend $\hat{\beta}_{\text{log-linear}}$ is estimated by ordinary least squares regression of $\log(\text{VAF}_i)$ on $t_i$ using the most recent $k = 4$ measurements. The bonus is proportional to the slope, rewarding consistent exponential growth patterns characteristic of preclinical tumor expansion.
+
+\subsection*{Supplementary Note 2: Poisson-Gamma BOCD Derivations}
+
+\textbf{Run-Length Posterior.} The run-length $r_t$ represents the number of time steps since the most recent changepoint. The posterior is updated recursively:
+
+\begin{equation}
+P(r_t \mid m_{1:t}) \propto P(m_t \mid r_t, m_{1:t-1}) \cdot P(r_t \mid r_{t-1}) \cdot P(r_{t-1} \mid m_{1:t-1})
+\end{equation}
+
+\textbf{Changepoint Prior.} The conditional prior over run-lengths is:
+
+\begin{equation}
+P(r_t \mid r_{t-1}) = \begin{cases}
+H(r_{t-1} + 1) & \text{if } r_t = 0 \text{ (changepoint)} \\
+1 - H(r_{t-1} + 1) & \text{if } r_t = r_{t-1} + 1 \text{ (no changepoint)} \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+where $H(\tau) = 0.01$ is the constant hazard function (geometric distribution over run-lengths).
+
+\textbf{Predictive Distribution.} Under the Poisson-Gamma model, given run-length $r_t$, the data from the most recent $r_t$ time steps follow:
+
+\begin{align}
+m_{t-r_t+1}, \ldots, m_t &\sim \text{Poisson}(\lambda_{r_t} \cdot d_i) \\
+\lambda_{r_t} &\sim \text{Gamma}(\alpha_0, \beta_0)
+\end{align}
+
+The posterior over $\lambda_{r_t}$ given the run-length is:
+
+\begin{align}
+\lambda_{r_t} \mid r_t, m_{t-r_t+1:t} &\sim \text{Gamma}\left(\alpha_0 + \sum_{i} m_i, \beta_0 + \sum_{i} d_i\right)
+\end{align}
+
+The predictive distribution for a new observation is:
+
+\begin{equation}
+P(m_t \mid r_t, m_{t-r_t+1:t-1}) = \text{NegativeBinomial}\left(m_t \mid r = \alpha_{\text{post}}, p = \frac{\beta_{\text{post}}}{\beta_{\text{post}} + d_t}\right)
+\end{equation}
+
+\textbf{Time-Increasing Rate.} The standard Poisson-Gamma BOCD assumes a constant rate within each segment. We extend this to capture tumor growth by replacing the constant rate with a time-dependent rate:
+
+\begin{equation}
+\lambda_{r_t}(t) = \lambda_0 \cdot \exp(\gamma t)
+\end{equation}
+
+where $\gamma$ is a fixed growth parameter estimated from tumor growth models. This modification allows the model to detect not only changepoints from stable to growing, but also the continuous acceleration characteristic of exponential tumor growth.
+
+\subsection*{Supplementary Note 3: Latent Factor Model for Synthetic Data}
+
+\textbf{Model Specification.} The multi-modal synthetic data generation model captures the key structural property that enables multi-modal fusion: conditional dependence between modalities given cancer status.
+
+\textbf{Latent Variables.} For each patient $i$:
+
+\begin{align}
+z_i^{\text{cancer}} &\sim \mathcal{N}(0.10, 1) \quad \text{if cancer} \\
+z_i^{\text{cancer}} &\sim \mathcal{N}(0, 1) \quad \text{if control}
+\end{align}
+
+For each modality $m \in \{1, \ldots, M\}$:
+
+\begin{align}
+s_i^m &= \alpha \cdot z_i^{\text{cancer}} + \sqrt{1-\alpha^2} \cdot \epsilon_i^m, \quad \epsilon_i^m \sim \mathcal{N}(0, 1) \\
+x_i^m &= f_m(s_i^m) + \eta_i^m, \quad \eta_i^m \sim \mathcal{N}(0, \sigma_m^2)
+\end{align}
+
+where $\alpha = 0.3$ controls the shared signal fraction, and $f_m$ is a modality-specific mapping.
+
+\textbf{Cross-Modality Correlation.} The Pearson correlation between modalities $m$ and $m'$ for cancer patients is:
+
+\begin{equation}
+\rho_{m,m'}^{\text{cancer}} = \alpha^2 \cdot \frac{\text{Var}[z^{\text{cancer}}]}{\sqrt{\text{Var}[s^m] \cdot \text{Var}[s^{m'}]}} = \frac{\alpha^2}{1} = 0.09
+\end{equation}
+
+This modest correlation (0.09) reflects the realistic scenario where different analytes capture partially overlapping but distinct aspects of tumor biology. For healthy controls, $\rho_{m,m'}^{\text{control}} = 0$ (each modality is independent noise).
+
+\textbf{Modality-Specific Mappings $f_m$:}
+\begin{itemize}
+\item \textbf{ctDNA Variants:} $f_{\text{var}}(s) = \text{Bernoulli}(\sigma(10s + b_{\text{pos}}))$ per position, where $b_{\text{pos}}$ encodes position-specific background mutation rates
+\item \textbf{Methylation:} $f_{\text{meth}}(s) = \text{Beta}(\alpha = 2 + s, \beta = 2 - s)$, generating realistic beta-distributed methylation values
+\item \textbf{Fragmentomics:} $f_{\text{frag}}(s) = \text{Dirichlet}(\pi_{\text{base}} + s \cdot \Delta\pi)$, where $\pi_{\text{base}}$ is the healthy fragment size profile and $\Delta\pi$ captures cancer-associated shifts toward shorter fragments
+\item \textbf{Copy Number:} $f_{\text{cn}}(s) = s \cdot \mathbf{w}_{\text{cn}} + \mathcal{N}(0, 0.01)$, where $\mathbf{w}_{\text{cn}}$ encodes cancer-type-specific copy number patterns
+\item \textbf{CTC Count:} $f_{\text{ctc}}(s) = \max(0, \text{Poisson}(\exp(s - 2)))$
+\item \textbf{miRNA:} $f_{\text{mirna}}(s) = s \cdot \mathbf{w}_{\text{mirna}} + \mathcal{N}(0, 0.1)$
+\end{itemize}
+
+\textbf{Identifiability.} The latent factor model is identifiable when $M \geq 3$ (at least three modalities). With fewer modalities, the shared factor $z$ cannot be distinguished from modality-specific noise. In our setting with $M = 6$, the model is well-identified.
+
+\newpage
+
+\section{Supplementary Methods}
+
+\subsection{Hyperparameter Tuning Protocol}
+
+All hyperparameters were selected via 5-fold cross-validation on the training set (420 patients) before evaluation on the held-out test set (90 patients). For the GNN: learning rate $\in [10^{-4}, 10^{-2}]$, weight decay $\in [10^{-5}, 10^{-3}]$, number of layers $\in \{1, 2, 3\}$, embedding dimension $\in \{32, 64, 96, 128\}$. For the temporal transformer: number of blocks $\in \{2, 4, 6\}$, attention heads $\in \{4, 8\}$, embedding dimension $\in \{32, 64, 96\}$. For the ensemble: regularization $C \in [10^{-3}, 10^{2}]$, class weight ratio $\in [10, 1000]$.
+
+\subsection{Computational Resources}
+
+All experiments were conducted on a single workstation with 8 CPU cores and 32 GB RAM. The GNN model trains in approximately 3 minutes on 420 patients. The temporal transformer trains in approximately 8 minutes. CET scoring on 3,000 patients with 8 timepoints takes approximately 2 seconds (pure NumPy implementation). The full analysis pipeline, including simulation, training, and evaluation for all components, completes in under 30 minutes.
+
+\subsection{Reproducibility}
+
+All random seeds are fixed (seed = 42) for NumPy and PyTorch. The synthetic data generator accepts a seed parameter for reproducible cohort generation. Pre-trained model weights and configuration files are available in the project repository.
+
+\end{document}

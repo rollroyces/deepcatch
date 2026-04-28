@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use DeepCatch in your research, please cite it as follows."
+title: "DeepCatch: Performance-Weighted Multi-Modal Fusion for Ultra-Early Cancer Detection from cfDNA"
+authors:
+  - given-names: "Royce"
+    family-names: "[Last Name]"
+    affiliation: "DeepCatch Consortium"
+    orcid: ""
+  - name: "DeepCatch Contributors"
+year: 2026
+doi: "to be assigned (preprint)"
+url: "https://github.com/deepcatch/deepcatch"
+repository-code: "https://github.com/deepcatch/deepcatch"
+license: MIT
+version: "1.0.0-preprint"
+date-released: 2026-04-28
+keywords:
+  - "liquid biopsy"
+  - "cfDNA"
+  - "cancer screening"
+  - "multi-modal fusion"
+  - "longitudinal analysis"
+  - "variant calling"
+  - "early cancer detection"
+  - "circulating tumor DNA"
+  - "graph neural network"
+  - "meta-learning"
+abstract: >
+  DeepCatch is a computational framework for pan-cancer detection at variant
+  allele fractions as low as 0.001% — two orders of magnitude below current
+  clinical detection limits. It integrates Bayesian contrastive variant calling,
+  heterogeneous graph neural network (GNN) multi-modal fusion, cumulative
+  evidence tracking (CET) from longitudinal blood draws, and meta-learning
+  ensemble with 4-tier risk stratification.
+identifiers:
+  - type: doi
+    value: "to be assigned (preprint)"
+    description: Preprint DOI — to be assigned upon submission

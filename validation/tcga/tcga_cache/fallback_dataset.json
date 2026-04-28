@@ -1,0 +1,2277 @@
+{
+  "ground_truth_variants": [
+    {
+      "sample_id": "LUAD_S0000",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 0,
+      "gene": "TP53",
+      "true_vaf": 0.1467541124707346,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0000",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 1000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.09247187129321045,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0001",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 2000,
+      "gene": "TP53",
+      "true_vaf": 0.09480857390895527,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0003",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 3000,
+      "gene": "TP53",
+      "true_vaf": 0.16337802143743457,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0003",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 4000,
+      "gene": "KRAS",
+      "true_vaf": 0.10340211771448708,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0004",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 5000,
+      "gene": "TP53",
+      "true_vaf": 0.10363847051987476,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0006",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 6000,
+      "gene": "KRAS",
+      "true_vaf": 0.1977976613554087,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0006",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 7000,
+      "gene": "EGFR",
+      "true_vaf": 0.14273233060443516,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0007",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 8000,
+      "gene": "TP53",
+      "true_vaf": 0.15131850736246186,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0008",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 9000,
+      "gene": "TP53",
+      "true_vaf": 0.14069202301498698,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0009",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 10000,
+      "gene": "APC",
+      "true_vaf": 0.10594611811188255,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0011",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 11000,
+      "gene": "TP53",
+      "true_vaf": 0.12522460171838817,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0011",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 12000,
+      "gene": "BRAF",
+      "true_vaf": 0.1325346316825143,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0011",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 13000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.10415835365211372,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0012",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 14000,
+      "gene": "TP53",
+      "true_vaf": 0.15585555494657366,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0012",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 15000,
+      "gene": "KRAS",
+      "true_vaf": 0.10763803437722268,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0013",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 16000,
+      "gene": "EGFR",
+      "true_vaf": 0.22595523876890405,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0014",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 17000,
+      "gene": "TP53",
+      "true_vaf": 0.25334647206645483,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0016",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 18000,
+      "gene": "KRAS",
+      "true_vaf": 0.2458135235119147,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0020",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 19000,
+      "gene": "TP53",
+      "true_vaf": 0.17674433095324807,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0020",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 20000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.26854722843212875,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0021",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 21000,
+      "gene": "TP53",
+      "true_vaf": 0.2942383342073725,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0022",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 22000,
+      "gene": "TP53",
+      "true_vaf": 0.2692029277503338,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0022",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 23000,
+      "gene": "KRAS",
+      "true_vaf": 0.24105075252635233,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0022",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 24000,
+      "gene": "CTNNB1",
+      "true_vaf": 0.294871063652227,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0023",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 25000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.2317469200367373,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0025",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 26000,
+      "gene": "KRAS",
+      "true_vaf": 0.24680351547696466,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0025",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 27000,
+      "gene": "EGFR",
+      "true_vaf": 0.27978450269254496,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0027",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 28000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.24578283081943803,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0029",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 29000,
+      "gene": "TP53",
+      "true_vaf": 0.28550138237145817,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0030",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 30000,
+      "gene": "TP53",
+      "true_vaf": 0.38472333996183916,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0031",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 31000,
+      "gene": "KRAS",
+      "true_vaf": 0.33697785329382995,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0031",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 32000,
+      "gene": "SMAD4",
+      "true_vaf": 0.28869780836042475,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0032",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 33000,
+      "gene": "KRAS",
+      "true_vaf": 0.20983649492071796,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0033",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 34000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.20076221140449593,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0033",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 35000,
+      "gene": "EGFR",
+      "true_vaf": 0.3361653284851258,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0034",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 36000,
+      "gene": "TP53",
+      "true_vaf": 0.327151885319073,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0036",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 37000,
+      "gene": "TP53",
+      "true_vaf": 0.35055934522000454,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0036",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 38000,
+      "gene": "BRAF",
+      "true_vaf": 0.33324472805318567,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0036",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 39000,
+      "gene": "APC",
+      "true_vaf": 0.37078767148172903,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0037",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 40000,
+      "gene": "TP53",
+      "true_vaf": 0.43291975412928474,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0037",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 41000,
+      "gene": "KRAS",
+      "true_vaf": 0.2728687304401234,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0037",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 42000,
+      "gene": "CTNNB1",
+      "true_vaf": 0.2171906487315585,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "LUAD_S0039",
+      "cancer_type": "LUAD",
+      "chrom": "chr1",
+      "pos": 43000,
+      "gene": "TP53",
+      "true_vaf": 0.19034430103094838,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0000",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 44000,
+      "gene": "KRAS",
+      "true_vaf": 0.07017805975892412,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0000",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 45000,
+      "gene": "APC",
+      "true_vaf": 0.11159486805111259,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0000",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 46000,
+      "gene": "CTNNB1",
+      "true_vaf": 0.0783943870437689,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0001",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 47000,
+      "gene": "BRAF",
+      "true_vaf": 0.13015124772960043,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0001",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 48000,
+      "gene": "APC",
+      "true_vaf": 0.0660467515622533,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0001",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 49000,
+      "gene": "FBXW7",
+      "true_vaf": 0.1378432633517302,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0003",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 50000,
+      "gene": "TP53",
+      "true_vaf": 0.08428704671533602,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0003",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 51000,
+      "gene": "APC",
+      "true_vaf": 0.14453005432314747,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0003",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 52000,
+      "gene": "PTEN",
+      "true_vaf": 0.12020732166428827,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0004",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 53000,
+      "gene": "TP53",
+      "true_vaf": 0.08298982953787659,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0004",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 54000,
+      "gene": "KRAS",
+      "true_vaf": 0.12759066136928093,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0004",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 55000,
+      "gene": "FBXW7",
+      "true_vaf": 0.1519383645308077,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0005",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 56000,
+      "gene": "EGFR",
+      "true_vaf": 0.09702023605174895,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0005",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 57000,
+      "gene": "NRAS",
+      "true_vaf": 0.09169824728298342,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0007",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 58000,
+      "gene": "KRAS",
+      "true_vaf": 0.09019982981858167,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0007",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 59000,
+      "gene": "EGFR",
+      "true_vaf": 0.14649317795681668,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0007",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 60000,
+      "gene": "FBXW7",
+      "true_vaf": 0.13082947683226107,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0008",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 61000,
+      "gene": "APC",
+      "true_vaf": 0.15676619563834215,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0009",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 62000,
+      "gene": "TP53",
+      "true_vaf": 0.1768694237371196,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0010",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 63000,
+      "gene": "TP53",
+      "true_vaf": 0.10239734370324562,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0010",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 64000,
+      "gene": "KRAS",
+      "true_vaf": 0.131824145800985,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0010",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 65000,
+      "gene": "PTEN",
+      "true_vaf": 0.2293879308568787,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0011",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 66000,
+      "gene": "TP53",
+      "true_vaf": 0.13439445081956752,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0011",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 67000,
+      "gene": "APC",
+      "true_vaf": 0.2379598697775785,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0012",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 68000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.17771186383784995,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0013",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 69000,
+      "gene": "TP53",
+      "true_vaf": 0.21583541764207229,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0014",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 70000,
+      "gene": "KRAS",
+      "true_vaf": 0.11500835638225908,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0014",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 71000,
+      "gene": "BRAF",
+      "true_vaf": 0.24448713641125122,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0014",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 72000,
+      "gene": "APC",
+      "true_vaf": 0.14448899640513493,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0014",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 73000,
+      "gene": "NRAS",
+      "true_vaf": 0.24021913059892033,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0015",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 74000,
+      "gene": "BRAF",
+      "true_vaf": 0.26207045677140667,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0015",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 75000,
+      "gene": "APC",
+      "true_vaf": 0.2543466295356637,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0016",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 76000,
+      "gene": "TP53",
+      "true_vaf": 0.1745328391849779,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0016",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 77000,
+      "gene": "APC",
+      "true_vaf": 0.12690764378792568,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0016",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 78000,
+      "gene": "SMAD4",
+      "true_vaf": 0.14590730031311175,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0017",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 79000,
+      "gene": "KRAS",
+      "true_vaf": 0.14672292090136785,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0017",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 80000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.14335169116819227,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0017",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 81000,
+      "gene": "APC",
+      "true_vaf": 0.2038103561094366,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0017",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 82000,
+      "gene": "SMAD4",
+      "true_vaf": 0.2169033915302996,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0018",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 83000,
+      "gene": "TP53",
+      "true_vaf": 0.2842519822990411,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0018",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 84000,
+      "gene": "APC",
+      "true_vaf": 0.19765470627605378,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0019",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 85000,
+      "gene": "BRAF",
+      "true_vaf": 0.2546912512810944,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0019",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 86000,
+      "gene": "APC",
+      "true_vaf": 0.1405906265673001,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0019",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 87000,
+      "gene": "CTNNB1",
+      "true_vaf": 0.12675111148272128,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0019",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 88000,
+      "gene": "SMAD4",
+      "true_vaf": 0.27220163702805267,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0020",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 89000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.15610006768749723,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0020",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 90000,
+      "gene": "APC",
+      "true_vaf": 0.1988773688920996,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0021",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 91000,
+      "gene": "APC",
+      "true_vaf": 0.2498019797914998,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0021",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 92000,
+      "gene": "SMAD4",
+      "true_vaf": 0.16071080104389665,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0022",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 93000,
+      "gene": "KRAS",
+      "true_vaf": 0.3112426749678292,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0022",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 94000,
+      "gene": "APC",
+      "true_vaf": 0.32538919859495374,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0023",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 95000,
+      "gene": "TP53",
+      "true_vaf": 0.2131501743624369,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0023",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 96000,
+      "gene": "KRAS",
+      "true_vaf": 0.2749419346130576,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0024",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 97000,
+      "gene": "TP53",
+      "true_vaf": 0.2950031190439229,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0024",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 98000,
+      "gene": "KRAS",
+      "true_vaf": 0.31547167335700377,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0024",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 99000,
+      "gene": "APC",
+      "true_vaf": 0.1558205178157259,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0024",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 100000,
+      "gene": "PTEN",
+      "true_vaf": 0.18915175131009956,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0026",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 101000,
+      "gene": "APC",
+      "true_vaf": 0.17278820627375371,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0026",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 102000,
+      "gene": "FBXW7",
+      "true_vaf": 0.3080550533653738,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0027",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 103000,
+      "gene": "TP53",
+      "true_vaf": 0.22631766183090504,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0028",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 104000,
+      "gene": "TP53",
+      "true_vaf": 0.32362928606031455,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0028",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 105000,
+      "gene": "APC",
+      "true_vaf": 0.3488536638597292,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0029",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 106000,
+      "gene": "TP53",
+      "true_vaf": 0.185896181180577,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0029",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 107000,
+      "gene": "KRAS",
+      "true_vaf": 0.36951476174104225,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0029",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 108000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.23910066089283583,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0030",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 109000,
+      "gene": "TP53",
+      "true_vaf": 0.20625384742808953,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0030",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 110000,
+      "gene": "KRAS",
+      "true_vaf": 0.3434724413145337,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0030",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 111000,
+      "gene": "APC",
+      "true_vaf": 0.3248537035147836,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0030",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 112000,
+      "gene": "SMAD4",
+      "true_vaf": 0.33984815571679106,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0031",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 113000,
+      "gene": "KRAS",
+      "true_vaf": 0.2558043340808776,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0031",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 114000,
+      "gene": "SMAD4",
+      "true_vaf": 0.3292899266999795,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0032",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 115000,
+      "gene": "KRAS",
+      "true_vaf": 0.21607351485231568,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0032",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 116000,
+      "gene": "BRAF",
+      "true_vaf": 0.23637698360195156,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0032",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 117000,
+      "gene": "APC",
+      "true_vaf": 0.3183431930353501,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0033",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 118000,
+      "gene": "TP53",
+      "true_vaf": 0.3937858188442939,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0034",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 119000,
+      "gene": "APC",
+      "true_vaf": 0.19127543567404345,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0035",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 120000,
+      "gene": "APC",
+      "true_vaf": 0.3722333258723571,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0036",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 121000,
+      "gene": "KRAS",
+      "true_vaf": 0.3057178949795347,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0036",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 122000,
+      "gene": "APC",
+      "true_vaf": 0.2723283439781646,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0037",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 123000,
+      "gene": "KRAS",
+      "true_vaf": 0.4468594326384897,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0037",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 124000,
+      "gene": "APC",
+      "true_vaf": 0.22032059687796798,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0038",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 125000,
+      "gene": "TP53",
+      "true_vaf": 0.33291231342029837,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0038",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 126000,
+      "gene": "APC",
+      "true_vaf": 0.1837605585077172,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0038",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 127000,
+      "gene": "PTEN",
+      "true_vaf": 0.32418201282347675,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0039",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 128000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.44503685390551145,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0039",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 129000,
+      "gene": "APC",
+      "true_vaf": 0.3165306330463388,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "COADREAD_S0039",
+      "cancer_type": "COADREAD",
+      "chrom": "chr1",
+      "pos": 130000,
+      "gene": "PTEN",
+      "true_vaf": 0.35924961001788835,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0000",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 131000,
+      "gene": "TP53",
+      "true_vaf": 0.13686735739159253,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0002",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 132000,
+      "gene": "TP53",
+      "true_vaf": 0.1469023026946955,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0004",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 133000,
+      "gene": "TP53",
+      "true_vaf": 0.09712652469090177,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0005",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 134000,
+      "gene": "TP53",
+      "true_vaf": 0.16204715075117943,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0005",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 135000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.08304902385530469,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0006",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 136000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.14897621558920973,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0008",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 137000,
+      "gene": "TP53",
+      "true_vaf": 0.20754393886345218,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0009",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 138000,
+      "gene": "TP53",
+      "true_vaf": 0.21723015024916378,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0010",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 139000,
+      "gene": "TP53",
+      "true_vaf": 0.20052608870701133,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0012",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 140000,
+      "gene": "TP53",
+      "true_vaf": 0.16232911826154628,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0014",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 141000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.12361261416914174,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0014",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 142000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.22605547877133056,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0015",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 143000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.20324155039041075,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0016",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 144000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.24485488833087957,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0018",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 145000,
+      "gene": "TP53",
+      "true_vaf": 0.2142960667262325,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0018",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 146000,
+      "gene": "CDKN2A",
+      "true_vaf": 0.2242146918917168,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0019",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 147000,
+      "gene": "TP53",
+      "true_vaf": 0.282801060997467,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0021",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 148000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.16947307026986594,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0022",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 149000,
+      "gene": "PTEN",
+      "true_vaf": 0.16521438473367306,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0023",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 150000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.3142510253762922,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0023",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 151000,
+      "gene": "PTEN",
+      "true_vaf": 0.28574811249242604,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0026",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 152000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.28250029356027556,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0027",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 153000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.17119809912971692,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0030",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 154000,
+      "gene": "TP53",
+      "true_vaf": 0.31084865409123724,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0035",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 155000,
+      "gene": "TP53",
+      "true_vaf": 0.25841678213983343,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0035",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 156000,
+      "gene": "PTEN",
+      "true_vaf": 0.43274648360759865,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0036",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 157000,
+      "gene": "TP53",
+      "true_vaf": 0.21849823460016154,
+      "is_true_variant": true
+    },
+    {
+      "sample_id": "BRCA_S0036",
+      "cancer_type": "BRCA",
+      "chrom": "chr1",
+      "pos": 158000,
+      "gene": "PIK3CA",
+      "true_vaf": 0.32537989762318853,
+      "is_true_variant": true
+    }
+  ],
+  "sample_metadata": [
+    {
+      "sample_id": "LUAD_S0000",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.3,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0001",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.31625,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0002",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.3325,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0003",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.34875,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0004",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.365,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0005",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.38125,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0006",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.39749999999999996,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0007",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.41374999999999995,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0008",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.43,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0009",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.44625000000000004,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0010",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.4625,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0011",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.47875,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "LUAD_S0012",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.495,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0013",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.51125,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0014",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5275,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0015",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.54375,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0016",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.56,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0017",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5762499999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0018",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5925,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0019",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6087499999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0020",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.625,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0021",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6412500000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0022",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6575,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "LUAD_S0023",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.67375,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0024",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.69,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0025",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.70625,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0026",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7225,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0027",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.73875,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0028",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7549999999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0029",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.77125,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0030",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7875000000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0031",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.80375,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0032",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8200000000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0033",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8362499999999999,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "LUAD_S0034",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8525,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "LUAD_S0035",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8687499999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0036",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.885,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "LUAD_S0037",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9012500000000001,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "LUAD_S0038",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9175,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "LUAD_S0039",
+      "cancer_type": "LUAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9337500000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0000",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.3,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0001",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.31625,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0002",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.3325,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "COADREAD_S0003",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.34875,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0004",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.365,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0005",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.38125,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0006",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.39749999999999996,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "COADREAD_S0007",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.41374999999999995,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0008",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.43,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0009",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.44625000000000004,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0010",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.4625,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0011",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.47875,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0012",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.495,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0013",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.51125,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0014",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5275,
+      "n_mutations": 4
+    },
+    {
+      "sample_id": "COADREAD_S0015",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.54375,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0016",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.56,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0017",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5762499999999999,
+      "n_mutations": 4
+    },
+    {
+      "sample_id": "COADREAD_S0018",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.5925,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0019",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6087499999999999,
+      "n_mutations": 4
+    },
+    {
+      "sample_id": "COADREAD_S0020",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.625,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0021",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6412500000000001,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0022",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.6575,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0023",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.67375,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0024",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.69,
+      "n_mutations": 4
+    },
+    {
+      "sample_id": "COADREAD_S0025",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.70625,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "COADREAD_S0026",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7225,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0027",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.73875,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0028",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7549999999999999,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0029",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.77125,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0030",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.7875000000000001,
+      "n_mutations": 4
+    },
+    {
+      "sample_id": "COADREAD_S0031",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.80375,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0032",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8200000000000001,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0033",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8362499999999999,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0034",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8525,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0035",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.8687499999999999,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "COADREAD_S0036",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.885,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0037",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9012500000000001,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "COADREAD_S0038",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9175,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "COADREAD_S0039",
+      "cancer_type": "COADREAD",
+      "is_cancer": true,
+      "tumor_purity": 0.9337500000000001,
+      "n_mutations": 3
+    },
+    {
+      "sample_id": "BRCA_S0000",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.3,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0001",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.31625,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0002",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.3325,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0003",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.34875,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0004",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.365,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0005",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.38125,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0006",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.39749999999999996,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0007",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.41374999999999995,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0008",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.43,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0009",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.44625000000000004,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0010",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.4625,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0011",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.47875,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0012",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.495,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0013",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.51125,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0014",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.5275,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0015",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.54375,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0016",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.56,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0017",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.5762499999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0018",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.5925,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0019",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.6087499999999999,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0020",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.625,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0021",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.6412500000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0022",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.6575,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0023",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.67375,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0024",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.69,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0025",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.70625,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0026",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.7225,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0027",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.73875,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0028",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.7549999999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0029",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.77125,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0030",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.7875000000000001,
+      "n_mutations": 1
+    },
+    {
+      "sample_id": "BRCA_S0031",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.80375,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0032",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.8200000000000001,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0033",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.8362499999999999,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0034",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.8525,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0035",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.8687499999999999,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0036",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.885,
+      "n_mutations": 2
+    },
+    {
+      "sample_id": "BRCA_S0037",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.9012500000000001,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0038",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.9175,
+      "n_mutations": 0
+    },
+    {
+      "sample_id": "BRCA_S0039",
+      "cancer_type": "BRCA",
+      "is_cancer": true,
+      "tumor_purity": 0.9337500000000001,
+      "n_mutations": 0
+    }
+  ]
+}
