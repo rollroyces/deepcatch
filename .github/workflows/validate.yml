@@ -55,12 +55,12 @@ jobs:
 
           def test_cet():
             cet=run_cet_validation()
-            print(f"  AUC={cet['auc']:.4f}  Sens={cet['sensitivity']*100:.1f}%  Spec={cet['specificity']*100:.1f}%")
-            print(f"  Dual target (S>=70+Sp>=95): {'✅ MET' if cet['sensitivity']>=0.7 and cet['specificity']>=0.95 else 'NOT MET'}")
+            print(f"  AUC={cet["performance"]["auc"]:.4f}  Sens={cet["performance"]["sensitivity"]*100:.1f}%  Spec={cet["performance"]["specificity_overall"]*100:.1f}%")
+            print(f"  Dual target (S>=70+Sp>=95): {'✅ MET' if cet["performance"]["sensitivity"]>=0.7 and cet["performance"]["specificity_overall"]>=0.95 else 'NOT MET'}")
 
           def test_h2h():
             tcga=load_tcga_data()
-            h2h=run_head_to_head(tcga,ctdna_levels=config.CTDNA_LEVELS[:3],n_folds=5)
+            h2h=run_head_to_head({"data": tcga}, n_folds=5)
             for ct,rx in h2h.items():
               dd=rx['dc_multimodal']['auc']-rx['bie_themis']['auc']; pv=rx.get('delong_p',1)
               print(f"  ctDNA {ct*100:.1f}%: DC={rx['dc_multimodal']['auc']:.4f}  Bie={rx['bie_themis']['auc']:.4f}  D={dd:+.4f}  p={pv:.4f}  {'⭐' if pv<0.05 else ''}")
