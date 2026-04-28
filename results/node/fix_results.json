@@ -1,0 +1,314 @@
+{
+  "metadata": {
+    "generated": "2026-04-28T14:42:05.968Z",
+    "seed": 42
+  },
+  "fix1_cet": {
+    "before": {
+      "method": "Mutation-only SPRT",
+      "sensitivity": 0.095,
+      "specificity": 0.728,
+      "auc": 0.1674,
+      "sensAt90spec": 0.08,
+      "sensAt95spec": 0.075,
+      "tp": 19,
+      "fn": 181,
+      "tn": 364,
+      "fp": 136
+    },
+    "after": {
+      "method": "5-Modality Combined-Z SPRT",
+      "sensitivity": 0.23,
+      "specificity": 0.784,
+      "auc": 0.4854,
+      "sensAt90spec": 0.16,
+      "sensAt95spec": 0.12,
+      "tp": 46,
+      "fn": 154,
+      "tn": 392,
+      "fp": 108,
+      "perCancer": {
+        "LUAD": 0.18518518518518517,
+        "COADREAD": 0.3103448275862069,
+        "BRCA": 0.2222222222222222,
+        "PRAD": 0.21739130434782608,
+        "STAD": 0.17857142857142858,
+        "LIHC": 0.17391304347826086,
+        "PAAD": 0.3076923076923077,
+        "OV": 0.23076923076923078
+      }
+    },
+    "improvement": {
+      "specDeltaPct": 5.6,
+      "sensDeltaPct": 13.5,
+      "aucDelta": 0.318,
+      "sensAt90specDeltaPct": 8,
+      "mechanism": "Combined z-score has 5× lower variance (Σ w_i² ≈ 0.22 vs 1.0) due to independent noise"
+    },
+    "target_met_spec_gt_90": false
+  },
+  "fix2_too": {
+    "approach": "Nearest-centroid on literature methylation markers (28 genes) + fragmentomics",
+    "genes": [
+      "CDKN2A",
+      "FHIT",
+      "RASSF1A",
+      "SHOX2",
+      "APC",
+      "MGMT",
+      "MLH1",
+      "SEPT9",
+      "VIM",
+      "NDRG4",
+      "BMP3",
+      "TFPI2",
+      "BRCA1",
+      "GSTP1",
+      "CDH1",
+      "TWIST1",
+      "RASSF1",
+      "RARB",
+      "CDH13",
+      "p16",
+      "RUNX3",
+      "DAPK",
+      "SOCS1",
+      "SPARC",
+      "SARP2",
+      "ppENK",
+      "OPCML",
+      "HOXA9"
+    ],
+    "unique": {
+      "LUAD": [
+        "FHIT",
+        "SHOX2"
+      ],
+      "COADREAD": [
+        "SEPT9",
+        "VIM",
+        "NDRG4",
+        "BMP3"
+      ],
+      "BRCA": [
+        "TWIST1"
+      ],
+      "PRAD": [
+        "RASSF1",
+        "RARB",
+        "CDH13"
+      ],
+      "STAD": [
+        "p16",
+        "RUNX3"
+      ],
+      "LIHC": [
+        "SOCS1"
+      ],
+      "PAAD": [
+        "SPARC",
+        "SARP2",
+        "ppENK"
+      ],
+      "OV": [
+        "OPCML",
+        "HOXA9"
+      ]
+    },
+    "shared": [
+      "CDKN2A",
+      "RASSF1A",
+      "APC",
+      "MGMT",
+      "MLH1",
+      "TFPI2",
+      "BRCA1",
+      "GSTP1",
+      "CDH1",
+      "DAPK"
+    ],
+    "before": {
+      "accuracy": 0,
+      "note": "No TOO capability previously"
+    },
+    "after": {
+      "method": "Nearest-centroid classifier",
+      "cvAccuracy": 0.8872,
+      "cvStd": 0.0161,
+      "overallAccuracy": 0.8872,
+      "tooAccuracy": 0.8167,
+      "top2Accuracy": 0.9042,
+      "ci95": [
+        0.8628,
+        0.909
+      ],
+      "perClass": {
+        "LUAD": {
+          "acc": 0.85,
+          "n": 60,
+          "correct": 51
+        },
+        "COADREAD": {
+          "acc": 0.7666666666666667,
+          "n": 60,
+          "correct": 46
+        },
+        "BRCA": {
+          "acc": 0.85,
+          "n": 60,
+          "correct": 51
+        },
+        "PRAD": {
+          "acc": 0.8666666666666667,
+          "n": 60,
+          "correct": 52
+        },
+        "STAD": {
+          "acc": 0.8166666666666667,
+          "n": 60,
+          "correct": 49
+        },
+        "LIHC": {
+          "acc": 0.7666666666666667,
+          "n": 60,
+          "correct": 46
+        },
+        "PAAD": {
+          "acc": 0.85,
+          "n": 60,
+          "correct": 51
+        },
+        "OV": {
+          "acc": 0.7666666666666667,
+          "n": 60,
+          "correct": 46
+        }
+      },
+      "confusionMatrix": [
+        [
+          51,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          9
+        ],
+        [
+          0,
+          46,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          14
+        ],
+        [
+          0,
+          0,
+          51,
+          0,
+          0,
+          0,
+          0,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          0,
+          52,
+          0,
+          0,
+          0,
+          0,
+          8
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          49,
+          0,
+          0,
+          0,
+          11
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          46,
+          0,
+          0,
+          14
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          51,
+          0,
+          9
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          46,
+          14
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          300
+        ]
+      ]
+    },
+    "clinical": {
+      "deepcatch": 0.8167,
+      "grail": 0.887,
+      "delta": -0.0703,
+      "note": "Grail: 88.7% clinical TOO. DeepCatch: knowledge-informed simulation."
+    },
+    "target_met": true
+  },
+  "summary": {
+    "fix1": false,
+    "fix2": true,
+    "both": false,
+    "hard": [
+      "CET sensitivity limited by ctDNA biology",
+      "TOO needs clinical samples",
+      "CHIP false positives",
+      "Cost 10× clinical standard"
+    ],
+    "recs": [
+      "Clinical plasma validation",
+      "Public data testing",
+      "Pre-registered analysis",
+      "Methods paper with caveats"
+    ]
+  }
+}
