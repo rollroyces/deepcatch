@@ -12,7 +12,7 @@ jobs:
         with: {python-version: '3.11'}
       - run: pip install -q numpy scipy scikit-learn pandas
 
-      - name: Import + Fusion + Stats + CET + H2H
+      - name: Run all tests
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python3 << 'PYEOF'
           import numpy as np; np.random.seed(42)
@@ -24,41 +24,41 @@ jobs:
           from validation.py.head_to_head import run_head_to_head
           print("✅ ALL modules imported")
 
-          # --- FUSION ---
-          n=1000; nc=300; labels=np.zeros(n); labels[:nc]=1; np.random.shuffle(labels)
-          true_aucs=[0.82,0.55,0.65,0.78,0.88]
-          scores=[np.array([1/(1+np.exp(-(labels[i]*a+np.random.normal(0,0.3)-0.5)*4)) for i in range(n)]) for a in true_aucs]
+          # --- FUSION (fixed score gen) ---
+          n=2000; nc=600
+          labels=np.zeros(n); labels[:nc]=1; np.random.shuffle(labels)
+          scores=[0.5+0.3*(labels*2-1)*a+np.random.normal(0,0.2,n) for a in [0.7,0.4,0.55,0.65,0.75]]
+          scores=[np.clip(s,0,1) for s in scores]
           avg=simple_average_fusion(scores); avg_auc=compute_auc(labels,avg)
           r=performance_weighted_fusion(scores,[labels]*len(scores))
-          wtd=r['fused_scores']; w=sorted(zip(true_aucs,r['weights']),reverse=True)
-          wtd_auc=compute_auc(labels,wtd)
+          wtd=r['fused_scores']; wtd_auc=compute_auc(labels,wtd)
           d=delong_test(labels,avg,wtd)
           print(f"\n=== FUSION ===")
           print(f"Simple avg: AUC={avg_auc:.4f}  Weighted: AUC={wtd_auc:.4f}  D={d['delta_auc']:+.4f} p={d['p_value']:.4f} {'✅ SIG' if d['significant'] else 'NS'}")
-          print(f"Weights: {[f'{x[1]:.3f}' for x in w]}")
+          print(f"Weights: {[f'{w:.3f}' for w in r['weights']]}")
 
           # --- STATS ---
-          n2=500; y2=np.random.binomial(1,0.3,n2); s2=y2*0.8+np.random.normal(0,0.3,n2)
-          ci=bootstrap_ci(y2,(s2>0.5).astype(int),s2,n_bootstrap=1000)
+          n2=500; y2=np.random.binomial(1,0.3,n2); s2=y2*0.7+np.random.normal(0,0.25,n2)
+          ci=bootstrap_ci(y2,s2,n_bootstrap=1000)
           sens=sensitivity_at_specificity(y2,s2,0.99)
           pc=bonferroni_correct([0.001,0.01,0.04,0.08,0.15])
           print(f"\n=== STATS ===")
-          print(f"AUC CI95: [{ci['auc'][0]:.4f},{ci['auc'][1]:.4f}] Sens@99%:{sens:.4f}")
+          print(f"AUC CI95: [{ci['lo']:.4f},{ci['hi']:.4f}] Sens@99%:{sens:.4f}")
           print(f"Bonferroni: {[f'{p:.4f}' for p in pc]}")
 
           # --- CET ---
           cet=run_cet_validation(n_patients=700,n_quarters=8,quick_mode=True)
           print(f"\n=== CET ===")
           print(f"AUC={cet['auc']:.4f} Sens={cet['sensitivity']*100:.1f}% Spec={cet['specificity']*100:.1f}%")
-          print(f"Dual target: {'MET' if cet['sensitivity']>=0.7 and cet['specificity']>=0.95 else 'NOT MET'}")
+          print(f"Dual target (S>=70%+Sp>=95%): {'✅ MET' if cet['sensitivity']>=0.7 and cet['specificity']>=0.95 else 'NOT MET'}")
 
           # --- H2H ---
           tcga=load_tcga_data()
           h2h=run_head_to_head(tcga,ctdna_levels=config.CTDNA_LEVELS[:3],n_folds=5,quick_mode=True)
           print(f"\n=== HEAD-TO-HEAD vs Bie ===")
           for ct,rx in h2h.items():
-            dd=rx['dc_multimodal']['auc']-rx['bie_themis']['auc']
-            print(f"  ctDNA {ct*100:.1f}%: DC={rx['dc_multimodal']['auc']:.4f} Bie={rx['bie_themis']['auc']:.4f} D={dd:+.4f} p={rx.get('delong_p',0):.4f} {'⭐' if rx.get('delong_p',1)<0.05 else ''}")
+            dd=rx['dc_multimodal']['auc']-rx['bie_themis']['auc']; pv=rx.get('delong_p',1)
+            print(f"  ctDNA {ct*100:.1f}%: DC={rx['dc_multimodal']['auc']:.4f} Bie={rx['bie_themis']['auc']:.4f} D={dd:+.4f} p={pv:.4f} {'⭐' if pv<0.05 else ''}")
 
           print("\n✅ ALL TESTS PASSED")
           PYEOF
