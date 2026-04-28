@@ -1,0 +1,14 @@
+================================================================
+DEEPCATCH — ABSTRACT (248 words)
+Target Journal: Bioinformatics (Oxford Academic)
+================================================================
+
+TITLE: DeepCatch: Performance-Weighted Multi-Modal Fusion with Cumulative Evidence Tracking for Pan-Cancer Detection from Cell-Free DNA
+
+ABSTRACT:
+
+Motivation: Liquid biopsy-based pan-cancer screening is fundamentally limited at ultra-low circulating tumor DNA (ctDNA) fractions (<0.1%), where Poisson sampling noise renders single-timepoint, single-modality detection unreliable. While multi-modal fusion and longitudinal evidence accumulation are complementary strategies, their combined potential has not been systematically evaluated under realistic biological confounders at pan-cancer scale.
+
+Results: We present DeepCatch, a computational framework integrating performance-weighted multi-modal fusion with Cumulative Evidence Tracking (CET) for pan-cancer detection from cell-free DNA. Using real mutation frequencies from COSMIC v99 and TCGA PanCancer Atlas across 20 cancer types, parameterized with 6 literature-derived confounders, DeepCatch achieves: (i) performance-weighted multi-modal fusion AUC of 0.961 with +0.104 statistically significant improvement over simple averaging (p < 0.0001, DeLong test); (ii) multi-modal CET improving sensitivity from 9.5% to 23.0% and specificity from 61.8% to 78.4% over single-modality tracking; (iii) tissue-of-origin prediction accuracy of 81.7% across 20 cancer types using methylation and fragmentomic features; (iv) overall pan-cancer AUC of 0.926 [0.922, 0.930]; and (v) cost-effective deployment at $74 per sample via 5,000× targeted capture sequencing. Methylation entropy achieves realistic AUC of 0.786 under standard clinical conditions after correcting for overfit simulation artifacts.
+
+Availability: Open-source at https://github.com/rollroyces/deepcatch under MIT license. Single-command reproducibility via RUN_ALL.sh. All results are simulation-based; no clinical samples were used.

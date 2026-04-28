@@ -1,0 +1,61 @@
+================================================================
+COVER LETTER
+================================================================
+
+Date: April 28, 2026
+
+To: The Editors
+Bioinformatics (Oxford Academic)
+
+Dear Editors,
+
+We are pleased to submit our manuscript entitled "DeepCatch: Performance-Weighted Multi-Modal Fusion with Cumulative Evidence Tracking for Pan-Cancer Detection from Cell-Free DNA" for consideration as an Original Article in the Computational Methods track of Bioinformatics.
+
+WHY BIOINFORMATICS?
+
+DeepCatch is a computational methods paper. Our primary contributions are algorithmic and statistical: (1) a performance-weighted multi-modal fusion strategy that statistically significantly outperforms simple averaging (ΔAUC = +0.104, p < 0.0001, DeLong test); (2) the first application of sequential probability ratio testing (SPRT) to multi-timepoint, multi-analyte cancer screening; and (3) what we believe is the first tissue-of-origin classifier demonstrated at 20-cancer-type scale from simulated methylation and fragmentomic features. We believe these contributions align with Bioinformatics' focus on novel computational methods for biological data analysis.
+
+WHAT IS NEW?
+
+- Performance-weighted fusion: Unlike Bie et al. (2023, Nature Communications) which uses simple score averaging, DeepCatch weights each of five modalities (mutations, methylation, fragmentomics, copy number, CTC count) by its independently measured AUC. This is a simple but previously unexploited principle that yields statistically significant improvement.
+
+- Multi-modal CET: Prior longitudinal cfDNA work (PanSeer, Chen et al. 2020) used single archived timepoints. DeepCatch models multi-timepoint trajectories with Gompertz growth, accumulating evidence across modalities via SPRT—demonstrating proof-of-concept even though clinical-grade sensitivity/specificity are not yet achieved.
+
+- Pan-cancer scale with honest confounders: 20 cancer types (up from 8 in prior drafts), 6 literature-parameterized biological confounders (CHIP, variable shedding, trinucleotide errors, etc.), and explicit correction of an overfit methylation entropy claim (AUC 1.000 → 0.786).
+
+- Cost-effective deployment: 5,000× targeted capture at $74/sample—matching clinical standard depth at research reagent cost.
+
+HONESTY ABOUT LIMITATIONS
+
+We want to be explicit: this is a simulation study. All results are derived from synthetic cohorts parameterized with real genomic frequencies from COSMIC v99 and TCGA PanCancer Atlas. No real patient plasma samples were used. We do not claim clinical utility—we claim a computational advance that requires prospective clinical validation. We believe honest simulation studies serve an important role in computational biology by exploring parameter spaces, developing methods, and identifying limitations before resources are committed to wet-lab work. Every table includes explicit caveats about the simulation-to-reality gap.
+
+POTENTIAL REVIEWERS
+
+We suggest the following reviewers with relevant expertise in liquid biopsy computational methods:
+1. Experts in multi-modal cfDNA analysis (THEMIS/Bie et al. 2023 group)
+2. Experts in cfDNA fragmentation analysis (DELFI/Cristiano et al. group)
+3. Experts in methylation-based cancer screening (GRAIL/CCGA group)
+4. Experts in ctDNA variant calling and error suppression (CAPP-Seq group)
+
+We would be happy to exclude any reviewers with whom there may be conflicts.
+
+DATA AND CODE AVAILABILITY
+
+- All source code: https://github.com/rollroyces/deepcatch (MIT license)
+- Reproducibility: single-command RUN_ALL.sh, seed=42, CI validation on every push
+- All real data sources are publicly available (COSMIC v99, TCGA PanCancer Atlas)
+- No protected health information
+
+COMPETING INTERESTS
+
+The authors declare no competing interests. This work received no specific funding.
+
+We confirm that this manuscript has not been published elsewhere and is not under consideration by another journal. All authors have approved the manuscript and agree with its submission to Bioinformatics.
+
+Thank you for your consideration.
+
+Sincerely,
+
+Royce [Full Name]
+Independent Researcher
+contact@deepcatch.org
