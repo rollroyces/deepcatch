@@ -55,8 +55,8 @@ jobs:
 
           def test_cet():
             cet=run_cet_validation()
-            print(f"  AUC={cet["performance"]["auc"]:.4f}  Sens={cet["performance"]["sensitivity"]*100:.1f}%  Spec={cet["performance"]["specificity_overall"]*100:.1f}%")
-            print(f"  Dual target (S>=70+Sp>=95): {'✅ MET' if cet["performance"]["sensitivity"]>=0.7 and cet["performance"]["specificity_overall"]>=0.95 else 'NOT MET'}")
+            print(f"  AUC={cet['performance']['auc']:.4f}  Sens={cet['performance']['sensitivity']*100:.1f}%  Spec={cet['performance']['specificity_overall']*100:.1f}%")
+            print(f"  Dual target (S>=70+Sp>=95): {'✅ MET' if cet['performance']['sensitivity']>=0.7 and cet['performance']['specificity_overall']>=0.95 else 'NOT MET'}")
 
           def test_h2h():
             tcga=load_tcga_data()
