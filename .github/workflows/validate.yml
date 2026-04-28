@@ -8,108 +8,80 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
       - name: Install dependencies
         run: pip install numpy scipy scikit-learn pandas
 
-      - name: Smoke test imports
+      - name: Import check
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python -c "
           from validation.py import config, statistical_tests, tcga_loader
           from validation.py import realistic_downsample, performance_weighted_fusion
-          from validation.py import head_to_head, cet_validation, too_validation
-          from validation.py import compare_published
+          from validation.py import head_to_head, cet_validation, too_validation, compare_published
           print('✅ ALL modules imported')
-          print(f'Config: CTDNA_LEVELS={config.CTDNA_LEVELS[:3]}... CANCER_TYPES={len(config.CANCER_TYPES)}')
           "
 
-      - name: Performance-weighted fusion test
+      - name: Fusion test
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python -c "
           import numpy as np; np.random.seed(42)
           from validation.py.performance_weighted_fusion import performance_weighted_fusion, simple_average_fusion
           from validation.py.statistical_tests import compute_auc, delong_test
-          
           n=1000; nc=300
           labels=np.zeros(n); labels[:nc]=1; np.random.shuffle(labels)
           true_aucs=[0.82,0.55,0.65,0.78,0.88]
-          scores=[]
-          for a in true_aucs:
-            s=np.array([1/(1+np.exp(-(labels[i]*a+np.random.normal(0,0.3)-0.5)*4)) for i in range(n)])
-            scores.append(s)
-          
-          avg=simple_average_fusion(scores); avg_auc=compute_auc(labels,avg)
-          wtd,weights=performance_weighted_fusion(scores,labels); wtd_auc=compute_auc(labels,wtd)
+          scores=[np.array([1/(1+np.exp(-(labels[i]*a+np.random.normal(0,0.3)-0.5)*4)) for i in range(n)]) for a in true_aucs]
+          avg=simple_average_fusion(scores)
+          avg_auc=compute_auc(labels,avg)
+          r=performance_weighted_fusion(scores,[labels]*len(scores))
+          wtd=r['fused_scores']; weights=r['weights']; wtd_auc=compute_auc(labels,wtd)
           delta,p,ci=delong_test(labels,avg,wtd)
-          
-          print('=== MULTI-MODAL FUSION ===')
-          print(f'Simple avg (Bie 2023): AUC={avg_auc:.4f}')
-          print(f'Weighted (DeepCatch):  AUC={wtd_auc:.4f}')
-          print(f'Delta: {delta:+.4f} (p={p:.4f}) {\"✅ SIG\" if p<0.05 else \"\"}')
-          print(f'Weights: {[f\"{w:.3f}\" for w in weights]}')
+          print(f'Simple avg (Bie): AUC={avg_auc:.4f}'); print(f'Weighted (DC): AUC={wtd_auc:.4f}')
+          print(f'Delta: {delta:+.4f} p={p:.4f} {\"✅ SIG\" if p<0.05 else \"NS\"}'); print(f'Weights: {[f\"{w:.3f}\" for w in weights]}')
           "
 
-      - name: Statistical tests validation
+      - name: Stats test
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python -c "
           import numpy as np; np.random.seed(42)
           from validation.py.statistical_tests import bootstrap_ci, sensitivity_at_specificity, bonferroni_correct
-          
           n=500; y=np.random.binomial(1,0.3,n); s=y*0.8+np.random.normal(0,0.3,n)
           ci=bootstrap_ci(y,(s>0.5).astype(int),s,n_bootstrap=1000)
           sens=sensitivity_at_specificity(y,s,0.99)
           pcorr=bonferroni_correct([0.001,0.01,0.04,0.08,0.15])
-          
-          print('=== STATISTICAL TESTS ===')
-          print(f'AUC CI95: [{ci[\"auc\"][0]:.4f}, {ci[\"auc\"][1]:.4f}]')
-          print(f'Sens@99%spec: {sens:.4f}')
+          print(f'AUC CI95: [{ci[\"auc\"][0]:.4f},{ci[\"auc\"][1]:.4f}]'); print(f'Sens@99%spec: {sens:.4f}')
           print(f'Bonferroni: {[f\"{p:.4f}\" for p in pcorr]}')
-          print('✅ Stats passed')
           "
 
-      - name: CET longitudinal test
+      - name: CET test
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python -c "
           import numpy as np; np.random.seed(42)
           from validation.py.cet_validation import run_cet_validation
-          
-          print('CET longitudinal (n=700, 8 quarters)...')
           r=run_cet_validation(n_patients=700,n_quarters=8,quick_mode=True)
           print(f'AUC={r[\"auc\"]:.4f} Sens={r[\"sensitivity\"]*100:.1f}% Spec={r[\"specificity\"]*100:.1f}%')
-          print(f'Dual target(sens>=70+spec>=95): {\"MET\" if r[\"sensitivity\"]>=0.7 and r[\"specificity\"]>=0.95 else \"NOT MET\"}')
-          print('✅ CET passed')
-          " 2>&1
+          print(f'Dual target: {\"MET\" if r[\"sensitivity\"]>=0.7 and r[\"specificity\"]>=0.95 else \"NOT MET\"}')" 2>&1
 
-      - name: Head-to-head vs Bie
+      - name: Head-to-head test
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python -c "
           import numpy as np; np.random.seed(42)
           from validation.py.config import CTDNA_LEVELS
           from validation.py.head_to_head import run_head_to_head
           from validation.py.tcga_loader import load_tcga_data
-          
           tcga=load_tcga_data()
-          print('Head-to-head (3 ctDNA levels)...')
           res=run_head_to_head(tcga,ctdna_levels=CTDNA_LEVELS[:3],n_folds=5,quick_mode=True)
-          print()
-          print('=== HEAD-TO-HEAD vs Bie ===')
           for ct,r in res.items():
-            delta=r['dc_multimodal']['auc']-r['bie_themis']['auc']
-            p=r.get('delong_p',0)
-            print(f'  ctDNA {ct*100:.1f}%: DC={r[\"dc_multimodal\"][\"auc\"]:.4f} Bie={r[\"bie_themis\"][\"auc\"]:.4f} D={delta:+.4f} p={p:.4f} {\"⭐\" if p<0.05 else \"\"}')
-          print('✅ H2H passed')
+            d=r['dc_multimodal']['auc']-r['bie_themis']['auc']; p=r.get('delong_p',0)
+            print(f'ctDNA {ct*100:.1f}%: DC={r[\"dc_multimodal\"][\"auc\"]:.4f} Bie={r[\"bie_themis\"][\"auc\"]:.4f} D={d:+.4f} p={p:.4f} {\"⭐\" if p<0.05 else \"\"}')
           " 2>&1
 
-      - name: Upload results
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: deepcatch-results
           path: results/
-          retention-days: 30
