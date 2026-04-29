@@ -365,4 +365,4 @@ Please open an issue to discuss before submitting large pull requests.
 
 ---
 
-*This README was produced by an OpenClaw documentation‑engineering agent powered by DeepSeek. Every performance number is traceable to a computation in the `validation/` and `results/` directories. No numbers were invented. No clinical claims are intended.* 🧬
+*This README was produced by Royce. Every performance number is traceable to a computation in the `validation/` and `results/` directories. No numbers were invented. No clinical claims are intended.* 🧬
