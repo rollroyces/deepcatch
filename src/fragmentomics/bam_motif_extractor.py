@@ -31,7 +31,7 @@ def extract_4mer_end_motifs(
     mapq_threshold: int = 30,
     fragment_length_min: int = 90,
     fragment_length_max: int = 250,
-    both_ends: bool = True,
+    both_ends: bool = True,  # NOTE: currently only Read 1 processed; Read 2 TODO
     stranded: bool = True
 ) -> Dict[str, np.ndarray]:
     """
@@ -104,6 +104,9 @@ def extract_4mer_end_motifs(
         
         fragment_lengths.append(frag_len)
         
+                # PERFORMANCE NOTE: For high-throughput (>100K reads), pre-load
+        # chromosome sequences into memory to avoid per-read FASTA seeks.
+        # Example: chrom_seq = {c: fasta.fetch(c) for c in bam.references}
         # Extract 4-mers at fragment ends
         # For read 1: 5' end is at read.reference_start
         # For fragment-level: use the outer coordinates
