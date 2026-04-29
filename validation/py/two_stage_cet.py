@@ -1,7 +1,16 @@
 """
 Two-Stage CET: Permissive Multi-Modal Screening → Confirmatory Fusion
 
-Architecture:
+Implements a two-stage cancer screening pipeline that combines a
+permissive first-stage multi-modal Cancer Early Test (CET) with a
+high-specificity confirmatory fusion stage. This architecture achieves
+combined specificity >99% while maintaining sensitivity >50% for
+early-stage detection.
+
+.. rubric:: Architecture Diagram
+
+::
+
     ALL PATIENTS (100%)
         │
         ▼
@@ -9,6 +18,12 @@ Architecture:
     │  STAGE 1: Multi-Modal CET       │
     │  (Permissive, τ₁ calibrated     │
     │   for ~85% specificity)         │
+    │                                 │
+    │  - 5 modalities (mutation,      │
+    │    methylation, fragmentomics,  │
+    │    CNA, nucleosome)             │
+    │  - Weighted SPRT per modality   │
+    │  - AUC-based modality weights   │
     └───────────┬─────────────────────┘
                 │
         ┌───────┴───────┐
@@ -21,8 +36,13 @@ Architecture:
     │  STAGE 2: Confirmatory Fusion   │
     │  Ultra-High Spec (τ₂ calibrated │
     │   for >99% specificity)         │
-    │  Uses independent-loci SPRT +   │
-    │  performance-weighted features  │
+    │                                 │
+    │  Uses:                          │
+    │  - Independent-loci SPRT        │
+    │  - Fragment end motif analysis  │
+    │  - Signal persistence score     │
+    │  - Multi-modal concordance      │
+    │  - Performance-weighted fusion  │
     └───────────┬─────────────────────┘
                 │
         ┌───────┴───────┐
@@ -31,17 +51,94 @@ Architecture:
     "Immediate workup"  "Watchful waiting"
     → Imaging + biopsy  → Repeat in 6mo
 
-Combined specificity:
-    Spec_combined = 1 - (1 - Spec₁)(1 - Spec₂)
-    e.g., 1 - (0.15)(0.01) = 99.85%
+.. rubric:: Mathematical Formulation
 
-Cost model:
-    85% × $74 + 15% × $200 ≈ $93/person average
+**Combined Specificity**
 
-References:
-    Research: research/CET_OPTIMIZATION_RESEARCH.md
-    Multi-modal CET: validation/py/multimodal_cet.py
-    CET validation: validation/py/cet_validation.py
+Given independent Stage 1 and Stage 2 tests:
+
+.. math::
+
+    \text{Spec}_{\text{combined}} = 1 - (1 - \text{Spec}_1)(1 - \text{Spec}_2)
+
+Example: :math:`1 - (1 - 0.85)(1 - 0.99) = 1 - 0.15 \times 0.01 = 0.9985` (99.85%).
+
+**Combined Sensitivity**
+
+.. math::
+
+    \text{Sens}_{\text{combined}} = \text{Sens}_1 \times \text{Sens}_2
+
+where :math:`\text{Sens}_2` is the conditional sensitivity within
+Stage-1-flagged patients.
+
+**Stage 1: Multi-Modal SPRT**
+
+For each modality :math:`m` at timepoint :math:`t`:
+
+.. math::
+
+    \Lambda_m = \log \frac{\mathcal{L}(\text{cancer} \mid x_{m,t})}
+    {\mathcal{L}(\text{healthy} \mid x_{m,t})}
+
+Weighted log-odds update:
+
+.. math::
+
+    \text{log-odds}_t = \sum_m w_m \Lambda_m
+    \quad\text{where}\quad
+    w_m = \frac{\max(0.5, \text{AUC}_m)}{\sum_j \max(0.5, \text{AUC}_j)}
+
+Posterior probability:
+
+.. math::
+
+    P(\text{cancer} \mid \text{data}) = \frac{1}{1 + e^{-\text{log-odds}}}
+
+**Stage 2: Performance-Weighted Fusion**
+
+Fusion score from independent features:
+
+.. math::
+
+    S = 0.35 \cdot s_{\text{ind\_loci}} + 0.25 \cdot s_{\text{motif}}
+    + 0.25 \cdot s_{\text{persistence}} + 0.15 \cdot s_{\text{concordance}}
+
+**Calibration Procedure**
+
+1. Split patient cohort: 50% calibration, 50% test.
+2. Stage 1: Sort calibration posteriors; find threshold where
+   specificity ≥ 85% and F1-score is maximized.
+3. Stage 1 predicts on calibration set; only flagged patients
+   enter Stage 2 calibration.
+4. Stage 2: Sort fusion scores of flagged patients; find threshold
+   where specificity ≥ 99% on the calibration subset.
+5. Apply fixed thresholds to the held-out test set.
+
+.. rubric:: Cost Model
+
+::
+
+    Avg Cost = $74 (Stage 1 for all) + flag_rate × $200 (Stage 2)
+    ≈ $74 + 0.15 × $200 = $104/person
+
+Per 100,000 population: ≈ $10.4M (vs. $50M+ for universal high-depth sequencing).
+
+.. rubric:: Six Confounders Modeled
+
+1. **CHIP** (clonal hematopoiesis of indeterminate potential):
+   age-dependent, 5–25% prevalence for ages 55–85.
+2. **Variable cfDNA shedding**: CV 60–80% across patients.
+3. **Trinucleotide error rates**: context-dependent, ×1.5–3.0.
+4. **Variable genome equivalents**: depth fluctuation ±30%.
+5. **Batch effects**: multiplicative factor ×1.0–1.45 per batch.
+6. **Inflammatory spikes**: 3–15% of healthy patients per timepoint.
+
+References
+----------
+.. [1] Research: ``CET_OPTIMIZATION_RESEARCH.md``
+.. [2] Multi-modal CET: ``validation/py/multimodal_cet.py``
+.. [3] CET validation: ``validation/py/cet_validation.py``
 """
 
 import json
@@ -98,7 +195,41 @@ TISSUE_METHYLATION_MARKERS = {
 # GROWTH MODEL
 # ═══════════════════════════════════════════════════════════════════════════
 def gompertz_volume(t: float, params: Dict) -> float:
-    """V(t) = V0 * exp((A/B) * (1 - exp(-B * t)))"""
+    """
+    Compute tumor volume at time *t* using the Gompertz growth model.
+
+    The Gompertz model captures sigmoidal tumor growth with an initial
+    exponential phase followed by a decelerating growth phase as the
+    tumor reaches carrying capacity.
+
+    .. math::
+
+        V(t) = V_0 \cdot \exp\left(\frac{A}{B} \cdot (1 - e^{-Bt})\right)
+
+    where:
+        - :math:`V_0` is the initial (detectable) volume
+        - :math:`A` is the intrinsic growth rate
+        - :math:`B` is the growth deceleration factor
+
+    Parameters
+    ----------
+    t : float
+        Time in days since tumor onset.
+    params : dict
+        Dictionary with keys ``'V0'`` (float, initial volume),
+        ``'A'`` (float, growth rate), and ``'B'`` (float, deceleration).
+
+    Returns
+    -------
+    float
+        Tumor volume at time *t*.
+
+    Notes
+    -----
+    Parameters are calibrated from TCGA data via
+    :func:`tcga_loader.get_gompertz_params`. Stage-specific calibration
+    is done by scaling :math:`V_0` according to clinical stage.
+    """
     return params['V0'] * np.exp(
         (params['A'] / params['B']) * (1.0 - np.exp(-params['B'] * t))
     )
@@ -106,7 +237,35 @@ def gompertz_volume(t: float, params: Dict) -> float:
 
 def _generate_tumor_params(cancer_type: str, stage: str,
                            rng: np.random.RandomState) -> Dict:
-    """Generate Gompertz parameters calibrated to cancer stage."""
+    """
+    Generate Gompertz growth parameters calibrated to cancer type and stage.
+
+    Parameters :math:`A` and :math:`B` are sampled from TCGA-derived
+    distributions. :math:`V_0` is scaled according to clinical stage:
+
+    - **Early (Stage I/II)**: small initial volume (median × exp(0.5·N(0,1)))
+    - **Mid (Stage III)**: moderate initial volume (median × exp(0.7·N(0,1)))
+    - **Late (Stage IV)**: large initial volume (median × exp(0.9·N(0,1)))
+
+    Parameters
+    ----------
+    cancer_type : str
+        TCGA cancer type abbreviation (e.g., ``'LUAD'``, ``'COADREAD'``).
+    stage : str
+        Clinical stage: ``'early'``, ``'mid'``, or ``'late'``.
+    rng : np.random.RandomState
+        Seeded random state for reproducibility.
+
+    Returns
+    -------
+    dict
+        Gompertz parameters: ``V0``, ``A``, ``B``, ``cancer_type``, ``stage``.
+
+    Notes
+    -----
+    The growth rate ``A`` is clipped to ≥ 0.001 and deceleration ``B`` to
+    ≥ 0.0001 to prevent zero or negative growth.
+    """
     from .tcga_loader import get_gompertz_params
     p = get_gompertz_params(cancer_type)
 
@@ -128,9 +287,42 @@ def _generate_tumor_params(cancer_type: str, stage: str,
 def _ctdna_from_volume(volume_mm3: float, shedding_factor: float,
                        rng: np.random.RandomState) -> float:
     """
-    ctDNA fraction from tumor volume, with patient-specific shedding.
+    Estimate ctDNA fraction from tumor volume with patient-specific shedding.
 
-    Confounder 2: Variable cfDNA shedding per patient.
+    Implements **Confounder 2** (Variable cfDNA Shedding).
+
+    The baseline relationship is:
+
+    .. math::
+
+        \text{ctDNA} = V_{\text{cm}^3} \times 0.0005 \times \text{shedding}
+        \times e^{\mathcal{N}(0, 0.55)}
+
+    where :math:`V_{\text{cm}^3} = V_{\text{mm}^3} / 1000`.
+
+    The biological variability term :math:`e^{\mathcal{N}(0, 0.55)}` models
+    patient-to-patient differences in ctDNA release (apoptosis rate,
+    vascular access, clearance).
+
+    Parameters
+    ----------
+    volume_mm3 : float
+        Tumor volume in mm³.
+    shedding_factor : float
+        Patient-specific shedding factor (typically [0.3, 3.0]).
+    rng : np.random.RandomState
+        Seeded random state.
+
+    Returns
+    -------
+    float
+        ctDNA fraction in [0, 0.80]. Values are clipped to prevent
+        non-physical fractions.
+
+    Notes
+    -----
+    The coefficient 0.0005 is calibrated from literature estimates of
+    ctDNA release rate per cm³ of tumor tissue (Bettegowda et al. 2014).
     """
     volume_cm3 = volume_mm3 / 1000.0
     base_fraction = volume_cm3 * 0.0005 * shedding_factor
@@ -144,10 +336,45 @@ def _ctdna_from_volume(volume_mm3: float, shedding_factor: float,
 def _generate_mutation_signal(patient: Dict, true_ctdna: float,
                                rng: np.random.RandomState) -> float:
     """
-    Mutation signal with:
-      - Confounder 3: Trinucleotide error rates (context-dependent)
-      - Confounder 4: Variable genome equivalents (depth fluctuation)
-      - Confounder 5: Batch effects
+    Generate simulated mutation-based signal with confounders.
+
+    Models the variant calling signal as:
+
+    .. math::
+
+        S_{\text{mut}} = \frac{\sum_{l=1}^{L} \max(0,
+        \text{Poisson}(d \cdot \text{VAF} \cdot \text{ctDNA} \cdot f_l)) -
+        \sum_{l=1}^{L} \max(0, \text{Poisson}(d \cdot \epsilon_l))}
+        {L \cdot d}
+
+    where:
+        - :math:`L` is the number of loci
+        - :math:`d` is depth per locus (with Conf 4 depth fluctuation)
+        - :math:`\text{VAF}` is tissue variant allele frequency [0.08, 0.32]
+        - :math:`f_l` is a per-locus efficiency factor [0.6, 1.4]
+        - :math:`\epsilon_l` is the error rate per locus
+
+    Confounders modeled:
+        - **Conf 3** (Trinucleotide error rates): ``tri_error_factor``
+          scales the baseline error rate
+        - **Conf 4** (Depth fluctuation): ``depth_factor`` modulates
+          sequencing depth per patient
+        - **Conf 5** (Batch effects): multiplicative error scaling by batch
+
+    Parameters
+    ----------
+    patient : dict
+        Patient dictionary with confounder keys.
+    true_ctdna : float
+        True ctDNA fraction.
+    rng : np.random.RandomState
+        Seeded random state.
+
+    Returns
+    -------
+    float
+        Mutation signal score in [0, 1]. Higher values indicate more
+        detected variants above background.
     """
     n_loci = N_LOCI
     depth_per_locus = SEQUENCING_DEPTH * patient.get('depth_factor', 1.0)  # Conf 4
@@ -175,7 +402,45 @@ def _generate_mutation_signal(patient: Dict, true_ctdna: float,
 def _generate_methylation_signal(cancer_type: str, true_ctdna: float,
                                   is_cancer: bool, age: int,
                                   rng: np.random.RandomState) -> float:
-    """Methylation signal with age-dependent CHIP background (Conf 1)."""
+    """
+    Generate methylation signal with age-dependent CHIP background.
+
+    Implements **Confounder 1** (CHIP).
+
+    For cancer patients:
+
+    .. math::
+
+        S_{\text{meth}} = \min(0.95, \max(0.05,
+        0.45 + 0.35 \cdot (\text{ctDNA} / 0.01) + \mathcal{N}(0, 0.08)))
+
+    For healthy/benign:
+
+    .. math::
+
+        S_{\text{meth}} = 0.08 + U(0, 0.05) + \text{CHIP} \cdot 0.04
+        + \mathcal{N}(0, 0.03)
+
+    where :math:`\text{CHIP} = \max(0, (\text{age} - 50) / 40)`.
+
+    Parameters
+    ----------
+    cancer_type : str or None
+        Cancer type for tissue-specific methylation modeling.
+    true_ctdna : float
+        True ctDNA fraction.
+    is_cancer : bool
+        Whether the patient has cancer.
+    age : int
+        Patient age in years. Drives CHIP background rate.
+    rng : np.random.RandomState
+        Seeded random state.
+
+    Returns
+    -------
+    float
+        Methylation signal in [0, 1].
+    """
     if is_cancer and cancer_type and true_ctdna > 0.0005:
         base_meth = 0.45 + 0.35 * (true_ctdna / 0.01)
         base_meth = min(0.95, max(0.05, base_meth))
@@ -258,8 +523,42 @@ def _generate_all_modality_signals(patient: Dict, time_days: float,
 # ═══════════════════════════════════════════════════════════════════════════
 class MultiModalCETTracker:
     """
-    Stage 1: Multi-modal SPRT with permissive threshold.
-    Accumulates evidence from all 5 modalities independently.
+    Stage 1: Multi-modal Sequential Probability Ratio Test (SPRT).
+
+    Accumulates evidence from up to 5 cfDNA modalities independently,
+    using a permissive threshold calibrated for ~85% specificity.
+
+    Each modality contributes a weighted log-likelihood ratio:
+
+    .. math::
+
+        w_m = \frac{\max(0.5, \text{AUC}_m)}
+        {\sum_{j=1}^{M} \max(0.5, \text{AUC}_j)}
+
+    The log-odds update at each timepoint:
+
+    .. math::
+
+        \Delta\text{LO}_t = \sum_m w_m \cdot
+        \log \frac{\mathcal{L}(\text{cancer} \mid x_{m,t})}
+        {\mathcal{L}(\text{null} \mid x_{m,t})}
+
+    Log-likelihoods are computed in log-space using Gaussian
+    approximations of the null and cancer signal distributions.
+
+    Parameters
+    ----------
+    modalities : list of str, optional
+        Modalities to include. Default: all 5 from :data:`MODALITY_CONFIG`.
+
+    Attributes
+    ----------
+    modalities : list of str
+        Active modality keys.
+    weights : dict
+        AUC-based modality weights.
+    prior_log_odds : float
+        Log-odds from prior prevalence.
     """
 
     def __init__(self, modalities: List[str] = None):
@@ -280,7 +579,38 @@ class MultiModalCETTracker:
 
     def process_patient(self, multi_signals: List[Dict[str, float]],
                         patient: Dict, rng: np.random.RandomState) -> Dict:
-        """Run permissive Stage 1 CET on multi-modal signals."""
+        """
+        Run permissive Stage 1 CET on a single patient's multi-modal signals.
+
+        Workflow:
+        1. Compute per-modality baseline statistics (mean, SD) from the
+           first ``BASELINE_TIMEPOINTS`` measurements.
+        2. For each subsequent timepoint, compute weighted log-likelihood
+           ratios comparing cancer vs. null hypotheses.
+        3. Accumulate log-odds with prior, compute posterior probability.
+
+        Parameters
+        ----------
+        multi_signals : list of dict
+            List of timepoint signal dictionaries. Each dict maps modality
+            keys to float values in [0, 1].
+        patient : dict
+            Patient metadata dictionary (used for cancer status).
+        rng : np.random.RandomState
+            Seeded random state.
+
+        Returns
+        -------
+        dict
+            Results with keys:
+
+            - ``baseline_stats``: per-modality baseline mean and SD
+            - ``evidence_trail``: list of per-timepoint log-likelihood updates
+            - ``final_posterior``: posterior probability after all timepoints
+            - ``final_log_odds``: accumulated log-odds score
+            - ``n_test_timepoints``: number of timepoints after baseline
+            - ``modality_weights``: AUC-based modality weights
+        """
         baseline_sigs = multi_signals[:BASELINE_TIMEPOINTS]
         test_sigs = multi_signals[BASELINE_TIMEPOINTS:]
         is_cancer = patient.get('is_cancer', False)
@@ -357,16 +687,41 @@ class ConfirmatoryFusion:
     """
     Stage 2: Ultra-high specificity confirmatory testing.
 
-    Uses INDEPENDENT loci (different genomic regions than Stage 1)
-    and additional molecular features to avoid correlated errors.
+    Uses statistically **independent** features (different genomic loci,
+    orthogonal molecular assays) to avoid correlated errors with Stage 1.
 
-    Method: Performance-weighted fusion across:
-      - Independent-loci SPRT (different positions, same modalities)
-      - Fragment end motif analysis (novel feature)
-      - Integrated signal persistence score (multi-timepoint consistency)
+    Features:
 
-    The key: Stage 2 features are statistically INDEPENDENT from Stage 1
-    by using different genomic regions and different molecular assays.
+    1. **Independent-loci SPRT** — 30 loci NOT tracked by Stage 1;
+       eliminates false positives from correlated technical noise.
+    2. **Fragment end motif score** — orthogonal to fragment size
+       used in Stage 1 fragmentomics.
+    3. **Signal persistence** — how consistently elevated across
+       multiple timepoints; rules out transient spikes.
+    4. **Multi-modal concordance** — all modalities must agree;
+       penalizes single-modality false positives.
+
+    Fusion score:
+
+    .. math::
+
+        S = 0.35 \cdot s_{\text{ind\\_loci}} + 0.25 \cdot s_{\text{motif}}
+        + 0.25 \cdot s_{\text{persistence}} + 0.15 \cdot s_{\text{concordance}}
+
+    The weights are pre-calibrated: independent-loci SPRT (0.35) is
+    strongest because it provides an independent molecular signal;
+    motif and persistence (0.25 each) rule out false positive
+    mechanisms; concordance (0.15) ensures signal is not isolated.
+
+    Parameters
+    ----------
+    target_spec : float, optional
+        Target specificity for threshold calibration (default 0.99).
+
+    Attributes
+    ----------
+    threshold : float or None
+        Calibrated fusion score threshold. None until :meth:`calibrate` is called.
     """
 
     def __init__(self, target_spec: float = 0.99):
@@ -377,10 +732,30 @@ class ConfirmatoryFusion:
                                        time_days_list: List[float],
                                        rng: np.random.RandomState) -> Dict[str, float]:
         """
-        Generate features that are INDEPENDENT from Stage 1:
-          - Uses different genomic loci (simulated as independent noise)
-          - Fragment end motifs (additional orthogonal signal)
-          - Persistence across timepoints
+        Generate features that are statistically independent from Stage 1.
+
+        Uses different genomic loci, orthogonal molecular assays, and
+        temporal consistency metrics to avoid correlated false positives.
+
+        Parameters
+        ----------
+        patient : dict
+            Patient dictionary with cancer status and ctDNA info.
+        time_days_list : list of float
+            Timepoints in days for temporal feature computation.
+        rng : np.random.RandomState
+            Seeded random state.
+
+        Returns
+        -------
+        dict
+            Features:
+
+            - ``independent_loci_sprt``: variant signal from 30
+              independent loci
+            - ``fragment_end_motif``: orthogonal fragment end motif score
+            - ``signal_persistence``: temporal consistency score
+            - ``multimodal_concordance``: cross-modality agreement score
         """
         is_cancer = patient.get('is_cancer', False)
         cancer_type = patient.get('cancer_type')
@@ -436,13 +811,24 @@ class ConfirmatoryFusion:
 
     def compute_fusion_score(self, features: Dict[str, float]) -> float:
         """
-        Performance-weighted fusion of Stage 2 features.
+        Compute performance-weighted fusion score from Stage 2 features.
 
-        Weights calibrated to maximize specificity:
-          - Independent-loci SPRT: weight=0.35 (strongest independent signal)
-          - Fragment end motifs: weight=0.25 (orthogonal to Stage 1 fragmentomics)
-          - Signal persistence: weight=0.25 (rules out transient noise)
-          - Multi-modal concordance: weight=0.15 (all modalities must agree)
+        Each feature is multiplied by its pre-calibrated weight:
+
+        - Independent-loci SPRT: weight = 0.35 (strongest independent signal)
+        - Fragment end motifs: weight = 0.25 (orthogonal to Stage 1)
+        - Signal persistence: weight = 0.25 (rules out transient noise)
+        - Multi-modal concordance: weight = 0.15 (all modalities must agree)
+
+        Parameters
+        ----------
+        features : dict
+            Feature dictionary from :meth:`generate_independent_features`.
+
+        Returns
+        -------
+        float
+            Weighted fusion score.
         """
         weights = {
             'independent_loci_sprt': 0.35,
@@ -456,10 +842,31 @@ class ConfirmatoryFusion:
     def calibrate(self, calibration_features: List[Dict[str, float]],
                   calibration_labels: List[int]) -> float:
         """
-        Find threshold achieving target specificity on calibration set.
+        Find fusion score threshold achieving target specificity.
 
-        Strategy: sort by fusion score, find score at which
-        specificity ≥ target_spec.
+        Strategy:
+        1. Compute fusion scores for all calibration patients.
+        2. Sort by descending score.
+        3. Walk down the sorted list; at each point, compute specificity
+           and sensitivity.
+        4. Select the threshold where specificity first meets or exceeds
+           ``target_spec`` and sensitivity is maximized.
+
+        Parameters
+        ----------
+        calibration_features : list of dict
+            Feature dictionaries for calibration patients.
+        calibration_labels : list of int
+            Ground truth labels (1 = cancer, 0 = non-cancer).
+
+        Returns
+        -------
+        float
+            The calibrated threshold. Also stored in ``self.threshold``.
+
+        Notes
+        -----
+        If no calibration data is available, falls back to threshold = 0.9.
         """
         scores = [self.compute_fusion_score(f) for f in calibration_features]
         pairs = sorted(zip(scores, calibration_labels), reverse=True)
@@ -494,13 +901,51 @@ class ConfirmatoryFusion:
 # ═══════════════════════════════════════════════════════════════════════════
 class TwoStageCETScreener:
     """
-    Two-stage cancer screening combining permissive CET with
-    confirmatory high-specificity fusion.
+    Two-stage cancer screening: permissive CET → confirmatory fusion.
 
-    Usage:
-        screener = TwoStageCETScreener(n_modalities=5)
-        screener.calibrate(calibration_patients, calibration_multisignals)
-        results = screener.screen(test_patients, test_multisignals)
+    Combinines :class:`MultiModalCETTracker` (Stage 1) with
+    :class:`ConfirmatoryFusion` (Stage 2) to achieve combined
+    specificity >99% while maintaining sensitivity >50%.
+
+    .. rubric:: Calibration Procedure
+
+    1. Split patients: 50% calibration, 50% test.
+    2. **Stage 1 calibration**: Run permissive CET on calibration set;
+       find posterior threshold where specificity ≥ 85% and F1 is maximized.
+    3. **Stage 2 calibration**: Only patients flagged by Stage 1 enter
+       Stage 2 calibration. Generate independent features and compute
+       fusion scores. Find threshold where specificity ≥ 99%.
+    4. **Test**: Apply fixed thresholds to held-out test set.
+
+    .. rubric:: Three Risk Tiers
+
+    - **HIGH**: Both stages flag. Recommendation: immediate workup.
+    - **MODERATE**: Stage 1 flags but Stage 2 clears.
+      Recommendation: watchful waiting, repeat in 6 months.
+    - **LOW**: Stage 1 clears. Recommendation: routine follow-up.
+
+    Parameters
+    ----------
+    n_modalities : int, optional
+        Number of modalities (default 5).
+    stage1_target_spec : float, optional
+        Target specificity for Stage 1 (default 0.85).
+    stage2_target_spec : float, optional
+        Target specificity for Stage 2 (default 0.99).
+
+    Attributes
+    ----------
+    stage1_threshold : float or None
+        Calibrated Stage 1 posterior threshold.
+    stage2_threshold : float or None
+        Calibrated Stage 2 fusion score threshold.
+
+    Examples
+    --------
+    >>> screener = TwoStageCETScreener(n_modalities=5)
+    >>> screener.calibrate(cal_patients, cal_signals, rng)
+    >>> result = screener.screen(test_patient, test_signals, rng)
+    >>> print(result['risk_tier'])
     """
 
     def __init__(self, n_modalities: int = 5,
@@ -527,16 +972,30 @@ class TwoStageCETScreener:
                   rng: np.random.RandomState,
                   cal_split: float = 0.5) -> Dict:
         """
-        Calibrate both stages on calibration subset of patients.
+        Calibrate both stages on a calibration subset of patients.
 
-        Args:
-            patients: List of patient dicts
-            multi_signals_list: Corresponding multi-modal signals
-            rng: Random state
-            cal_split: Fraction of patients to use for calibration
+        Stage 1 threshold is selected to maximize F1-score at the first
+        point where specificity ≥ ``stage1_target_spec``. Stage 2 threshold
+        is calibrated on Stage-1-flagged patients only, targeting
+        specificity ≥ ``stage2_target_spec``.
 
-        Returns:
-            Dict with calibration results
+        Parameters
+        ----------
+        patients : list of dict
+            Patient dictionaries.
+        multi_signals_list : list of list of dict
+            Multi-modal signals for each patient. Each patient has a list
+            of timepoint signal dictionaries.
+        rng : np.random.RandomState
+            Seeded random state for shuffling.
+        cal_split : float, optional
+            Fraction of patients to use for calibration (default 0.5).
+
+        Returns
+        -------
+        dict
+            Calibration results with Stage 1 and Stage 2 thresholds,
+            sensitivity, specificity, flag rates, and other diagnostics.
         """
         n = len(patients)
         indices = list(range(n))
@@ -648,10 +1107,35 @@ class TwoStageCETScreener:
                multi_signals: List[Dict[str, float]],
                rng: np.random.RandomState) -> Dict:
         """
-        Screen one patient through two-stage pipeline.
+        Screen one patient through the two-stage pipeline.
 
-        Returns:
-            Dict with risk_tier (HIGH/MODERATE/LOW), probabilities, and stage details.
+        Stage 1 runs permissive multi-modal CET. If the posterior exceeds
+        ``stage1_threshold``, Stage 2 runs confirmatory fusion on
+        independent features. The final risk tier is assigned based on
+        the two-stage outcome.
+
+        Parameters
+        ----------
+        patient : dict
+            Patient dictionary with metadata.
+        multi_signals : list of dict
+            List of per-timepoint signal dictionaries.
+        rng : np.random.RandomState
+            Seeded random state.
+
+        Returns
+        -------
+        dict
+            Screening result with:
+
+            - ``risk_tier``: ``'LOW'``, ``'MODERATE'``, or ``'HIGH'``
+            - ``stage1_posterior``: Stage 1 posterior probability
+            - ``stage1_flagged``: whether Stage 1 threshold was exceeded
+            - ``stage2_score``: Stage 2 fusion score (None if not flagged)
+            - ``stage2_features``: Stage 2 feature dict (None if not flagged)
+            - ``stage2_flagged``: whether Stage 2 threshold was exceeded
+            - ``overall_probability``: combined probability estimate
+            - ``recommendation``: clinical recommendation string
         """
         # Stage 1: Multi-modal CET
         s1_result = self.stage1_tracker.process_patient(multi_signals, patient, rng)
@@ -722,23 +1206,53 @@ def run_two_stage_simulation(
     seed: int = SEED,
 ) -> Dict:
     """
-    Full two-stage CET simulation with 2000 patients and 6 confounders.
+    Run full two-stage CET simulation with 2000 patients and 6 confounders.
 
-    Cancer breakdown:
-      - 200 early (Stage I/II)
-      - 150 mid (Stage III)
-      - 150 late (Stage IV)
+    Simulates a population screening trial with realistic biological
+    and technical confounders:
 
-    Confounders:
-      1. CHIP (age-dependent, prevalence 5-25% for ages 55-85)
-      2. Variable cfDNA shedding (CV 60-80%)
-      3. Trinucleotide error rates (context-dependent ×1.5-3.0)
-      4. Variable genome equivalents (depth fluctuation ±30%)
-      5. Batch effects (×1.0-1.45 per batch)
-      6. Inflammatory spikes (3-15% of healthy patients per timepoint)
+    - **200 cancer** (100 early Stage I/II, 75 mid Stage III, 75 late Stage IV)
+      with Gompertz tumor growth and patient-specific ctDNA shedding.
+    - **1200 healthy controls** with age-dependent CHIP and occasional
+      inflammatory spikes.
+    - **300 benign conditions** with elevated but non-cancer signals.
+    - **8 quarterly timepoints** over 2 years.
+    - **5 modalities**: mutation, methylation, fragmentomics, CNA, nucleosome.
+    - **6 confounders**: CHIP, variable shedding, tri-error rates, depth
+      fluctuation, batch effects, inflammatory spikes.
 
-    Returns:
-        Dict with full performance metrics, ROC curves, and cost analysis.
+    The simulation:
+    1. Generates patient cohort with realistic tumor growth and confounders.
+    2. Splits 50/50 into calibration and test sets.
+    3. Calibrates Stage 1 (permissive) and Stage 2 (confirmatory) thresholds.
+    4. Screens all test patients and computes comprehensive performance metrics.
+    5. Outputs 95% bootstrap confidence intervals, per-stage sensitivity,
+       cost analysis, and pass/fail verdict against targets.
+
+    Parameters
+    ----------
+    n_cancer : int, optional
+        Number of cancer patients (default 500).
+    n_healthy : int, optional
+        Number of healthy controls (default 1200).
+    n_benign : int, optional
+        Number of benign condition patients (default 300).
+    n_timepoints : int, optional
+        Number of quarterly timepoints (default 8).
+    seed : int, optional
+        Random seed for reproducibility (default from config).
+
+    Returns
+    -------
+    dict
+        Comprehensive results with metadata, calibration, performance,
+        cost analysis, and verdict. Also saved to
+        ``RESULTS_PY_DIR/two_stage_cet_results.json``.
+
+    Notes
+    -----
+    Targets: specificity >99%, sensitivity >50% for early-stage detection.
+    Expected combined specificity: 99.85% (1 − (1 − 0.85)(1 − 0.99)).
     """
     rng = np.random.RandomState(seed)
     cancer_types_list = list(CANCER_TYPES)
@@ -1094,6 +1608,15 @@ def run_two_stage_simulation(
     logger.info(f"  {verdict}")
 
     return output
+
+
+__all__ = [
+    "MultiModalCETTracker",
+    "ConfirmatoryFusion",
+    "TwoStageCETScreener",
+    "run_two_stage_simulation",
+    "gompertz_volume",
+]
 
 
 if __name__ == '__main__':

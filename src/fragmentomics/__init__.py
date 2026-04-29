@@ -1,16 +1,42 @@
 """
 FragmentoSign: Fragmentomics Subsystem for DeepCatch.
 
-Implements DELFI and MDS frameworks for cfDNA fragment analysis:
-- LOESS GC-bias normalization
-- 4-mer end motif extraction from BAM/FASTQ
-- Gaussian Mixture Model for fragment length distributions
-- Nucleosome positioning analysis
+Provides a complete pipeline for cfDNA fragment analysis based on
+fragmentation pattern signatures (FragmentoSigns). Implements the
+DELFI [1]_ and MDS [2]_ frameworks.
 
-References:
-- Cristiano et al. 2019, Nature 570:385-389
-- Jiang et al. 2020, Nature Genetics 52:712-719
-- Snyder et al. 2016, Cell 164:57-68
+.. rubric:: Public API
+
+**Normalization** (``fragmentomics.normalization``)
+    - :func:`compute_gc_content` — GC content of a DNA sequence
+    - :func:`loess_normalize` — LOESS-based GC-bias correction
+    - :func:`DELFI_style_normalization` — Full DELFI normalization pipeline
+      (mappability filter → LOESS GC correction → median-centering)
+    - :func:`compute_MDS` — Motif Diversity Score from motif index arrays
+
+**BAM Motif Extraction** (``fragmentomics.bam_motif_extractor``)
+    - :func:`extract_4mer_end_motifs` — Extract 4-mer end motifs from BAM
+    - :func:`extract_end_motifs_from_fastq` — Extract end motifs from FASTQ
+    - :func:`compute_MDS_from_counts` — MDS from raw count arrays
+      (re-export of :func:`bam_motif_extractor.compute_MDS`)
+
+**Fragment GMM** (``fragmentomics.fragment_gmm``)
+    - :class:`FragmentLengthGMM` — Gaussian Mixture Model for fragment
+      length distributions with 4 nucleosomal components
+    - :func:`compute_fragmentomics_features` — Full feature extraction
+      pipeline: basic statistics + DELFI + GMM features
+
+.. rubric:: Submodules
+
+- ``normalization`` — GC-bias correction and MDS computation
+- ``bam_motif_extractor`` — 4-mer end motif extraction from BAM and FASTQ
+- ``fragment_gmm`` — GMM-based fragment length analysis
+
+.. rubric:: References
+
+.. [1] Cristiano, S. et al. (2019). Nature 570:385-389. PMID: 31142840
+.. [2] Jiang, P. et al. (2020). Nature Genetics 52:712-719. PMID: 32514122
+.. [3] Snyder, M.W. et al. (2016). Cell 164:57-68. PMID: 26771485
 """
 
 from .normalization import (
