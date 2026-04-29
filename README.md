@@ -129,6 +129,44 @@ DeepCatch's fragmentomics engine implements the DELFI (DNA Evaluation of Fragmen
 
 The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA, even at ctDNA fractions as low as 0.01 %.
 
+### THEMIS Feature Equivalents
+
+DeepCatch's fragmentomics subsystem (FragmentoSign) implements all four THEMIS features:
+
+| THEMIS Feature | FragmentoSign Equivalent | Method |
+|---------------|--------------------------|--------|
+| **MFR** (Methylated Fragment Ratio) | Methylation entropy + LOESS-normalized coverage | CpG density scoring |
+| **FSI** (Fragment Size Index) | Short/long fragment ratio + GMM sub-nucleosomal fraction | 4-component GMM |
+| **CAFF** (Chromosomal Aneuploidy) | Copy Number Instability Index + CNA burden scoring | Whole-genome binning |
+| **FEM** (Fragment End Motif) | 4-mer MDS (Motif Diversity Score) + end motif embeddings | Jiang 2020 protocol |
+
+**DeepCatch advantage over THEMIS**: Performance-weighted fusion (vs simple averaging), Two-Stage CET (vs single-timepoint), and MAML meta-learning.
+
+### Novel Components
+
+DeepCatch introduces several innovations beyond the established literature:
+
+| Component | Innovation | Reference Alignment |
+|-----------|-----------|---------------------|
+| Performance-weighted fusion | AUC-proportional weighting with below-chance suppression | Outperforms Bie 2023 THEMIS simple averaging |
+| Two-Stage CET (SPRT) | First longitudinal multi-modal screening architecture | Novel; no published equivalent |
+| FragmentoSign (GMM + MDS) | Combined fragment length + end motif pipeline | DELFI (Cristiano 2019) + Jiang 2020 protocol |
+| **GNN/GCN fusion backbone** | Graph-based modality interaction learning via `torch-geometric` | Aligned with ELSM 2025 (*Briefings in Bioinformatics*); similar to graph convolutional network (GCN) fusion for multi-omics |
+| MAML meta-learning | Few-shot cancer subtyping from 3–5 examples | First application of MAML to liquid biopsy |
+| 6-confounder realism | CHIP, variable shedding, trinucleotide errors, GE, batch, inflammation | Most comprehensive confounder model in published simulations |
+
+### Extension: Gastric Cancer (Stomach) Screening
+
+DeepCatch currently covers STAD (Stomach Adenocarcinoma) as one of 20 cancer types. For gastric cancer-specific screening, the following traditional serum biomarkers can be integrated as additional modalities:
+
+| Biomarker | Type | Integration |
+|-----------|------|-------------|
+| **Pepsinogen I/II ratio** (PG I/II) | Atrophy marker | Additional modality in fusion |
+| **Gastrin-17** (G-17) | Acid secretion marker | Additional modality in fusion |
+| **H. pylori serology** | Infection marker | Risk stratification feature |
+
+These biomarkers, when combined with DeepCatch's cfDNA fragmentomics (MFR, FSI, CAFF, FEM), would create a comprehensive gastric cancer screening panel competitive with THEMIS but with the added benefit of longitudinal CET tracking.
+
 ### 2.4 Meta‑Learning Ensemble (MAML)
 
 For rare cancer subtypes where training data is scarce, DeepCatch uses Model‑Agnostic Meta‑Learning (MAML) to enable few‑shot adaptation. Given 3–5 examples of a new cancer subtype, the meta‑learner rapidly adapts its classification boundary — the first application of MAML to liquid‑biopsy cancer subtyping.
@@ -360,8 +398,9 @@ Please open an issue to discuss before submitting large pull requests.
 | 7 | Sequencing cost | ✅ Improved ($135 → $74/sample) |
 | 8 | Methylation entropy overfit | ✅ Fixed (AUC 1.0 → 0.786) |
 | 9 | Independent replication | ❌ Unchanged |
+| 10 | Single-lab results | ❌ Unchanged | Multi-center validation required for Tier 1 journals (Cancer Discovery, Nature Cancer). Design target: n=360 (matching THEMIS study size). |
 
-**5 of 9 limitations resolved or improved in v2.0. Clinical validation remains the critical barrier.**
+**5 of 10 limitations resolved or improved in v2.0. Clinical validation remains the critical barrier.**
 
 ---
 
