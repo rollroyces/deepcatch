@@ -1,0 +1,277 @@
+{
+  "entries": [
+    {
+      "name": "DeepCatch: variant_calling",
+      "assay_type": "ML Model: Variant Calling",
+      "study_type": "SIMULATION STUDY \u26a0",
+      "cohort_size": 2000,
+      "cancer_types": "Simulated (TCGA-parameterized)",
+      "detection_method": "Computational: variant_calling pipeline",
+      "metrics": {
+        "auc": "0.758 [0.677\u20130.839]",
+        "sensitivity": "0.550 [0.386\u20130.714]",
+        "specificity": "0.779 [0.627\u20130.932]",
+        "f1": "0.068 [0.026\u20130.111]",
+        "auprc": "0.468 [0.300\u20130.636]",
+        "accuracy": "0.777 [0.627\u20130.927]"
+      },
+      "notes": "SIMULATION STUDY \u2014 NOT directly comparable to clinical studies. Results reflect modeled performance under idealized conditions.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: multimodal_fusion",
+      "assay_type": "ML Model: Multimodal Fusion",
+      "study_type": "SIMULATION STUDY \u26a0",
+      "cohort_size": 300,
+      "cancer_types": "Simulated (TCGA-parameterized)",
+      "detection_method": "Computational: multimodal_fusion pipeline",
+      "metrics": {
+        "auc": "0.978 [0.965\u20130.991]",
+        "sensitivity": "0.911 [0.845\u20130.977]",
+        "specificity": "0.905 [0.835\u20130.975]",
+        "f1": "0.858 [0.813\u20130.903]",
+        "auprc": "0.957 [0.931\u20130.982]",
+        "accuracy": "0.907 [0.869\u20130.944]"
+      },
+      "notes": "SIMULATION STUDY \u2014 NOT directly comparable to clinical studies. Results reflect modeled performance under idealized conditions.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: longitudinal_cet",
+      "assay_type": "ML Model: Longitudinal Cet",
+      "study_type": "SIMULATION STUDY \u26a0",
+      "cohort_size": 100,
+      "cancer_types": "Simulated (TCGA-parameterized)",
+      "detection_method": "Computational: longitudinal_cet pipeline",
+      "metrics": {
+        "auc": "1.000 [1.000\u20131.000]",
+        "sensitivity": "0.900 [0.725\u20131.075]",
+        "specificity": "1.000 [1.000\u20131.000]",
+        "f1": "0.933 [0.816\u20131.050]",
+        "auprc": "1.000 [1.000\u20131.000]",
+        "accuracy": "0.970 [0.917\u20131.023]"
+      },
+      "notes": "SIMULATION STUDY \u2014 NOT directly comparable to clinical studies. Results reflect modeled performance under idealized conditions.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: temporal_transformer",
+      "assay_type": "ML Model: Temporal Transformer",
+      "study_type": "SIMULATION STUDY \u26a0",
+      "cohort_size": 200,
+      "cancer_types": "Simulated (TCGA-parameterized)",
+      "detection_method": "Computational: temporal_transformer pipeline",
+      "metrics": {
+        "auc": "0.999 [0.998\u20131.001]",
+        "sensitivity": "0.920 [0.834\u20131.006]",
+        "specificity": "1.000 [1.000\u20131.000]",
+        "f1": "0.956 [0.908\u20131.003]",
+        "auprc": "0.998 [0.995\u20131.001]",
+        "accuracy": "0.980 [0.959\u20131.001]"
+      },
+      "notes": "SIMULATION STUDY \u2014 NOT directly comparable to clinical studies. Results reflect modeled performance under idealized conditions.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: ensemble_integration",
+      "assay_type": "ML Model: Ensemble Integration",
+      "study_type": "SIMULATION STUDY \u26a0",
+      "cohort_size": 400,
+      "cancer_types": "Simulated (TCGA-parameterized)",
+      "detection_method": "Computational: ensemble_integration pipeline",
+      "metrics": {
+        "auc": "1.000 [1.000\u20131.000]",
+        "sensitivity": "0.950 [0.862\u20131.038]",
+        "specificity": "1.000 [1.000\u20131.000]",
+        "f1": "0.971 [0.921\u20131.022]",
+        "auprc": "1.000 [1.000\u20131.000]",
+        "accuracy": "0.990 [0.972\u20131.008]"
+      },
+      "notes": "SIMULATION STUDY \u2014 NOT directly comparable to clinical studies. Results reflect modeled performance under idealized conditions.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: TCGA variant_caller",
+      "assay_type": "TCGA-based Validation: Variant Caller",
+      "study_type": "SIMULATION STUDY (TCGA-parameterized) \u26a0",
+      "cohort_size": 87,
+      "cancer_types": "LUAD",
+      "detection_method": "TCGA-parameterized: variant_caller with downsampled VAFs",
+      "metrics": {
+        "auc": "0.806 [0.778\u20130.835]",
+        "sensitivity": "0.863 [0.812\u20130.913]",
+        "specificity": "0.578 [0.538\u20130.618]",
+        "f1": "0.169 [0.156\u20130.182]",
+        "auprc": "0.236 [0.186\u20130.287]",
+        "accuracy": "0.591 [0.554\u20130.629]"
+      },
+      "notes": "TCGA real data, downsampled to cfDNA VAF levels. Uses real mutation data with simulated cfDNA characteristics. NOT directly comparable to prospective clinical studies.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "DeepCatch: TCGA multimodal_fusion",
+      "assay_type": "TCGA-based Validation: Multimodal Fusion",
+      "study_type": "SIMULATION STUDY (TCGA-parameterized) \u26a0",
+      "cohort_size": 87,
+      "cancer_types": "LUAD",
+      "detection_method": "TCGA-parameterized: multimodal_fusion with downsampled VAFs",
+      "metrics": {
+        "auc": "1.000 [1.000\u20131.000]",
+        "sensitivity": "0.920 [0.780\u20131.060]",
+        "specificity": "1.000 [1.000\u20131.000]",
+        "f1": "0.950 [0.862\u20131.038]",
+        "auprc": "1.000 [1.000\u20131.000]",
+        "accuracy": "0.978 [0.939\u20131.017]"
+      },
+      "notes": "TCGA real data, downsampled to cfDNA VAF levels. Uses real mutation data with simulated cfDNA characteristics. NOT directly comparable to prospective clinical studies.",
+      "reference_doi": "This study (in preparation)"
+    },
+    {
+      "name": "CancerSEEK (Cohen 2018)",
+      "assay_type": "Multi-analyte blood test (protein + ctDNA)",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 1005,
+      "cancer_types": "8 types (ovary, liver, stomach, pancreas, esophagus, colorectal, lung, breast)",
+      "detection_method": "ctDNA mutations (61 amplicons) + 8 protein biomarkers",
+      "metrics": {
+        "sensitivity": "0.700",
+        "specificity": "0.990"
+      },
+      "notes": "Landmark multi-cancer early detection study. Sensitivity varies strongly by cancer type and stage.",
+      "reference_doi": "10.1126/science.aar3247"
+    },
+    {
+      "name": "GRAIL/Galleri (CCGA, Liu 2020)",
+      "assay_type": "Targeted methylation (bisulfite sequencing)",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 6689,
+      "cancer_types": "50+ cancer types",
+      "detection_method": "Methylation pattern analysis (targeted bisulfite-seq)",
+      "metrics": {
+        "sensitivity": "0.518",
+        "specificity": "0.995",
+        "ppv": "0.440"
+      },
+      "notes": "Sub-study of Circulating Cell-free Genome Atlas (CCGA). Tissue of origin accuracy: 93%.",
+      "reference_doi": "10.1016/j.annonc.2020.02.011"
+    },
+    {
+      "name": "DELFI (Cristiano 2019)",
+      "assay_type": "Genome-wide fragmentation profiling",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 236,
+      "cancer_types": "7 types",
+      "detection_method": "Fragment size + coverage patterns (low-coverage WGS)",
+      "metrics": {
+        "auc": "0.940",
+        "sensitivity": "0.730",
+        "specificity": "0.980"
+      },
+      "notes": "Fragmentomics approach; AUC 0.94 for cancer detection. Requires only low-coverage WGS.",
+      "reference_doi": "10.1038/s41586-019-1272-6"
+    },
+    {
+      "name": "LUNAR (Guardant Health)",
+      "assay_type": "ctDNA + epigenomic targeted panel",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 10000,
+      "cancer_types": "Colorectal cancer (CRC) screening",
+      "detection_method": "ctDNA mutations + methylation (targeted panel)",
+      "metrics": {
+        "sensitivity": "0.830",
+        "specificity": "0.970"
+      },
+      "notes": "ECLIPSE study. CRC screening in average-risk population.",
+      "reference_doi": "NCT04136002"
+    },
+    {
+      "name": "DETECT-A (Lennon 2020)",
+      "assay_type": "Multi-analyte: ctDNA + PET-CT",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 9911,
+      "cancer_types": "26 cancer types",
+      "detection_method": "ctDNA (CancerSEEK) + PET-CT confirmation",
+      "metrics": {
+        "sensitivity": "0.271 (1st blood)",
+        "specificity": "0.989",
+        "ppv": "0.195"
+      },
+      "notes": "Prospective interventional study in women 65-75. First blood test alone: 27.1% sensitivity.",
+      "reference_doi": "10.1126/science.abb9601"
+    },
+    {
+      "name": "PanSeer (Chen 2020)",
+      "assay_type": "DNA methylation (targeted bisulfite-seq)",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 605,
+      "cancer_types": "5 types (stomach, esophagus, colorectal, lung, liver)",
+      "detection_method": "Methylation markers (595 genomic regions)",
+      "metrics": {
+        "sensitivity": "0.880",
+        "specificity": "0.960"
+      },
+      "notes": "Detected cancer up to 4 years before conventional diagnosis. Pre-diagnosis plasma samples.",
+      "reference_doi": "10.1038/s41467-020-17316-z"
+    },
+    {
+      "name": "cfMeDIP-seq (Shen 2018)",
+      "assay_type": "Immunoprecipitation-based methylation",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 358,
+      "cancer_types": "7 types",
+      "detection_method": "Cell-free methylated DNA immunoprecipitation + sequencing",
+      "metrics": {
+        "auc": "0.950",
+        "sensitivity": "0.800",
+        "specificity": "0.960"
+      },
+      "notes": "Enrichment-based methylation profiling. Low input requirement.",
+      "reference_doi": "10.1038/s41586-018-0708-8"
+    },
+    {
+      "name": "ctDNA (Phallen 2017)",
+      "assay_type": "Targeted error correction sequencing (TEC-Seq)",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 238,
+      "cancer_types": "Colorectal, breast, lung, ovarian",
+      "detection_method": "58-gene panel with error-correction",
+      "metrics": {
+        "sensitivity": "0.620",
+        "specificity": "1.000"
+      },
+      "notes": "Early demonstration of targeted error-correction for ctDNA detection.",
+      "reference_doi": "10.1126/scitranslmed.aan2415"
+    },
+    {
+      "name": "CAPP-Seq (Newman 2014/2016)",
+      "assay_type": "CAncer Personalized Profiling by deep Sequencing",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 100,
+      "cancer_types": "NSCLC (lung)",
+      "detection_method": "Deep sequencing with molecular barcoding",
+      "metrics": {
+        "sensitivity": "0.850 (NSCLC)",
+        "specificity": "0.960"
+      },
+      "notes": "iDES-enhanced version improved sensitivity to 0.01% VAF. Requires tumor-informed panel.",
+      "reference_doi": "10.1038/nm.3519"
+    },
+    {
+      "name": "UroSEEK (Springer 2018)",
+      "assay_type": "Urine-based multi-gene assay",
+      "study_type": "CLINICAL STUDY",
+      "cohort_size": 570,
+      "cancer_types": "Bladder cancer",
+      "detection_method": "Urine DNA testing (TERT promoter + 10 genes)",
+      "metrics": {
+        "sensitivity": "0.830",
+        "specificity": "0.930"
+      },
+      "notes": "Non-invasive urine-based detection. Combined with cytology improves sensitivity.",
+      "reference_doi": "10.7554/eLife.32143"
+    }
+  ],
+  "total_assays": 17,
+  "clinical_studies": 10,
+  "simulation_experiments": 7
+}
