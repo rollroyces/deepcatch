@@ -1,0 +1,44 @@
+name: Compile Paper PDF
+
+on:
+  push:
+    paths:
+      - 'paper/deepcatch_final.tex'
+      - 'paper/deepcatch_references.bib'
+      - 'paper/figures/**'
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LaTeX
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-recommended \
+            texlive-latex-extra texlive-science texlive-fonts-recommended \
+            texlive-bibtex-extra biber
+
+      - name: Compile Paper
+        working-directory: paper
+        run: |
+          # Try bioinfo class first, fall back to article
+          if kpsewhich bioinfo.cls > /dev/null 2>&1; then
+            echo "bioinfo.cls found — using journal template"
+          else
+            echo "bioinfo.cls not found — using article class"
+          fi
+          pdflatex -interaction=nonstopmode deepcatch_final.tex
+          bibtex deepcatch_final
+          pdflatex -interaction=nonstopmode deepcatch_final.tex
+          pdflatex -interaction=nonstopmode deepcatch_final.tex
+          echo "PDF generated: $(ls -lh deepcatch_final.pdf)"
+
+      - name: Upload PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepcatch-paper
+          path: paper/deepcatch_final.pdf
+          retention-days: 90
