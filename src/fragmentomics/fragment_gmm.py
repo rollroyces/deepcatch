@@ -56,7 +56,7 @@ References
 ----------
 .. [1] Snyder, M.W. et al. (2016). Cell 164:57-68. PMID: 26771485
 .. [2] Cristiano, S. et al. (2019). Nature 570:385-389. PMID: 31142840
-.. [3] Jiang, P. et al. (2020). Nature Genetics 52:712-719. PMID: 32514122
+.. [3] Jiang, P. et al. (2020). Cancer Discovery 10(5):664-673. PMID: 32111602
 """
 
 import numpy as np

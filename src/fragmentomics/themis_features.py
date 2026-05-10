@@ -175,7 +175,7 @@ class FEMCalculator:
     <171 bp. Aberrant nuclease cleavage patterns in cancer produce distinct
     end-motif signatures.
     
-    Reference: Jiang et al. 2020, Nature Genetics 52:712-719
+    Reference: Jiang et al. 2020, Cancer Discovery 10(5):664-673. PMID: 32111602
     """
     
     BASES = ['A', 'C', 'G', 'T']

@@ -124,7 +124,7 @@ DeepCatch's fragmentomics engine implements the DELFI (DNA Evaluation of Fragmen
 |-----------|--------|-----------|
 | GC‑bias correction | LOESS local normalisation | Cristiano 2019, *Nature* |
 | Fragment length model | 4‑component Gaussian Mixture Model (GMM): sub‑nucleosomal (~80 bp), mono‑ (~167 bp), di‑ (~334 bp), tri‑nucleosomal (~501 bp) | Snyder 2016, *Cell* |
-| End‑motif analysis | 4‑mer extraction from BAM/FASTQ + MDS scoring | Jiang 2020, *Nature Genetics* |
+| End‑motif analysis | 4‑mer extraction from BAM/FASTQ + MDS scoring | Jiang 2020, *Cancer Discovery* |
 | Nucleosome positioning | CNN over TSS coverage profiles | Snyder 2016, *Cell* |
 
 The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA, even at ctDNA fractions as low as 0.01 %.

@@ -299,7 +299,7 @@ def compute_MDS(fragment_ends: np.ndarray, n_motifs: int = 256) -> float:
 
     References
     ----------
-    .. [1] Jiang, P. et al. (2020). Nature Genetics 52:712-719. PMID: 32514122
+    .. [1] Jiang, P. et al. (2020). Cancer Discovery 10(5):664-673. PMID: 32111602
     """
     # Compute motif frequencies
     motif_counts = np.bincount(fragment_ends, minlength=n_motifs)

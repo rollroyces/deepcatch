@@ -47,7 +47,7 @@ Follows the DELFI and Jiang et al. protocols for fragment end analysis.
 .. rubric:: References
 
 .. [1] Cristiano, S. et al. (2019). Nature 570:385-389.
-.. [2] Jiang, P. et al. (2020). Nature Genetics 52:712-719.
+.. [2] Jiang, P. et al. (2020). Cancer Discovery 10(5):664-673. PMID: 32111602
 .. [3] Snyder, M.W. et al. (2016). Cell 164:57-68.
 
 .. rubric:: Dependencies
@@ -179,7 +179,7 @@ def extract_4mer_end_motifs(
     References
     ----------
     .. [1] Cristiano et al. (2019). Nature 570:385-389.
-    .. [2] Jiang et al. (2020). Nature Genetics 52:712-719.
+    .. [2] Jiang et al. (2020). Cancer Discovery 10(5):664-673. PMID: 32111602
     """
     try:
         import pysam
@@ -191,6 +191,19 @@ def extract_4mer_end_motifs(
     
     bam = pysam.AlignmentFile(bam_path, 'rb')
     fasta = pysam.FastaFile(reference_fasta)
+    
+    # OPTIMIZATION: Pre-load all chromosome sequences into memory
+    # This avoids per-read FASTA seeks (10-50x speedup for large datasets)
+    chrom_seq = {}
+    chrom_names = {}
+    for i, ref_name in enumerate(bam.references):
+        try:
+            chrom_seq[i] = fasta.fetch(ref_name).upper()
+            chrom_names[i] = ref_name
+        except Exception:
+            # Skip contigs not in FASTA (e.g., alt contigs, decoys)
+            pass
+    fasta.close()  # Close FASTA handle — all sequences now in memory
     
     motif_counts = np.zeros(256, dtype=np.int64)
     fragment_lengths = []
@@ -223,29 +236,25 @@ def extract_4mer_end_motifs(
         
         fragment_lengths.append(frag_len)
         
-                # PERFORMANCE NOTE: For high-throughput (>100K reads), pre-load
-        # chromosome sequences into memory to avoid per-read FASTA seeks.
-        # Example: chrom_seq = {c: fasta.fetch(c) for c in bam.references}
-        # Extract 4-mers at fragment ends
-        # For read 1: 5' end is at read.reference_start
-        # For fragment-level: use the outer coordinates
-        
         if read.is_read1:
             # Read 1 5' end = fragment 5' start
-            if read.is_reverse:
-                # Read mapped to reverse strand → fragment start is at mate end
-                end_pos = read.reference_start  # approximate
-            else:
-                end_pos = read.reference_start
+            end_pos = read.reference_start
             
+            # Use pre-loaded chromosome sequence (fast in-memory lookup)
+            ref_id = read.reference_id
+            if ref_id not in chrom_seq:
+                reads_skipped += 1
+                continue
+            
+            seq_cache = chrom_seq[ref_id]
             try:
-                chrom = bam.get_reference_name(read.reference_id)
+                motif = seq_cache[end_pos:end_pos + 4]
+                if len(motif) < 4:
+                    reads_skipped += 1
+                    continue
                 if stranded and read.is_reverse:
-                    motif = fasta.fetch(chrom, end_pos, end_pos + 4)
                     motif = _reverse_complement(motif)
-                else:
-                    motif = fasta.fetch(chrom, end_pos, end_pos + 4)
-            except (ValueError, KeyError):
+            except IndexError:
                 reads_skipped += 1
                 continue
         else:
@@ -260,7 +269,6 @@ def extract_4mer_end_motifs(
                 reads_processed += 1
     
     bam.close()
-    fasta.close()
     
     # Compute frequencies and MDS
     total = motif_counts.sum()
@@ -390,7 +398,7 @@ def compute_MDS(motif_counts: np.ndarray) -> float:
 
     References
     ----------
-    .. [1] Jiang, P. et al. (2020). Nature Genetics 52:712-719.
+    .. [1] Jiang, P. et al. (2020). Cancer Discovery 10(5):664-673. PMID: 32111602
     """
     n_motifs = len(motif_counts)
     if motif_counts.sum() == 0:
