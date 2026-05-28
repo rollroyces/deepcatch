@@ -2,88 +2,17 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-[![Node 18+](https://img.shields.io/badge/Node-18%2B-brightgreen.svg)](https://nodejs.org/)
-[![Status: Research — Preprint Ready](https://img.shields.io/badge/Status-Research%20%7C%20Preprint--Ready-brightgreen.svg)]()
-[![CI: Passing](https://img.shields.io/badge/CI-Passing-brightgreen.svg)](https://github.com/rollroyces/deepcatch/actions)
-[![Real Plasma: Validated](https://img.shields.io/badge/Real%20Plasma%20Data-%E2%9C%85%20Validated-brightgreen.svg)]()
 [![Version: 2.1](https://img.shields.io/badge/Version-2.1-blue.svg)]()
 
-**DeepCatch is an open‑source computational framework for pan‑cancer screening that combines performance‑weighted multi‑modal fusion, Two‑Stage Cumulative Evidence Tracking (100.0% specificity), and tissue‑of‑origin prediction across 20 cancer types.** It is the only publicly available, multi‑modal, longitudinal MCED (multi‑cancer early detection) research platform — designed to enable independent validation and accelerate liquid‑biopsy research.
+**DeepCatch is an open‑source computational framework for cancer early detection from cfDNA, combining performance‑weighted multi‑modal fusion, cumulative evidence tracking, and tissue‑of‑origin prediction.** It is designed to enable independent validation and accelerate liquid‑biopsy research.
 
 ---
 
-> **⚠️ RESEARCH‑ONLY NOTICE:** DeepCatch is research‑stage software. v2.0 was validated exclusively through simulation. v2.1 adds preliminary validation on 129 real human plasma samples (processed frequency data) from Jiang lab (CUHK), but remains research‑only. It must not be used for medical diagnosis, treatment decisions, or any clinical purpose. All simulation performance numbers are parameterized against published literature. Full wet‑lab validation on raw sequencing data remains the essential next step before any clinical claim can be made.
+> **⚠️ RESEARCH‑ONLY NOTICE:** DeepCatch is research-stage software. v2.1 adds preliminary validation on 129 real human plasma samples (processed frequency data) from Jiang lab (CUHK) — see §9. All other performance numbers have been removed from this README as they were simulation-based and not clinically verified. Full wet-lab validation on raw sequencing data remains the essential next step.
 
 ---
 
-## 1. Validation Report — Current Performance (v2.0)
 
-Every number below is traceable to a computation in the repository's `validation/` scripts. All experiments use 5‑fold stratified cross‑validation, 2,000‑iteration bootstrap confidence intervals, DeLong's test for AUC comparison with Bonferroni multiple‑comparison correction, and 6 literature‑parameterized confounders (CHIP, variable ctDNA shedding, trinucleotide error rates, variable genome equivalents, batch effects, inflammatory spikes).
-
-### 1.1 Head‑to‑Head: Multi‑Modal Fusion
-
-| ctDNA Fraction | Bie 2023 (THEMIS) | CAPP‑Seq | iDES | DeepCatch Variant | **DeepCatch Multi‑Modal** |
-|---------------|-------------------|----------|------|-------------------|--------------------------|
-| 1.000 % | 0.8176 | 0.8474 | 0.5138 | 0.7975 | **0.9610** ⭐ |
-| 0.500 % | 0.8259 | 0.7951 | 0.5067 | 0.7154 | **0.9390** ⭐ |
-| 0.250 % | 0.8751 | 0.7179 | 0.5038 | 0.6400 | **0.9334** ⭐ |
-| 0.100 % | 0.9214 | 0.5960 | 0.5008 | 0.5642 | **0.9273** |
-| 0.050 % | 0.9172 | 0.5504 | 0.5025 | 0.5275 | **0.9281** |
-| 0.025 % | 0.9170 | 0.5242 | 0.5004 | 0.5171 | **0.9167** |
-| 0.010 % | 0.9150 | 0.5109 | 0.5004 | 0.5062 | **0.9190** |
-| 0.001 % | 0.9197 | 0.5047 | 0.5000 | 0.5021 | **0.9277** |
-
-⭐ = Statistically significant improvement over Bie 2023 (ΔAUC +0.104 mean; p < 0.0001, DeLong test)
-
-### 1.2 Two‑Stage CET — Longitudinal Screening
-
-| Metric | Stage 1 (CET) | Stage 2 (Fusion, on flagged) | **Combined** |
-|--------|--------------|----------------------------|-------------|
-| Sensitivity | 66.2 % | 94.9 % | **62.8 %** |
-| Specificity | 86.7 % | 100.0 % | **100.0 %** |
-| Flag rate | 26.5 % | — | 15.7 % high‑risk |
-| False positives | 199 / 1,500 | 0 / 199 | **0 / 1,500** |
-
-**Key result:** Zero false positives in 1,500 non‑cancer simulation patients. Only 15.7 % of the population reaches the high‑risk tier requiring immediate workup.
-
-### 1.3 Tissue‑of‑Origin (TOO)
-
-| Metric | Value | 95 % CI |
-|--------|-------|---------|
-| Accuracy (8 cancer types) | **81.7 %** | [79.4 %, 83.9 %] |
-| Top‑2 accuracy | **90.4 %** | — |
-| Reference (Grail Galleri, clinical) | 88.7 % | Clinical, 50+ types |
-
-### 1.4 Pan‑Cancer Coverage (20 Cancer Types)
-
-| Metric | Value |
-|--------|-------|
-| Overall AUC | **0.926** [0.922, 0.930] |
-| Best per‑type | LUAD 0.992 |
-| Worst per‑type | GBM 0.902, AML 0.905 |
-
-### 1.5 Cost Analysis
-
-| Scenario | Depth | Cost/Sample | AUC |
-|----------|-------|-------------|-----|
-| Stage 1 (targeted panel) | 5,000× | **$74** | 0.941 |
-| Stage 2 (on flagged, 26.5 %) | 50,000× | $200 | 0.961 |
-| **Average per person** | — | **$127** | — |
-
-### 1.6 Comparison to Published Clinical Assays
-
-| Assay | Sensitivity | Specificity | TOO | Cancer Types | Clinical Validation |
-|-------|------------|-------------|-----|-------------|-------------------|
-| Guardant360 | 85.3 % | 99.6 % | — | 50 | ✅ >200 K samples |
-| FoundationOne LCDx | 83.7 % | 99.5 % | — | 50 | ✅ |
-| Grail Galleri (MCED) | 51.5 % | 99.5 % | 88.7 % | 50+ | ✅ NHS trial (140 K) |
-| CancerSEEK | 70.0 % | 99.0 % | ~63 % | 8 | ✅ |
-| DELFI | 73.0 % | 98.0 % | ~75 % | 7 | ✅ |
-| **🦾 DeepCatch v2.0** | **62.8 %**⁽ˢⁱᵐ⁾ | **100.0 %**⁽ˢⁱᵐ⁾ | **81.7 %**⁽ˢⁱᵐ⁾ | **20** | **❌ Simulation only** |
-
-⁽ˢⁱᵐ⁾ = Simulation‑estimated with 6 realistic confounders. NOT clinically validated. Not directly comparable to clinical results.
-
----
 
 ## 2. How It Actually Works
 
@@ -130,6 +59,15 @@ DeepCatch's fragmentomics engine implements the DELFI (DNA Evaluation of Fragmen
 
 The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA, even at ctDNA fractions as low as 0.01 %.
 
+### Novel Components
+
+| Component | Innovation |
+|-----------|-----------|
+| Performance-weighted fusion | AUC-proportional weighting with below-chance suppression |
+| Two-Stage CET (SPRT) | Longitudinal multi-modal screening architecture |
+| FragmentoSign (GMM + MDS) | Combined fragment length + end motif pipeline |
+| 6-confounder realism | CHIP, variable shedding, trinucleotide errors, GE, batch, inflammation |
+
 ### THEMIS Feature Equivalents
 
 DeepCatch's fragmentomics subsystem (FragmentoSign) implements all four THEMIS features:
@@ -140,39 +78,6 @@ DeepCatch's fragmentomics subsystem (FragmentoSign) implements all four THEMIS f
 | **FSI** (Fragment Size Index) | Short/long fragment ratio + GMM sub-nucleosomal fraction | 4-component GMM |
 | **CAFF** (Chromosomal Aneuploidy) | Copy Number Instability Index + CNA burden scoring | Whole-genome binning |
 | **FEM** (Fragment End Motif) | 4-mer MDS (Motif Diversity Score) + end motif embeddings | Jiang 2020 protocol |
-
-**DeepCatch advantage over THEMIS**: Performance-weighted fusion (vs simple averaging), Two-Stage CET (vs single-timepoint), and MAML meta-learning.
-
-### Novel Components
-
-DeepCatch introduces several innovations beyond the established literature:
-
-| Component | Innovation | Reference Alignment |
-|-----------|-----------|---------------------|
-| Performance-weighted fusion | AUC-proportional weighting with below-chance suppression | Outperforms Bie 2023 THEMIS simple averaging |
-| Two-Stage CET (SPRT) | First longitudinal multi-modal screening architecture | Novel; no published equivalent |
-| FragmentoSign (GMM + MDS) | Combined fragment length + end motif pipeline | DELFI (Cristiano 2019) + Jiang 2020 protocol |
-| **GNN/GCN fusion backbone** | Graph-based modality interaction learning via `torch-geometric` | Aligned with ELSM 2025 (*Briefings in Bioinformatics*); similar to graph convolutional network (GCN) fusion for multi-omics |
-| MAML meta-learning | Few-shot cancer subtyping from 3–5 examples | First application of MAML to liquid biopsy |
-| 6-confounder realism | CHIP, variable shedding, trinucleotide errors, GE, batch, inflammation | Most comprehensive confounder model in published simulations |
-
-### Extension: Gastric Cancer (Stomach) Screening
-
-DeepCatch currently covers STAD (Stomach Adenocarcinoma) as one of 20 cancer types. For gastric cancer-specific screening, the following traditional serum biomarkers can be integrated as additional modalities:
-
-| Biomarker | Type | Integration |
-|-----------|------|-------------|
-| **Pepsinogen I/II ratio** (PG I/II) | Atrophy marker | Additional modality in fusion |
-| **Gastrin-17** (G-17) | Acid secretion marker | Additional modality in fusion |
-| **H. pylori serology** | Infection marker | Risk stratification feature |
-
-These biomarkers, when combined with DeepCatch's cfDNA fragmentomics (MFR, FSI, CAFF, FEM), would create a comprehensive gastric cancer screening panel competitive with THEMIS but with the added benefit of longitudinal CET tracking.
-
-### 2.4 Meta‑Learning Ensemble (MAML)
-
-For rare cancer subtypes where training data is scarce, DeepCatch uses Model‑Agnostic Meta‑Learning (MAML) to enable few‑shot adaptation. Given 3–5 examples of a new cancer subtype, the meta‑learner rapidly adapts its classification boundary — the first application of MAML to liquid‑biopsy cancer subtyping.
-
-### 2.5 System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -346,11 +251,10 @@ deepcatch/
 
 ## 5. Research‑Only Disclaimer
 
-**DeepCatch is research‑stage software. It has never been tested on clinical patient samples.**
+**DeepCatch is research‑stage software.**
 
-- This repository contains a computational framework validated exclusively through simulation. All performance numbers (AUC, sensitivity, specificity, TOO accuracy, cost) are simulation estimates parameterized against published literature (COSMIC v99, TCGA PanCancer Atlas) with 6 realistic confounders.
-- These numbers are NOT clinical performance claims. Simulation ≠ reality. Sample degradation, PCR bias, GC bias, inter‑laboratory variability, and biological confounders not captured by our models will affect real‑world performance.
-- The presence of zero false positives in simulation (1,500 non‑cancer patients) does not guarantee zero false positives in clinical practice. CHIP (clonal haematopoiesis of indeterminate potential) alone affects ~25 % of 80‑year‑olds and creates biological false positives that no computational method can fully resolve without matched white‑blood‑cell sequencing.
+- §1 of this README (simulation performance) has been removed — those numbers were based on synthetic data and are not clinically verified.
+- §9 contains preliminary validation on 129 real plasma samples (processed frequency data only), but this remains a computational feasibility study, not a clinical assay.
 - **Do not use DeepCatch for medical diagnosis, treatment decisions, or any clinical purpose.**
 - This software is provided “as is”, without warranty of any kind, under the MIT licence.
 
@@ -364,7 +268,8 @@ deepcatch/
                    Ultra‑Early Cancer Detection from cfDNA},
   author       = {Royce and DeepCatch Contributors},
   year         = {2026},
-  note         = {Preprint; simulation study. DOI to be assigned.},
+  note         = {Simulation framework with preliminary real plasma validation
+                  (129 samples, 4-mer motif analysis). DOI to be assigned.},
   url          = {https://github.com/rollroyces/deepcatch},
   version      = {2.1.0},
 }
@@ -386,22 +291,17 @@ Please open an issue to discuss before submitting large pull requests.
 
 ---
 
-## 8. Limitations Summary
+## 8. Status
 
-| # | Limitation | Status (v2.0) |
-|---|-----------|--------------|
-| 1 | Zero clinical patient samples | ❌ Unchanged |
-| 2 | Simulation‑only results | ❌ Unchanged |
-| 3 | CHIP biological confounding | ❌ Unchanged |
-| 4 | CET specificity | ✅ Fixed (61.8 % → 100.0 %) |
-| 5 | Tissue‑of‑origin capability | ✅ Fixed (0 % → 81.7 %) |
-| 6 | Cancer‑type coverage | ✅ Fixed (3 → 20 types) |
-| 7 | Sequencing cost | ✅ Improved ($135 → $74/sample) |
-| 8 | Methylation entropy overfit | ✅ Fixed (AUC 1.0 → 0.786) |
-| 9 | Independent replication | ❌ Unchanged |
-| 10 | Single-lab results | ❌ Unchanged | Multi-center validation required for Tier 1 journals (Cancer Discovery, Nature Cancer). Design target: n=360 (matching THEMIS study size). |
+| # | Item | Status |
+|---|------|--------|
+| 1 | Jiang lab 4-mer validation (129 samples) | ✅ Preliminary validation complete |
+| 2 | HCC vs Control nested CV AUC | 0.982 |
+| 3 | Raw BAM validation | ❌ Pending — need data access agreement |
+| 4 | Multi-centre replication | ❌ Pending — design target n=360 |
+| 5 | Clinical assay readiness | ❌ Not yet — research only |
 
-**5 of 10 limitations resolved or improved in v2.0. Clinical validation remains the critical barrier.**
+---
 
 ---
 
