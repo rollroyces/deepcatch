@@ -1,0 +1,211 @@
+================================================================================
+PART 4: Three-Class Comparison — Control vs HBV vs HCC
+================================================================================
+
+Sample sizes: Control=38, HBV=17, HCC=34
+
+────────────────────────────────────────────────────────────────────────────────
+Pairwise Classifier Performance (Elastic Net LR, 5-fold CV)
+────────────────────────────────────────────────────────────────────────────────
+
+Comparison                ROC AUC    PR AUC     Sens@95%   Sens@99%  
+-----------------------------------------------------------------
+Control vs HBV            0.9319     0.7787     0.059      0.000     
+Control vs HCC            0.9845     0.9886     0.941      0.000     
+HBV vs HCC                0.9048     0.9522     0.382      0.000     
+
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+Interpretation: Disease Progression Signal
+────────────────────────────────────────────────────────────────────────────────
+
+Control vs HBV AUC: 0.9319
+  → Can we distinguish HBV carriers from healthy controls? Yes — significant separation
+
+Control vs HCC AUC: 0.9845
+  → Can we distinguish HCC patients from healthy controls? Yes — strong separation
+
+HBV vs HCC AUC: 0.9048
+  → Can we distinguish HCC from HBV (high-risk) carriers? Yes — strong progression signal
+  → This is the CLINICALLY CRITICAL question: can early detection
+     differentiate cancer onset in high-risk HBV carriers?
+
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+Top 15 Motifs: HBV → HCC Progression
+────────────────────────────────────────────────────────────────────────────────
+
+Rank   Motif    p-value      p-Bonf       log2FC   HCC_med    HBV_med   
+1      CCCG     4.29e-07     1.10e-04     -0.337   0.2897     0.3659    
+2      CCAC     5.03e-07     1.29e-04     -0.302   0.9340     1.1516    
+3      CCAG     5.58e-07     1.43e-04     -0.234   1.5981     1.8789    
+4      CACT     5.58e-07     1.43e-04     -0.239   0.5758     0.6795    
+5      CGAC     5.85e-07     1.50e-04     -0.250   0.0547     0.0650    
+6      CGCA     5.86e-07     1.50e-04     -0.211   0.0921     0.1066    
+7      CAAC     6.18e-07     1.58e-04     -0.213   0.4113     0.4769    
+8      CACC     6.19e-07     1.58e-04     -0.258   0.4517     0.5402    
+9      CGTC     6.50e-07     1.66e-04     -0.239   0.1044     0.1232    
+10     AAGT     6.85e-07     1.75e-04     0.278    0.1975     0.1628    
+11     CACG     7.59e-07     1.94e-04     -0.205   0.1205     0.1389    
+12     GAAG     1.26e-06     3.23e-04     0.310    0.4817     0.3886    
+13     CGCT     1.40e-06     3.57e-04     -0.208   0.0985     0.1138    
+14     CCCT     1.40e-06     3.58e-04     -0.292   1.3233     1.6201    
+15     CCAA     1.40e-06     3.58e-04     -0.309   1.2596     1.5609    
+
+Significant after Bonferroni: 63 / 256

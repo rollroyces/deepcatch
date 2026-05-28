@@ -1,0 +1,254 @@
+================================================================================
+PART 3: Multi-Cancer vs Control Classifier
+================================================================================
+
+Total samples: 129 (Control: 38, Cancer: 91)
+Cancers pooled: HCC(34) + HBV(17) + CRC(10) + HNSCC(10) + LC(10) + NPC(10) = 91
+Note: HBV included in Cancer pool (high-risk group)
+
+────────────────────────────────────────────────────────────────────────────────
+Model Performance (5-fold Stratified CV)
+────────────────────────────────────────────────────────────────────────────────
+
+--- Elastic Net LR ---
+ROC AUC: 0.8366
+PR AUC:  0.9275
+Sensitivity @ 95% specificity: 0.407
+Sensitivity @ 99% specificity: 0.000
+F1 Score: 0.8614
+Confusion Matrix:
+[[14 24]
+ [ 4 87]]
+
+--- Random Forest ---
+ROC AUC: 0.9104
+PR AUC:  0.9588
+Sensitivity @ 95% specificity: 0.582
+Sensitivity @ 99% specificity: 0.000
+F1 Score: 0.9005
+Confusion Matrix:
+[[24 14]
+ [ 5 86]]
+
+────────────────────────────────────────────────────────────────────────────────
+Top 20 Discriminative Motifs (Elastic Net)
+────────────────────────────────────────────────────────────────────────────────
+
+Rank   Motif    Coefficient    Direction
+1      TTTT     0.451854       Up in Cancer
+2      TGTA     -0.139729      Down in Cancer
+3      GAAC     0.130590       Up in Cancer
+4      AAAA     0.124458       Up in Cancer
+5      CCTG     -0.102759      Down in Cancer
+6      CCTC     -0.081624      Down in Cancer
+7      GTAC     0.078020       Up in Cancer
+8      GTAG     0.076144       Up in Cancer
+9      TAAT     0.072162       Up in Cancer
+10     ACTT     -0.063774      Down in Cancer
+11     CCTT     -0.055626      Down in Cancer
+12     CGTG     -0.044730      Down in Cancer
+13     TGTG     -0.038561      Down in Cancer
+14     TTTA     0.036442       Up in Cancer
+15     GTAA     0.033488       Up in Cancer
+16     GAAA     0.032401       Up in Cancer
+17     AAAC     0.027805       Up in Cancer
+18     ACCG     -0.024280      Down in Cancer
+19     CCCT     -0.022115      Down in Cancer
+20     AAGA     0.021966       Up in Cancer
+
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+Top 20 Discriminative Motifs (Random Forest)
+────────────────────────────────────────────────────────────────────────────────
+
+Rank   Motif    Importance    
+1      GAGA     0.024497      
+2      AAAA     0.024169      
+3      GTAA     0.022167      
+4      CACT     0.021901      
+5      GTAC     0.021683      
+6      GTGT     0.019523      
+7      CGCT     0.017680      
+8      AAGG     0.017385      
+9      AAGA     0.016871      
+10     TTTT     0.014816      
+11     GTAG     0.013624      
+12     CCCT     0.013061      
+13     AAGT     0.012971      
+14     CACA     0.012679      
+15     CCTC     0.012539      
+16     ATGA     0.012100      
+17     GAAG     0.011782      
+18     CGAG     0.011393      
+19     GTCA     0.011260      
+20     TTAT     0.011131      
+
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+─
+Biological Plausibility of Top Discriminative Motifs
+────────────────────────────────────────────────────────────────────────────────
+
+Consensus motifs across both models:
+  Shared in top-20: AAAA, AAGA, CCCT, CCTC, GTAA, GTAC, GTAG, TTTT
+
+Key observations:
+  AT-rich motifs in Elastic Net top-20: 10 — ['TTTT', 'TGTA', 'AAAA', 'TAAT', 'ACTT', 'TTTA', 'GTAA', 'GAAA', 'AAAC', 'AAGA']
+  GC-rich motifs in Elastic Net top-20: 5 — ['CCTG', 'CCTC', 'CGTG', 'ACCG', 'CCCT']
+  AT-rich motifs in RF top-20: 7 — ['AAAA', 'GTAA', 'AAGA', 'TTTT', 'AAGT', 'ATGA', 'TTAT']
+  GC-rich motifs in RF top-20: 4 — ['CGCT', 'CCCT', 'CCTC', 'CGAG']

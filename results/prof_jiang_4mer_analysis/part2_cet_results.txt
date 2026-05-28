@@ -1,0 +1,80 @@
+================================================================================
+PART 2: DeepCatch-style CET Analysis per Cancer Type
+================================================================================
+
+Method: Stage 1 — Mann-Whitney U per motif → rank by p-value
+        Stage 2 — Top-50 motifs → Logistic Regression fusion
+        5-fold stratified CV
+
+Cancer     N(Cancer)    N(Ctrl)    ROC AUC    PR AUC     Sens@95%   Sens@99%  
+------------------------------------------------------------------------
+HCC        34           38         0.9845     0.9885     0.941      0.000     
+CRC        10           38         0.9105     0.6997     0.400      0.000     
+HNSCC      10           38         0.9368     0.7511     0.300      0.000     
+LC         10           38         0.9789     0.9324     0.700      0.000     
+NPC        10           38         0.8684     0.6653     0.300      0.000     
+
+--------------------------------------------------------------------------------
+Top Differentially Abundant Motifs per Cancer Type
+--------------------------------------------------------------------------------
+
+
+HCC vs Control — Top 10 motifs (by Mann-Whitney p-value):
+  1. AAAA  p=5.93e-13
+  2. CCCG  p=1.86e-12
+  3. AAGA  p=4.69e-12
+  4. CGCT  p=4.88e-12
+  5. CGCC  p=9.94e-12
+  6. CGAG  p=2.16e-11
+  7. AAAT  p=2.16e-11
+  8. CGCG  p=9.12e-11
+  9. CCAG  p=9.86e-11
+  10. CCCC  p=1.23e-10
+
+CRC vs Control — Top 10 motifs (by Mann-Whitney p-value):
+  1. GAGA  p=6.99e-06
+  2. CACA  p=4.61e-05
+  3. AGTA  p=5.72e-05
+  4. CATG  p=1.14e-04
+  5. GAGT  p=1.26e-04
+  6. ATTA  p=1.90e-04
+  7. CATC  p=2.00e-04
+  8. CCTA  p=2.97e-04
+  9. TCAG  p=3.28e-04
+  10. CACT  p=3.61e-04
+
+HNSCC vs Control — Top 10 motifs (by Mann-Whitney p-value):
+  1. TCAA  p=5.19e-06
+  2. TCAT  p=6.60e-06
+  3. CACT  p=1.50e-05
+  4. CCCT  p=1.89e-05
+  5. TTTC  p=2.96e-05
+  6. TAAG  p=2.96e-05
+  7. CCTG  p=3.13e-05
+  8. CACC  p=3.31e-05
+  9. CCTC  p=3.70e-05
+  10. CGTC  p=3.90e-05
+
+LC vs Control — Top 10 motifs (by Mann-Whitney p-value):
+  1. GAGA  p=2.33e-06
+  2. GAGT  p=1.19e-05
+  3. CCTT  p=1.50e-05
+  4. AGTA  p=2.11e-05
+  5. GAGG  p=2.12e-05
+  6. GAGC  p=2.65e-05
+  7. GTGC  p=3.13e-05
+  8. CACT  p=3.13e-05
+  9. CATC  p=3.70e-05
+  10. GAAG  p=3.70e-05
+
+NPC vs Control — Top 10 motifs (by Mann-Whitney p-value):
+  1. GAGA  p=2.99e-06
+  2. CCTT  p=1.34e-05
+  3. GAAG  p=1.69e-05
+  4. GAGT  p=2.11e-05
+  5. CACA  p=2.96e-05
+  6. TACG  p=7.87e-05
+  7. CACT  p=1.20e-04
+  8. CATC  p=1.55e-04
+  9. AGTC  p=1.63e-04
+  10. TCCA  p=1.90e-04
