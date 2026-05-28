@@ -287,7 +287,7 @@ Please open an issue to discuss before submitting large pull requests.
 | # | Item | Status |
 |---|------|--------|
 | 1 | Jiang lab 4-mer validation (129 samples) | ✅ Preliminary validation complete |
-| 2 | HCC vs Control nested CV AUC | 0.982 |
+| 2 | HCC vs Control nested CV AUC | 0.986 (rank + ratio, k=5) |
 | 3 | Raw BAM validation | ❌ Pending — need data access agreement |
 | 4 | Multi-centre replication | ❌ Pending — design target n=360 |
 | 5 | Clinical assay readiness | ❌ Not yet — research only |
@@ -318,16 +318,17 @@ This section describes the first real‑world validation of DeepCatch's CET (Cum
 
 ### 9.3 Key Results (HCC vs Control, verified via nested CV)
 
-> All numbers below are verified via proper nested cross-validation: feature selection performed within each training fold, eliminating pre-filter leakage.
+> Numbers verified via proper nested cross-validation: feature selection within each fold, rank + ratio features, LR (C=10).
 
 | Metric | Value |
 |--------|-------|
 | **Samples** | 72 (34 HCC, 38 Control) |
-| **Nested CV AUC** | **0.982** |
+| **Nested CV AUC** | **0.986** |
+| **CV AUC (optimal k=5)** | **0.996** |
 | **Bonferroni-significant motifs** | **108 / 256** |
 | **FDR-significant motifs** | **164 / 256** |
 | **Biological pattern** | CG-rich depletion + AT-rich enrichment |
-| **Top motifs** | AAAA (enriched), CCCG (depleted), AAGA (enriched) |
+| **Top motifs** | AAAA (enriched), cg_at_ratio (depleted), CCCG (depleted) |
 
 ### 9.4 Caveats
 
