@@ -103,3 +103,43 @@ paper/*.pdf
 *.key
 credentials.json
 token.json
+
+# ── Paper submission materials (archive-only) ────────────────────────────
+paper/BIORXIV_RESUBMIT.md
+paper/BIORXIV_SUBMISSION.md
+paper/MEDRXIV_SUBMISSION.md
+paper/CLAIMS_LOG.md
+paper/SUBMISSION_CHECKLIST.md
+paper/SUBMISSION_GUIDE.md
+paper/abstract*.txt
+paper/cover_letter*.txt
+paper/email_to_biorxiv_support.txt
+paper/*.tar.gz
+
+# ── Research notes (not part of codebase) ───────────────────────────────
+research/CET_OPTIMIZATION_RESEARCH.md
+research/COMPETITIVE_LANDSCAPE.md
+research/CUHK_JIANG_LAB_CONTACT.md
+research/DBGAP_ACCESS_Cristiano2019.md
+research/FRAGMENTOSIGN_VALIDATION_REPORT.md
+research/TIER_ANALYSIS.md
+research/real_data_report.md
+
+# ─── Review files (internal only) ───────────────────────────────────────
+review/*.md
+
+# ─── Result reports (simulation-based, not verified) ────────────────────
+results/node/*.md
+results/BIOINFORMATICS_VALIDATION_REPORT.md
+results/benchmark_table.md
+results/literature_review.md
+results/py/README.md
+results/real_motif_extraction/*.md
+results/delfi_1000g_validation/*.md
+results/delfi_1000g_validation/*.json
+results/delfi_1000g_validation/*.npy
+results/delfi_1000g_validation/*.csv
+results/delfi_1000g_validation/*.fa
+results/delfi_1000g_validation/*.fai
+results/delfi_1000g_validation/*.py
+results/prof_jiang_4mer_analysis/deepcatch_manifesto.md
