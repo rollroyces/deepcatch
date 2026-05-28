@@ -134,6 +134,8 @@ class FrequencyDataset:
         self.y = y
         self.feature_names = feature_names
         self.sample_ids = sample_ids
+        self._raw_X = X.copy()  # preserve for ratio computation
+        self._raw_feature_names = list(feature_names)
         self._loaded = True
 
         logger.info(
@@ -281,6 +283,62 @@ class FrequencyDataset:
         lines.append("═" * 50)
         return "\n".join(lines)
 
+    def add_composition_ratios(self) -> None:
+        """Add CG/AT composition ratio features to the dataset.
+
+        Appends three new features per sample:
+        - cg_total: sum of pure CG-rich motif frequencies (no A/T)
+        - at_total: sum of pure AT-rich motif frequencies (no C/G)
+        - cg_at_ratio: cg_total / at_total (clipped at 0)
+
+        These ratio features capture the global compositional shift
+        in cfDNA end motifs (CG depletion + AT enrichment in cancer),
+        which is a well-documented biological signal (Jiang et al. 2020).
+        """
+        if not self._loaded:
+            self.load()
+
+        feature_names = self._raw_feature_names if hasattr(self, '_raw_feature_names') else self.feature_names
+        X_raw = self._raw_X if hasattr(self, '_raw_X') else self.X
+
+        # Identify pure CG-rich (C+G, no A,T) and pure AT-rich (A/T, no C,G) motifs
+        cg_indices = [
+            i for i, m in enumerate(feature_names)
+            if 'C' in m and 'G' in m and 'A' not in m and 'T' not in m
+        ]
+        at_indices = [
+            i for i, m in enumerate(feature_names)
+            if ('A' in m or 'T' in m) and 'C' not in m and 'G' not in m
+        ]
+
+        if not cg_indices or not at_indices:
+            logger.warning("Could not identify CG/AT motifs — skipping ratio features")
+            return
+
+        # Compute from raw X (before filtering) to preserve global statistics
+        cg_total = X_raw[:, cg_indices].sum(axis=1)
+        at_total = X_raw[:, at_indices].sum(axis=1)
+        ratio = np.where(at_total > 1e-12, cg_total / at_total, 0.0)
+
+        # If already filtered, subset
+        if self.X.shape[0] < X_raw.shape[0]:
+            # self.X already filtered — need to re-index
+            if hasattr(self, '_filter_mask') and self._filter_mask is not None:
+                cg_total = cg_total[self._filter_mask]
+                at_total = at_total[self._filter_mask]
+                ratio = ratio[self._filter_mask]
+
+        ratio_features = np.column_stack([cg_total, at_total, ratio])
+        ratio_names = ['cg_total', 'at_total', 'cg_at_ratio']
+
+        self.X = np.column_stack([self.X, ratio_features])
+        self.feature_names = list(self.feature_names) + ratio_names
+
+        logger.info(
+            "Added %d ratio features: %s (X now %s)",
+            len(ratio_names), ratio_names, list(self.X.shape),
+        )
+
     def filter_by_label(self, target_label: str,
                          control_label: Optional[str] = None) -> None:
         """Filter dataset to binary comparison (target vs control)."""
@@ -305,6 +363,9 @@ class FrequencyDataset:
 
         mask = mask_pos | mask_neg
         y_new = np.where(mask_pos[mask], 1, 0)
+
+        # Store filter mask for ratio computation
+        self._filter_mask = mask
 
         self.X = self.X[mask]
         self.y = y_new

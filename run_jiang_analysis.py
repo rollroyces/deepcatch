@@ -453,6 +453,10 @@ Examples:
     p.add_argument('--select-by', default='p_value',
                    choices=['p_value', 'variance'],
                    help='Feature selection method (default: p_value)')
+    p.add_argument('--ratio-features', action='store_true', default=True,
+                   help='Add CG/AT composition ratio features (default: True)')
+    p.add_argument('--no-ratio-features', action='store_false', dest='ratio_features',
+                   help='Disable CG/AT composition ratio features')
     p.add_argument('--verbose', '-v', action='store_true',
                    help='Verbose output')
     return p
@@ -608,6 +612,9 @@ def main() -> int:
             # Filter to specific cancer type vs control
             logger.info("Filtering: %s vs %s", args.cancer_type, args.control_label or 'rest')
             ds.filter_by_label(args.cancer_type, args.control_label)
+            if args.ratio_features:
+                logger.info("Adding CG/AT composition ratio features …")
+                ds.add_composition_ratios()
             X, y, feature_names = ds.X, ds.y, ds.feature_names
             n_pos = int(np.sum(y == 1))
             n_neg = int(np.sum(y == 0))
