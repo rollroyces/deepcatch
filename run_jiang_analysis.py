@@ -226,18 +226,48 @@ def run_cet_per_motif(X: np.ndarray, y: np.ndarray,
 
 
 def logistic_fusion_cv(X: np.ndarray, y: np.ndarray, top_k: int = 50,
-                       n_folds: int = 5, seed: int = 42) -> Dict:
+                       n_folds: int = 5, seed: int = 42,
+                       C: float = 10.0, select_by: str = 'p_value') -> Dict:
     """Logistic regression fusion on top-k motifs with CV AUC.
 
-    Returns dict with keys: auc_mean, auc_std, auc_folds, coefs, intercept.
+    Uses C=10.0 (weaker regularization) by default — for strong-signal
+    data like Jiang 4-mer, less L2 penalty preserves more discriminative
+    information and avoids over-shrinking correlated motif features.
+
+    Parameters
+    ----------
+    select_by : str
+        'p_value' — select top-k by Mann-Whitney U p-value (recommended)
+        'variance' — select top-k by feature variance
+        'composite' — use pre-computed composite score from cet_df
+
+    Returns dict with keys: auc_mean, auc_std, auc_folds, coefs, intercept,
+                            top_indices, n_top_motifs_used.
     """
     from sklearn.linear_model import LogisticRegression
     from sklearn.model_selection import StratifiedKFold, cross_val_predict
     from sklearn.metrics import roc_auc_score
+    from scipy.stats import mannwhitneyu
 
-    # Select top-k features by variance (highest variance = most informative)
-    var = np.var(X, axis=0)
-    top_idx = np.argsort(-var)[:min(top_k, X.shape[1])]
+    # Select top-k features
+    if select_by == 'variance':
+        scores = np.var(X, axis=0)
+        top_idx = np.argsort(-scores)[:min(top_k, X.shape[1])]
+    elif select_by == 'p_value':
+        p_vals = []
+        for i in range(X.shape[1]):
+            try:
+                _, p = mannwhitneyu(X[y == 1, i], X[y == 0, i],
+                                    alternative='two-sided')
+                p_vals.append(p)
+            except (ValueError, ZeroDivisionError):
+                p_vals.append(1.0)
+        top_idx = np.argsort(p_vals)[:min(top_k, X.shape[1])]
+    else:
+        # Fallback: variance
+        scores = np.var(X, axis=0)
+        top_idx = np.argsort(-scores)[:min(top_k, X.shape[1])]
+
     X_top = X[:, top_idx]
 
     if X_top.shape[1] == 0:
@@ -249,19 +279,16 @@ def logistic_fusion_cv(X: np.ndarray, y: np.ndarray, top_k: int = 50,
         }
 
     lr = LogisticRegression(
-        l1_ratio=0, C=1.0, solver='liblinear',
-        max_iter=1000, random_state=seed,
+        C=C, solver='liblinear', max_iter=5000, random_state=seed,
     )
 
     cv = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
-    y_pred = cross_val_predict(lr, X_top, y, cv=cv, method='predict_proba')[:, 1]
 
-    # Per-fold AUC
+    # Per-fold AUC (explicit loop for detail, not cross_val_predict)
     fold_aucs = []
     for train_idx, test_idx in cv.split(X_top, y):
         lr_fold = LogisticRegression(
-            l1_ratio=0, C=1.0, solver='liblinear', max_iter=1000,
-            random_state=seed,
+            C=C, solver='liblinear', max_iter=5000, random_state=seed,
         )
         lr_fold.fit(X_top[train_idx], y[train_idx])
         fold_pred = lr_fold.predict_proba(X_top[test_idx])[:, 1]
@@ -277,6 +304,9 @@ def logistic_fusion_cv(X: np.ndarray, y: np.ndarray, top_k: int = 50,
     # Fit on all data for coefficients
     lr.fit(X_top, y)
 
+    # Full cross_val_predict for ROC curve
+    y_pred_cv = cross_val_predict(lr, X_top, y, cv=cv, method='predict_proba')[:, 1]
+
     return {
         'auc_mean': auc_mean,
         'auc_std': auc_std,
@@ -284,7 +314,8 @@ def logistic_fusion_cv(X: np.ndarray, y: np.ndarray, top_k: int = 50,
         'coefs': lr.coef_.flatten(),
         'intercept': float(lr.intercept_[0]),
         'top_indices': top_idx.tolist(),
-        'y_pred_cv': y_pred,
+        'y_pred_cv': y_pred_cv,
+        'n_top_motifs_used': X_top.shape[1],
     }
 
 
@@ -427,6 +458,11 @@ Examples:
                    help='Random seed (default: 42)')
     p.add_argument('--report', '-r', action='store_true',
                    help='Generate clinical interpretation report (HTML + JSON)')
+    p.add_argument('--lr-C', type=float, default=10.0,
+                   help='LogisticRegression C (inverse reg strength, default 10.0)')
+    p.add_argument('--select-by', default='p_value',
+                   choices=['p_value', 'variance'],
+                   help='Feature selection method (default: p_value)')
     p.add_argument('--verbose', '-v', action='store_true',
                    help='Verbose output')
     return p
@@ -482,7 +518,9 @@ def _run_all_pairwise(ds: 'FrequencyDataset', out_dir: Path,
             if args.optimal_k:
                 optimal_k = find_optimal_k(cet_df['composite_score'].values, max_k=min(200, len(cet_df)))
 
-            fusion_result = logistic_fusion_cv(X, y, top_k=min(optimal_k, X.shape[1]), seed=args.seed)
+            fusion_result = logistic_fusion_cv(X, y, top_k=min(optimal_k, X.shape[1]),
+                                seed=args.seed, C=args.lr_C,
+                                select_by=args.select_by)
 
             label_dir = cancer_dir / str(label).replace(' ', '_')
             label_dir.mkdir(parents=True, exist_ok=True)
@@ -619,8 +657,11 @@ def main() -> int:
         "Step 6/10: Logistic regression fusion on top-%d motifs …",
         optimal_k,
     )
-    fusion_result = logistic_fusion_cv(X, y, top_k=optimal_k, seed=args.seed)
-    logger.info("  CV AUC = %.4f ± %.4f", fusion_result['auc_mean'], fusion_result['auc_std'])
+    fusion_result = logistic_fusion_cv(X, y, top_k=optimal_k, seed=args.seed,
+                                    C=args.lr_C, select_by=args.select_by)
+    logger.info("  CV AUC = %.4f ± %.4f (%d motifs, C=%.1f, select=%s)",
+                fusion_result['auc_mean'], fusion_result['auc_std'],
+                fusion_result['n_top_motifs_used'], args.lr_C, args.select_by)
 
     # Save fusion coefs
     coef_df = pd.DataFrame({
