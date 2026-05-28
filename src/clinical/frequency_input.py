@@ -32,6 +32,7 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
+from scipy.stats import rankdata
 
 logger = logging.getLogger(__name__)
 
@@ -283,20 +284,32 @@ class FrequencyDataset:
         lines.append("═" * 50)
         return "\n".join(lines)
 
-    def add_composition_ratios(self) -> None:
-        """Add CG/AT composition ratio features to the dataset.
+    def add_rank_features(self) -> None:
+        """Convert motif frequencies to ranks per sample.
 
-        Appends three new features per sample:
-        - cg_total: sum of pure CG-rich motif frequencies (no A/T)
-        - at_total: sum of pure AT-rich motif frequencies (no C/G)
-        - cg_at_ratio: cg_total / at_total (clipped at 0)
+        For each sample, replaces raw motif frequencies with their
+        rank order (1 = highest frequency, 256 = lowest). This
+        eliminates amplitude-based batch effects while preserving
+        the relative motif abundance pattern — which carries the
+        cancer signal.
 
-        These ratio features capture the global compositional shift
-        in cfDNA end motifs (CG depletion + AT enrichment in cancer),
-        which is a well-documented biological signal (Jiang et al. 2020).
+        Rank transformation has been shown to improve cross-platform
+        reproducibility in cfDNA analysis and provides robust
+        batch-effect normalisation without external reference.
         """
-        if not self._loaded:
+        if not self._loaded or self.X is None:
             self.load()
+
+        original_shape = self.X.shape
+        self.X = np.array([
+            rankdata(-self.X[i, :]) for i in range(self.X.shape[0])
+        ])
+        logger.info(
+            "Applied rank transformation: %s (preserves %s shape)",
+            list(self.X.shape), list(original_shape),
+        )
+
+    def add_composition_ratios(self) -> None:
 
         feature_names = self._raw_feature_names if hasattr(self, '_raw_feature_names') else self.feature_names
         X_raw = self._raw_X if hasattr(self, '_raw_X') else self.X

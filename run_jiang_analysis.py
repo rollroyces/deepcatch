@@ -457,6 +457,10 @@ Examples:
                    help='Add CG/AT composition ratio features (default: True)')
     p.add_argument('--no-ratio-features', action='store_false', dest='ratio_features',
                    help='Disable CG/AT composition ratio features')
+    p.add_argument('--rank-features', action='store_true', default=True,
+                   help='Convert motif frequencies to ranks per sample (default: True)')
+    p.add_argument('--no-rank-features', action='store_false', dest='rank_features',
+                   help='Disable rank transformation, use raw frequencies')
     p.add_argument('--verbose', '-v', action='store_true',
                    help='Verbose output')
     return p
@@ -615,6 +619,9 @@ def main() -> int:
             if args.ratio_features:
                 logger.info("Adding CG/AT composition ratio features …")
                 ds.add_composition_ratios()
+            if args.rank_features:
+                logger.info("Applying rank transformation …")
+                ds.add_rank_features()
             X, y, feature_names = ds.X, ds.y, ds.feature_names
             n_pos = int(np.sum(y == 1))
             n_neg = int(np.sum(y == 0))
