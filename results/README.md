@@ -28,7 +28,7 @@ This directory contains the key results from DeepCatch validation runs.
 | Guardant360 | 85.3% | 99.6% | 0.01% | 50 | ✅ >200K samples |
 | Grail Galleri | 51.5% | 99.5% | N/A | 50+ | ✅ NHS trial (140K) |
 | CancerSEEK | 70.0% | 99.0% | N/A | 8 | ✅ |
-| **DeepCatch multi-modal** | **71.0%*** | **99.0%*** | **0.00%*** | **8** | **❌ Sim only** |
+| **DeepCatch multi-modal** | **71.0%*** | **99.0%*** | **≤0.001%*** | **8** | **❌ Sim only** |
 
 *\*Simulation-estimated. Cannot be directly compared to clinical results.*
 

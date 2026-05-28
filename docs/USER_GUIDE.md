@@ -564,7 +564,7 @@ In the context of cancer screening, AUC is interpreted as follows:
 - Batch effects between sequencing runs
 - CHIP (clonal hematopoiesis) confounding
 
-**Realistic expectation for clinical samples:** AUC 0.85–0.90 after adjusting for these real-world confounders. An AUC above 0.85 on real clinical samples would be a strong result warranting further investment.
+**Projected estimate for clinical samples (NOT validated):** AUC 0.85–0.90 after adjusting for these real-world confounders. This is a speculative projection — real performance can only be determined through clinical validation.
 
 ### 3.2 Clinical Meaning of Sensitivity/Specificity Trade-offs
 
@@ -842,10 +842,10 @@ bash RUN_ALL.sh
 
 | Depth | Error Rate Floor | Min Detectable VAF | AUC Impact |
 |-------|-----------------|-------------------|------------|
-| 50,000× | 0.002% | ~0.005% | Baseline (AUC ~0.96) |
-| 10,000× | 0.010% | ~0.025% | AUC drops ~0.03–0.05 |
-| 5,000× | 0.020% | ~0.050% | AUC drops ~0.05–0.10 |
-| 1,000× | 0.100% | ~0.250% | AUC drops ~0.10–0.20 |
+| 50,000× | 0.002% | ~0.005% | Baseline (simulation, AUC ~0.96) |
+| 10,000× | 0.010% | ~0.025% | AUC drops ~0.03–0.05 (simulation estimate) |
+| 5,000× | 0.020% | ~0.050% | AUC drops ~0.05–0.10 (simulation estimate) |
+| 1,000× | 0.100% | ~0.250% | AUC drops ~0.10–0.20 (simulation estimate) |
 
 **💡 Hint:** At clinical depths, the multi-modal fusion advantage becomes even more important — when variants alone are noisy, methylation and fragmentomics provide orthogonal signal.
 
@@ -984,7 +984,7 @@ cat results/node/FINAL_REAL_DATA_REPORT.md
 
 **The elevator pitch:**
 
-> DeepCatch is a computational framework that combines multiple molecular signals from a single blood draw — DNA mutations, methylation patterns, DNA fragment structure, and chromosomal changes — to detect cancer earlier than any single test can. In simulations parameterized against real cancer genomics data, it pushes the detection limit 100× beyond current clinical liquid biopsies. We're seeking clinical partners to validate these findings on real patient plasma samples.
+> DeepCatch is a computational framework that combines multiple molecular signals from a single blood draw — DNA mutations, methylation patterns, DNA fragment structure, and chromosomal changes — to detect cancer earlier than any single test can. In simulation, it models detection limits below current clinical assays. Clinical validation on real patient plasma samples is the critical next step — we are actively seeking partners for this.
 
 **Key talking points for clinicians:**
 
@@ -1097,7 +1097,7 @@ Be honest with partners about:
 | Limitation | Honest Assessment |
 |-----------|------------------|
 | **ZERO clinical samples** | "We've validated this computationally. The pilot study is the first time it will touch real patient blood. We expect AUC to drop 0.05–0.10 from simulation." |
-| **50,000× sequencing depth is expensive** | "Our simulations used research-grade depth. At clinical 5,000× depth, AUC drops ~0.10. We recommend starting at 5,000× for cost reasons." |
+| **50,000× sequencing depth is expensive** | "Our simulations used research-grade depth. At 5,000× depth (simulated), AUC drops ~0.10. We recommend starting at 5,000× for cost reasons." |
 | **No tissue-of-origin prediction (yet)** | "DeepCatch tells you IF there's cancer, not WHERE. We're working on TOO but it's not ready for the pilot." |
 | **CHIP confounding** | "Without matched WBC, ~15% of 70-year-olds will have false-positive variant calls. We strongly recommend collecting buffy coat." |
 | **Not a replacement for standard of care** | "DeepCatch is a screening triage tool. Positive results require confirmatory imaging/biopsy. Negative results don't rule out cancer." |
