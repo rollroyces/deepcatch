@@ -69,24 +69,6 @@ except ImportError:
 # Core analysis functions
 # ═══════════════════════════════════════════════════════════════════════════
 
-def compute_cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
-    """Cliff's delta — non-parametric effect size.
-
-    δ ∈ [−1, 1]; |δ| ≥ 0.147 = small, ≥ 0.33 = medium, ≥ 0.474 = large.
-
-    References
-    ----------
-    Cliff N (1993) Psychol Bull 114:494-509
-    """
-    nx, ny = len(x), len(y)
-    if nx == 0 or ny == 0:
-        return 0.0
-    # Count pairwise comparisons
-    gt = sum(int(xi > yj) for xi in x for yj in y)
-    lt = sum(int(xi < yj) for xi in x for yj in y)
-    return (gt - lt) / (nx * ny)
-
-
 def _fast_cliffs_delta(x: np.ndarray, y: np.ndarray) -> float:
     """Vectorised Cliff's delta for moderate-sized arrays."""
     nx, ny = len(x), len(y)
@@ -329,6 +311,7 @@ def generate_summary_report(
     nested_cv_result: Optional[Dict] = None,
     args: argparse.Namespace = None,
     elapsed: float = 0.0,
+    actual_top_k: Optional[int] = None,
 ) -> str:
     """Generate a Markdown summary report."""
     lines = [
@@ -345,7 +328,8 @@ def generate_summary_report(
     if args:
         lines.append(f"| Input file | `{args.input}` |")
         lines.append(f"| Output dir | `{args.output}` |")
-        lines.append(f"| Top-k motifs | {args.top_k} |")
+        actual_k = actual_top_k if actual_top_k is not None else args.top_k
+        lines.append(f"| Top-k motifs | {actual_k} |")
         lines.append(f"| Significance α | {args.alpha} |")
         lines.append(f"| Nested CV | {'✓' if args.nested_cv else '✗'} |")
         lines.append(f"| Optimal-k | {'✓' if args.optimal_k else '✗'} |")
@@ -387,19 +371,25 @@ def generate_summary_report(
         "",
         f"| Metric | Value |",
         f"|--------|-------|",
-        f"| Top-k motifs used | {args.top_k if args else 50} |",
+        f"| Top-k motifs used | {fusion_result.get('n_top_motifs_used', actual_k)} |",
         f"| CV AUC (mean ± std) | {fusion_result['auc_mean']:.4f} ± {fusion_result['auc_std']:.4f} |",
         f"| Per-fold AUCs | {[f'{a:.4f}' for a in fusion_result['auc_folds']]} |",
     ])
 
     if nested_cv_result is not None:
+        nest_mean = nested_cv_result.get('mean_outer_score', 'N/A')
+        nest_std = nested_cv_result.get('std_outer_score', 'N/A')
+        if isinstance(nest_mean, float):
+            nest_auc_str = f"{nest_mean:.4f} ± {nest_std:.4f}" if isinstance(nest_std, float) else f"{nest_mean:.4f}"
+        else:
+            nest_auc_str = str(nest_mean)
         lines.extend([
             "",
             "## 4. Nested Cross-Validation",
             "",
             f"| Metric | Value |",
             f"|--------|-------|",
-            f"| Nested CV AUC (mean ± std) | {nested_cv_result.get('mean_outer_score', 'N/A')} ± {nested_cv_result.get('std_outer_score', 'N/A')} |",
+            f"| Nested CV AUC (mean ± std) | {nest_auc_str} |",
             f"| Number of outer folds | {nested_cv_result.get('n_outer_folds', 'N/A')} |",
         ])
 
@@ -526,7 +516,7 @@ def _run_all_pairwise(ds: 'FrequencyDataset', out_dir: Path,
             label_dir.mkdir(parents=True, exist_ok=True)
             cet_df.to_csv(label_dir / 'cet_motif_results.csv', index=False)
 
-            report_md = generate_summary_report(cet_df, fusion_result, None, args, 0.0)
+            report_md = generate_summary_report(cet_df, fusion_result, None, args, 0.0, actual_top_k=optimal_k)
             (label_dir / 'summary_report.md').write_text(report_md)
 
             all_results[str(label)] = {
@@ -623,6 +613,7 @@ def main() -> int:
             n_neg = int(np.sum(y == 0))
             logger.info("  After filtering: %d cases, %d controls (total %d samples)",
                         n_pos, n_neg, len(y))
+            print("\n" + ds.describe())
         else:
             # Auto-run all comparisons
             logger.info("No --cancer-type specified. Running all pairwise comparisons…")
@@ -724,6 +715,7 @@ def main() -> int:
     elapsed = time.time() - t_start
     report_md = generate_summary_report(
         cet_df, fusion_result, nested_cv_result, args, elapsed,
+        actual_top_k=optimal_k,
     )
     report_path = out_dir / 'summary_report.md'
     report_path.write_text(report_md)
@@ -733,9 +725,12 @@ def main() -> int:
     if args.report:
         logger.info("Step 11/11: Generating clinical interpretation report …")
         try:
+            nested_auc = nested_cv_result.get('mean_outer_score') if nested_cv_result else None
+            nested_auc_std = nested_cv_result.get('std_outer_score') if nested_cv_result else None
             crg = ClinicalReportGenerator(
                 cet_df, fusion_result,
                 threshold_sens=0.70, threshold_spec=0.95,
+                nested_auc=nested_auc, nested_auc_std=nested_auc_std,
             )
 
             # HTML report

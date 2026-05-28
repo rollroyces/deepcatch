@@ -104,7 +104,7 @@ DeepCatch's fragmentomics subsystem (FragmentoSign) implements the following THE
 │               │  Two‑Stage CET Screening            │                       │
 │               │  Stage 1: Permissive SPRT            │                       │
 │               │  Stage 2: Strict Confirmation        │                       │
-│               │  → 100.0 % combined specificity      │                       │
+│               │                                                     │                       │
 │               └──────────────┬─────────────────────┘                       │
 │                              ▼                                             │
 │               ┌────────────────────────────────────┐                       │

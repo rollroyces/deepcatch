@@ -309,6 +309,14 @@ class MotifRanker:
         X = np.asarray(X, dtype=np.float64)
         y = np.asarray(y, dtype=np.float64).ravel()
 
+        # Check for NaN values and impute with column mean
+        nan_count = int(np.sum(np.isnan(X)))
+        if nan_count > 0:
+            logger.warning("Input X contains %d NaN values. Replacing with column mean.", nan_count)
+            col_means = np.nanmean(X, axis=0)
+            nan_mask = np.isnan(X)
+            X = np.where(nan_mask, col_means[np.newaxis, :], X)
+
         n_samples, n_motifs = X.shape
         cancer_idx = np.where(y == 1)[0]
         control_idx = np.where(y == 0)[0]

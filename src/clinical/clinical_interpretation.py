@@ -77,11 +77,15 @@ class ClinicalReportGenerator:
         fusion_result: Dict,
         threshold_sens: float = 0.70,
         threshold_spec: float = 0.95,
+        nested_auc: Optional[float] = None,
+        nested_auc_std: Optional[float] = None,
     ):
         self.cet_df = cet_df
         self.fusion_result = fusion_result
         self.threshold_sens = threshold_sens
         self.threshold_spec = threshold_spec
+        self.nested_auc = nested_auc
+        self.nested_auc_std = nested_auc_std
 
         # ── Validate inputs ──────────────────────────────────────────
         required_cols = {'motif', 'p_value', 'effect_size',
@@ -133,10 +137,15 @@ class ClinicalReportGenerator:
             direction = "enriched" if row['effect_size'] > 0 else "depleted"
             top_motifs.append((row['motif'], row['composite_score'], direction))
 
-        # Fusion performance
-        auc_mean = self.fusion_result.get('auc_mean', float('nan'))
-        auc_std = self.fusion_result.get('auc_std', float('nan'))
-        cv_confidence = f"{auc_mean:.4f} ± {auc_std:.4f}"
+        # Fusion performance — prefer nested CV AUC (unbiased) when available
+        if self.nested_auc is not None:
+            auc_mean = self.nested_auc
+            auc_std = self.nested_auc_std if self.nested_auc_std is not None else 0.0
+            cv_confidence = f"{auc_mean:.4f} ± {auc_std:.4f} (nested CV)"
+        else:
+            auc_mean = self.fusion_result.get('auc_mean', float('nan'))
+            auc_std = self.fusion_result.get('auc_std', float('nan'))
+            cv_confidence = f"{auc_mean:.4f} ± {auc_std:.4f}"
 
         # Biological pattern
         feature_names = self.cet_df['motif'].tolist()
