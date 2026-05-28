@@ -32,19 +32,19 @@ DeepCatch is a computational pipeline that answers one question: **“Given bloo
 
 Each modality produces a probability score. Rather than averaging them equally (the approach used by Bie et al. 2023), DeepCatch **weights each modality by its individual diagnostic power** — measured as the area under the ROC curve (AUC) on a held‑out validation set. Modalities that perform worse than random (AUC < 0.5) receive zero weight and are excluded entirely.
 
-This performance‑weighted fusion yields a statistically significant improvement over simple averaging (ΔAUC +0.104, p < 0.0001).
+This performance‑weighted fusion is the core idea behind DeepCatch — different molecular signals are combined according to their reliability rather than averaged equally.
 
-### 2.2 Two‑Stage Cumulative Evidence Tracking (CET)
+### 2.2 Cumulative Evidence Tracking (CET)
 
 **The problem:** Cancer grows over time, but ctDNA levels at the earliest stages are often below the detection threshold of any single blood draw.
 
 **Our solution:** Track the patient over multiple quarterly blood draws using a two‑stage architecture:
 
-- **Stage 1 — Permissive CET:** A sequential probability ratio test (SPRT) accumulates evidence across all five modalities and all quarterly timepoints. This stage is calibrated for high sensitivity (~66 %) at moderate specificity (~87 %). It flags about 26 % of patients for further investigation.
+- **Stage 1 — Permissive CET:** A sequential probability ratio test (SPRT) accumulates evidence across all five modalities and all quarterly timepoints. This stage is designed for high sensitivity at moderate specificity.
 
-- **Stage 2 — Confirmatory Fusion:** Only the flagged patients receive a high‑depth targeted sequencing panel. Performance‑weighted fusion is applied at a strict cutoff calibrated for ultra‑high specificity (>99 %). This stage eliminates virtually all false positives from Stage 1.
+- **Stage 2 — Confirmatory Fusion:** Only the flagged patients receive a higher‑depth targeted sequencing panel. Performance‑weighted fusion is applied at a strict cutoff calibrated for ultra‑high specificity.
 
-**Combined result:** 62.8 % sensitivity at 100.0 % specificity. Only 15.7 % of the population reaches the high‑risk tier. The average cost is $127 per person — competitive with existing clinical assays.
+This two-stage approach is designed to reduce false positives while maintaining sensitivity. Performance numbers will be established through ongoing validation work.
 
 ### 2.3 FragmentoSign: Fragmentomics Subsystem
 
@@ -57,7 +57,7 @@ DeepCatch's fragmentomics engine implements the DELFI (DNA Evaluation of Fragmen
 | End‑motif analysis | 4‑mer extraction from BAM/FASTQ + MDS scoring | Jiang 2020, *Cancer Discovery* |
 | Nucleosome positioning | CNN over TSS coverage profiles | Snyder 2016, *Cell* |
 
-The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA, even at ctDNA fractions as low as 0.01 %.
+The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA.
 
 ### Novel Components
 
@@ -70,10 +70,10 @@ The sub‑nucleosomal GMM component is specifically designed to detect the incre
 
 ### THEMIS Feature Equivalents
 
-DeepCatch's fragmentomics subsystem (FragmentoSign) implements all four THEMIS features:
+DeepCatch's fragmentomics subsystem (FragmentoSign) implements the following THEMIS-inspired features:
 
-| THEMIS Feature | FragmentoSign Equivalent | Method |
-|---------------|--------------------------|--------|
+| Feature | FragmentoSign Equivalent | Method |
+|---------|--------------------------|--------|
 | **MFR** (Methylated Fragment Ratio) | Methylation entropy + LOESS-normalized coverage | CpG density scoring |
 | **FSI** (Fragment Size Index) | Short/long fragment ratio + GMM sub-nucleosomal fraction | 4-component GMM |
 | **CAFF** (Chromosomal Aneuploidy) | Copy Number Instability Index + CNA burden scoring | Whole-genome binning |
@@ -201,16 +201,7 @@ Every push to `main` triggers GitHub Actions that run the core validation suite.
 
 ### 3.7 Output Files
 
-After a successful run, `results/` contains:
-
-| File | Content |
-|------|---------|
-| `results/node/FINAL_REAL_DATA_REPORT.md` | Comprehensive real‑data validation report |
-| `results/node/two_stage_results.json` | Two‑Stage CET performance metrics with 95 % CI |
-| `results/node/headToHead_results.json` | Head‑to‑head AUC comparison vs Bie, CAPP‑Seq, iDES |
-| `results/node/cet_v2_results.json` | Multi‑modal CET (single‑stage) results |
-| `results/node/too_results.json` | Tissue‑of‑origin accuracy per cancer type |
-| `results/node/cost_analysis.json` | Depth‑vs‑cost‑vs‑AUC trade‑off analysis |
+After a successful run, `results/` contains simulation-based reports (not clinically validated). See the `results/` directory for available files.
 
 ---
 
@@ -284,7 +275,7 @@ Contributions are welcome in the following areas:
 - **Wet‑lab partnerships** — access to clinical cfDNA samples for real‑world validation
 - **GEO/SRA public data** — cross‑validation on published cfDNA datasets
 - **Tissue‑of‑origin** — expanding TOO coverage to 20+ cancer types
-- **CET flag‑rate optimisation** — reducing the 26.5 % Stage 1 flag rate below 20 %
+- **CET flag‑rate optimisation** — CET flag‑rate optimisation
 - **Cost modelling** — health‑economics analysis of targeted capture for population screening
 
 Please open an issue to discuss before submitting large pull requests.
@@ -311,7 +302,7 @@ Please open an issue to discuss before submitting large pull requests.
 
 ### 9.1 Overview
 
-This section describes the first real‑world validation of DeepCatch's CET (Cumulative Evidence Tracking) architecture on actual human plasma cfDNA data from **Professor Jiang Pei‑yong's laboratory at the Chinese University of Hong Kong (CUHK)**. Unlike the simulation‑based validation in §1 (which uses synthetic data parameterized against literature), this analysis was performed on processed 4‑mer end‑motif frequency vectors derived from real patient blood draws.
+This section describes the first real‑world validation of DeepCatch's CET (Cumulative Evidence Tracking) architecture on actual human plasma cfDNA data from **Professor Jiang Pei‑yong's laboratory at the Chinese University of Hong Kong (CUHK)**. This analysis was performed on processed 4‑mer end‑motif frequency vectors derived from real patient blood draws.
 
 ### 9.2 Dataset
 
