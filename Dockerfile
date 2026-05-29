@@ -53,18 +53,16 @@ RUN pip install --no-cache-dir \
     pyyaml==6.0.1
 
 # ── Copy source code ─────────────────────────────────────────────────────
-COPY validation_framework.py /app/
 COPY validation/ /app/validation/
-COPY reproducibility/ /app/reproducibility/
 COPY run_bioinfo_validation.py /app/
+COPY run_full_validation.py /app/
 
 # ── Create output directory ──────────────────────────────────────────────
 RUN mkdir -p /app/results
 
 # ── Verify imports ───────────────────────────────────────────────────────
-RUN python -c "import validation_framework; print('validation_framework OK')" && \
-    python -c "from validation import *; print('validation modules OK')"
+RUN python -c "from validation import *; print('validation modules OK')"
 
 # ── Entry point ──────────────────────────────────────────────────────────
-# Default: run ALL validation modules
-CMD ["python", "run_bioinfo_validation.py"]
+# Default: run full validation suite
+CMD ["python", "run_full_validation.py"]

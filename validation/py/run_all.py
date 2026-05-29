@@ -254,9 +254,10 @@ def main():
           f"not comparable to Grail 88.7%")
 
     # Summary
-    print(f"\n  {"=" * 58}")
+    bar = "=" * 58
+    print(f"\n  {bar}")
     print(f"  FINAL VERDICT: {comparison['honest_assessment'][:80]}...")
-    print(f"  {"=" * 58}")
+    print(f"  {bar}")
 
     print(f"\n  Total runtime: {total_time:.1f}s ({total_time/60:.1f} min)")
     print(f"\n  All results saved to: {RESULTS_PY_DIR}/")
