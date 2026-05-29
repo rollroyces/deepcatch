@@ -143,3 +143,4 @@ results/delfi_1000g_validation/*.fa
 results/delfi_1000g_validation/*.fai
 results/delfi_1000g_validation/*.py
 results/prof_jiang_4mer_analysis/deepcatch_manifesto.md
+*.xlsx
