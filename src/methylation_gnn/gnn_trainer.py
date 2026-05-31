@@ -379,7 +379,7 @@ class GNNTrainer:
 
         # ReduceLROnPlateau for finetune phase
         self.scheduler = ReduceLROnPlateau(
-            self.optimizer, mode="min", factor=0.5, patience=5, verbose=True
+            self.optimizer, mode="min", factor=0.5, patience=5
         )
 
         self.best_epoch = 0

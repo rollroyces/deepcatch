@@ -358,7 +358,9 @@ class MethylationGNNPredictor:
         list of float or list of dict
         """
         results = []
-        for sample in samples:
+        for i, sample in enumerate(samples):
+            if isinstance(sample, dict) and "sample_name" not in sample:
+                sample["sample_name"] = f"sample_{i}"
             result = self.predict_sample(**sample, return_details=return_details)
             results.append(result)
         return results

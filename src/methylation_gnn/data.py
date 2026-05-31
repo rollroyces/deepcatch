@@ -327,9 +327,9 @@ def preprocess_methylation_betas(
         for r_idx, (chrom, start, end) in enumerate(regions):
             # Find CpGs in this region
             mask = (
-                (cpg_positions[:, 0] == chrom)
-                & (cpg_positions[:, 1] >= start)
-                & (cpg_positions[:, 1] < end)
+                (np.array(cpg_positions[:, 0], dtype=str) == str(chrom))
+                & (np.array(cpg_positions[:, 1], dtype=float) >= float(start))
+                & (np.array(cpg_positions[:, 1], dtype=float) < float(end))
             )
             region_cpgs = beta[mask, :]
             n_cpgs_region = region_cpgs.shape[0]

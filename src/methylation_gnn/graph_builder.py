@@ -576,9 +576,16 @@ class RegulatoryGraphBuilder:
             if arr_dict and key in arr_dict:
                 val = arr_dict[key]
                 if isinstance(val, np.ndarray):
+                    if val.ndim == 1:
+                        padded = np.zeros(size, dtype=np.float32)
+                        copy_len = min(len(val), size)
+                        padded[:copy_len] = val[:copy_len]
+                        return padded
+                    # Multi-dimensional: take mean across feature dim
+                    val_1d = val.mean(axis=-1)
                     padded = np.zeros(size, dtype=np.float32)
-                    copy_len = min(len(val), size)
-                    padded[:copy_len] = val[:copy_len]
+                    copy_len = min(len(val_1d), size)
+                    padded[:copy_len] = val_1d[:copy_len]
                     return padded
                 return np.full(size, float(val), dtype=np.float32)
             return np.zeros(size, dtype=np.float32)
