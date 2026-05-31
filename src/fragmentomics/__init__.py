@@ -54,6 +54,13 @@ from .fragment_gmm import (
     FragmentLengthGMM,
     compute_fragmentomics_features,
 )
+from .enhanced_features import (
+    DELFIFeatures,
+    MFSFeatures,
+    NucleosomeFootprint,
+    RefinedEndMotifs,
+    EnhancedFragmentomics,
+)
 
 __all__ = [
     # Normalization
@@ -68,4 +75,10 @@ __all__ = [
     # Fragment GMM
     "FragmentLengthGMM",
     "compute_fragmentomics_features",
+    # Enhanced fragmentomics
+    "DELFIFeatures",
+    "MFSFeatures",
+    "NucleosomeFootprint",
+    "RefinedEndMotifs",
+    "EnhancedFragmentomics",
 ]
