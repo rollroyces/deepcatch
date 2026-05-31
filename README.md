@@ -1,358 +1,541 @@
-# 🧬 DeepCatch: Performance‑Weighted Multi‑Modal Fusion for Ultra‑Early Cancer Detection from cfDNA
+# 🧬 DeepCatch v2.1 — Multi-Modal Longitudinal MCED Framework
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.1](https://img.shields.io/badge/Version-2.1-blue.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-198%2F198%20passing-brightgreen)]()
+[![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 
-**DeepCatch is an open‑source computational framework for cancer early detection from cfDNA, combining performance‑weighted multi‑modal fusion, cumulative evidence tracking, and tissue‑of‑origin prediction.** It is designed to enable independent validation and accelerate liquid‑biopsy research.
+**DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
+
+v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
 
 ---
 
-> **⚠️ RESEARCH‑ONLY NOTICE:** DeepCatch is research-stage software. v2.1 adds preliminary validation on 129 real human plasma samples (processed frequency data) from Jiang lab (CUHK) — see §9. All other performance numbers have been removed from this README as they were simulation-based and not clinically verified. Full wet-lab validation on raw sequencing data remains the essential next step.
+> ⚠️ **Research-stage software.** Not for clinical diagnosis. See §11 for real-plasma validation status.
 
 ---
 
-
-
-## 2. How It Actually Works
-
-DeepCatch is a computational pipeline that answers one question: **“Given blood‑based measurements from a patient, what is the probability that an early‑stage cancer is present, and if so, where is it?”** It answers this by combining three strategies that no other open‑source framework integrates.
-
-### 2.1 Performance‑Weighted Multi‑Modal Fusion
-
-**The problem:** A single blood measurement — say, a mutation at 0.05 % variant allele fraction — is often too noisy to trust alone.
-
-**Our solution:** Measure five independent molecular signals from the same blood draw:
-
-1. **Somatic mutations** (ctDNA variants)
-2. **DNA methylation** (epigenetic silencing)
-3. **Fragmentomics** (cfDNA fragment size and end‑motif patterns)
-4. **Copy‑number alterations** (genomic instability)
-5. **CTC count** (circulating tumour cell estimate)
-
-Each modality produces a probability score. Rather than averaging them equally (the approach used by Bie et al. 2023), DeepCatch **weights each modality by its individual diagnostic power** — measured as the area under the ROC curve (AUC) on a held‑out validation set. Modalities that perform worse than random (AUC < 0.5) receive zero weight and are excluded entirely.
-
-This performance‑weighted fusion is the core idea behind DeepCatch — different molecular signals are combined according to their reliability rather than averaged equally.
-
-### 2.2 Cumulative Evidence Tracking (CET)
-
-**The problem:** Cancer grows over time, but ctDNA levels at the earliest stages are often below the detection threshold of any single blood draw.
-
-**Our solution:** Track the patient over multiple quarterly blood draws using a two‑stage architecture:
-
-- **Stage 1 — Permissive CET:** A sequential probability ratio test (SPRT) accumulates evidence across all five modalities and all quarterly timepoints. This stage is designed for high sensitivity at moderate specificity.
-
-- **Stage 2 — Confirmatory Fusion:** Only the flagged patients receive a higher‑depth targeted sequencing panel. Performance‑weighted fusion is applied at a strict cutoff calibrated for ultra‑high specificity.
-
-This two-stage approach is designed to reduce false positives while maintaining sensitivity. Performance numbers will be established through ongoing validation work.
-
-### 2.3 FragmentoSign: Fragmentomics Subsystem
-
-DeepCatch's fragmentomics engine implements the DELFI (DNA Evaluation of Fragments for Early Interruption) and MDS (Motif Diversity Score) frameworks:
-
-| Component | Method | Reference |
-|-----------|--------|-----------|
-| GC‑bias correction | LOESS local normalisation | Cristiano 2019, *Nature* |
-| Fragment length model | 4‑component Gaussian Mixture Model (GMM): sub‑nucleosomal (~80 bp), mono‑ (~167 bp), di‑ (~334 bp), tri‑nucleosomal (~501 bp) | Snyder 2016, *Cell* |
-| End‑motif analysis | 4‑mer extraction from BAM/FASTQ + MDS scoring | Jiang 2020, *Cancer Discovery* |
-| Nucleosome positioning | CNN over TSS coverage profiles | Snyder 2016, *Cell* |
-
-The sub‑nucleosomal GMM component is specifically designed to detect the increased proportion of short fragments (<150 bp) characteristic of tumour‑derived cfDNA.
-
-### Novel Components
-
-| Component | Innovation |
-|-----------|-----------|
-| Performance-weighted fusion | AUC-proportional weighting with below-chance suppression |
-| Two-Stage CET (SPRT) | Longitudinal multi-modal screening architecture |
-| FragmentoSign (GMM + MDS) | Combined fragment length + end motif pipeline |
-| 6-confounder realism | CHIP, variable shedding, trinucleotide errors, GE, batch, inflammation |
-
-### THEMIS Feature Equivalents
-
-DeepCatch's fragmentomics subsystem (FragmentoSign) implements the following THEMIS-inspired features:
-
-| Feature | FragmentoSign Equivalent | Method |
-|---------|--------------------------|--------|
-| **MFR** (Methylated Fragment Ratio) | Methylation entropy + LOESS-normalized coverage | CpG density scoring |
-| **FSI** (Fragment Size Index) | Short/long fragment ratio + GMM sub-nucleosomal fraction | 4-component GMM |
-| **CAFF** (Chromosomal Aneuploidy) | Copy Number Instability Index + CNA burden scoring | Whole-genome binning |
-| **FEM** (Fragment End Motif) | 4-mer MDS (Motif Diversity Score) + end motif embeddings | Jiang 2020 protocol |
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         DeepCatch System Architecture                    │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                          │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │  Variant      │  │  Methylation │  │  Fragment-   │  │  Copy Number │ │
-│  │  Calling      │  │  (Entropy)   │  │  omics        │  │  Alterations │ │
-│  │  (Bayesian +  │  │              │  │  (End motifs, │  │  (CNA)       │ │
-│  │   Contrastive │  │              │  │   size, nucl) │  │              │ │
-│  │   DL)         │  │              │  │  [Fragmento-  │  │              │ │
-│  │               │  │              │  │   Sign]       │  │              │ │
-│  └──────┬────────┘  └──────┬───────┘  └───────┬───────┘  └──────┬───────┘ │
-│         │                  │                   │                  │        │
-│         └──────────────────┼───────────────────┼──────────────────┘        │
-│                            ▼                   ▼                           │
-│               ┌────────────────────────────────────┐                       │
-│               │  Multi‑Modal Fusion Layer           │                       │
-│               │  (Performance‑Weighted)              │                       │
-│               └──────────────┬─────────────────────┘                       │
-│                              ▼                                             │
-│               ┌────────────────────────────────────┐                       │
-│               │  Two‑Stage CET Screening            │                       │
-│               │  Stage 1: Permissive SPRT            │                       │
-│               │  Stage 2: Strict Confirmation        │                       │
-│               │                                                     │                       │
-│               └──────────────┬─────────────────────┘                       │
-│                              ▼                                             │
-│               ┌────────────────────────────────────┐                       │
-│               │  Meta‑Learning Ensemble (MAML)      │                       │
-│               │  → Few‑shot subtype adaptation      │                       │
-│               └──────────────┬─────────────────────┘                       │
-│                              ▼                                             │
-│               ┌────────────────────────────────────┐                       │
-│               │   Risk Score + TOO Prediction       │                       │
-│               │   → 4‑Tier Risk Stratification      │                       │
-│               └────────────────────────────────────┘                       │
-└─────────────────────────────────────────────────────────────────────────┘
+cfDNA Sample
+    │
+    ├── Stage 1 (Capture) — 7 Modalities ────────────────────────┐
+    │   ├── Fragmentomics Basic     MFR, FSI, CAFF, FEM          │
+    │   ├── Enhanced Fragmentomics  DELFI + MFS + nucleosome     │
+    │   ├── CNV                     6-D chromosomal instability  │
+    │   ├── Serological             PG-I, PG-II, G-17, Hp        │
+    │   ├── GNN Methylation Network GATv2 field defect detection │
+    │   ├── Tissue Deconvolution    cfSort-style DNN (24-D)      │
+    │   └── Priming Agents          PK/PD + denoising            │
+    │                                                             │
+    └──→ Multi-Modal Foundation Model (Transformer) ←────────────┘
+                    │
+    └── Stage 2 (Enhance) — Longitudinal ────────────────────────┐
+        └── Bayesian Kalman Filter (BSSLM)                       │
+                    │
+        Detection Decision:  p_cancer > τ
 ```
 
 ---
 
-## 3. Installation & Usage
-
-### 3.1 Prerequisites
-
-- **Python** 3.9+ with pip
-- **Node.js** 18+ (validation scripts)
-- **Git**
-
-### 3.2 Quick Install
+## Installation
 
 ```bash
 git clone https://github.com/rollroyces/deepcatch.git
 cd deepcatch
-pip install -r requirements.txt
+pip install -r requirements_py.txt
 ```
 
-### 3.3 Python Dependencies
-
-```
-numpy>=1.24.0
-scipy>=1.10.0
-scikit-learn>=1.3.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
-pandas>=2.0.0
-torch>=2.0.0          # for deep learning models
-torch-geometric>=2.3.0 # for GNN fusion
-pysam                  # for BAM motif extraction (optional)
-statsmodels            # for LOESS normalisation (optional)
-```
-
-### 3.4 Running the Pipeline
-
-**Full validation suite (Python):**
+**Minimum dependencies:**
 ```bash
-bash RUN_ALL.sh
+pip install numpy scipy scikit-learn pandas
 ```
 
-**Quick smoke test (2 minutes):**
+**With deep learning (GNN, foundation model, tissue deconv):**
 ```bash
-bash RUN_ALL.sh --quick
+pip install torch>=2.0.0 torch-geometric
 ```
 
-**Node.js validation against TCGA/COSMIC data:**
+**Optional — BAM/FASTQ processing:**
 ```bash
-cd validation/node
-node runRealFinal.js
+pip install pysam statsmodels
 ```
 
-**Run a single module:**
-```bash
-# Two‑Stage CET
-node validation/node/twoStageCET.js
-
-# Head‑to‑head comparison
-python validation/py/head_to_head.py
-
-# Fragmentomics (FragmentoSign)
-python -c "
-from src.fragmentomics import FragmentLengthGMM, compute_fragmentomics_features
-gmm = FragmentLengthGMM(n_components=4)
-gmm.fit(your_fragment_lengths)
-print(gmm.get_component_stats())
-"
-```
-
-### 3.5 Docker
-
+**Docker:**
 ```bash
 docker build -t deepcatch:latest .
 docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 ```
 
-### 3.6 CI Pipeline
-
-Every push to `main` triggers GitHub Actions that run the core validation suite. Results are available as workflow artifacts.  
-→ https://github.com/rollroyces/deepcatch/actions
-
-### 3.7 Output Files
-
-After a successful run, `results/` contains simulation-based reports (not clinically validated). See the `results/` directory for available files.
-
 ---
 
-## 4. Repository Structure
+## Quick Start
 
-```
-deepcatch/
-├── README.md
-├── LICENSE                               # MIT
-├── CITATION.cff                          # Academic citation metadata
-├── requirements.txt
-├── RUN_ALL.sh                            # One‑command validation
-├── Dockerfile
-│
-├── src/
-│   ├── variant_calling/                  # Bayesian + contrastive DL
-│   ├── multimodal_fusion/                # GNN fusion (performance‑weighted)
-│   ├── longitudinal/                     # CET/SPRT longitudinal
-│   ├── fragmentomics/                    # FragmentoSign (DELFI, MDS, GMM, LOESS)
-│   ├── ensemble/                         # MAML meta‑learning
-│   └── synthetic_data/                   # Cohort generation
-│
-├── validation/
-│   ├── framework/validation_framework.py # Canonical CV, bootstrap, DeLong
-│   ├── py/                               # Python validation (11 modules)
-│   ├── node/                             # Node.js validation (20 modules)
-│   ├── tcga/                             # TCGA data + validators
-│   └── *.py                              # 10 bioinformatics‑grade modules
-│
-├── results/node/                         # All result JSONs + Markdown reports
-├── paper/                                # LaTeX manuscript + 56 references
-├── docs/USER_GUIDE.md                    # Full user documentation
-├── research/                             # Tier analysis + CET optimisation
-└── review/                               # 3 rounds of rigorous peer review
-```
+### 1. Feature Extraction (7 Modalities)
 
----
+```python
+import numpy as np
+from src.fragmentomics import EnhancedFragmentomics
+from src.fragmentomics.themis_features import (
+    MFRCalculator, FSICalculator, CAFFCalculator, FEMCalculator
+)
+from src.methylation_gnn import RegulatoryGraphBuilder, MethylationGNNPredictor
+from src.tissue_deconv import DEConvIntegration
+from src.priming.pharmacokinetics import PKModel, OptimalDosingSchedule
 
-## 5. Research‑Only Disclaimer
+# ── Fragmentomics Basic ──
+mfr = MFRCalculator()
+fsi = FSICalculator()
+caff = CAFFCalculator()
+fem = FEMCalculator()
 
-**DeepCatch is research‑stage software.**
-
-- §1 of this README (simulation performance) has been removed — those numbers were based on synthetic data and are not clinically verified.
-- §9 contains preliminary validation on 129 real plasma samples (processed frequency data only), but this remains a computational feasibility study, not a clinical assay.
-- **Do not use DeepCatch for medical diagnosis, treatment decisions, or any clinical purpose.**
-- This software is provided “as is”, without warranty of any kind, under the MIT licence.
-
----
-
-## 6. Citation
-
-```bibtex
-@software{deepcatch2026,
-  title        = {{DeepCatch}: Performance‑Weighted Multi‑Modal Fusion for
-                   Ultra‑Early Cancer Detection from cfDNA},
-  author       = {Royce and DeepCatch Contributors},
-  year         = {2026},
-  note         = {Simulation framework with preliminary real plasma validation
-                  (129 samples, 4-mer motif analysis). DOI to be assigned.},
-  url          = {https://github.com/rollroyces/deepcatch},
-  version      = {2.1.0},
+frag_basic = {
+    "mfr": mfr.compute(coverage, cpg_density),
+    "fsi": fsi.compute(fragment_lengths),
+    "caff": caff.compute(cnv_profile),
+    "fem": fem.compute(end_motif_counts),
 }
+
+# ── Enhanced Fragmentomics (DELFI + MFS + nucleosome + 5-mer) ──
+ef = EnhancedFragmentomics()
+frag_enhanced = ef.extract_all(
+    fragment_lengths=lengths,
+    fragments=fragments,
+    end_sequences=end_seqs,
+    tss_positions=tss_positions,
+)
+# → dict of ~70 scalar features
+
+# ── GNN Methylation Network ──
+gnn = MethylationGNNPredictor.load("checkpoints/gnn_pretrained.pt")
+graph = RegulatoryGraphBuilder().build_graph(
+    sample_name="S001", methylation_data=meth_data
+)
+field_defect_score = gnn.predict_sample(
+    sample_name="S001", methylation_data=meth_data
+)
+
+# ── Tissue Deconvolution ──
+deconv = DEConvIntegration(checkpoint="checkpoints/deconv.pt")
+# Or train from scratch on synthetic mixtures:
+# deconv.fit_synthetic(n_samples=2000)
+tissue_fractions = deconv.predict_tissue_fractions(methylation_data)
+tissue_features = deconv.extract_all(methylation_data, tissue_fractions)
+# → dict of 24 scalar features
+
+# ── CNV ──
+cnv_features = {
+    "cnv_burden": np.mean(np.abs(cnv_log2_ratios)),
+    "cnv_entropy": scipy.stats.entropy(cnv_segment_lengths),
+    "arm_imbalance": max_arm_imbalance(cnv_profile),
+}
+
+# ── Serological ──
+sero_features = {
+    "pg1": pg1_value, "pg2": pg2_value,
+    "g17": g17_value, "hp": hp_igg_value,
+}
+
+# ── Priming Agent PK/PD ──
+pk = PKModel()
+pk_result = pk.simulate(
+    agent="scFv", dose_mg=100, patient_weight_kg=70,
+    duration_hours=48,
+)
+dosing = OptimalDosingSchedule().compute(
+    agent="scFv", patient_data={"weight_kg": 70}
+)
 ```
 
----
+### 2. Foundation Model Fusion
 
-## 7. Contributing
+```python
+from src.foundation import FoundationDownstream, FoundationConfig
 
-Contributions are welcome in the following areas:
+# Assemble modalities dict (n_samples × dim for each key)
+modalities = {
+    "frag_basic":    np.array(frag_basic_array),     # (N, 4)
+    "frag_enhanced": np.array(frag_enhanced_array),  # (N, 44)
+    "cnv":           np.array(cnv_array),            # (N, 6)
+    "sero":          np.array(sero_array),           # (N, 4)
+    "gnn":           np.array(gnn_scores),           # (N, 1)
+    "tissue":        np.array(tissue_array),         # (N, 24)
+}
 
-- **Wet‑lab partnerships** — access to clinical cfDNA samples for real‑world validation
-- **GEO/SRA public data** — cross‑validation on published cfDNA datasets
-- **Tissue‑of‑origin** — expanding TOO coverage to 20+ cancer types
-- **CET flag‑rate optimisation** — CET flag‑rate optimisation
-- **Cost modelling** — health‑economics analysis of targeted capture for population screening
+# Use pre-trained checkpoint
+fusion = FoundationDownstream(pretrained=True)
+fusion.fit(modalities, labels)
+proba = fusion.predict_proba(modalities)      # shape (N, 2)
+predictions = fusion.predict(modalities)       # shape (N,)
 
-Please open an issue to discuss before submitting large pull requests.
+# Or train from scratch (no pre-training needed)
+fusion = FoundationDownstream(pretrained=False)
+fusion.fit(modalities, labels, n_epochs=50, batch_size=32)
+proba = fusion.predict_proba(modalities)
+```
 
----
+### 3. Legacy Fusion API (CrossAttentionFusion)
 
-## 8. Status
+```python
+from src.multimodal_fusion.advanced_fusion import CrossAttentionFusion
 
-| # | Item | Status |
-|---|------|--------|
-| 1 | Jiang lab 4-mer validation (129 samples) | ✅ Preliminary validation complete |
-| 2 | HCC vs Control nested CV AUC | 0.986 (rank + ratio, k=5) |
-| 3 | Raw BAM validation | ❌ Pending — need data access agreement |
-| 4 | Multi-centre replication | ❌ Pending — design target n=360 |
-| 5 | Clinical assay readiness | ❌ Not yet — research only |
+# List of 1-D score arrays per modality
+scores = [mfr_scores, fsi_scores, caff_scores, fem_scores, cnv_scores]
+fusion = CrossAttentionFusion(n_modalities=5)
+fusion.fit(scores, labels)
+proba = fusion.predict_proba(scores)
+```
 
----
-
----
-
-## 9. Real Plasma Validation — 4‑mer End Motif Analysis on Jiang Lab Data
-
-> **v2.1 — First real‑world validation of DeepCatch's CET architecture on actual human plasma cfDNA data.**
-
-### 9.1 Overview
-
-This section describes the first real‑world validation of DeepCatch's CET (Cumulative Evidence Tracking) architecture on actual human plasma cfDNA data from **Professor Jiang Pei‑yong's laboratory at the Chinese University of Hong Kong (CUHK)**. This analysis was performed on processed 4‑mer end‑motif frequency vectors derived from real patient blood draws.
-
-### 9.2 Dataset
-
-| Parameter | Value |
-|-----------|-------|
-| **Total samples** | 129 plasma samples |
-| **Healthy controls** | 38 |
-| **Cancer patients** | 91 |
-| **Cancer types** | 6 (HCC, lung, HNSCC, CRC, NPC, gastric) |
-| **Feature space** | 256 four‑mer end motifs |
-| **Data type** | Processed frequency vectors (not raw FASTQ/BAM) |
-| **Source** | Jiang lab, CUHK |
-
-### 9.3 Key Results (HCC vs Control, verified via nested CV)
-
-> Numbers verified via proper nested cross-validation: feature selection within each fold, rank + ratio features, LR (C=10).
-
-| Metric | Value |
-|--------|-------|
-| **Samples** | 72 (34 HCC, 38 Control) |
-| **Nested CV AUC** | **0.986** |
-| **CV AUC (optimal k=5)** | **0.996** |
-| **Bonferroni-significant motifs** | **108 / 256** |
-| **FDR-significant motifs** | **164 / 256** |
-| **Biological pattern** | CG-rich depletion + AT-rich enrichment |
-| **Top motifs** | AAAA (enriched), cg_at_ratio (depleted), CCCG (depleted) |
-
-### 9.4 Caveats
-
-1. **HCC only**: Only the HCC vs Control result (n=72) is adequately powered. Other cancer types have n≤17 and their AUC estimates are unreliable.
-2. **Processed data**: This analysis uses pre-computed 4-mer frequency vectors, not raw sequencing data.
-3. **Single centre**: All samples from one lab (CUHK). Multi-centre replication needed.
-4. **Not a clinical assay**: Demonstrates biological signal, not clinical readiness.
-
-### 9.5 Clinical Interpretation Module (New in v2.1)
-
-v2.1 ships with `src/clinical/clinical_interpretation.py` — a `ClinicalReportGenerator` that transforms statistical CET output into clinician‑friendly reports:
+### 4. Clinical Reporting
 
 ```python
 from src.clinical import ClinicalReportGenerator
 
 crg = ClinicalReportGenerator(cet_df, fusion_result)
-print(crg.generate_briefing())          # One‑paragraph summary
-crg.export_json('clinical_report.json')  # Machine‑readable export
-with open('report.html', 'w') as f:      # Full HTML report
-    f.write(crg.generate_html_report())
+print(crg.generate_briefing())               # One-paragraph summary
+crg.export_json("report.json")               # Machine-readable export
+with open("report.html", "w") as f:
+    f.write(crg.generate_html_report())       # Full HTML report
 ```
 
-Use `python run_jiang_analysis.py -i data.xlsx --report` to generate the clinical report alongside the standard summary.
+### 5. Run the Full Validation Suite
+
+```bash
+bash RUN_ALL.sh               # Full pipeline
+bash RUN_ALL.sh --quick       # 2-minute smoke test
+```
 
 ---
 
-*This README was produced by Royce. Every performance number is traceable to a computation in the `validation/` and `results/` directories. No numbers were invented. No clinical claims are intended.* 🧬
+## Module Reference
+
+### `src/fragmentomics/` — FragmentoSign
+
+**Purpose:** cfDNA fragmentation pattern analysis implementing DELFI, MDS, and THEMIS-equivalent feature frameworks.
+
+| Class / Function | Description |
+|---|---|
+| `MFRCalculator` | Methylated Fragment Ratio via CpG density scoring |
+| `FSICalculator` | Fragment Size Index: short/long ratio + GMM sub-nucleosomal fraction |
+| `CAFFCalculator` | Chromosomal Aneuploidy: CNA burden scoring from whole-genome bins |
+| `FEMCalculator` | Fragment End Motif: 4-mer MDS + motif embeddings (Jiang 2020) |
+| `FragmentLengthGMM` | 4-component Gaussian Mixture Model (sub-/mono-/di-/tri-nucleosomal) |
+| `DELFI_style_normalization` | LOESS GC-bias correction + mappability filter |
+| `compute_MDS` | Motif Diversity Score from 4/5-mer counts |
+| `EnhancedFragmentomics` | Unified extractor: DELFI + MFS + nucleosome footprint + refined 5-mer |
+| `extract_4mer_end_motifs` | 4-mer extraction from BAM files |
+| `extract_end_motifs_from_fastq` | 4-mer extraction from FASTQ |
+
+**Input:** BAM/FASTQ files, or fragment length arrays + end sequences
+**Output:** Scalar features (4–80+), GMM component statistics, MDS scores
+**Tests:** 47 (`test_enhanced_features.py`)
+
+---
+
+### `src/methylation_gnn/` — GNN Methylation Network
+
+**Purpose:** Detect pre-cancer epigenetic field defects via GATv2 graph attention on methylation regulatory graphs.
+
+| Class / Function | Description |
+|---|---|
+| `RegulatoryGraphBuilder` | Constructs heterogeneous graphs from methylation + Hi-C contacts |
+| `MethylationGNN` | GATv2 model with reconstruction decoder + anomaly head |
+| `GNNTrainer` | 3-phase training: masked pre-training → joint → fine-tuning |
+| `GNNInference` / `MethylationGNNPredictor` | Lightweight inference producing `field_defect_score` |
+| `ReferenceDataCatalog` | Downloads UCSC CpG islands, ENCODE Hi-C, GENCODE promoters, FANTOM5 enhancers |
+| `MethylationBranchAdapter` | Drop-in adapter for CrossAttentionFusion compatibility |
+
+**Input:** cfDNA methylation beta values + reference Hi-C/chromatin data
+**Output:** Graph-level `field_defect_score` (scalar) per sample
+**Tests:** 54 (`test_integration.py`)
+
+---
+
+### `src/tissue_deconv/` — Tissue Deconvolution
+
+**Purpose:** Predict tissue-of-origin cfDNA fractions from methylation data using a cfSort-style DNN.
+
+| Class / Function | Description |
+|---|---|
+| `TissueAtlas` | 29-tissue reference methylation profile store |
+| `TissueDeconvolutionModel` | Lightweight DNN (~500K params): [256, 128, 64] + BN + ReLU + Dropout |
+| `TissueDeconvolutionEnsemble` | 3-model ensemble with seed diversity |
+| `TissueDeconvTrainer` | KL divergence + L1 sparsity + entropy regularization on synthetic mixtures |
+| `TissueDeconvolutionFeatures` | Extracts 24-D feature vector from tissue fractions |
+| `DEConvIntegration` | Full integration class compatible with existing pipeline |
+
+**Input:** cfDNA methylation beta values (or synthetic atlas for training)
+**Output:** Per-tissue fraction vector + 24-D feature vector
+**Tests:** 54 (`test_integration.py`)
+
+---
+
+### `src/foundation/` — Foundation Model
+
+**Purpose:** Self-supervised multi-modal Transformer pre-training for cfDNA. Drop-in replacement for `CrossAttentionFusion`.
+
+| Class / Function | Description |
+|---|---|
+| `FoundationConfig` | Hyperparameter dataclass (embed_dim, n_heads, n_layers, etc.) |
+| `MultiModalEncoder` | 4-layer TransformerEncoder with per-modality linear projections |
+| `PretrainHead` | Masked modality prediction head |
+| `ContrastiveHead` | Cross-modal contrastive loss (InfoNCE) |
+| `FoundationPretrainer` | Self-supervised pre-training orchestrator |
+| `FoundationDownstream` | Downstream fine-tuning with CrossAttentionFusion-compatible API |
+| `FoundationCompatibilityWrapper` | Wrapper for seamless replacement of CrossAttentionFusion |
+| `MultiModalDataGenerator` | Synthetic multi-modal data generator for pre-training |
+
+**Pre-training tasks:**
+1. Masked modality prediction — reconstruct masked modalities from context
+2. Cross-modal contrastive — InfoNCE between modalities of same sample
+
+**API compatibility:**
+```python
+# CrossAttentionFusion (old)
+fusion = CrossAttentionFusion(n_modalities=6)
+fusion.fit(scores, labels)          # scores: list of 1-D arrays
+proba = fusion.predict_proba(scores)
+
+# FoundationDownstream (new — drop-in)
+fusion = FoundationDownstream(pretrained=True)
+fusion.fit(modalities, labels)      # modalities: dict of (N, D) arrays
+proba = fusion.predict_proba(modalities)  # shape (N, 2)
+```
+
+**Input:** Dict of modality arrays `{name: np.ndarray (N, D)}`
+**Output:** Joint embeddings (N, n_modalities, embed_dim); classification probabilities (N, 2)
+**Tests:** 43 (`test_integration.py`)
+
+---
+
+### `src/priming/` — Priming Agents
+
+**Purpose:** Simulate PK/PD of cfDNA priming agents (Amplifyer Bio) and their effect on ctDNA detection.
+
+| Class / Function | Description |
+|---|---|
+| `PKModel` | 1-compartment PK model with first-order elimination |
+| `OptimalDosingSchedule` | Computes optimal dosing for 5 agent types |
+| `PrimingConfig` | Dataclass with literature-based PK parameters |
+
+**Agents:** scFv, liposome, nanoparticle, polymeric micelle, dendrimer
+**Input:** Agent type, dose, patient weight, liver function
+**Output:** Concentration-time profiles, ctDNA boost factor, optimal dosing schedule
+**Reference:** Martin-Alonso et al. (2024) *Science*
+
+---
+
+### `src/multimodal_fusion/` — Fusion Architectures
+
+| Class / Function | Description |
+|---|---|
+| `CrossAttentionFusion` | Relation-aware cross-attention between modality embeddings |
+| `GCNTissueOfOrigin` | Heterogeneous GCN for TOO prediction at low sequencing depth |
+| `EarlyLateFusion` | Sample-modality evaluator MLP |
+
+---
+
+### `src/clinical/` — Clinical Integration
+
+| Class / Function | Description |
+|---|---|
+| `SerologicalFusion` | Fuses PG-I, PG-II, G-17, H. pylori with cfDNA predictions |
+| `IntegrativeScoringSystem` | Unified risk scoring across all modalities |
+| `ClinicalReportGenerator` | Generates clinician-friendly HTML/JSON reports |
+| `NestedCETValidator` | Nested cross-validation for unbiased motif-based CET evaluation |
+| `FrequencyDataset` | Loads pre-computed 4-mer frequency vectors (Jiang lab format) |
+
+---
+
+### `src/longitudinal/` — Stage 2: Enhance
+
+Bayesian Kalman filter (BSSLM) for longitudinal evidence accumulation across quarterly blood draws. Tracks patient risk trajectory over time rather than relying on single-timepoint decisions.
+
+---
+
+### `src/ensemble/` — Meta-Learning
+
+MAML-based few-shot adaptation for cancer subtype detection.
+
+---
+
+### `src/synthetic_data/` — Synthetic Cohort Generation
+
+Multi-confounder realistic cohort generation (CHIP, variable shedding, trinucleotide errors, GC bias, batch effects, inflammation) for development and testing.
+
+---
+
+## Running Tests
+
+```bash
+# All tests
+python -m pytest src/ -v
+
+# Or with unittest
+python -m unittest discover -s src -p "test_*.py"
+
+# Per-module
+python src/foundation/test_integration.py        # 43 tests
+python src/methylation_gnn/test_integration.py    # 54 tests
+python src/tissue_deconv/test_integration.py      # 54 tests
+python src/fragmentomics/test_enhanced_features.py # 47 tests
+
+# Quick smoke test
+python -c "from src.foundation import FoundationConfig; print('OK')"
+```
+
+### Test Coverage Summary
+
+| Module | Tests | Status |
+|---|---|---|
+| Enhanced Fragmentomics | 47 | ✅ All passing |
+| GNN Methylation | 54 | ✅ All passing |
+| Tissue Deconvolution | 54 | ✅ All passing |
+| Foundation Model | 43 | ✅ All passing |
+| **Total** | **198** | **✅** |
+
+---
+
+## Stages Explained — CET Pipeline
+
+### Stage 1: Capture
+
+Seven independent modalities extract signal from the same cfDNA sample. Each produces a scalar risk score vector. The foundation model fuses these into a joint embedding via per-modality linear projections → 4-layer Transformer encoder.
+
+### Stage 2: Enhance
+
+Longitudinal tracking via Bayesian Kalman filter (BSSLM). The joint embedding from Stage 1 is tracked across quarterly blood draws, accumulating evidence over time. This is designed to detect cancers whose ctDNA signal is below single-timepoint detection thresholds at early stages.
+
+### Triage
+
+The accumulated Bayesian posterior probability `p_cancer` is compared to a calibrated threshold τ. Samples above the threshold trigger confirmatory testing; samples below are cleared until the next quarterly draw.
+
+---
+
+## Data Requirements
+
+### What You Need
+
+| Modality | Required Data | Public Source |
+|---|---|---|
+| Fragmentomics Basic | Fragment length arrays, end motif counts | N/A (extracted from BAM/FASTQ) |
+| Enhanced Fragmentomics | Fragment lengths + genomic coordinates + end sequences | Same as above |
+| CNV | Log2 ratio profiles or BAM | Same as above |
+| Serological | PG-I, PG-II, G-17, H. pylori IgG | Clinical lab |
+| GNN Methylation | cfDNA methylation beta values | TCGA, GEO |
+| Tissue Deconvolution | cfDNA methylation beta values | TCGA, cfSort atlas |
+| Priming Agents | Agent PK parameters | Literature |
+
+### Reference Data URLs
+
+| Resource | URL |
+|---|---|
+| ENCODE Hi-C | https://www.encodeproject.org/ |
+| UCSC CpG Islands | http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ |
+| GENCODE promoters | https://www.gencodegenes.org/human/ |
+| FANTOM5 enhancers | https://fantom.gsc.riken.jp/5/ |
+| TCGA methylation | https://portal.gdc.cancer.gov/ |
+| cfSort atlas | https://github.com/stephenrcraig/cfSort |
+
+### Running with Synthetic Data
+
+All modules support fully synthetic data for development and testing. Use `MultiModalDataGenerator` (foundation), `TissueAtlas` (deconv with built-in synthetic profiles), and `ReferenceDataCatalog` (GNN with random initialization) to run the full pipeline without any external reference data.
+
+---
+
+## Repository Structure
+
+```
+deepcatch/
+├── README.md                     # This file
+├── LICENSE                       # MIT
+├── CITATION.cff                  # Academic citation metadata
+├── requirements_py.txt           # Python dependencies
+├── RUN_ALL.sh                    # One-command validation
+├── Dockerfile
+│
+├── src/
+│   ├── fragmentomics/            # FragmentoSign: DELFI, MDS, GMM, LOESS, enhanced
+│   ├── methylation_gnn/          # GATv2 graph attention for field defect detection
+│   ├── tissue_deconv/            # cfSort-style DNN for tissue-of-origin
+│   ├── foundation/               # Self-supervised Transformer foundation model
+│   ├── priming/                  # PK/PD priming agent simulation
+│   ├── multimodal_fusion/        # CrossAttentionFusion, GCN, EarlyLate
+│   ├── clinical/                 # Serological fusion, clinical reports, CET validation
+│   ├── longitudinal/             # Bayesian Kalman filter (Stage 2)
+│   ├── ensemble/                 # MAML meta-learning
+│   ├── synthetic_data/           # Realistic cohort generation
+│   ├── variant_calling/          # Bayesian + contrastive DL
+│   └── preprocessing/            # CHIP filter
+│
+├── validation/                   # Statistical validation suite
+│   ├── py/                       # Python validation modules (11)
+│   ├── tcga/                     # TCGA data loaders + validators
+│   └── *.py                      # 10 bioinformatics-grade modules
+│
+├── test/                         # Additional test suites
+├── results/                      # Output reports + figures
+├── paper/                        # LaTeX manuscript
+├── docs/                         # User guide
+└── review/                       # Peer review history
+```
+
+---
+
+## Contributing
+
+### Adding a New Modality
+
+1. **Create module directory** under `src/your_modality/`
+2. **Implement feature extractor** with `extract_all()` or `predict_sample()` entry point
+3. **Define config** with dataclass `YourModalityConfig`
+4. **Add integration class** that wraps your module for the fusion API
+5. **Write tests** — aim for ≥20 tests covering config, forward pass, edge cases, and integration
+6. **Update `MODALITY_DIMS`** in `src/foundation/config.py`
+
+### Code Style
+
+- Type hints on all public APIs
+- NumPy docstring style with Parameters/Returns sections
+- Tests use pytest or unittest; run them before submitting
+
+### Pull Requests
+
+Open an issue first to discuss scope. Target `main` branch. PRs must pass all existing tests.
+
+---
+
+## Real Plasma Validation (v2.1)
+
+Preliminary validation on **129 real plasma samples** from Jiang lab (CUHK), using 4-mer end-motif frequency vectors:
+
+| Metric | Value |
+|---|---|
+| Samples (HCC vs Control) | 72 (34 HCC, 38 Control) |
+| Nested CV AUC | **0.986** |
+| Bonferroni-significant motifs | 108 / 256 |
+| Biological pattern | CG-rich depletion, AT-rich enrichment |
+
+Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), single centre. Not a clinical assay.
+
+---
+
+## License & Citation
+
+**License:** MIT — see [LICENSE](LICENSE).
+
+**Cite as:**
+```bibtex
+@software{deepcatch2026,
+  title        = {{DeepCatch}: Multi-Modal Longitudinal MCED Framework
+                   for Early Cancer Detection from cfDNA},
+  author       = {Royce and DeepCatch Contributors},
+  year         = {2026},
+  version      = {2.1.0},
+  url          = {https://github.com/rollroyces/deepcatch},
+}
+```
+
+*Every DeepCatch claim is traceable to computations in `validation/` and `src/`. No numbers are invented. No clinical claims are intended.* 🧬
