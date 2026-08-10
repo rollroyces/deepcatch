@@ -258,7 +258,9 @@ class MultiModalDataGenerator:
         }
 
         for i in range(n_samples):
-            sample_id = hash(f"{full_prefix}_{i}") % (2**31)
+            # Deterministic sample id — built-in hash() is randomized per
+            # process (PYTHONHASHSEED) and broke reproducibility across runs.
+            sample_id = int(hashlib.md5(f"{full_prefix}_{i}".encode()).hexdigest()[:8], 16)
             sample = self.generate_single_sample(
                 sample_id=sample_id,
                 is_cancer=bool(is_cancer[i]),

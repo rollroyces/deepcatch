@@ -422,23 +422,25 @@ def test_26_downstream_fit_predict():
     train_mod, train_lab = gen.generate_dataset(n_samples=100, prefix="fit_train")
     test_mod, test_lab = gen.generate_dataset(n_samples=50, prefix="fit_test")
 
-    cfg = FoundationConfig(embed_dim=16, n_heads=2, n_layers=1, ff_dim=32,
+    cfg = FoundationConfig(embed_dim=32, n_heads=4, n_layers=2, ff_dim=64,
                            batch_size=16)
     fd = FoundationDownstream(config=cfg, pretrained=False)
-    fd.fit(train_mod, train_lab, n_epochs=20, batch_size=16, verbose=False)
+    fd.fit(train_mod, train_lab, n_epochs=30, batch_size=16, verbose=False)
 
     assert fd.is_fitted
-    assert len(fd.loss_history) == 20
+    assert len(fd.loss_history) == 30
 
     # Predict
     proba = fd.predict_proba(test_mod)
     assert proba.shape == (50, 2)
     assert np.allclose(proba.sum(axis=1), 1.0)
 
-    # AUC should be above random
+    # AUC should be above random. (The old 16-dim/1-layer/20-epoch config was
+    # knife-edge: test AUC landed anywhere in [0.33, 0.5+] across environments
+    # even when seeded — this config learns the signal reliably.)
     cancer_prob = proba[:, 1]
     auc = _compute_auc(test_lab, cancer_prob)
-    assert auc > 0.4, f"AUC = {auc:.4f} (should be > 0.4 with tiny model)"
+    assert auc > 0.5, f"AUC = {auc:.4f} (should be > 0.5 with trained model)"
 
 
 @pytest.mark.slow
