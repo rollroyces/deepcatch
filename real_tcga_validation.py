@@ -27,7 +27,7 @@ import time
 import warnings
 from collections import Counter
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 from scipy import stats
@@ -422,6 +422,32 @@ def load_tcga_cohort(cache_dir: str,
     }
 
 
+def compute_llr_scores(depths: np.ndarray,
+                       obs_alt: np.ndarray,
+                       error_rates: np.ndarray) -> np.ndarray:
+    """Per-position Poisson log-likelihood ratio: variant+error vs error-only.
+
+    LLR = a·log(a/λ0) − (a − λ0) with λ0 = expected error reads = error·depth
+    (0 when observed alt ≤ expected error). Positive = evidence of a true
+    variant beyond the error floor.
+    """
+    n = len(depths)
+    scores = np.zeros(n)
+    for i in range(n):
+        d = int(depths[i])
+        a = int(obs_alt[i])
+        e = float(error_rates[i])
+        expected_alt = e * d
+        if expected_alt > 0:
+            if a > expected_alt:
+                scores[i] = a * np.log(a / expected_alt) - (a - expected_alt)
+            else:
+                scores[i] = 0.0
+        else:
+            scores[i] = a if a > 0 else 0.0
+    return scores
+
+
 # ═══════════════════════════════════════════════════════════════════
 # STEP 2: Realistic cfDNA Simulation
 # ═══════════════════════════════════════════════════════════════════
@@ -432,6 +458,7 @@ def simulate_cfdna_from_real(
     cfdna_depth: int = 5000,
     background_mutations: int = 500,
     seed: int = 42,
+    bg_error_rate: float = 0.002,
 ) -> Dict[str, np.ndarray]:
     """
     Simulate cfDNA from real tumor mutations.
@@ -464,12 +491,13 @@ def simulate_cfdna_from_real(
     # Generate background positions with realistic error rates
     # CRITICAL: Use same error distribution for BOTH variants and background
     # to avoid the classifier learning 'low error = variant'
-    bg_normal_errors = rng.beta(1, 500, realistic_bg)  # ~0.002 mean
+    bg_b = max(1.0, 1.0 / bg_error_rate - 1.0)
+    bg_normal_errors = rng.beta(1, bg_b, realistic_bg)  # mean ~ bg_error_rate
     bg_vafs = np.zeros(realistic_bg)
 
     # Variant positions also get random error rates (real normal data unavailable)
     # SAME distribution as background — no leakage!
-    variant_errors = rng.beta(1, 500, n_variants)
+    variant_errors = rng.beta(1, bg_b, n_variants)
     
     # Combine
     all_vafs = np.concatenate([plasma_vafs, bg_vafs])
@@ -543,30 +571,7 @@ def run_variant_caller(
     error_rates = X[:, 3]
     
     n = len(y)
-    scores = np.zeros(n)
-    
-    # For each position: compute log-likelihood ratio
-    for i in range(n):
-        d = int(depths[i])
-        a = int(obs_alt[i])
-        e = float(error_rates[i])
-        
-        # H0: only background error → Beta-Binomial with error rate
-        # H1: error + signal → broader distribution
-        
-        # Simple LLR: signal vs noise Z-score
-        expected_alt = e * d
-        # Poisson-like LLR approximation
-        if expected_alt > 0:
-            if a > expected_alt:
-                # Poisson log-likelihood ratio
-                llr = a * np.log(max(a, 1) / expected_alt) - (a - expected_alt)
-            else:
-                llr = 0
-        else:
-            llr = a if a > 0 else 0
-        
-        scores[i] = llr
+    scores = compute_llr_scores(depths, obs_alt, error_rates)
     
     # Normalize to [0, 1]
     if scores.max() > scores.min():
@@ -671,6 +676,7 @@ def run_real_validation(
     tumor_fractions: List[float] = None,
     seeds: List[int] = None,
     cfdna_depth: int = 5000,
+    with_ml: bool = True,
 ) -> Dict[str, Any]:
     """
     Run validation across multiple patients, tumor fractions, and seeds.
@@ -711,17 +717,25 @@ def run_real_validation(
                     seed=seed,
                 )
                 vc_result = run_variant_caller(data)
-                ml_result = run_ml_classifier(data, n_folds=5, seed=seed)
+                vc_ml = None
+                if with_ml:
+                    vc_ml = run_ml_classifier(data, n_folds=5, seed=seed)
                 for m in METRICS:
                     vc_patient_vals[m].append(vc_result[m])
-                    ml_patient_vals[m].append(ml_result[m])
+                    if vc_ml is not None:
+                        ml_patient_vals[m].append(vc_ml[m])
             vc_by_seed[seed] = {m: float(np.mean(v)) for m, v in vc_patient_vals.items()}
-            ml_by_seed[seed] = {m: float(np.mean(v)) for m, v in ml_patient_vals.items()}
-            print(f"    seed {seed}: VC AUC={vc_by_seed[seed]['auc']:.4f}  "
-                  f"ML AUC={ml_by_seed[seed]['auc']:.4f}")
+            if with_ml:
+                ml_by_seed[seed] = {m: float(np.mean(v)) for m, v in ml_patient_vals.items()}
+                print(f"    seed {seed}: VC AUC={vc_by_seed[seed]['auc']:.4f}  "
+                      f"ML AUC={ml_by_seed[seed]['auc']:.4f}")
+            else:
+                print(f"    seed {seed}: VC AUC={vc_by_seed[seed]['auc']:.4f}")
 
         # Aggregate across seeds (mean ± std of per-seed patient-means)
         for key, by_seed in (('variant_caller', vc_by_seed), ('ml_classifier', ml_by_seed)):
+            if not by_seed:
+                continue
             for m in METRICS:
                 vals = [by_seed[s][m] for s in seeds]
                 all_results[key].append({
@@ -733,14 +747,147 @@ def run_real_validation(
                 })
 
         # Print per-TF summary
-        vc_auc = np.mean([by_seed[s]['auc'] for s in seeds])
-        ml_auc = np.mean([by_seed[s]['auc'] for s in seeds])
-        vc_sens = np.mean([by_seed[s]['sens_at_95_spec'] for s in seeds])
-        ml_sens = np.mean([by_seed[s]['sens_at_95_spec'] for s in seeds])
-        print(f"  Variant Caller: AUC={vc_auc:.4f} Sens@95%Spec={vc_sens:.3f}")
-        print(f"  ML Classifier:  AUC={ml_auc:.4f} Sens@95%Spec={ml_sens:.3f}")
+        vc_auc = np.mean([vc_by_seed[s]['auc'] for s in seeds])
+        vc_sens = np.mean([vc_by_seed[s]['sens_at_95_spec'] for s in seeds])
+        line = f"  Variant Caller: AUC={vc_auc:.4f} Sens@95%Spec={vc_sens:.3f}"
+        if with_ml:
+            ml_auc = np.mean([ml_by_seed[s]['auc'] for s in seeds])
+            ml_sens = np.mean([ml_by_seed[s]['sens_at_95_spec'] for s in seeds])
+            line += f" | ML: AUC={ml_auc:.4f} Sens@95%={ml_sens:.3f}"
+        print(line)
 
     return all_results
+
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 5b: Panel-Based Detection (MRD-style, per-sample aggregation)
+# ═══════════════════════════════════════════════════════════════════
+
+def run_panel_detection(
+    cohort: Dict[str, Any],
+    tumor_fractions: Optional[List[float]] = None,
+    seeds: Optional[List[int]] = None,
+    cfdna_depth: int = 5000,
+    bg_error_rate: float = 0.002,
+    call_threshold: float = 2.0,
+) -> Dict[str, Any]:
+    """Per-SAMPLE detection by aggregating evidence across the mutation panel.
+
+    Rationale: at ultra-low ctDNA (e.g. 0.1%), a single locus carries ~1-2
+    mutant reads against ~10 error reads — per-position classification is
+    information-limited. Real ultra-sensitive (MRD-style) assays therefore
+    aggregate log-likelihood evidence over the full tracking panel and make a
+    per-SAMPLE decision.
+
+    Design (tumor-informed / MRD-style, like Signatera/CAPP-Seq):
+      - Panel = the patient's real TCGA mutations (the tracked loci).
+      - Cancer sample: plasma simulated at `tumor_fraction`.
+      - Control sample: same patient, same panel, tumor_fraction = 0.
+      - Sample score (panel_llr) = Σ per-locus Poisson LLR over panel loci.
+      - Sample score (call_count) = # loci genome-wide exceeding a fixed LLR
+        threshold (tumor-agnostic variant-call count).
+
+    ROC is computed across patients (paired cancer/control) per seed, then
+    aggregated as mean ± std across seeds.
+    """
+    if tumor_fractions is None:
+        tumor_fractions = [0.1, 0.05, 0.01, 0.005, 0.001]
+    if seeds is None:
+        seeds = [42, 123, 456, 789, 1024]
+
+    patients = list(cohort['patients'].keys())
+    results = {'panel_llr': [], 'call_count': []}
+
+    for tf in tumor_fractions:
+        print(f"\n  Panel detection @ TF={tf*100:.2f}% ({len(patients)} patients × {len(seeds)} seeds)")
+        llr_by_seed, call_by_seed = {}, {}
+        for seed in seeds:
+            pos_scores, neg_scores = [], []
+            pos_calls, neg_calls = [], []
+            for patient in patients:
+                muts = cohort['patients'][patient]
+                dp = simulate_cfdna_from_real(muts, tumor_fraction=tf, cfdna_depth=cfdna_depth,
+                                              seed=seed, bg_error_rate=bg_error_rate)
+                dn = simulate_cfdna_from_real(muts, tumor_fraction=0.0, cfdna_depth=cfdna_depth,
+                                              seed=seed, bg_error_rate=bg_error_rate)
+                lp = compute_llr_scores(dp['depths'], dp['X'][:, 1].astype(int), dp['X'][:, 3])
+                ln = compute_llr_scores(dn['depths'], dn['X'][:, 1].astype(int), dn['X'][:, 3])
+                nv = dp['n_variants']
+                pos_scores.append(float(lp[:nv].sum()))
+                neg_scores.append(float(ln[:nv].sum()))
+                pos_calls.append(int((lp > call_threshold).sum()))
+                neg_calls.append(int((ln > call_threshold).sum()))
+            # ROC across patients (pooled pos/neg)
+            y = np.array([1] * len(pos_scores) + [0] * len(neg_scores))
+            s_llr = np.array(pos_scores + neg_scores)
+            s_call = np.array(pos_calls + neg_calls)
+            llr_by_seed[seed] = {
+                'auc': float(roc_auc_score(y, s_llr)),
+                'sens_at_95_spec': sensitivity_at_specificity(y, s_llr, 0.95),
+                'sens_at_99_spec': sensitivity_at_specificity(y, s_llr, 0.99),
+                'paired_win_rate': float(np.mean(np.array(pos_scores) > np.array(neg_scores))),
+            }
+            try:
+                call_by_seed[seed] = {
+                    'auc': float(roc_auc_score(y, s_call)),
+                    'sens_at_95_spec': sensitivity_at_specificity(y, s_call, 0.95),
+                }
+            except ValueError:
+                call_by_seed[seed] = {'auc': 0.5, 'sens_at_95_spec': 0.0}
+            print(f"    seed {seed}: panel AUC={llr_by_seed[seed]['auc']:.4f}  "
+                  f"call-count AUC={call_by_seed[seed]['auc']:.4f}")
+
+        for key, by_seed in (('panel_llr', llr_by_seed), ('call_count', call_by_seed)):
+            for m in ('auc', 'sens_at_95_spec', 'sens_at_99_spec', 'paired_win_rate'):
+                if m not in by_seed[seeds[0]]:
+                    continue
+                vals = [by_seed[s][m] for s in seeds]
+                results[key].append({
+                    'tumor_fraction': tf,
+                    'metric': m,
+                    'mean': float(np.mean(vals)),
+                    'std': float(np.std(vals, ddof=1)) if len(vals) > 1 else 0.0,
+                    'per_seed': {str(s): by_seed[s][m] for s in seeds},
+                })
+
+    return results
+
+
+def run_ultraearly_sweep(
+    cohort: Dict[str, Any],
+    seeds: Optional[List[int]] = None,
+    tf: float = 0.001,
+    error_grid: Sequence[float] = (0.002, 0.001, 0.0001, 0.00001),
+    depth_grid: Sequence[int] = (5000, 50000),
+) -> Dict[str, Any]:
+    """Panel-detection performance at ultra-early TF across assay parameters.
+
+    Sweeps background sequencing error rate (raw reads ~2e-3 → duplex-UMI
+    consensus ~1e-4/1e-5) × sequencing depth (5k× → 50k×). Shows which assay
+    lever drives ultra-early sensitivity.
+    """
+    if seeds is None:
+        seeds = [42, 123, 456, 789, 1024]
+    rows = []
+    for e in error_grid:
+        for d in depth_grid:
+            r = run_panel_detection(cohort, tumor_fractions=[tf], seeds=seeds,
+                                    cfdna_depth=d, bg_error_rate=e)
+            llr = {x['metric']: x for x in r['panel_llr']}
+            rows.append({
+                'tumor_fraction': tf,
+                'bg_error_rate': e,
+                'depth': d,
+                'auc': llr['auc']['mean'],
+                'auc_std': llr['auc']['std'],
+                'sens_at_95_spec': llr['sens_at_95_spec']['mean'],
+                'sens_at_99_spec': llr['sens_at_99_spec']['mean'],
+                'paired_win_rate': llr['paired_win_rate']['mean'],
+            })
+            print(f"  [TF={tf:.4f} err={e:.1e} depth={d:>6}] panel AUC={rows[-1]['auc']:.4f} "
+                  f"Sens@95%={rows[-1]['sens_at_95_spec']:.3f} "
+                  f"paired={rows[-1]['paired_win_rate']:.3f}")
+    return {'sweep': rows, 'tumor_fraction': tf, 'seeds': seeds}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -846,7 +993,8 @@ def generate_real_roc_curves(results: Dict, output_dir: Path):
     
     tf_pct = [tf * 100 for tf in tfs]
     ax2.errorbar(tf_pct, vc_aucs, yerr=vc_auc_stds, marker='o', label='Variant Caller', capsize=5)
-    ax2.errorbar(tf_pct, ml_aucs, yerr=ml_auc_stds, marker='s', label='ML Classifier', capsize=5)
+    if ml_aucs:
+        ax2.errorbar(tf_pct, ml_aucs, yerr=ml_auc_stds, marker='s', label='ML Classifier', capsize=5)
     ax2.axhline(y=0.5, color='gray', linestyle='--', alpha=0.5, label='Random')
     ax2.set_xlabel('Tumor Fraction in cfDNA (%)')
     ax2.set_ylabel('AUC')
@@ -883,6 +1031,15 @@ def main():
                         help='Do not attempt cBioPortal download if no MAF files are cached')
     parser.add_argument('--no-chip-filter', action='store_true',
                         help='Disable germline/CHIP variant filtering')
+    parser.add_argument('--with-ml', action='store_true',
+                        help='Also run the per-position ML classifier (slow: ~13 min)')
+    parser.add_argument('--skip-panel', action='store_true',
+                        help='Skip MRD-style panel-based per-sample detection')
+    parser.add_argument('--skip-sweep', action='store_true',
+                        help='Skip the ultra-early error-rate × depth sweep')
+    parser.add_argument('--bg-error-rate', type=float, default=0.002,
+                        help='Background sequencing error rate (default 0.002; '
+                             'duplex-UMI consensus ~1e-4)')
     args = parser.parse_args()
 
     cancer_types = [ct.strip() for ct in args.cancer_types.split(',') if ct.strip()]
@@ -894,6 +1051,7 @@ def main():
     print(f"  Patients: {args.n_patients}")
     print(f"  Cancer types: {', '.join(cancer_types)}")
     print(f"  cfDNA Depth: {args.cfdna_depth}×")
+    print(f"  Background error rate: {args.bg_error_rate:.1e}")
     print(f"  Seeds: {seeds}")
     print()
 
@@ -917,7 +1075,28 @@ def main():
         tumor_fractions=[0.1, 0.05, 0.01, 0.005, 0.001],
         seeds=seeds,
         cfdna_depth=args.cfdna_depth,
+        with_ml=args.with_ml,
     )
+
+    # MRD-style panel-based per-sample detection
+    panel_results = {}
+    if not args.skip_panel:
+        print(f"\n[2b] Panel-based per-sample detection (MRD-style)...")
+        panel_results = run_panel_detection(
+            cohort,
+            tumor_fractions=[0.1, 0.05, 0.01, 0.005, 0.001],
+            seeds=seeds,
+            cfdna_depth=args.cfdna_depth,
+            bg_error_rate=args.bg_error_rate,
+        )
+
+    # Ultra-early assay sweep (error rate × depth at 0.1% ctDNA)
+    sweep_results = {}
+    if not args.skip_sweep:
+        print(f"\n[2c] Ultra-early assay sweep (TF=0.1%, error × depth)...")
+        sweep_results = run_ultraearly_sweep(cohort, seeds=seeds, tf=0.001,
+                                             error_grid=(0.002, 0.001, 0.0001, 0.00001),
+                                             depth_grid=(5000, 50000))
 
     elapsed = time.time() - t0
     print(f"\n  ⏱ Validation completed in {elapsed:.1f}s")
@@ -938,6 +1117,7 @@ def main():
             'n_patients': cohort['n_patients'],
             'n_mutations': cohort['n_mutations'],
             'cfdna_depth': args.cfdna_depth,
+            'bg_error_rate': args.bg_error_rate,
             'seeds_used': seeds,
             'chip_filter': {
                 'enabled': not args.no_chip_filter,
@@ -960,6 +1140,8 @@ def main():
             'top_genes': Counter(m['gene'] for v in cohort['patients'].values() for m in v).most_common(15),
         },
         'results': results,
+        'panel_detection': panel_results,
+        'ultraearly_sweep': sweep_results,
         'elapsed_seconds': elapsed,
     }
 
@@ -969,10 +1151,16 @@ def main():
 
     # Print summary
     print("\n" + "=" * 70)
-    print("  REAL TCGA VALIDATION SUMMARY (mean ± std across seeds)")
-    print("=" * 70)
-    print(f"  {'Tumor Frac':<12} {'VC AUC':>10} {'VC Sens@95':>10} {'ML AUC':>10} {'ML Sens@95':>10}")
-    print("-" * 70)
+    if results['ml_classifier']:
+        print("  REAL TCGA VALIDATION SUMMARY (mean ± std across seeds)")
+        print("=" * 70)
+        print(f"  {'Tumor Frac':<12} {'VC AUC':>10} {'VC Sens@95':>10} {'ML AUC':>10} {'ML Sens@95':>10}")
+        print("-" * 70)
+    else:
+        print("  REAL TCGA VALIDATION SUMMARY (mean ± std across seeds)")
+        print("=" * 70)
+        print(f"  {'Tumor Frac':<12} {'VC AUC':>10} {'VC Sens@95':>10}")
+        print("-" * 70)
 
     for tf in [0.1, 0.05, 0.01, 0.005, 0.001]:
         vc_auc = next((r['mean'] for r in results['variant_caller']
@@ -986,10 +1174,35 @@ def main():
 
         stage = "Late" if tf > 0.05 else ("Early" if tf > 0.005 else "Ultra-early")
         if vc_auc is not None:
-            print(f"  {tf*100:5.1f}% ({stage:<11}) {vc_auc:10.4f} {vc_sens:10.3f} "
-                  f"{ml_auc:10.4f} {ml_sens:10.3f}")
+            base = f"  {tf*100:5.1f}% ({stage:<11}) {vc_auc:10.4f} {vc_sens:10.3f}"
+            if ml_auc is not None:
+                base += f" {ml_auc:10.4f} {ml_sens:10.3f}"
+            print(base)
 
     print("=" * 70)
+    if panel_results:
+        print("\n  PANEL-BASED DETECTION (MRD-style, per-sample aggregation)")
+        print(f"  {'Tumor Frac':<12} {'Panel AUC':>10} {'Sens@95%':>9} {'Sens@99%':>9} {'Paired win':>10}")
+        print("-" * 70)
+        llr = {r['tumor_fraction']: r for r in panel_results['panel_llr'] if r['metric'] == 'auc'}
+        sens95 = {r['tumor_fraction']: r for r in panel_results['panel_llr'] if r['metric'] == 'sens_at_95_spec'}
+        sens99 = {r['tumor_fraction']: r for r in panel_results['panel_llr'] if r['metric'] == 'sens_at_99_spec'}
+        win = {r['tumor_fraction']: r for r in panel_results['panel_llr'] if r['metric'] == 'paired_win_rate'}
+        for tf in sorted(llr):
+            print(f"  {tf*100:5.1f}%{'':6} {llr[tf]['mean']:10.4f} {sens95[tf]['mean']:9.3f} "
+                  f"{sens99[tf]['mean']:9.3f} {win[tf]['mean']:10.3f}")
+
+    if sweep_results:
+        print("\n  ULTRA-EARLY ASSAY SWEEP (0.1% ctDNA, panel detection)")
+        print(f"  {'Error rate':<12} {'Depth':>7} {'Panel AUC':>10} {'Sens@95%':>9} {'Paired win':>10}")
+        print("-" * 70)
+        for row in sweep_results['sweep']:
+            print(f"  {row['bg_error_rate']:<12.1e} {row['depth']:>7} {row['auc']:10.4f} "
+                  f"{row['sens_at_95_spec']:9.3f} {row['paired_win_rate']:10.3f}")
+        print("\n  Interpretation: lower error rate (duplex-UMI consensus) and/or higher")
+        print("  depth are the levers that move ultra-early sensitivity.")
+
+    print("\n" + "=" * 70)
     print("  ⚠️ HONEST FRAMING:")
     print("  • Ground truth  = REAL TCGA tumor mutations with REAL read counts")
     print("  • Plasma reads  = SIMULATED (Poisson sampling at target tumor fraction)")

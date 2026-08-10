@@ -523,17 +523,41 @@ Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), 
 
 ### Real-TCGA Benchmark (honest framing)
 
-`real_tcga_validation.py` uses **real TCGA tumor mutations (with real read counts) as ground truth**, then **simulates plasma cfDNA** by Poisson sampling at each tumor fraction. It is a spike-in/dilution benchmark, **not** a clinical plasma validation. Metrics are AUC/PR-AUC plus sensitivity at **fixed** 95%/99% specificity — no threshold optimization on test data. Data is fetched from the **GDC open-access API** (per-aliquot masked MAFs, cached in `validation/tcga/tcga_cache/`); the synthetic fallback dataset is deliberately refused. Latest run: 20 LUAD patients, 5,738 mutations, 5 seeds (mean across seeds; cross-seed std ≈ 0.004 at 0.1% ctDNA):
+`real_tcga_validation.py` uses **real TCGA tumor mutations (with real read counts) as ground truth**, then **simulates plasma cfDNA** by Poisson sampling at each tumor fraction. It is a spike-in/dilution benchmark, **not** a clinical plasma validation. Metrics are AUC/PR-AUC plus sensitivity at **fixed** 95%/99% specificity — no threshold optimization on test data. Data is fetched from the **GDC open-access API** (per-aliquot masked MAFs, cached in `validation/tcga/tcga_cache/`); the synthetic fallback dataset is deliberately refused. Latest run: 20 LUAD patients, 5,738 mutations, 5 seeds (mean across seeds).
 
-| ctDNA fraction | Variant caller AUC | ML classifier AUC | VC Sens @ 95% spec |
+**Per-position detection** (single-locus classification — information-limited at ultra-low ctDNA):
+
+| ctDNA fraction | Variant caller AUC | VC Sens @ 95% spec |
+|---|---|---|
+| 10% | 1.000 | 1.000 |
+| 5% | 0.9995 | 0.998 |
+| 1% | 0.959 | 0.850 |
+| 0.5% | 0.884 | 0.633 |
+| **0.1% (ultra-early regime)** | **0.642** | **0.183** |
+
+**Panel-based detection** (`--skip-panel` to disable) — MRD-style per-sample aggregation over the tracking panel (each patient's real mutations), the design used by Signatera/CAPP-Seq-class assays:
+
+| ctDNA fraction | Panel AUC | Sens @ 95% spec | Sens @ 99% spec | Paired cancer>control |
+|---|---|---|---|---|
+| 10% | 1.000 | 1.000 | 1.000 | 1.000 |
+| 5% | 1.000 | 1.000 | 1.000 | 1.000 |
+| 1% | 1.000 | 1.000 | 1.000 | 1.000 |
+| 0.5% | 1.000 | 1.000 | 1.000 | 1.000 |
+| **0.1%** | **0.935** | **0.770** | **0.490** | **1.000** |
+
+**Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
+
+| Background error rate | Depth | Panel AUC | Sens @ 95% spec |
 |---|---|---|---|
-| 10% | 1.000 | 1.000 | 1.000 |
-| 5% | 0.9995 | 0.9995 | 0.998 |
-| 1% | 0.959 | 0.954 | 0.850 |
-| 0.5% | 0.884 | 0.871 | 0.633 |
-| **0.1% (ultra-early regime)** | **0.642** | **0.623** | **0.182** |
+| 2e-3 (raw reads) | 5,000× | 0.935 | 0.770 |
+| 2e-3 | 50,000× | 0.998 | 1.000 |
+| 1e-3 | 5,000× | 0.965 | 0.910 |
+| 1e-3 | 50,000× | 0.9995 | 1.000 |
+| 1e-4 (duplex UMI) | 5,000× | 0.998 | 1.000 |
+| 1e-4 | 50,000× | 1.000 | 1.000 |
+| 1e-5 | any | 1.000 | 1.000 |
 
-Detection degrades sharply below 1% ctDNA — this is the actual research frontier. At 0.1% ctDNA the ML classifier does not beat the likelihood-ratio caller (AUC 0.623 vs 0.642), and sensitivity at fixed 95% specificity collapses to 18%. The longitudinal CET stage is intended to compensate by accumulating evidence across quarterly draws; its honest simulation baseline (after removing ad-hoc bonuses) is **AUC 0.49, sens 2.5% @ 97% spec** (`results/README.md`), i.e. the longitudinal redesign is open work, not a validated result.
+The remaining gap to production is **real plasma cfDNA sequencing** — see `docs/PRODUCTION_ROADMAP.md`. The longitudinal CET stage (Stage 2) is intended to extend this below 0.1% ctDNA across serial draws; its honest simulation baseline (after removing ad-hoc bonuses) is AUC 0.49, sens 2.5% @ 97% spec (`results/README.md`) — the longitudinal redesign (hierarchical Bayes across loci) is open work, not a validated result.
 
 ---
 
