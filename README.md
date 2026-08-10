@@ -535,15 +535,17 @@ Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), 
 | 0.5% | 0.884 | 0.633 |
 | **0.1% (ultra-early regime)** | **0.642** | **0.183** |
 
-**Panel-based detection** (`--skip-panel` to disable) — MRD-style per-sample aggregation over the tracking panel (each patient's real mutations), the design used by Signatera/CAPP-Seq-class assays:
+**Panel-based detection** (`--skip-panel` to disable, `--clean-panel` for a designed-panel simulation) — MRD-style per-sample aggregation over the tracking panel. Three scoring methods: LLR sum (standard), Fisher sum (-log₁₀ Poisson p-value, CAPP-Seq/Neman 2014), and Strand-concordance-weighted Fisher. The simulation now models **context-dependent sequencing errors** (CpG ~10×, homopolymer ~5×, clean baseline), **strand-asymmetric error reads** (true variants are biallelic across fwd/rev; errors are single-strand), and optional clean-panel design (avoid high-error genomic regions):
 
-| ctDNA fraction | Panel AUC | Sens @ 95% spec | Sens @ 99% spec | Paired cancer>control |
-|---|---|---|---|---|
-| 10% | 1.000 | 1.000 | 1.000 | 1.000 |
-| 5% | 1.000 | 1.000 | 1.000 | 1.000 |
-| 1% | 1.000 | 1.000 | 1.000 | 1.000 |
-| 0.5% | 1.000 | 1.000 | 1.000 | 1.000 |
-| **0.1%** | **0.935** | **0.770** | **0.490** | **1.000** |
+| ctDNA fraction | LLR AUC | Fisher AUC | Strand AUC | Sens @ 95% spec | Paired cancer>control |
+|---|---|---|---|---|---|
+| 10% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 5% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 1% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
+| 0.5% | 0.9995 | 0.997 | 0.997 | 0.990 | 1.000 |
+| **0.1%** | **0.921** | **0.834** | **0.820** | **0.600** | **1.000** |
+
+With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below).
 
 **Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
 
