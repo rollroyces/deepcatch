@@ -33,6 +33,7 @@ import numpy as np
 # ═══════════════════════════════════════════════════════════════
 
 CBIOPORTAL_API = "https://www.cbioportal.org/api"
+GDC_API = "https://api.gdc.cancer.gov"
 
 TCGA_STUDIES = {
     'LUAD': {
@@ -480,6 +481,70 @@ def _random_trinuc(rng: np.random.RandomState) -> str:
     """Generate random trinucleotide context."""
     bases = ['A', 'C', 'G', 'T']
     return ''.join(rng.choice(bases, 3))
+
+
+def fetch_gdc_mafs(cache_dir: str,
+                   project: str = "TCGA-LUAD",
+                   n_files: int = 25) -> List[str]:
+    """Download open-access per-aliquot masked MAF files from the GDC API.
+
+    GDC now serves per-aliquot (per-sample) MAF files rather than a single
+    project-level MAF. Each downloaded file is saved to ``cache_dir`` as
+    ``gdc_<project>_<index>.maf.gz`` (stable names) and can be re-read by
+    ``load_tcga_cohort`` on subsequent runs (no network needed).
+
+    Args:
+        cache_dir: directory to save the MAF files into
+        project: GDC project id (e.g. TCGA-LUAD)
+        n_files: number of aliquot MAF files to download
+
+    Returns:
+        list of downloaded file paths
+    """
+    import urllib.request
+    import urllib.parse
+    import time
+
+    filters = {
+        "op": "and",
+        "content": [
+            {"op": "in", "content": {"field": "cases.project.project_id", "value": [project]}},
+            {"op": "in", "content": {"field": "data_type", "value": ["Masked Somatic Mutation"]}},
+            {"op": "in", "content": {"field": "access", "value": ["open"]}},
+        ],
+    }
+    qs = urllib.parse.quote(json.dumps(filters))
+    url = (f"{GDC_API}/files?filters={qs}"
+           f"&fields=file_id,file_name,file_size&size={n_files}&pretty=false")
+
+    try:
+        with urllib.request.urlopen(url, timeout=60) as r:
+            data = json.loads(r.read().decode())
+    except Exception as e:
+        print(f"  ✗ GDC file query failed: {e}")
+        return []
+
+    hits = data.get('data', {}).get('hits', [])
+    print(f"  GDC: {len(hits)} open-access MAF files available for {project}")
+
+    os.makedirs(cache_dir, exist_ok=True)
+    downloaded = []
+    for i, h in enumerate(hits):
+        file_id = h.get('file_id')
+        if not file_id:
+            continue
+        out_path = os.path.join(cache_dir, f"gdc_{project}_{i}.maf.gz")
+        try:
+            with urllib.request.urlopen(f"{GDC_API}/data/{file_id}", timeout=120) as r:
+                with open(out_path, 'wb') as f:
+                    f.write(r.read())
+            downloaded.append(out_path)
+            print(f"    ✓ {os.path.basename(out_path)} ({len(downloaded)}/{len(hits)})")
+        except Exception as e:
+            print(f"    ✗ download {file_id} failed: {e}")
+        time.sleep(0.3)  # be polite to GDC
+
+    return downloaded
 
 
 def load_or_download(cancer_types: List[str],

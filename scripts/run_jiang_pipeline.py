@@ -57,14 +57,14 @@ from scipy.stats import mannwhitneyu
 
 warnings.filterwarnings("ignore")
 
-# ─── Paths ───────────────────────────────────────────────────────────────
-WORKSPACE = Path("/home/node/.openclaw/workspace")
-PROJECT = WORKSPACE / "deepcatch"
+# ─── Paths (repo-relative; override with DEEPCATCH_DATA_DIR env var) ────────
+PROJECT = Path(__file__).resolve().parent.parent          # repo root
 SRC = PROJECT / "src"
 RESULTS_DIR = PROJECT / "results" / "prof_jiang_4mer_analysis"
 PLOTS_DIR = RESULTS_DIR / "plots"
 SCRIPTS_DIR = PROJECT / "scripts"
-TMP_DIR = Path("/tmp")
+TMP_DIR = Path(os.environ.get("TMPDIR", "/tmp"))
+DATA_DIR = Path(os.environ.get("DEEPCATCH_DATA_DIR", PROJECT / "data"))
 
 # Add to path
 sys.path.insert(0, str(PROJECT))
@@ -712,12 +712,22 @@ def main():
     logger.info("=" * 80)
 
     # ── 7a: Load data ──
-    xlsx_path = RESULTS_DIR / "deepcatch_data.xlsx"
-    if not xlsx_path.exists():
-        # Try alternate path
-        xlsx_path = Path("/tmp/deepcatch_jiang_analysis/deepcatch_data.xlsx")
-    if not xlsx_path.exists():
-        logger.error(f"Data file not found: {xlsx_path}")
+    # Look for the Jiang Table S1 xlsx in (in order): repo data/ dir (via
+    # DEEPCATCH_DATA_DIR), results dir, /tmp scratch. The raw file is NOT in
+    # the repo for privacy reasons — provision it from Prof. Jiang's lab and
+    # set DEEPCATCH_DATA_DIR, or drop it at data/deepcatch_data.xlsx.
+    xlsx_candidates = [
+        DATA_DIR / "deepcatch_data.xlsx",
+        RESULTS_DIR / "deepcatch_data.xlsx",
+        Path(os.environ.get("TMPDIR", "/tmp")) / "deepcatch_jiang_analysis" / "deepcatch_data.xlsx",
+    ]
+    xlsx_path = next((p for p in xlsx_candidates if p.exists()), None)
+    if xlsx_path is None:
+        logger.error(
+            f"Data file not found. Tried: {[str(p) for p in xlsx_candidates]}\n"
+            f"  Provision Prof. Jiang Table S1 (129 samples × 256 4-mer frequencies) as "
+            f"data/deepcatch_data.xlsx or set DEEPCATCH_DATA_DIR."
+        )
         return
 
     X, y_raw, sample_ids, motif_names = load_jiang_data(str(xlsx_path))

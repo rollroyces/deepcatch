@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.1](https://img.shields.io/badge/Version-2.1-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-198%2F198%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-228%2F228%20passing-brightgreen)]()
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
@@ -230,7 +230,7 @@ bash RUN_ALL.sh --quick       # 2-minute smoke test
 
 **Input:** BAM/FASTQ files, or fragment length arrays + end sequences
 **Output:** Scalar features (4–80+), GMM component statistics, MDS scores
-**Tests:** 47 (`test_enhanced_features.py`)
+**Tests:** 42 (`test_enhanced_features.py`)
 
 ---
 
@@ -249,7 +249,7 @@ bash RUN_ALL.sh --quick       # 2-minute smoke test
 
 **Input:** cfDNA methylation beta values + reference Hi-C/chromatin data
 **Output:** Graph-level `field_defect_score` (scalar) per sample
-**Tests:** 54 (`test_integration.py`)
+**Tests:** 46 (`test_integration.py`)
 
 ---
 
@@ -268,7 +268,7 @@ bash RUN_ALL.sh --quick       # 2-minute smoke test
 
 **Input:** cfDNA methylation beta values (or synthetic atlas for training)
 **Output:** Per-tissue fraction vector + 24-D feature vector
-**Tests:** 54 (`test_integration.py`)
+**Tests:** 47 (`test_integration.py`)
 
 ---
 
@@ -390,11 +390,12 @@ python -c "from src.foundation import FoundationConfig; print('OK')"
 
 | Module | Tests | Status |
 |---|---|---|
-| Enhanced Fragmentomics | 47 | ✅ All passing |
-| GNN Methylation | 54 | ✅ All passing |
-| Tissue Deconvolution | 54 | ✅ All passing |
+| Enhanced Fragmentomics (+ THEMIS) | 42 | ✅ All passing |
+| GNN Methylation | 46 | ✅ All passing |
+| Tissue Deconvolution | 47 | ✅ All passing |
 | Foundation Model | 43 | ✅ All passing |
-| **Total** | **198** | **✅** |
+| Priming Agents | 50 | ✅ All passing |
+| **Total** | **228** | **✅** |
 
 ---
 
@@ -514,11 +515,25 @@ Preliminary validation on **129 real plasma samples** from Jiang lab (CUHK), usi
 | Metric | Value |
 |---|---|
 | Samples (HCC vs Control) | 72 (34 HCC, 38 Control) |
-| Nested CV AUC | **0.986** |
+| 5-fold CV AUC (nested selection, `run_jiang_analysis.py`) | **0.9845** |
 | Bonferroni-significant motifs | 108 / 256 |
 | Biological pattern | CG-rich depletion, AT-rich enrichment |
 
-Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), single centre. Not a clinical assay.
+Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), single centre. Not a clinical assay. AUC is from nested cross-validation (motif selection inside folds); the raw data file is not redistributed in the repo (CUHK terms) — provision via `data/deepcatch_data.xlsx` or `DEEPCATCH_DATA_DIR`.
+
+### Real-TCGA Benchmark (honest framing)
+
+`real_tcga_validation.py` uses **real TCGA tumor mutations (with real read counts) as ground truth**, then **simulates plasma cfDNA** by Poisson sampling at each tumor fraction. It is a spike-in/dilution benchmark, **not** a clinical plasma validation. Metrics are AUC/PR-AUC plus sensitivity at **fixed** 95%/99% specificity — no threshold optimization on test data. Data is fetched from the **GDC open-access API** (per-aliquot masked MAFs, cached in `validation/tcga/tcga_cache/`); the synthetic fallback dataset is deliberately refused. Latest run: 20 LUAD patients, 5,738 mutations, 5 seeds (mean across seeds; cross-seed std ≈ 0.004 at 0.1% ctDNA):
+
+| ctDNA fraction | Variant caller AUC | ML classifier AUC | VC Sens @ 95% spec |
+|---|---|---|---|
+| 10% | 1.000 | 1.000 | 1.000 |
+| 5% | 0.9995 | 0.9995 | 0.998 |
+| 1% | 0.959 | 0.954 | 0.850 |
+| 0.5% | 0.884 | 0.871 | 0.633 |
+| **0.1% (ultra-early regime)** | **0.642** | **0.623** | **0.182** |
+
+Detection degrades sharply below 1% ctDNA — this is the actual research frontier. At 0.1% ctDNA the ML classifier does not beat the likelihood-ratio caller (AUC 0.623 vs 0.642), and sensitivity at fixed 95% specificity collapses to 18%. The longitudinal CET stage is intended to compensate by accumulating evidence across quarterly draws; its honest simulation baseline (after removing ad-hoc bonuses) is **AUC 0.49, sens 2.5% @ 97% spec** (`results/README.md`), i.e. the longitudinal redesign is open work, not a validated result.
 
 ---
 
