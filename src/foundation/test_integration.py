@@ -415,6 +415,9 @@ def test_25_downstream_creation():
 @pytest.mark.slow
 def test_26_downstream_fit_predict():
     """Downstream should fit and predict with AUC > 0.5."""
+    # Deterministic: torch init + randperm split are unseeded in fit().
+    torch.manual_seed(42)
+    np.random.seed(42)
     gen = MultiModalDataGenerator(seed=42, noise_level=0.05)
     train_mod, train_lab = gen.generate_dataset(n_samples=100, prefix="fit_train")
     test_mod, test_lab = gen.generate_dataset(n_samples=50, prefix="fit_test")
