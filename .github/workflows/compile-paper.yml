@@ -6,6 +6,8 @@ on:
       - 'paper/deepcatch_final.tex'
       - 'paper/supplementary.tex'
       - 'paper/references_final.bib'
+      - 'paper/paper.tex'
+      - 'paper/PAPER.md'
       - 'paper/figures/**'
   workflow_dispatch:
 
