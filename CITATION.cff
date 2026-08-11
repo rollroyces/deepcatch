@@ -3,14 +3,14 @@ message: "If you use DeepCatch in your research, please cite it as follows."
 title: "DeepCatch: Performance-Weighted Multi-Modal Fusion for Ultra-Early Cancer Detection from cfDNA"
 authors:
   - given-names: "Royce"
-    family-names: "[Last Name]"
-    affiliation: "DeepCatch Consortium"
-    orcid: ""
+    family-names: "Lam"
+    affiliation: "DeepCatch Project"
+    orcid: "https://orcid.org/0009-0009-1904-6999"
   - name: "DeepCatch Contributors"
 year: 2026
 doi: "to be assigned (preprint)"
-url: "https://github.com/deepcatch/deepcatch"
-repository-code: "https://github.com/deepcatch/deepcatch"
+url: "https://github.com/rollroyces/deepcatch"
+repository-code: "https://github.com/rollroyces/deepcatch"
 license: MIT
 version: "1.0.0-preprint"
 date-released: 2026-04-28

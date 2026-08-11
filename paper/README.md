@@ -6,12 +6,10 @@ This directory contains the LaTeX source for the DeepCatch manuscript.
 
 | File | Description |
 |------|-------------|
-| `main.tex` | Primary manuscript (Nature Medicine / Lancet Oncology / Cancer Discovery target) |
-| `references.bib` | Bibliography in BibTeX format |
+| `deepcatch_final.tex` | Primary manuscript (Bioinformatics target) |
+| `references_final.bib` | Bibliography in BibTeX format |
 | `supplementary.tex` | Supplementary materials (extended methods, additional figures) |
-| `abstract.txt` | Plain-text abstract for submission systems |
-| `cover_letter.txt` | Template cover letter for journal submission |
-| `figures/` | Figure files (PNG, PDF, or TikZ sources) |
+| `figures/` | Figure files (PNG, PDF, or TikZ sources)
 
 ## How to Compile
 
@@ -19,22 +17,26 @@ This directory contains the LaTeX source for the DeepCatch manuscript.
 
 ```bash
 cd paper/
-pdflatex main.tex
-bibtex main
-pdflatex main.tex
-pdflatex main.tex
+pdflatex deepcatch_final.tex
+bibtex deepcatch_final
+pdflatex deepcatch_final.tex
+pdflatex deepcatch_final.tex
 ```
 
 ### Option 2: latexmk (recommended)
 
 ```bash
 cd paper/
-latexmk -pdf main.tex
+latexmk -pdf deepcatch_final.tex
 ```
 
 ### Option 3: Overleaf
 
-Upload the entire `paper/` directory to Overleaf. Set the main document to `main.tex`.
+Upload the entire `paper/` directory to Overleaf. Set the main document to `deepcatch_final.tex`.
+
+### Option 4: GitHub CI
+
+Push changes to `paper/deepcatch_final.tex` or `paper/supplementary.tex` — the CI workflow will automatically compile and upload the PDF as an artifact.
 
 ## Dependencies
 

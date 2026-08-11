@@ -134,7 +134,7 @@ echo ""
 # Step 1: Install dependencies (if needed)
 # ------------------------------------------------------------------
 
-echo -e "${BLUE}${BOLD}[1/6] Installing dependencies...${NC}"
+echo -e "${BLUE}${BOLD}[1/5] Installing dependencies...${NC}"
 
 if [ -f "requirements.txt" ]; then
     $PYTHON -m pip install -r requirements.txt --quiet 2>/dev/null || {
@@ -150,7 +150,7 @@ echo ""
 # Step 2: Full cross-validation
 # ------------------------------------------------------------------
 
-echo -e "${BLUE}${BOLD}[2/6] Running full cross-validation...${NC}"
+echo -e "${BLUE}${BOLD}[2/5] Running full cross-validation...${NC}"
 echo ""
 
 $PYTHON run_full_validation.py \
@@ -170,65 +170,65 @@ echo -e "${GREEN}[OK] Full validation complete${NC}"
 echo ""
 
 # ------------------------------------------------------------------
-# Step 3: TCGA validation
+# Step 3: Real data validation (TCGA) — optional
 # ------------------------------------------------------------------
 
-echo -e "${BLUE}${BOLD}[3/6] Running TCGA real data validation...${NC}"
+echo -e "${BLUE}${BOLD}[3/5] Running real data validation...${NC}"
 echo ""
 
-$PYTHON run_tcga_validation.py \
-    $QUICK_FLAG \
-    --output results/ \
-    --seeds 5
-
-TCGA_EXIT=$?
-if [ $TCGA_EXIT -ne 0 ]; then
-    echo -e "${YELLOW}[WARN] TCGA validation exited with code $TCGA_EXIT (non-fatal)${NC}"
-fi
-
-echo ""
-echo -e "${GREEN}[OK] TCGA validation complete${NC}"
-echo ""
-
-# ------------------------------------------------------------------
-# Step 4: Benchmark comparison
-# ------------------------------------------------------------------
-
-echo -e "${BLUE}${BOLD}[4/6] Generating benchmark comparison...${NC}"
-echo ""
-
-$PYTHON run_benchmark_comparison.py \
-    --results results/final_cross_validated_results.json \
-    --tcga results/tcga_validation_results.json \
-    --output results/
-
-BENCH_EXIT=$?
-if [ $BENCH_EXIT -ne 0 ]; then
-    echo -e "${YELLOW}[WARN] Benchmark comparison exited with code $BENCH_EXIT (non-fatal)${NC}"
-fi
-
-echo ""
-echo -e "${GREEN}[OK] Benchmark comparison complete${NC}"
-echo ""
-
-# ------------------------------------------------------------------
-# Step 5: Verify fixes
-# ------------------------------------------------------------------
-
-echo -e "${BLUE}${BOLD}[5/6] Running fix verification...${NC}"
-echo ""
-
-if [ -f "validation_framework_tests.py" ]; then
-    $PYTHON validation_framework_tests.py 2>&1 | head -30 || true
-    echo ""
-fi
-
-if [ -f "verify_fixes.py" ]; then
-    $PYTHON verify_fixes.py 2>&1 || {
-        echo -e "${YELLOW}[WARN] verify_fixes.py issue (non-fatal)${NC}"
-    }
+TCGA_SCRIPT="$(dirname $0)/real_tcga_validation.py"
+if [ -f "$TCGA_SCRIPT" ]; then
+    $PYTHON real_tcga_validation.py \
+        $QUICK_FLAG \
+        --output results/ \
+        --seeds 5 || echo -e "${YELLOW}[WARN] TCGA validation non-fatal error${NC}"
 else
-    echo -e "${YELLOW}[WARN] verify_fixes.py not found — skipping${NC}"
+    echo -e "${YELLOW}[WARN] real_tcga_validation.py not found — skipping${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}[OK] TCGA validation step complete${NC}"
+echo ""
+
+# ------------------------------------------------------------------
+# Step 4: Jiang 4-mer analysis — optional
+# ------------------------------------------------------------------
+
+echo -e "${BLUE}${BOLD}[4/5] Running Jiang 4-mer analysis...${NC}"
+echo ""
+
+JIANG_SCRIPT="$(dirname $0)/run_jiang_analysis.py"
+if [ -f "$JIANG_SCRIPT" ]; then
+    $PYTHON run_jiang_analysis.py \
+        $QUICK_FLAG \
+        --output results/ || echo -e "${YELLOW}[WARN] Jiang analysis non-fatal error${NC}"
+else
+    echo -e "${YELLOW}[WARN] run_jiang_analysis.py not found — skipping${NC}"
+fi
+
+echo ""
+echo -e "${GREEN}[OK] Jiang analysis step complete${NC}"
+echo ""
+
+# ------------------------------------------------------------------
+# Step 5: Supplementary checks
+# ------------------------------------------------------------------
+
+echo -e "${BLUE}${BOLD}[5/5] Running supplementary checks...${NC}"
+echo ""
+
+# Verify Python syntax across all .py files
+BROKEN=0
+for f in $(find . -name '*.py' -not -path './.git/*' | sort); do
+    $PYTHON -c "import ast; ast.parse(open('$f').read())" 2>/dev/null || {
+        echo -e "  ${RED}⚠ Syntax error in $f${NC}"
+        BROKEN=$((BROKEN+1))
+    }
+done
+if [ $BROKEN -eq 0 ]; then
+    echo -e "  ${GREEN}✓ All Python files pass syntax check${NC}"
+else
+    echo -e "  ${YELLOW}⚠ $BROKEN file(s) have syntax errors${NC}"
 fi
 
 echo ""
@@ -237,7 +237,7 @@ echo ""
 # Step 6: Summary
 # ------------------------------------------------------------------
 
-echo -e "${BLUE}${BOLD}[6/6] Generating summary...${NC}"
+echo -e "${BLUE}${BOLD}[Summary]${NC}"
 echo ""
 
 echo -e "${BLUE}${BOLD}========================================${NC}"

@@ -27,7 +27,9 @@ build/
 *.ipynb
 
 # ── Machine Learning ────────────────────────────────────────────────────────
-*.pt
+# Only ignore generated/trained checkpoints, not bundled ones
+model/*.pt
+!model/motif_model_checkpoint.pt
 *.pth
 *.h5
 *.ckpt
