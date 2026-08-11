@@ -546,10 +546,10 @@ Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), 
 | 10% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 | 5% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 | 1% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| 0.5% | 0.9995 | 0.997 | 0.997 | 0.990 | 1.000 |
-| **0.1%** | **0.921** | **0.834** | **0.820** | **0.600** | **1.000** |
+| 0.5% | 0.9995 | 0.997 | 0.996 | 0.990 | 1.000 |
+| **0.1%** | **0.921** | **0.834** | **0.831** | **0.600** | **1.000** |
 
-With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below).
+With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below). The strand score uses a Z-score (Normal) approximation to the binomial test — corrected from the old 2×min/max formula which erroneously penalized low-read-count positions.
 
 **Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
 
