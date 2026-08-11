@@ -50,6 +50,7 @@ jobs:
       - name: real_tcga_validation must refuse synthetic fallback
         run: |
           set -e
+          set -o pipefail   # pipeline exit = python exit, not tee's
           mkdir -p /tmp/empty_cache
           if python3 real_tcga_validation.py --cache-dir /tmp/empty_cache \
               --no-download --n-patients 5 --output /tmp/out.json 2>&1 | tee /tmp/guard.log; then
