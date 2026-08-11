@@ -210,94 +210,106 @@ def run_cet_per_motif(X: np.ndarray, y: np.ndarray,
 def logistic_fusion_cv(X: np.ndarray, y: np.ndarray, top_k: int = 50,
                        n_folds: int = 5, seed: int = 42,
                        C: float = 10.0, select_by: str = 'p_value') -> Dict:
-    """Logistic regression fusion on top-k motifs with CV AUC.
+    """Logistic regression fusion on top-k motifs with NESTED CV AUC.
 
-    Uses C=10.0 (weaker regularization) by default — for strong-signal
-    data like Jiang 4-mer, less L2 penalty preserves more discriminative
-    information and avoids over-shrinking correlated motif features.
+    Motif selection happens INSIDE each training fold (Mann-Whitney U on the
+    training fold only), so held-out samples never influence feature selection.
+    This removes the optimistic bias of selecting features on the full dataset.
 
     Parameters
     ----------
     select_by : str
         'p_value' — select top-k by Mann-Whitney U p-value (recommended)
         'variance' — select top-k by feature variance
-        'composite' — use pre-computed composite score from cet_df
+        'composite' — fall back to variance (composite scores are not
+        available inside folds without leaking)
 
     Returns dict with keys: auc_mean, auc_std, auc_folds, coefs, intercept,
-                            top_indices, n_top_motifs_used.
+                            top_indices, n_top_motifs_used, selection_stability.
+    Coefs/top_indices come from a full-data fit for INTERPRETATION ONLY —
+    the CV AUC is computed with per-fold selection.
     """
     from sklearn.linear_model import LogisticRegression
-    from sklearn.model_selection import StratifiedKFold, cross_val_predict
+    from sklearn.model_selection import StratifiedKFold
     from sklearn.metrics import roc_auc_score
     from scipy.stats import mannwhitneyu
 
-    # Select top-k features
-    if select_by == 'variance':
-        scores = np.var(X, axis=0)
-        top_idx = np.argsort(-scores)[:min(top_k, X.shape[1])]
-    elif select_by == 'p_value':
+    def _select_top(X_tr: np.ndarray, y_tr: np.ndarray, k: int) -> np.ndarray:
+        """Rank motifs on the given (training) data only."""
+        if select_by == 'variance':
+            scores = np.var(X_tr, axis=0)
+            return np.argsort(-scores)[:min(k, X_tr.shape[1])]
+        # p_value (default): Mann-Whitney U on training fold only
         p_vals = []
-        for i in range(X.shape[1]):
+        for i in range(X_tr.shape[1]):
             try:
-                _, p = mannwhitneyu(X[y == 1, i], X[y == 0, i],
+                _, p = mannwhitneyu(X_tr[y_tr == 1, i], X_tr[y_tr == 0, i],
                                     alternative='two-sided')
                 p_vals.append(p)
             except (ValueError, ZeroDivisionError):
                 p_vals.append(1.0)
-        top_idx = np.argsort(p_vals)[:min(top_k, X.shape[1])]
-    else:
-        # Fallback: variance
-        scores = np.var(X, axis=0)
-        top_idx = np.argsort(-scores)[:min(top_k, X.shape[1])]
-
-    X_top = X[:, top_idx]
-
-    if X_top.shape[1] == 0:
-        return {
-            'auc_mean': 0.5, 'auc_std': 0.0,
-            'auc_folds': [0.5] * n_folds,
-            'coefs': np.zeros(0), 'intercept': 0.0,
-            'top_indices': [],
-        }
-
-    lr = LogisticRegression(
-        C=C, solver='liblinear', max_iter=5000, random_state=seed,
-    )
+        return np.argsort(p_vals)[:min(k, X_tr.shape[1])]
 
     cv = StratifiedKFold(n_splits=n_folds, shuffle=True, random_state=seed)
 
-    # Per-fold AUC (explicit loop for detail, not cross_val_predict)
+    # NESTED CV: select + fit on the training fold, evaluate on the test fold
     fold_aucs = []
-    for train_idx, test_idx in cv.split(X_top, y):
+    fold_top_idx = []
+    y_pred_cv = np.zeros(len(y))
+    for train_idx, test_idx in cv.split(X, y):
+        top_idx = _select_top(X[train_idx], y[train_idx], top_k)
+        fold_top_idx.append(top_idx)
+        if len(top_idx) == 0:
+            fold_aucs.append(0.5)
+            y_pred_cv[test_idx] = 0.5
+            continue
         lr_fold = LogisticRegression(
             C=C, solver='liblinear', max_iter=5000, random_state=seed,
         )
-        lr_fold.fit(X_top[train_idx], y[train_idx])
-        fold_pred = lr_fold.predict_proba(X_top[test_idx])[:, 1]
+        lr_fold.fit(X[train_idx][:, top_idx], y[train_idx])
+        fold_pred = lr_fold.predict_proba(X[test_idx][:, top_idx])[:, 1]
+        y_pred_cv[test_idx] = fold_pred
         try:
-            fold_auc = roc_auc_score(y[test_idx], fold_pred)
+            fold_aucs.append(roc_auc_score(y[test_idx], fold_pred))
         except ValueError:
-            fold_auc = 0.5
-        fold_aucs.append(fold_auc)
+            fold_aucs.append(0.5)
 
     auc_mean = float(np.mean(fold_aucs))
-    auc_std = float(np.std(fold_aucs, ddof=1))
+    auc_std = float(np.std(fold_aucs, ddof=1)) if len(fold_aucs) > 1 else 0.0
 
-    # Fit on all data for coefficients
-    lr.fit(X_top, y)
+    # Final model on all data (full-data selection) — interpretation only
+    full_top_idx = _select_top(X, y, top_k)
+    lr = LogisticRegression(
+        C=C, solver='liblinear', max_iter=5000, random_state=seed,
+    )
+    if len(full_top_idx) > 0:
+        lr.fit(X[:, full_top_idx], y)
+        coefs = lr.coef_.flatten()
+        intercept = float(lr.intercept_[0])
+    else:
+        coefs = np.zeros(0)
+        intercept = 0.0
 
-    # Full cross_val_predict for ROC curve
-    y_pred_cv = cross_val_predict(lr, X_top, y, cv=cv, method='predict_proba')[:, 1]
+    # Selection stability: how many folds selected each motif
+    stability: Dict = {}
+    if fold_top_idx:
+        all_selected = np.concatenate([t for t in fold_top_idx if len(t) > 0])
+        counts = np.bincount(all_selected, minlength=X.shape[1])
+        stability = {int(i): int(c) for i, c in enumerate(counts) if c > 0}
 
     return {
         'auc_mean': auc_mean,
         'auc_std': auc_std,
         'auc_folds': fold_aucs,
-        'coefs': lr.coef_.flatten(),
-        'intercept': float(lr.intercept_[0]),
-        'top_indices': top_idx.tolist(),
-        'y_pred_cv': y_pred_cv,
-        'n_top_motifs_used': X_top.shape[1],
+        'coefs': coefs,
+        'intercept': intercept,
+        'top_indices': full_top_idx.tolist(),
+        'y_pred_cv': y_pred_cv.tolist(),
+        'n_top_motifs_used': len(full_top_idx),
+        'selection_stability': stability,
+        'note': ('AUC is from NESTED CV (motif selection performed inside each '
+                 'training fold). Coefficients are from a full-data fit and are '
+                 'for interpretation only.'),
     }
 
 

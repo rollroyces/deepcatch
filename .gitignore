@@ -49,6 +49,10 @@ model/*.pt
 data/
 db/
 
+# ── TCGA downloader caches (regenerable API JSONs/CSVs; keep open-access MAFs) ──
+validation/tcga/tcga_cache/*.json
+validation/tcga/tcga_cache/*.csv
+
 # ── Results (keep reports, ignore raw dumps) ────────────────────────────────
 results/*.json
 results/*.png

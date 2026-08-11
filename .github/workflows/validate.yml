@@ -3,7 +3,67 @@ name: DeepCatch Validation
 on: [push, workflow_dispatch]
 
 jobs:
-  validate:
+  # ── Core tests (no torch) ──────────────────────────────────────────────
+  core-tests:
+    name: Core tests (fragmentomics, preprocessing, clinical, fusion)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - name: Run core test suite
+        run: |
+          python -m pytest src/fragmentomics src/preprocessing src/clinical \
+            src/multimodal_fusion test/ -q --no-header
+
+  # ── Deep-learning module tests (torch + torch_geometric) ──────────────
+  dl-tests:
+    name: DL tests (foundation, GNN, tissue deconv, priming)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - run: pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install -q torch_geometric
+      - name: Run DL module tests
+        run: |
+          python -m pytest src/foundation src/tissue_deconv src/priming \
+            src/methylation_gnn -q --no-header
+
+  # ── Real-data pipeline smoke test (no data download) ──────────────────
+  # Verifies the real-TCGA validation fails LOUDLY (not silently) when no
+  # real MAF data is present — the synthetic fallback must never be used.
+  real-data-guard:
+    name: Real-data guard (fail-loud check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas
+      - name: real_tcga_validation must refuse synthetic fallback
+        run: |
+          set -e
+          set -o pipefail   # pipeline exit = python exit, not tee's
+          mkdir -p /tmp/empty_cache
+          if python3 real_tcga_validation.py --cache-dir /tmp/empty_cache \
+              --no-download --n-patients 5 --output /tmp/out.json 2>&1 | tee /tmp/guard.log; then
+            echo "❌ FAIL: script should have exited non-zero without real data"
+            exit 1
+          fi
+          grep -q "SYNTHETIC" /tmp/guard.log && echo "✅ correctly refuses synthetic fallback" || exit 1
+
+  # ── DeepCatch simulation smoke test (kept from previous CI) ───────────
+  # NOTE: this is a code-path smoke test on synthetic data, NOT a real-data
+  # performance test. Renamed accordingly.
+  smoke-test:
+    name: Simulation smoke test
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -12,7 +72,7 @@ jobs:
         with: {python-version: '3.11'}
       - run: pip install -q numpy scipy scikit-learn pandas
 
-      - name: DeepCatch Real Data Performance Test
+      - name: DeepCatch Simulation Smoke Test
         run: |
           PYTHONPATH="$PWD:$PYTHONPATH" python3 << 'PYEOF'
           import numpy as np; np.random.seed(42)
@@ -22,7 +82,7 @@ jobs:
           from validation.py.cet_validation import run_cet_validation
 
           print("="*60)
-          print("  DeepCatch Real Data Performance Test")
+          print("  DeepCatch Simulation Smoke Test (synthetic data)")
           print("  https://github.com/rollroyces/deepcatch")
           print("="*60)
 
@@ -35,7 +95,7 @@ jobs:
           print(f"\n  [1] MULTI-MODAL FUSION")
           print(f"      Simple average (Bie 2023):  AUC = {compute_auc(avg,labels):.4f}")
           print(f"      Performance-weighted (DC):   AUC = {compute_auc(r['fused_scores'],labels):.4f}")
-          print(f"      Delta: {dr['delta_auc']:+.4f}  p={dr['p_value']:.4f}  {'✅ STATISTICALLY SIGNIFICANT' if dr['significant'] else 'NS'}")
+          print(f"      Delta: {dr['delta_auc']:+.4f}  p={dr['p_value']:.4f}")
 
           # TEST 2: Statistical Inference
           n2=500; y2=np.random.binomial(1,0.3,n2); s2=y2*0.7+np.random.normal(0,0.25,n2)
@@ -50,14 +110,15 @@ jobs:
           # TEST 3: CET Longitudinal
           cet=run_cet_validation()
           perf=cet['performance']
-          print(f"\n  [3] CET LONGITUDINAL TRACKING")
+          print(f"\n  [3] CET LONGITUDINAL TRACKING (simulation)")
           print(f"      AUC: {perf['auc']:.4f}")
           print(f"      Sensitivity: {perf['sensitivity']*100:.1f}%")
           print(f"      Specificity: {perf['specificity_overall']*100:.1f}%")
           print(f"      Dual target (S>=70% + Sp>=95%): {cet['targets']['both_met']}")
 
           print(f"\n  {'='*60}")
-          print(f"  ✅ ALL 3 CORE TESTS PASSED")
+          print(f"  ✅ SIMULATION SMOKE TEST PASSED (synthetic data only —")
+          print(f"      NOT evidence of clinical performance)")
           print(f"  {'='*60}")
           PYEOF
 
