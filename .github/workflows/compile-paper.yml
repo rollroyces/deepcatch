@@ -4,7 +4,8 @@ on:
   push:
     paths:
       - 'paper/deepcatch_final.tex'
-      - 'paper/deepcatch_references.bib'
+      - 'paper/supplementary.tex'
+      - 'paper/references_final.bib'
       - 'paper/figures/**'
   workflow_dispatch:
 
