@@ -1,10 +1,14 @@
-# 🧬 DeepCatch v2.1 — Multi-Modal Longitudinal MCED Framework
+# 🧬 DeepCatch v2.2 — Panel-Based Ultra-Sensitive MRD Detection
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-[![Version: 2.1](https://img.shields.io/badge/Version-2.1-blue.svg)]()
+[![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
 [![Tests](https://img.shields.io/badge/Tests-228%2F228%20passing-brightgreen)]()
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
+
+> **🔥 Seeking expert review — see [REVIEWERS.md](REVIEWERS.md).**
+> Tag v2.2.0: panel-based MRD benchmark, all data open-access.
+> PR open for review: https://github.com/rollroyces/deepcatch/pull/2
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
 
@@ -542,10 +546,10 @@ Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), 
 | 10% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 | 5% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
 | 1% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| 0.5% | 0.9995 | 0.997 | 0.997 | 0.990 | 1.000 |
-| **0.1%** | **0.921** | **0.834** | **0.820** | **0.600** | **1.000** |
+| 0.5% | 0.9995 | 0.997 | 0.996 | 0.990 | 1.000 |
+| **0.1%** | **0.921** | **0.834** | **0.831** | **0.770** | **1.000** |
 
-With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below).
+With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below). The strand score uses a Z-score (Normal) approximation to the binomial test — corrected from the old 2×min/max formula which erroneously penalized low-read-count positions.
 
 **Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
 

@@ -583,10 +583,30 @@ def simulate_cfdna_from_real(
     observed_alt = observed_fwd + observed_rev
     observed_vaf = observed_alt / np.maximum(depths, 1)
 
-    # Strand concordance score: 2·min(fwd, rev)/(fwd+rev+1) — near 1 when
-    # balanced across strands (true variant), near 0 when strand-biased (error).
-    strand_conc = 2.0 * np.minimum(observed_fwd, observed_rev) / (
-        np.maximum(observed_alt, 1))
+    # Strand concordance score: 1 - binomial p-value for strand balance.
+    # When alt count is low (1-2 reads), strand bias is undetectable → score ≈ 0
+    # (the old 2*min/max formula erroneously penalized positions with 1 read).
+    # When alt count is high and biased, score ≈ 1 (strong penalty for strand
+    # asymmetry, expected from sequencing errors but not biallelic true variants).
+    strand_conc = np.zeros(n_total)
+    for i in range(n_total):
+        f = int(observed_fwd[i])
+        r = int(observed_rev[i])
+        n_total_strand = f + r
+        if n_total_strand == 0:
+            strand_conc[i] = 0.0
+            continue
+        # Fast Normal approximation to two-sided binomial test.
+        # H0: fwd fraction = 0.5. Z = (|f-r|-1)/sqrt(f+r) with Yates correction.
+        # p = 2×(1-Φ(|Z|)). Score = p (high = balanced, like old semantics).
+        z = (abs(f - r) - 1.0) / max(np.sqrt(float(n_total_strand)), 1e-9)
+        absz = abs(z)
+        # Williams approximation to Normal CDF: Φ(t) ≈ 1 - 0.5·exp(-0.717t - 0.416t²)
+        phi = 1.0 - 0.5 * np.exp(-0.717 * absz - 0.416 * absz * absz)
+        p = np.clip(2.0 * (1.0 - phi), 1e-15, 1.0)
+        strand_conc[i] = float(p)
+    # For true variants, signal appears biallelic: fwd≈rev → k≈n/2 → p≈1 → score≈0
+    # For errors redistributed to one strand: k≈0 → p≈2×(0.5^n) → score≈1
 
     # Features for classifier (same as before — no strand info in X;
     # strand is only used by the panel detector)
@@ -835,18 +855,17 @@ def run_real_validation(
 
 
 # ═══════════════════════════════════════════════════════════════════
-# STEP 5b: Panel-Based Detection (MRD-style, per-sample aggregation)
+# Panel scoring helpers
 # ═══════════════════════════════════════════════════════════════════
 
 def _fisher_scores(depths: np.ndarray, obs_alt: np.ndarray,
                    error_rates: np.ndarray) -> np.ndarray:
-    """One-sided Poisson p-value → -log₁₀(p) per position.
+    """One-sided Poisson p-value to -log10(p) per position (CAPP-Seq standard).
 
-    This is the standard statistic in ctDNA literature (CAPP-Seq, Newman 2014):
-    for each locus, test H₀ (error only) vs H₁ (error + signal) using the
-    Poisson distribution. Converting to -log₁₀ transports these into a
-    Fisher-method combine where Σ scores is chi-squared distributed. Guards
-    against outlier loci dominating the panel score.
+    For each locus, test H0 (error only) vs H1 (error + signal) using the
+    Poisson distribution. Converting to -log10 transports these into a
+    Fisher-method combine where sum of scores is chi-squared distributed.
+    Guards against outlier loci dominating the panel score.
     """
     n = len(depths)
     scores = np.zeros(n)
