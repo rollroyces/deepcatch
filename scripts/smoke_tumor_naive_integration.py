@@ -82,23 +82,30 @@ def main() -> int:
         # Mutation-score calibration lands in expected band (±0.04 of target)
         rng = np.random.default_rng(42)
         mut = _simulate_mutation_scores(y, rng, target_auc=0.85)
-        out = _summarize(y, mut)
-        assert 0.78 < out["auc"] < 0.92, f"calibration drift: {out}"
+        cal = _summarize(y, mut)
+        assert 0.78 < cal["auc"] < 0.92, f"calibration drift: {cal}"
 
-        # _evaluate_seed end-to-end (1 seed, 1 PCA component to keep fast)
+        # _evaluate_seed end-to-end — verifies the fusion script runs.
+        # Now also includes a delong_vs_tumor_naive block per seed.
         study = np.array(["jiang"] * 40 + ["cristiano"] * 40)
         per_seed = _evaluate_seed(X, y, study, mut, pca_n=10,
                                    seed=0, harmonize=True)
-        assert set(per_seed.keys()) == {
-            "tumor_naive", "mutation_only", "naive_average", "lr_fusion"}
+        strat_keys = {"tumor_naive", "mutation_only",
+                      "naive_average", "lr_fusion"}
+        assert strat_keys <= set(per_seed.keys()), (
+            f"missing strategies: {strat_keys - set(per_seed.keys())}")
         for strat_res in per_seed.values():
-            assert 0.0 <= strat_res["auc"] <= 1.0
-            assert 0.0 <= strat_res["sens_at_95"] <= 1.0
-            assert 0.0 <= strat_res["sens_at_99"] <= 1.0
+            if isinstance(strat_res, dict) and "auc" in strat_res:
+                assert 0.0 <= strat_res["auc"] <= 1.0
+                assert 0.0 <= strat_res["sens_at_95"] <= 1.0
+                assert 0.0 <= strat_res["sens_at_99"] <= 1.0
+        if "delong_vs_tumor_naive" in per_seed:
+            for strat in ("mutation_only", "naive_average", "lr_fusion"):
+                assert strat in per_seed["delong_vs_tumor_naive"]
 
         print(
             f"OK: adapter loaded {X.shape[0]} samples; "
-            f"mutation AUC {out['auc']:.3f}; "
+            f"mutation AUC {cal['auc']:.3f}; "
             f"fusion strategies all produced finite metrics"
         )
     return 0
