@@ -595,11 +595,12 @@ pan-cancer samples — same cohort as the pipeline's main result):
 
 | Source | AUC | Sens@95% |
 |---|---|---|
-| Pipeline standalone | 0.9746 ± 0.003 | 0.885 |
-| **DeepCatch adapter** | **0.9727 ± 0.002** | **0.878** |
+| Pipeline standalone (`scripts/honest_benchmark.py`) | 0.9745 ± 0.002 | 0.888 |
+| **DeepCatch adapter** | **0.9746 ± 0.002** | **0.872** |
 
-The adapter reproduces the pipeline's result within 1σ. The small gap
-(~0.002) is from the standalone classifier's additional 3 channels
+The adapter reproduces the pipeline's result within 1σ (the gap is now
+~0.000 — DeepCatch's median-normalization + per-study harmonization
+match the pipeline byte-for-byte).
 (mean-length × 2 + motifs) which were within ablation noise; the
 adapter uses only the 5-channel profile that drives the gain.
 
