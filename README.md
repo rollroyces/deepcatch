@@ -567,6 +567,77 @@ The remaining gap to production is **real plasma cfDNA sequencing** — see `doc
 
 ---
 
+## Tumor-naive Detection (cross-repo integration)
+
+A thin adapter lets DeepCatch consume the pre-computed fragmentomic
+artifacts of [`cfdna-fragmentomics-pipeline`](https://github.com/rollroyces/cfdna-fragmentomics-pipeline),
+adding **tumor-naive** detection — cancer classification from cfDNA
+without any prior knowledge of tumor mutations.
+
+**The complementary role is the point.** DeepCatch's mutation-informed
+detection needs to *know the tumor's mutations in advance* (panel design,
+TCGA-driven simulation). The pipeline doesn't — it detects cancer from
+raw fragmentation patterns. Combining them gives DeepCatch a signal
+channel reviewers will ask about.
+
+**Channel assembled** (per sample, from `cfdna-fragmentomics-pipeline/data/features/`):
+
+| Source file | Channel | Dim |
+|---|---|---|
+| `{s}.delfi_5mb_ratio.npy` | 5Mb DELFI ratio | 631 |
+| `{s}.delfi_5mb_coverage.npy` | 5Mb CNA coverage | 631 |
+| `{s}.delfi_100kb_ratio.npy` | 100kb DELFI ratio | 30,894 |
+| `{s}.delfi_100kb_counts.npy` | 100kb CNA (median-normalized) | 30,894 |
+| `{s}.fsd.json` | FSD size histogram (5bp bins) | 196 |
+
+**End-to-end result** (5-seed CV, harmonized, PCA n=200, 627 cross-study
+pan-cancer samples — same cohort as the pipeline's main result):
+
+| Source | AUC | Sens@95% |
+|---|---|---|
+| Pipeline standalone | 0.9746 ± 0.003 | 0.885 |
+| **DeepCatch adapter** | **0.9727 ± 0.002** | **0.878** |
+
+The adapter reproduces the pipeline's result within 1σ. The small gap
+(~0.002) is from the standalone classifier's additional 3 channels
+(mean-length × 2 + motifs) which were within ablation noise; the
+adapter uses only the 5-channel profile that drives the gain.
+
+**API** (see `src/fragmentomics/tumor_naive_adapter.py`):
+
+```python
+from src.fragmentomics.tumor_naive_adapter import load_cohort, load_labels_tsv
+
+labels = load_labels_tsv("../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv")
+X, order = load_cohort(sorted(labels),
+                       "../cfdna-fragmentomics-pipeline/data/features")
+# X.shape = (n_loaded, 63,246)
+```
+
+**CLI** (5-seed honest benchmark, JSON output):
+
+```bash
+python -m src.fragmentomics.train_tumor_naive \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
+    --seeds 5 --pca-n 200 --out results/tumor_naive_cv.json
+```
+
+**Tests**: 15/15 unit tests covering channel contract, shape, normalization,
+strict mode, missing artifacts, label parsing, channel subsets
+(`test/test_tumor_naive_adapter.py`).
+
+**Design choices documented in the adapter docstring**:
+- *Reader, not re-implementer* — DeepCatch reads the pipeline's
+  pre-computed `.npy`/JSON artifacts, doesn't re-derive them. The two
+  repos' data side stays in sync automatically; only model code lives
+  in DeepCatch.
+- *Median-normalize 100kb coverage by default* — without it, AUC drops
+  ~0.008 (sequencing-depth batch effect). Matches the pipeline's
+  `load_full_profile` byte-for-byte.
+- *Zero hard dependency on the pipeline repo* — DeepCatch only reads
+  the file format. The pipeline can evolve independently.
+
 ## License & Citation
 
 **License:** MIT — see [LICENSE](LICENSE).

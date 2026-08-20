@@ -61,6 +61,15 @@ from .enhanced_features import (
     RefinedEndMotifs,
     EnhancedFragmentomics,
 )
+from .tumor_naive_adapter import (
+    TumorNaiveSample,
+    load_sample,
+    load_cohort,
+    load_labels_tsv,
+    CHANNEL_NAMES,
+    CHANNEL_DIMS,
+    TOTAL_DIM as TUMOR_NAIVE_TOTAL_DIM,
+)
 
 __all__ = [
     # Normalization
@@ -81,4 +90,12 @@ __all__ = [
     "NucleosomeFootprint",
     "RefinedEndMotifs",
     "EnhancedFragmentomics",
+    # Tumor-naive adapter (cfdna-fragmentomics-pipeline integration)
+    "TumorNaiveSample",
+    "load_sample",
+    "load_cohort",
+    "load_labels_tsv",
+    "CHANNEL_NAMES",
+    "CHANNEL_DIMS",
+    "TUMOR_NAIVE_TOTAL_DIM",
 ]
