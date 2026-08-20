@@ -59,6 +59,26 @@ jobs:
           fi
           grep -q "SYNTHETIC" /tmp/guard.log && echo "✅ correctly refuses synthetic fallback" || exit 1
 
+  # ── Tumor-naive adapter + fusion integration smoke ──────────────────
+  # Exercises the cfdna-fragmentomics-pipeline adapter end-to-end with a
+  # synthetic mini-cohort so future breakage is caught without a 627-sample
+  # FinaleDB download.
+  tumor-naive-integration:
+    name: Tumor-naive + fusion integration smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - name: Smoke (synthetic cohort, no network)
+        run: python3 scripts/smoke_tumor_naive_integration.py
+      - name: Unit tests
+        run: |
+          python -m pytest test/test_tumor_naive_adapter.py \
+            test/test_fusion_ablation.py -v --no-header
+
   # ── DeepCatch simulation smoke test (kept from previous CI) ───────────
   # NOTE: this is a code-path smoke test on synthetic data, NOT a real-data
   # performance test. Renamed accordingly.

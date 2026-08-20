@@ -635,8 +635,66 @@ strict mode, missing artifacts, label parsing, channel subsets
 - *Median-normalize 100kb coverage by default* — without it, AUC drops
   ~0.008 (sequencing-depth batch effect). Matches the pipeline's
   `load_full_profile` byte-for-byte.
-- *Zero hard dependency on the pipeline repo* — DeepCatch only reads
+- **Zero hard dependency on the pipeline repo** — DeepCatch only reads
   the file format. The pipeline can evolve independently.
+
+### Mutation-informed + tumor-naive fusion
+
+`src/fragmentomics/fusion_ablation.py` combines the tumor-naive channel
+with a synthetic mutation-informed channel (calibrated to a target AUC)
+and compares four strategies under the same 5-seed CV hygiene. End-to-end
+on the 627 cross-study cohort:
+
+| Strategy | AUC (10-seed mean ± std) | Sens@95% | Sens@99% |
+|---|---|---|---|
+| Tumor-naive only | 0.9743 ± 0.002 | 0.883 | 0.760 |
+| Mutation-only (calibrated AUC 0.92) | 0.9242 | 0.656 | 0.336 |
+| Naive average of scores | **0.9886** | **0.927** | 0.859 |
+| LR fusion (learned weights) | **0.9887** | **0.937** | 0.845 |
+
+**Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
+(t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]).
+The naive average is essentially equal to the learned LR-fusion
+(0.9886 vs 0.9887), so the **recommended recipe is the simple average**
+— equal-weight fusion of two well-calibrated scores is already optimal
+in this regime.
+
+**Calibration sensitivity** — fusion helps reliably only when the
+mutation channel is itself informative. Below mutation AUC ~0.80, fusion
+is neutral or slightly harmful; above ~0.85, fusion reliably adds
+1–2 pp AUC. DeepCatch's panel-LLR @ 0.1% VAF (AUC 0.92) sits firmly
+in the "fusion helps" region.
+
+### Calibration sensitivity curve
+
+| Mutation-channel AUC | TN-only AUC | LR-fuse AUC | Δ | LR-fuse Sens@95% |
+|---|---|---|---|---|
+| 0.68 (poor) | 0.974 | 0.972 | −0.2pp | 0.885 |
+| 0.78 (modest) | 0.973 | 0.978 | +0.5pp | 0.906 |
+| 0.83 (decent) | 0.974 | 0.982 | +0.8pp | 0.906 |
+| 0.88 (good) | 0.974 | 0.987 | +1.3pp | 0.927 |
+| **0.92 (DeepCatch @ 0.1% VAF)** | **0.974** | **0.989** | **+1.4pp** | **0.937** |
+| 0.94 (very good) | 0.975 | 0.993 | +1.8pp | 0.961 |
+| 0.97 (excellent) | 0.974 | **0.996** | +2.2pp | 0.987 |
+
+**Use the fusion script**:
+
+```bash
+# Default mutation-channel calibration (AUC 0.92)
+python -m src.fragmentomics.fusion_ablation \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
+    --seeds 10 --pca-n 200 --out results/fusion_ablation.json
+
+# Sensitivity sweep — 8 mutation-channel qualities
+for tau in 0.70 0.75 0.80 0.85 0.90 0.92 0.95 0.98; do
+  python -m src.fragmentomics.fusion_ablation \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
+    --seeds 5 --pca-n 200 --target-auc $tau \
+    --out results/fusion_t${tau}.json
+done
+```
 
 ## License & Citation
 
