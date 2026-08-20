@@ -696,6 +696,57 @@ for tau in 0.70 0.75 0.80 0.85 0.90 0.92 0.95 0.98; do
 done
 ```
 
+### DeLong significance test on fusion
+
+`fusion_ablation.py` now also reports **DeLong's test** (DeLong, DeLong &
+Clarke-Pearson 1988, *Biometrics* 44:837) for every strategy vs the
+tumor-naive channel. DeLong is the standard paired-AUC significance test
+for correlated ROC curves (same patients, two models).
+
+Per-seed DeLong (naive-average vs tumor-naive, mutation channel AUC 0.92):
+
+| Seed | ΔAUC | z-statistic | p (two-sided) | 95% CI |
+|---|---|---|---|---|
+| 0 | +0.0129 | 3.27 | 1.07e-03 | [+0.0052, +0.0207] |
+| 1 | +0.0138 | 3.24 | 1.20e-03 | [+0.0055, +0.0222] |
+| 2 | +0.0142 | 3.97 | 7.34e-05 | [+0.0072, +0.0213] |
+| 3 | +0.0143 | 3.60 | 3.16e-04 | [+0.0065, +0.0220] |
+| 4 | +0.0189 | 3.59 | 3.31e-04 | [+0.0086, +0.0292] |
+
+**Every seed: p < 0.0015.** The 95% CI for ΔAUC is positive on every
+seed (range +0.005 to +0.029) — the fusion gain is statistically
+significant at α = 0.05 on every CV split, not just lucky seed averaging.
+LR-fusion gives essentially identical DeLong statistics.
+
+### Decision curve analysis + per-specificity operating table
+
+`src/fragmentomics/decision_curve.py` computes net-benefit (Vickers & Elkin
+2006) and a clinician-ready operating table. `decision_curve_cli.py`
+emits JSON for the 627 cohort. The operating table for naive-average
+fusion:
+
+| Specificity | Sensitivity | Operating threshold |
+|---|---|---|
+| 80% | 99.2% | 0.43 |
+| 85% | 98.6% | 0.45 |
+| 90% | 96.4% | 0.49 |
+| 95% | 91.5% | 0.62 |
+| 98% | 85.1% | 0.73 |
+| 99% | 82.4% | 0.75 |
+
+The decision curve (clinical_value_range) shows naive-average fusion
+provides net benefit over both treat-all and treat-none baselines for
+threshold probabilities in **[0.05, 0.50]** — i.e. across the entire
+clinically relevant decision range. Tumor-naive alone: [0.10, 0.50].
+
+```bash
+python -m src.fragmentomics.decision_curve_cli \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
+    --seeds 5 --pca-n 200 \
+    --out results/decision_curve_627.json
+```
+
 ## License & Citation
 
 **License:** MIT — see [LICENSE](LICENSE).

@@ -56,11 +56,29 @@ if __package__ in (None, ""):
         load_cohort, load_labels_tsv,
         CHANNEL_NAMES,
     )
+    # DeLong test lives in DeepCatch's validation/ (repo root sibling of
+    # src/). We add the repo root to sys.path so the import works whether
+    # this script is invoked as `python src/fragmentomics/fusion_ablation.py`
+    # or `python -m src.fragmentomics.fusion_ablation`.
+    _root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    if _root not in sys.path:
+        sys.path.insert(0, _root)
+    from validation.delong_test import delong_test as _delong_test_fn
 else:
     from .tumor_naive_adapter import (
         load_cohort, load_labels_tsv,
         CHANNEL_NAMES,
     )
+    # DeLong test: try the relative form first; if that fails, fall back
+    # to absolute path (validation/ is at repo root, sibling of src/, but
+    # only `src/` is package-namespace so relative imports don't work).
+    try:
+        from ..validation.delong_test import delong_test as _delong_test_fn
+    except (ImportError, ValueError):
+        _root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from validation.delong_test import delong_test as _delong_test_fn
 
 # ---- shared helper (copy of train_tumor_naive._harmonize so this script
 # ---- is also standalone-runnable from the file system) -----------------
@@ -205,8 +223,35 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
         out["y_true"].extend(y[te].tolist())
 
     y_true = np.asarray(out.pop("y_true"))
-    return {k: _summarize(y_true, np.asarray(v))
-            for k, v in out.items()}
+    summary = {k: _summarize(y_true, np.asarray(v)) for k, v in out.items()}
+
+    # DeLong's paired-AUC test on every strategy vs tumor_naive.
+    # Reference: DeLong, DeLong & Clarke-Pearson (1988), Biometrics 44:837.
+    # The test accounts for the correlation between AUC estimates because
+    # both strategies are evaluated on the SAME out-of-fold samples — this
+    # is the standard way to assess whether the fusion gives a *statistically
+    # significant* AUC improvement on correlated scores.
+    delong_vs_tn: dict[str, dict] = {}
+    for strat in ("mutation_only", "naive_average", "lr_fusion"):
+        try:
+            d = _delong_test_fn(y_true, np.asarray(out["tumor_naive"]),
+                                np.asarray(out[strat]))
+            delong_vs_tn[strat] = {
+                "delta_auc": d["delta_auc"],
+                "se_delta": d["se_delta"],
+                "z_statistic": d["z_statistic"],
+                "p_value_two_sided": d["p_value"],
+                "ci95_lower": d["ci95_lower"],
+                "ci95_upper": d["ci95_upper"],
+                "significant_at_005": d["significant"],
+            }
+        except Exception as e:
+            # DeLong can fail on degenerate inputs (e.g., one class only);
+            # record the error but don't crash — the AUC numbers above
+            # still report.
+            delong_vs_tn[strat] = {"error": str(e)}
+    summary["delong_vs_tumor_naive"] = delong_vs_tn
+    return summary
 
 
 # ---- CLI -------------------------------------------------------------
@@ -267,9 +312,16 @@ def main() -> int:
     per_seed = [_evaluate_seed(X, y, study, mut_score,
                                args.pca_n, s, harmonize=not args.no_harmonize)
                 for s in range(args.seeds)]
-    # Flatten for JSON output
-    per_seed_out = [{k: {m: v[m] for m in v} for k, v in seed_res.items()}
+    # Flatten for JSON output. DeLong is reported per-seed because each
+    # seed produces its own OOF predictions; the test statistic is on a
+    # specific split, not a per-seed-aggregable quantity in the usual
+    # sense. We expose every seed's result and let the reader pick the
+    # one they want (typically seed 0 for a single-decision report).
+    per_seed_out = [{k: {m: v[m] for m in v}
+                     for k, v in seed_res.items() if k != "delong_vs_tumor_naive"}
                     for seed_res in per_seed]
+    per_seed_delong = [seed_res.get("delong_vs_tumor_naive", {})
+                       for seed_res in per_seed]
 
     # Aggregate: mean ± std for each metric, per strategy
     def _agg(metric: str) -> tuple[float, float]:
@@ -288,6 +340,7 @@ def main() -> int:
         "mutation_score_calibration_target": _MUT_CALIB,
         "per_strategy": {},
         "per_seed_per_strategy": per_seed_out,
+        "delong_per_seed": per_seed_delong,
     }
     for strat in strategies:
         means = []

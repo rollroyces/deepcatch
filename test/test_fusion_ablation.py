@@ -70,13 +70,22 @@ def test_evaluate_seed_returns_all_strategies():
 
     out = _evaluate_seed(X, y, study, mut_score, pca_n=10, seed=0,
                           harmonize=True)
-    assert set(out.keys()) == {"tumor_naive", "mutation_only",
-                                "naive_average", "lr_fusion"}
+    strat_keys = {"tumor_naive", "mutation_only",
+                  "naive_average", "lr_fusion"}
+    assert strat_keys <= set(out.keys()), (
+        f"missing strategies: {strat_keys - set(out.keys())}")
+    # DeLong result may be present (with all 3 comparisons) or may be
+    # absent if the test fixture is too small for DeLong to converge.
     for strat_res in out.values():
-        assert {"auc", "sens_at_95", "sens_at_99"} <= set(strat_res.keys())
-        assert 0.0 <= strat_res["auc"] <= 1.0
-        assert 0.0 <= strat_res["sens_at_95"] <= 1.0
-        assert 0.0 <= strat_res["sens_at_99"] <= 1.0
+        if isinstance(strat_res, dict) and "auc" in strat_res:
+            assert {"auc", "sens_at_95", "sens_at_99"} <= set(strat_res.keys())
+            assert 0.0 <= strat_res["auc"] <= 1.0
+            assert 0.0 <= strat_res["sens_at_95"] <= 1.0
+            assert 0.0 <= strat_res["sens_at_99"] <= 1.0
+    # The DeLong block is per-strategy pairwise comparison vs tumor_naive
+    if "delong_vs_tumor_naive" in out:
+        for strat in ("mutation_only", "naive_average", "lr_fusion"):
+            assert strat in out["delong_vs_tumor_naive"]
 
 
 def test_naive_average_is_arithmetic_mean():
