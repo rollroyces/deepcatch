@@ -79,6 +79,24 @@ jobs:
           python -m pytest test/test_tumor_naive_adapter.py \
             test/test_fusion_ablation.py -v --no-header
 
+  # ── Adapter AUC-reproducibility gate ─────────────────────────────────
+  # Catches silent-failure bugs in the DeepCatch adapter: mis-indexed
+  # channels, broken median-normalization, NaN/Inf in scaling. Builds a
+  # synthetic cohort with a known signal in 100kb ratio bins [0:50]
+  # and asserts the adapter + LR-on-PCA pipeline produces AUC >= 0.80.
+  # Runs in <30 seconds, no network required.
+  adapter-auc-gate:
+    name: Adapter AUC-reproducibility gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - name: Run adapter AUC gate
+        run: python3 scripts/adapter_auc_gate.py
+
   # ── DeepCatch simulation smoke test (kept from previous CI) ───────────
   # NOTE: this is a code-path smoke test on synthetic data, NOT a real-data
   # performance test. Renamed accordingly.
