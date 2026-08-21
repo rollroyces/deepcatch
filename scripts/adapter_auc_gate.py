@@ -92,11 +92,11 @@ def main() -> int:
             sc = StandardScaler().fit(X[tr])
             Xtr = sc.transform(X[tr]); Xte = sc.transform(X[te])
             max_pca = min(Xtr.shape[0], Xtr.shape[1])
-            m = LogisticRegression(max_iter=2000).fit(
-                PCA(n_components=min(30, max_pca)).fit(Xtr).transform(Xtr), y[tr])
-            ys.extend(m.predict_proba(
-                PCA(n_components=min(30, max_pca)).fit(Xtr).transform(Xte)
-            )[:, 1].tolist())
+            pca = PCA(n_components=min(30, max_pca), random_state=0).fit(Xtr)
+            m = LogisticRegression(max_iter=20000, tol=1e-8,
+                                       random_state=0).fit(
+                pca.transform(Xtr), y[tr])
+            ys.extend(m.predict_proba(pca.transform(Xte))[:, 1].tolist())
             yt.extend(y[te].tolist())
         auc = float(roc_auc_score(yt, ys))
         print(f"[adapter_auc_gate] synthetic cohort: {X.shape[0]} samples, "

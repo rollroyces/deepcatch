@@ -4,6 +4,7 @@
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
 [![Tests](https://img.shields.io/badge/Tests-228%2F228%20passing-brightgreen)]()
+[![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 
 > **🔥 Seeking expert review — see [REVIEWERS.md](REVIEWERS.md).**
@@ -49,6 +50,10 @@ cfDNA Sample
 ```bash
 git clone https://github.com/rollroyces/deepcatch.git
 cd deepcatch
+# Recommended: pip install -e . exposes CLI entry points (deepcatch-tumornaive, deepcatch-fusion, etc.)
+pip install -e .
+
+# Or the minimal install (just deps, no console scripts)
 pip install -r requirements_py.txt
 ```
 
@@ -747,6 +752,13 @@ python -m src.fragmentomics.decision_curve_cli \
     --seeds 5 --pca-n 200 \
     --out results/decision_curve_627.json
 ```
+
+## Documentation
+
+- [MODEL.md](MODEL.md) — model card with intended use, performance, and limitations
+- [paper/PAPER.md](paper/PAPER.md) — research paper (Markdown source)
+- [paper/paper.tex](paper/paper.tex) — research paper (LaTeX)
+- [REVIEWERS.md](REVIEWERS.md) — review notes for expert reviewers
 
 ## License & Citation
 
