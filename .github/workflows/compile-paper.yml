@@ -6,6 +6,7 @@ on:
       - 'paper/deepcatch_final.tex'
       - 'paper/supplementary.tex'
       - 'paper/references_final.bib'
+<<<<<<< HEAD
       - 'paper/paper.tex'
       - 'paper/PAPER.md'
       - 'paper/figures/**'

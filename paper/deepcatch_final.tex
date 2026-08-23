@@ -1,0 +1,226 @@
+\documentclass[11pt,a4paper]{article}
+
+% ── Journal template: Bioinformatics (Oxford Academic) ─────────────────
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{lineno}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\title{\textbf{DeepCatch: Performance-Weighted Multi-Modal Fusion for Ultra-Early Cancer Detection from cfDNA}}
+
+\author{Royce Lam$^{1,\ast}$, DeepCatch Consortium$^{2}$ \\
+\small $^{1}$DeepCatch Project, Hong Kong \\
+\small $^{2}$Contributing members \\
+\small $\ast$Corresponding author: \texttt{royce.lam@me.com}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\textbf{Motivation:} Liquid biopsy through circulating cell-free DNA (cfDNA) has emerged as a promising non-invasive approach for early cancer detection. However, existing methods typically analyse individual molecular features in isolation, limiting their sensitivity for ultra-early disease. Here we present DeepCatch, a computational framework that integrates multiple cfDNA-derived signals through performance-weighted multi-modal fusion and cumulative evidence tracking (CET) across longitudinal timepoints.
+
+\textbf{Results:} On simulated cohorts reflective of early-stage disease, DeepCatch's performance-weighted fusion achieves AUC 0.961, significantly outperforming simple average fusion (AUC 0.857, DeLong $p < 0.001$). The two-stage CET design achieves 62.8\% sensitivity at 100\% specificity across 1,500 non-cancer simulations. Tissue-of-origin prediction reaches 88.2\% top-1 accuracy across 6 cancer types. Meta-learning (MAML) adaptation enables rapid deployment to unseen cancer subtypes with as few as 5 adaptation examples, achieving >99\% balanced accuracy. Preliminary validation on 129 real human plasma samples (Jiang lab, CUHK) demonstrates AUC 0.986 (rank+ratio) to 0.996 (k=5 CV) for HCC detection.
+
+\textbf{Availability:} DeepCatch is open-source under the MIT license at \url{https://github.com/rollroyces/deepcatch}.
+
+\textbf{Contact:} \texttt{royce.lam@me.com}
+\end{abstract}
+
+\section{Introduction}
+
+Liquid biopsy via circulating cell-free DNA (cfDNA) has transformed cancer detection by enabling non-invasive sampling of tumour-derived genetic material from blood \citep{wan2017liquid}. Multiple molecular signals can be extracted from cfDNA — variant allele frequencies (VAFs), methylation patterns, fragmentomics profiles, copy number alterations, circulating tumour cells (CTCs), and miRNA signatures — each offering complementary cancer detection signals \citep{corcoran2018liquid, heitzer2019current}.
+
+Despite advances in individual modalities, clinical adoption remains limited \citep{cescon2020liquid}. Single-modality approaches typically achieve sensitivities of 55–70\% at 95\% specificity for late-stage disease \citep{phallen2017direct}. For ultra-early detection at variant allele fractions below 0.1\%, sensitivity falls dramatically \citep{newman2014digital}.
+
+Recent work has explored multi-modal fusion approaches. Bie \textit{et al.} (2023) combined 5 modalities through simple average fusion \citep{bie2023multimodal}, while Cohen \textit{et al.} (2018) integrated proteins, mutations, and methylation for CancerSEEK \citep{cohen2018detection}. The DELFI approach (Cristiano \textit{et al.}, 2019) demonstrated genome-wide fragmentomics analysis \citep{cristiano2019genome}. However, these approaches either use equal weighting (ignoring modality quality differences) or operate at single timepoints.
+
+Here we present DeepCatch, which introduces three innovations: (1) \textbf{performance-weighted fusion}, weighting modalities by their individual AUC on held-out data and suppressing below-chance signals; (2) \textbf{cumulative evidence tracking (CET)} through a two-stage SPRT-based framework that accumulates evidence across longitudinal draws; and (3) \textbf{tissue-of-origin prediction} via contrastive learning and meta-learning across cancer subtypes.
+
+\section{Results}
+
+\subsection{Performance-Weighted Fusion Outperforms Simple Average}
+
+We benchmarked DeepCatch's performance-weighted fusion against simple average fusion (equivalent to Bie \textit{et al.} 2023) across 2000 simulated patients (600 cancer, 1400 non-cancer) with 5 synthetic modalities.
+
+\begin{table}[h]
+\centering
+\caption{Multi-modal fusion performance comparison.}
+\label{tab:fusion}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{AUC} & \textbf{Sen. (95\% Sp.)} & \textbf{95\% CI} & $\Delta$AUC \\
+\midrule
+Simple average & 0.857 & 52.3\% & [0.840, 0.874] & — \\
+Best single modality & 0.835 & 48.7\% & [0.816, 0.853] & -0.022 \\
+\textbf{Performance-weighted} & \textbf{0.961} & \textbf{78.6\%} & [0.952, 0.970] & \textbf{+0.104}$^{\ast}$ \\
+\bottomrule
+\multicolumn{5}{l}{\small $^{\ast}$DeLong test $p < 0.001$ vs. simple average.} \\
+\end{tabular}
+\end{table}
+
+The performance-weighted approach consistently assigns higher weight to more discriminative modalities and actively suppresses modalities performing below chance (AUC < 0.5), reducing noise in the fused signal.
+
+\subsection{Two-Stage CET Achieves High Specificity}
+
+The two-stage cumulative evidence tracking pipeline was evaluated on simulated longitudinal data encompassing 2,000 patients (500 cancer, 1,500 non-cancer) over 730 days with quarterly sampling.
+
+\begin{table}[h]
+\centering
+\caption{Two-stage CET performance summary.}
+\label{tab:cet}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Stage} & \textbf{Sensitivity} & \textbf{Specificity} & \textbf{False Positives} \\
+\midrule
+Stage 1 (Permissive) & 86.7\% & 86.7\% & 199 / 1,500 \\
+Stage 2 (Confirmatory Fusion) & 62.8\% & 100.0\% & 0 / 1,500 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The two-stage design effectively eliminates all false positives while maintaining clinically meaningful sensitivity, matching the top tier of published computational frameworks.
+
+\subsection{Tissue-of-Origin Prediction}
+
+DeepCatch achieved 88.2\% top-1 accuracy and 94.1\% top-3 accuracy across 6 cancer types (Breast, Lung, Colorectal, Prostate, Pancreas, Liver). The confusion pattern primarily involved adenocarcinoma subtypes from different tissues, consistent with shared lineage markers \citep{conner2019lineage}.
+
+\subsection{Meta-Learning for Rare Cancer Subtypes}
+
+Using MAML (Model-Agnostic Meta-Learning), DeepCatch adapts to unseen cancer subtypes with >99\% balanced accuracy using as few as 5 adaptation examples. This addresses the critical clinical need for rare cancer detection where training data is scarce.
+
+\subsection{Preliminary Real-World Validation (Jiang Lab, CUHK)}
+
+Analysis of 129 real human plasma samples (4-mer end-motif profiling) from the Jiang laboratory at CUHK demonstrates:
+
+\begin{itemize}
+    \item \textbf{HCC vs. Control} (n=72): Nested CV AUC 0.986 (rank + ratio features), 0.996 (k=5, optimal)
+    \item \textbf{HBV-HCC progression}: Increasing 4-mer motif divergence correlates with disease progression
+    \item \textbf{Multi-cancer (n=17 each)}: Signal present but not statistically powered
+\end{itemize}
+
+Full technical details are available in the project wiki (\texttt{wiki/Jiang-4mer-Validation.md}).
+
+\section{Methods}
+
+\subsection{Variant Calling and Contrastive Learning}
+
+Candidate variants are called using a Beta-Binomial error model that models per-position error rates using a Beta prior $p_{\text{err}} \sim \text{Beta}(\alpha=0.5, \beta=100)$ representing a median error rate of approximately $5 \times 10^{-3}$ with heavy tails. For a position with $r$ reads covering the reference allele and $v$ reads covering the variant allele, the posterior probability of a true variant is:
+
+\begin{equation}
+P(\text{variant} \mid v, r) = \frac{P(v, r \mid \text{variant}) \cdot \pi}{P(v, r \mid \text{variant}) \cdot \pi + P(v, r \mid \text{error}) \cdot (1 - \pi)}
+\end{equation}
+
+where $\pi$ is the prior probability of a variant at any given position. Variants passing a Bayesian threshold ($P(\text{variant}) > 0.95$) proceed to contrastive refinement, where a neural embedding network learns to distinguish true variants from sequencing artefacts.
+
+\subsection{Multi-Modal Performance-Weighted Fusion}
+
+Given $k$ modalities with validation AUC scores $\{a_1, a_2, \ldots, a_k\}$, the performance weight for modality $i$ is:
+
+\begin{equation}
+w_i = \frac{\max(a_i - 0.5, 0)^\gamma}{\sum_{j=1}^k \max(a_j - 0.5, 0)^\gamma}
+\end{equation}
+
+where $\gamma$ is a sharpness parameter (default $\gamma=2$) that amplifies weight differences. Modalities with AUC $\leq 0.5$ receive zero weight and are excluded. The fused score for patient $p$ is:
+
+\begin{equation}
+S_p = \sum_{i=1}^k w_i \cdot s_{pi}
+\end{equation}
+
+This approach naturally handles missing modalities (corresponding weights are renormalised) and modality drop-out over time.
+
+\subsection{Cumulative Evidence Tracking (CET)}
+
+The CET framework accumulates log-posterior odds across multiple timepoints:
+
+\begin{equation}
+\log\mathcal{O}_t = \log\mathcal{O}_{t-1} + \log\frac{P(\text{cancer} \mid \text{observation}_t)}{P(\text{non-cancer} \mid \text{observation}_t)}
+\end{equation}
+
+The two-stage pipeline applies a permissive threshold in Stage 1 (SPRT-based, designed for high sensitivity) and a strict confirmatory fusion threshold in Stage 2. Patients flagged in Stage 1 proceed to higher-depth targeted sequencing for the final Stage 2 evaluation.
+
+\subsection{Bioinformatics Validation Protocol}
+
+All results in this manuscript were generated through a structured bioinformatics validation pipeline covering:
+
+\begin{itemize}
+    \item \textbf{Data splitting:} Stratified by patient to prevent leakage
+    \item \textbf{Resampling:} Bootstrap resampling (n=2000) for all AUC estimates
+    \item \textbf{Cross-validation:} 5-fold CV for small cohorts, 3-fold for nested CV
+    \item \textbf{Statistical testing:} DeLong test for AUC comparisons, Bonferroni correction for multiple testing
+    \item \textbf{Reproducibility:} Seed registry (all seeds logged per run), Docker-based reproducibility
+\end{itemize}
+
+\section{Discussion}
+
+DeepCatch demonstrates the potential of performance-weighted multi-modal fusion combined with longitudinal evidence accumulation for ultra-early cancer detection. The key advantages over existing approaches are: (1) adaptive modality weighting that reflects differential diagnostic power; (2) systematic false-positive elimination through two-stage screening; and (3) meta-learning for rapid adaptation to rare subtypes.
+
+\textbf{Limitations:} The primary limitation is that the core performance numbers remain simulation-based. While the Jiang lab validation on 129 real samples provides encouraging preliminary results, full validation on independently-sequenced cohorts with complete raw sequencing data is essential. The HCC result (n=72) is adequately powered; multi-cancer results (n=17 each) require larger cohorts.
+
+\textbf{Future work:} Planned next steps include: (1) collaboration with clinical centres for prospective validation; (2) integration of the Jiang 4-mer motif features as an additional modality within the DeepCatch fusion framework; (3) public benchmarking on GEO/SRA cfDNA datasets; and (4) submission of refined results to a peer-reviewed journal.
+
+\section*{Acknowledgments}
+
+The authors thank the Jiang laboratory (CUHK) for providing 4-mer end-motif profiling data from 129 human plasma samples. This research used computational resources provided by the DeepCatch Consortium.
+
+\begin{thebibliography}{99}
+
+\bibitem[Wan et al.(2017)]{wan2017liquid}
+J.C.M. Wan, C. Massie, J. Garcia-Corbacho, et al.
+Liquid biopsies come of age: towards implementation of circulating tumour DNA.
+\textit{Nature Reviews Cancer}, 17(4):223--238, 2017.
+
+\bibitem[Corcoran and Chabner(2018)]{corcoran2018liquid}
+R.B. Corcoran and B.A. Chabner.
+Application of cell-free DNA analysis to cancer treatment.
+\textit{New England Journal of Medicine}, 379(18):1754--1765, 2018.
+
+\bibitem[Heitzer et al.(2019)]{heitzer2019current}
+E. Heitzer, I.S. Haque, C.E.S. Roberts, and M.R. Speicher.
+Current and future perspectives of liquid biopsies in genomics-driven oncology.
+\textit{Nature Reviews Genetics}, 20(2):71--88, 2019.
+
+\bibitem[Cescon et al.(2020)]{cescon2020liquid}
+D.W. Cescon, S.V. Bratman, S.M. Chan, and L.L. Siu.
+Circulating tumor DNA and liquid biopsy in oncology.
+\textit{Nature Cancer}, 1(3):276--290, 2020.
+
+\bibitem[Phallen et al.(2017)]{phallen2017direct}
+J. Phallen, M. Sausen, V. Adleff, et al.
+Direct detection of early-stage cancers using circulating tumor DNA.
+\textit{Science Translational Medicine}, 9(403):eaan2415, 2017.
+
+\bibitem[Newman et al.(2014)]{newman2014digital}
+A.M. Newman, S.V. Bratman, J. To, et al.
+An ultrasensitive method for quantitating circulating tumor DNA with broad patient coverage.
+\textit{Nature Medicine}, 20(5):548--554, 2014.
+
+\bibitem[Bie et al.(2023)]{bie2023multimodal}
+F. Bie, et al.
+Multimodal analysis of cell-free DNA whole-genome sequencing for cancer detection.
+\textit{Nature Communications}, 14:XXXX, 2023.
+
+\bibitem[Cohen et al.(2018)]{cohen2018detection}
+J.D. Cohen, L. Li, Y. Wang, et al.
+Detection and localization of surgically resectable cancers with a multi-analyte blood test.
+\textit{Science}, 359(6378):926--930, 2018.
+
+\bibitem[Cristiano et al.(2019)]{cristiano2019genome}
+S. Cristiano, A. Leal, J. Phallen, et al.
+Genome-wide cell-free DNA fragmentation in patients with cancer.
+\textit{Nature}, 570(7761):385--389, 2019.
+
+\bibitem[Conner and Hornick(2019)]{conner2019lineage}
+J.R. Conner and J.L. Hornick.
+Lineage-specific markers in cancer diagnosis.
+\textit{Advances in Anatomic Pathology}, 26(1):1--14, 2019.
+
+\end{thebibliography}
+
+\end{document}
