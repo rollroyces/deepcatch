@@ -59,6 +59,44 @@ jobs:
           fi
           grep -q "SYNTHETIC" /tmp/guard.log && echo "✅ correctly refuses synthetic fallback" || exit 1
 
+  # ── Tumor-naive adapter + fusion integration smoke ──────────────────
+  # Exercises the cfdna-fragmentomics-pipeline adapter end-to-end with a
+  # synthetic mini-cohort so future breakage is caught without a 627-sample
+  # FinaleDB download.
+  tumor-naive-integration:
+    name: Tumor-naive + fusion integration smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - name: Smoke (synthetic cohort, no network)
+        run: python3 scripts/smoke_tumor_naive_integration.py
+      - name: Unit tests
+        run: |
+          python -m pytest test/test_tumor_naive_adapter.py \
+            test/test_fusion_ablation.py -v --no-header
+
+  # ── Adapter AUC-reproducibility gate ─────────────────────────────────
+  # Catches silent-failure bugs in the DeepCatch adapter: mis-indexed
+  # channels, broken median-normalization, NaN/Inf in scaling. Builds a
+  # synthetic cohort with a known signal in 100kb ratio bins [0:50]
+  # and asserts the adapter + LR-on-PCA pipeline produces AUC >= 0.80.
+  # Runs in <30 seconds, no network required.
+  adapter-auc-gate:
+    name: Adapter AUC-reproducibility gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      - name: Run adapter AUC gate
+        run: python3 scripts/adapter_auc_gate.py
+
   # ── DeepCatch simulation smoke test (kept from previous CI) ───────────
   # NOTE: this is a code-path smoke test on synthetic data, NOT a real-data
   # performance test. Renamed accordingly.

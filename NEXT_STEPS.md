@@ -44,7 +44,7 @@ source .venv/bin/activate
 python run_jiang_analysis.py \
     -i data/deepcatch_data.xlsx \
     -o results/jiang_nested_cv/ \
-    --top-k 50 --seed 42 --lr-C 10.0
+    --top-k 50 --seed 42 --nested-cv --report
 
 # 3. Compare with the old AUC (0.9845). Expect 0.96-0.98 with nested CV.
 #    The old number had feature selection leakage (MWU top-50 on full data).

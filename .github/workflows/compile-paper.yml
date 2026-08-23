@@ -6,6 +6,9 @@ on:
       - 'paper/deepcatch_final.tex'
       - 'paper/supplementary.tex'
       - 'paper/references_final.bib'
+<<<<<<< HEAD
+      - 'paper/paper.tex'
+      - 'paper/PAPER.md'
       - 'paper/figures/**'
   workflow_dispatch:
 
@@ -31,15 +34,26 @@ jobs:
           else
             echo "bioinfo.cls not found — using article class"
           fi
-          pdflatex -interaction=nonstopmode deepcatch_final.tex
-          bibtex deepcatch_final
-          pdflatex -interaction=nonstopmode deepcatch_final.tex
-          pdflatex -interaction=nonstopmode deepcatch_final.tex
-          echo "PDF generated: $(ls -lh deepcatch_final.pdf)"
+          # Compile whichever paper sources exist (main + benchmark papers)
+          if [ -f deepcatch_final.tex ]; then
+            echo "── deepcatch_final.tex ──"
+            pdflatex -interaction=nonstopmode deepcatch_final.tex
+            bibtex deepcatch_final || true
+            pdflatex -interaction=nonstopmode deepcatch_final.tex
+            pdflatex -interaction=nonstopmode deepcatch_final.tex
+            ls -lh deepcatch_final.pdf
+          fi
+          if [ -f paper.tex ]; then
+            echo "── paper.tex (v2.2 benchmark) ──"
+            pdflatex -interaction=nonstopmode paper.tex
+            pdflatex -interaction=nonstopmode paper.tex
+            ls -lh paper.pdf
+          fi
 
       - name: Upload PDF
         uses: actions/upload-artifact@v4
         with:
           name: deepcatch-paper
-          path: paper/deepcatch_final.pdf
+          path: paper/*.pdf
           retention-days: 90
+          if-no-files-found: error

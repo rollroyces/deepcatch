@@ -1,0 +1,108 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "deepcatch"
+version = "2.2.0"
+description = "Mutation-informed ultra-sensitive cfDNA detection: panel-LLR, strand score, fisher, fragmentomics, GNN methylation, tissue deconvolution, and a REST API for clinical use."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Royce (Independent Researcher)"},
+]
+keywords = ["cfDNA", "ctDNA", "liquid-biopsy", "cancer-detection",
+            "variant-calling", "panel-LLR", "fragmentomics", "methylation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Healthcare Industry",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+]
+
+dependencies = [
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "scikit-learn>=1.3.0",
+    "pandas>=2.0.0",
+    "matplotlib>=3.7.0",
+    "seaborn>=0.12.0",
+    "requests>=2.31.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+# Neural model + GNN methylation + REST API
+api = [
+    "torch>=2.0.0",
+    "torch-geometric>=2.4.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "pydantic>=2.0.0",
+]
+# Cross-repo consumption of the cfdna-fragmentomics-pipeline artifacts
+tumor-naive = [
+    "cfdna-fragmentomics-pipeline>=0.2.0",
+]
+# Development / testing
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.5.0",
+]
+
+[project.urls]
+"Source code" = "https://github.com/rollroyces/deepcatch"
+"Paper" = "https://github.com/rollroyces/deepcatch/blob/main/paper/PAPER.md"
+"Companion pipeline" = "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
+"Issue tracker" = "https://github.com/rollroyces/deepcatch/issues"
+
+[project.scripts]
+# CLI entry points — installed automatically by `pip install`.
+# Run as: `deepcatch-tumornaive`, `deepcatch-fusion`, etc.
+#
+# Note: deepcatch-tcga (the real-TCGA validator) is intentionally NOT
+# a console_script — it lives at the repo root and downloads from the
+# GDC API on first run. To run it directly:
+#   python real_tcga_validation.py
+# See `--help` for the full flag list.
+deepcatch-tumornaive = "src.fragmentomics.train_tumor_naive:main"
+deepcatch-fusion = "src.fragmentomics.fusion_ablation:main"
+deepcatch-decisioncurve = "src.fragmentomics.decision_curve_cli:main"
+# Note: deepcatch-aucgate is the synthetic-cohort smoke test. Run
+# directly from the repo:
+#   python scripts/adapter_auc_gate.py
+
+[tool.setuptools]
+packages = [
+    "src",
+    "src.fragmentomics",
+    "src.preprocessing",
+    "src.foundation",
+    "src.ensemble",
+    "src.clinical",
+    "src.longitudinal",
+    "src.methylation_gnn",
+    "src.multimodal_fusion",
+    "src.priming",
+    "src.synthetic_data",
+    "src.tissue_deconv",
+    "src.variant_calling",
+    "validation",
+]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"src.fragmentomics" = ["*.npy"]
+"validation" = ["**/*.csv", "**/*.tsv", "**/*.json"]
+
+[tool.pytest.ini_options]
+addopts = "-q --no-header"
+testpaths = ["test"]
