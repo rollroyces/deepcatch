@@ -96,6 +96,9 @@ paper/*.fdb_latexmk
 paper/*.fls
 paper/*.synctex.gz
 paper/*.pdf
+# Exception: the bioRxiv submission PDF is intentionally tracked
+!paper/biorxiv_submission_v2.2.0.pdf
+!paper/BIORXIV_SUBMISSION.md
 
 # ── Docker ──────────────────────────────────────────────────────────────────
 .dockerignore
