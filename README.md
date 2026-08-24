@@ -758,6 +758,7 @@ python -m src.fragmentomics.decision_curve_cli \
 - [MODEL.md](MODEL.md) — model card with intended use, performance, and limitations
 - [paper/PAPER.md](paper/PAPER.md) — research paper (Markdown source)
 - [paper/paper.tex](paper/paper.tex) — research paper (LaTeX)
+- [RESULTS.md](RESULTS.md) — consolidated research summary across both repos (DeepCatch + cfdna-fragmentomics-pipeline)
 - [REVIEWERS.md](REVIEWERS.md) — review notes for expert reviewers
 
 ## License & Citation
