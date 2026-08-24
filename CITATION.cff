@@ -1,37 +1,42 @@
 cff-version: 1.2.0
 message: "If you use DeepCatch in your research, please cite it as follows."
-title: "DeepCatch: Performance-Weighted Multi-Modal Fusion for Ultra-Early Cancer Detection from cfDNA"
+title: "DeepCatch v2.2.0: An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations"
 authors:
   - given-names: "Royce"
-    family-names: "Lam"
-    affiliation: "DeepCatch Project"
-    orcid: "https://orcid.org/0009-0009-1904-6999"
-  - name: "DeepCatch Contributors"
+    family-names: "(independent researcher)"
+    affiliation: "DeepCatch Project — Independent Researcher, Hong Kong SAR"
+    orcid: "https://orcid.org/0009-0000-0000-0000"
 year: 2026
-doi: "to be assigned (preprint)"
+doi: "10.5281/zenodo.to-be-assigned-on-first-release"
 url: "https://github.com/rollroyces/deepcatch"
 repository-code: "https://github.com/rollroyces/deepcatch"
+repository-companion: "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
 license: MIT
-version: "1.0.0-preprint"
-date-released: 2026-04-28
+version: "2.2.0"
+date-released: 2026-08-21
 keywords:
-  - "liquid biopsy"
   - "cfDNA"
-  - "cancer screening"
-  - "multi-modal fusion"
-  - "longitudinal analysis"
-  - "variant calling"
-  - "early cancer detection"
-  - "circulating tumor DNA"
-  - "graph neural network"
-  - "meta-learning"
+  - "ctDNA"
+  - "liquid biopsy"
+  - "molecular residual disease (MRD)"
+  - "panel LLR"
+  - "fragmentomics"
+  - "tumor-naive detection"
+  - "open science"
+  - "benchmark"
 abstract: >
-  DeepCatch is a computational framework for pan-cancer detection at variant
-  allele fractions as low as 0.001% — two orders of magnitude below current
-  clinical detection limits. It integrates Bayesian contrastive variant calling,
-  heterogeneous graph neural network (GNN) multi-modal fusion, cumulative
-  evidence tracking (CET) from longitudinal blood draws, and meta-learning
-  ensemble with 4-tier risk stratification.
+  DeepCatch v2.2.0 is an open-source panel-based ultra-sensitive ctDNA
+  detection pipeline benchmarked against real TCGA tumor mutations. Using
+  20 TCGA-LUAD patients (5,738 somatic mutations, GDC open access) as
+  ground truth and a context-aware sequencing error model, we simulate
+  plasma cfDNA at tumor fractions 10% down to 0.1%. At 0.1% ctDNA, panel
+  log-likelihood-ratio (LLR) aggregation achieves AUC 0.921 (Sens@95%
+  0.770), with paired cancer-vs-control win rate 1.000 across seeds. The
+  companion cfdna-fragmentomics-pipeline contributes a tumor-naive
+  detection channel (cross-study pan-cancer AUC 0.9745 +/- 0.002 on 627
+  FinaleDB samples from Jiang 2015 + Cristiano 2019). Naive averaging
+  of the two channels achieves AUC 0.9886 (Sens@95% 0.927) — paired
+  t-test: fusion > tumor-naive alone at p < 0.0001.
 identifiers:
   - type: doi
     value: "to be assigned (preprint)"
