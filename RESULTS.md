@@ -27,6 +27,12 @@ publicly available. The project deliberately publishes **negative
 results** alongside positive ones (e.g., nucleosome-aware features
 add +0.0003 AUC; LLM baseline AUC 0.58).
 
+**Number-precision note**: TL;DR table values are rounded to 3
+decimal places for readability; Section numbers (where they appear)
+are at 4 decimal places from the original result JSONs. Differences
+of ±0.002 AUC across re-runs are within LR convergence noise and
+should be treated as equivalent.
+
 ---
 
 ## Section 1: The DeepCatch mutation-informed pipeline
@@ -176,7 +182,7 @@ llama.cpp on Apple Silicon) was tested as a baseline:
 |---|---|---|
 | LR-on-PCA(200), 5-channel (627 cohort) | 0.9745 ± 0.0022 | Strong baseline |
 | Gemma 2 9B (4-shot, 627 cohort) | 0.5756 | LLM baseline |
-| **Δ (LR − Gemma)** | **+0.3878** | LR is 38.78pp AUC higher |
+| **Δ (LR − Gemma)** | **+0.3989** | LR is **39.89 percentage points** (or 0.40 rounded to 2dp) higher |
 
 Despite structured summaries of all 5 channels and 4 few-shot
 training examples, Gemma is barely above random (0.50). This
@@ -311,14 +317,21 @@ python scripts/auc_reproducibility_gate.py  # AUC floor 0.80
 
 | Repo | Tests | CI |
 |---|---|---|
-| DeepCatch | 228 tests across 5 modules (foundation, GNN, tissue deconv, priming, enhanced fragmentomics) | 6/6 jobs green |
-| Pipeline | 21 unit tests (incl. n_nonzero regression guard, AUC gate, Gemma baseline) | 3/3 jobs green |
-| Combined | **249 tests** | **9/9 jobs green** |
+| DeepCatch | **28 tests** in `test/` (CI step), 228 across `src/` (counted by full repo discovery) | 6/6 jobs green |
+| Pipeline | 39 unit tests (across 6 test files: pipeline scripts, fetch_finaledb, nuc_features, gemma_baseline, auc_gate, lr_sweep_smoke) | 3/3 jobs green |
+| Combined | **67 tests** in CI; ~267 total tests when full discovery is enabled | **9/9 jobs green** |
 
 The DL module tests (foundation, GNN, tissue deconv, priming) are
 *smoke tests* — they verify the models train and produce non-trivial
 outputs (e.g., AUC > 0.5 after training) but they are NOT
 performance benchmarks. See Section 11 for the distinction.
+
+Note on test counting: README.md's "228/228 tests" badge uses full
+repo discovery (`pytest src/`) which finds the embedded test_*.py
+files inside `src/foundation/`, `src/methylation_gnn/`, etc. The
+CI workflow instead runs `pytest test/` which collects only the 28
+standalone tests in that directory. Both numbers are correct for
+their respective scopes.
 
 Plus a synthetic-cohort AUC reproducibility gate that catches
 silent-failure regressions (e.g., the FinaleDB 5/6-column parser
@@ -371,6 +384,14 @@ For completeness, here are experiments that were *not* run:
 
 These are listed in `PATH_TO_IMPACT.md` (DeepCatch repo) as the
 next steps toward clinical validation.
+
+---
+
+## Section 12: Audit
+
+See [`AUDIT_REPORT.md`](AUDIT_REPORT.md) for a claim-by-claim
+verification of every quantitative statement in this document
+against the underlying JSON artifacts and reproducible runs.
 
 ---
 
