@@ -225,11 +225,13 @@ clinically meaningful range.
 5. **Cell-line contamination.** FinaleDB's "liver cancer" entries
    on the Coriell GM* lymphoblastoid lines are not patients;
    `is_cell_line()` regex excludes them.
-6. **PCA ceiling.** The LR-no-PCA-C=1000 AUC of 0.978 is at the
-   empirical linear signal ceiling for this dataset. Further
-   gains need non-linear methods (deep learning, kernel SVM) or
-   different feature classes — neither of which have been
-   demonstrated to help at this cohort size.
+6. **PCA ceiling (sklearn LR).** The LR-no-PCA-C=1000 AUC of
+   0.978 is at the empirical linear signal ceiling for the
+   sklearn classifier on this data. The repo ships deep learning
+   scaffolding (Transformer foundation model, GATv2 methylation
+   GNN, neural tissue deconvolution — see Section 11) but those
+   have not been validated against an external clinical cohort,
+   so they are not headline results in this document.
 7. **Cell-line derived samples are flagged in the loader, but the
    pipeline does NOT refuse to run on them.** It's the user's
    responsibility to filter using `is_cell_line()` before fitting.
@@ -309,9 +311,14 @@ python scripts/auc_reproducibility_gate.py  # AUC floor 0.80
 
 | Repo | Tests | CI |
 |---|---|---|
-| DeepCatch | 28 unit tests | 6/6 jobs green |
-| Pipeline | 21 unit tests (incl. n_nonzero regression guard) | 3/3 jobs green |
-| Combined | **49 tests** | **9/9 jobs green** |
+| DeepCatch | 228 tests across 5 modules (foundation, GNN, tissue deconv, priming, enhanced fragmentomics) | 6/6 jobs green |
+| Pipeline | 21 unit tests (incl. n_nonzero regression guard, AUC gate, Gemma baseline) | 3/3 jobs green |
+| Combined | **249 tests** | **9/9 jobs green** |
+
+The DL module tests (foundation, GNN, tissue deconv, priming) are
+*smoke tests* — they verify the models train and produce non-trivial
+outputs (e.g., AUC > 0.5 after training) but they are NOT
+performance benchmarks. See Section 11 for the distinction.
 
 Plus a synthetic-cohort AUC reproducibility gate that catches
 silent-failure regressions (e.g., the FinaleDB 5/6-column parser
@@ -354,8 +361,9 @@ For completeness, here are experiments that were *not* run:
 - **Larger LLMs** (Llama 3 70B, Gemma 3 27B) as classifiers — the
   Gemma 2 9B result is already strong evidence the approach
   doesn't work for this data
-- **Deep learning models** (CNN on raw FSD, transformer on
-  fragmentomics sequences) — would need 10x more data
+- **Real-data validation of the existing deep learning modules**
+  (foundation, GNN methylation, tissue deconv, priming) — currently
+  smoke-tested only; needs held-out patient cohort with labels
 - **Cross-platform replication** (Illumina vs ONT vs PacBio) —
   would need additional cohort access
 - **Production deployment** — needs regulatory framing that this
@@ -363,3 +371,56 @@ For completeness, here are experiments that were *not* run:
 
 These are listed in `PATH_TO_IMPACT.md` (DeepCatch repo) as the
 next steps toward clinical validation.
+
+---
+
+## Section 11: Deep learning modules (and why they're not in the headline)
+
+DeepCatch's source tree includes five substantial deep learning
+modules that pass CI and ship with the framework:
+
+| Module | Implementation | Tests | Status |
+|---|---|---|---|
+| `src/foundation/` | Transformer encoder (4 layers), per-modality linear projections → joint embedding | 43 | ✅ in CI |
+| `src/methylation_gnn/` | GATv2-based graph attention for epigenetic field-defect detection | 46 | ✅ in CI |
+| `src/tissue_deconv/` | Neural tissue-of-origin deconvolution (cfSort-style) | 47 | ✅ in CI |
+| `src/priming/` | PK/PD simulation, dosing model | 50 | ✅ in CI |
+| `src/fragmentomics/` (enhanced) | DELFI + MFS + nucleosome + refined 5-mer features | 42 | ✅ in CI |
+
+**These modules are not part of any published headline result in
+this document.** Reasons:
+
+1. **Their tests are smoke tests.** E.g., `foundation/test_integration.py`
+   asserts `auc > 0.5` after training — better than random, but not
+   a benchmark of clinical-grade performance.
+2. **No held-out evaluation on a clinically meaningful cohort.**
+   The training scripts exist (`src/foundation/pretrain.py`,
+   `src/methylation_gnn/gnn_trainer.py`) but produce models trained on
+   synthetic / small-cohort data.
+3. **The framework ships them as scaffolding for downstream work.**
+   They are part of DeepCatch's *capability surface*, not its
+   *published benchmark*.
+
+The honest distinction:
+
+- **Headline results in this document** are from the *non-deep-learning*
+  parts: panel LLR (sklearn LogisticRegression), tumor-naive
+  fragmentomics (LR-on-PCA), Gemma 2 9B baseline.
+- **Deep learning modules exist** in the codebase, are tested, and
+  represent the next research direction — but their performance
+  numbers are not benchmarked against any external standard at this
+  time, so it would be misleading to claim them as "results."
+
+What would need to happen to make them headline results:
+
+1. Train on a real-world cohort with external labels (not synthetic).
+2. Evaluate against a published baseline (e.g., DELFI, Galleri).
+3. Show evidence the deep model adds signal over the LR baseline
+   (the cfdna-fragmentomics-pipeline work showed LR is already near
+   the linear signal ceiling, so this would require either more data
+   or a non-linear signal source).
+
+If the user has access to a clinical cohort where these models can
+be properly validated, the framework is ready. Until then, the
+headline AUC numbers in this document come from the sklearn pipeline,
+not from the torch models.
