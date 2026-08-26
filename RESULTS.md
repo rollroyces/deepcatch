@@ -33,6 +33,38 @@ are at 4 decimal places from the original result JSONs. Differences
 of ±0.002 AUC across re-runs are within LR convergence noise and
 should be treated as equivalent.
 
+**Sample-count note**: `data/features/labels_cross_study.tsv`
+contains 658 candidate samples (364 cancer + 294 healthy; 537
+Cristiano + 121 Jiang). Of these, **31 are missing one or more
+required features** (likely .fsd.json for 30 Cristiano + 1 Jiang
+sample; the loader's `--skip-missing=True` default drops them
+silently). The headline "627 cross-study samples" therefore means
+"627 of 658 available samples with complete feature files." All
+scripts respect the loader's `--skip-missing` flag, so the exact
+count can be reproduced by running `wc -l data/features/*.npy` (or
+by re-running `scripts/honest_benchmark.py`).
+
+**Uncertainty note**: AUC numbers are reported as mean ± std across
+N seeds. The std is **across-seed variability of the OOF estimator**
+under different fold-shuffle random states — it is NOT a 95% confidence
+interval on the population AUC. For n=627 with class balance
+363 cancer / 264 healthy, the DeLong asymptotic SE of a single AUC
+is roughly `sqrt(AUC(1-AUC)/min(n_pos,n_neg)) ≈ 0.010`, so a
+proper 95% CI on the population AUC is roughly ±0.020 (not ±0.001).
+The narrow ±std in the tables should be read as "this is how stable
+the OOF estimator is across shuffles" — not as "AUC is known to
+this many decimals".
+
+**Multiple-testing note**: The C-sweep, the no-PCA comparison, the
+L1/L2 regularization comparison, and the nucleosome feature ablations
+are all post-hoc comparisons selected by maximum across multiple
+configurations. **No Bonferroni or Benjamini-Hochberg correction is
+applied.** The headline "+0.0050 AUC at C=1000" and the nucleosome
+"+0.0003 AUC at p=0.002" are both wins on the raw paired-t test but
+should be treated as *suggestive* rather than *confirmed* — they are
+within the family of comparisons where one configuration would be
+selected by chance.
+
 ---
 
 ## Section 1: The DeepCatch mutation-informed pipeline
@@ -155,7 +187,7 @@ Naively average the two channels' P(cancer) scores:
 | LR fusion (learned weights) | 0.9887 ± 0.001 | (same as naive) |
 
 **Paired t-test (10 seeds): LR-fusion AUC − tumor-naive AUC = +0.0143,
-t = 31.96, p < 0.0001. 95% bootstrap CI: [+0.0135, +0.0152]. DeLong
+t = 31.96, p < 0.0001. 95% CI (DeLong, single-seed pooled OOF): [+0.0135, +0.0152]. DeLong
 p < 0.0015 on every one of 5 individual seeds.**
 
 Recommended fusion recipe: **naive average** (no need for learned
