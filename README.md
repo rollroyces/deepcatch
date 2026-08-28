@@ -755,6 +755,8 @@ python -m src.fragmentomics.decision_curve_cli \
 
 ## Documentation
 
+**New user?** Start with **[USAGE.md](USAGE.md)** — 30-second TL;DR, install, common workflows, CLI reference for both repos, troubleshooting, and a glossary.
+
 - [MODEL.md](MODEL.md) — model card with intended use, performance, and limitations
 - [paper/PAPER.md](paper/PAPER.md) — research paper (Markdown source)
 - [paper/paper.tex](paper/paper.tex) — research paper (LaTeX)
