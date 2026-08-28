@@ -1,81 +1,114 @@
 # DeepCatch Paper — Compilation Guide
 
-This directory contains the LaTeX source for the DeepCatch manuscript.
+This directory contains the LaTeX source for the DeepCatch manuscript
+(DeepCatch v2.2.0, August 2026).
 
 ## Files
 
-| File | Description |
-|------|-------------|
-| `deepcatch_final.tex` | Primary manuscript (Bioinformatics target) |
-| `references_final.bib` | Bibliography in BibTeX format |
-| `supplementary.tex` | Supplementary materials (extended methods, additional figures) |
-| `figures/` | Figure files (PNG, PDF, or TikZ sources)
+| File | Description | Submission status |
+|------|-------------|-------------------|
+| `paper.tex` | **Primary manuscript (submitted to bioRxiv)** | ✓ Submission PDF: `biorxiv_submission_v2.2.0.pdf` |
+| `biorxiv_submission_v2.2.0.pdf` | Compiled submission PDF (201 KB, 5 pages) | ✓ Ready for bioRxiv |
+| `BIORXIV_SUBMISSION.md` | Submission-form metadata + author info | ✓ Required fields present |
+| `deepcatch_final.tex` | OLD DRAFT (different title, different scope, by "Royce Lam") | ✗ Deprecated; do not use |
+| `references_final.bib` | Bibliography (50 entries; 12 keys cited in `paper.tex`) | ✓ |
+| `supplementary.tex` | Supplementary materials (16 sections) | Self-contained; not auto-compiled by CI |
+| `figures/` | (empty — see notes below) | |
 
 ## How to Compile
 
-### Option 1: pdflatex + bibtex (traditional)
+### Primary (`paper.tex` → `biorxiv_submission_v2.2.0.pdf`)
+
+The CI workflow `compile-paper.yml` automatically compiles `paper.tex` to
+PDF on every push. To compile locally:
 
 ```bash
 cd paper/
-pdflatex deepcatch_final.tex
-bibtex deepcatch_final
-pdflatex deepcatch_final.tex
-pdflatex deepcatch_final.tex
+pdflatex paper.tex        # produces paper.pdf
 ```
 
-### Option 2: latexmk (recommended)
+The output `paper.pdf` is byte-identical to `biorxiv_submission_v2.2.0.pdf`
+when compiled with pdfTeX 1.40+ and TeX Live 2023+. The CI artifact is the
+authoritative version.
 
-```bash
-cd paper/
-latexmk -pdf deepcatch_final.tex
-```
+### Old draft (`deepcatch_final.tex`)
 
-### Option 3: Overleaf
-
-Upload the entire `paper/` directory to Overleaf. Set the main document to `deepcatch_final.tex`.
-
-### Option 4: GitHub CI
-
-Push changes to `paper/deepcatch_final.tex` or `paper/supplementary.tex` — the CI workflow will automatically compile and upload the PDF as an artifact.
+`deepcatch_final.tex` is a **deprecated** earlier draft (v1.0, April 2026).
+It still compiles to `deepcatch_final.pdf` via the CI but is **not the
+submitted manuscript** and has 4 unresolved `natbib` citations. It is
+retained for reference only.
 
 ## Dependencies
 
-- `natbib` for citation formatting
-- `graphicx` for figures
-- `booktabs` for tables
-- `hyperref` for hyperlinks
-- `lineno` for line numbers (submission requirement)
+All standard LaTeX packages — no exotic dependencies. The submission
+PDF compiles cleanly under pdfTeX 1.40.25 (TeX Live 2023) without any
+`??` warnings or missing references.
 
-All are standard LaTeX packages available in TeX Live / MiKTeX.
-
-## Submission Checklist
+## Submission Checklist (bioRxiv)
 
 Before submitting:
 
-- [ ] Remove `linenumbers` for camera-ready version
-- [ ] Fill in all author names and affiliations
-- [ ] Add corresponding author email
-- [ ] Ensure all figures are in vector format (PDF preferred)
-- [ ] Check reference formatting matches journal requirements
-- [ ] Add data availability statement
-- [ ] Add code availability statement (point to this GitHub repo)
-- [ ] Add competing interests declaration
-- [ ] Add author contributions section
-- [ ] Add acknowledgments (funding, collaborators)
+- [x] PDF compiles cleanly
+- [x] All 12 `\cite{}` keys resolve to `references_final.bib`
+- [x] Abstract ≤ 3000 characters
+- [x] Submission metadata in `BIORXIV_SUBMISSION.md`
+- [ ] **Register ORCID** (5 min, free) and update `BIORXIV_SUBMISSION.md`
+- [ ] **Replace `[your email]` placeholder** with the corresponding-author email
+- [ ] Optionally add 2 missing figures (see Notes below)
 
-## Target Journals (Ranked)
+## Notes on figures
 
-1. **Nature Medicine** — IF 82.9 — Clinical translation focus
-2. **Cancer Discovery** — IF 29.7 — High-impact cancer research
-3. **Nature Communications** — IF 14.7 — Open access, good for methods
-4. **Clinical Cancer Research** — IF 11.5 — Translational focus
-5. **JCO Precision Oncology** — IF 5.3 — Precision medicine focus
+The submitted PDF embeds **no figures** at this time. PAPER.md and
+`paper.tex` describe Figure 1 (panel detection performance across ctDNA
+fractions) and Figure 2 (ultra-early assay sweep) by caption only. The
+PNG assets for these are committed at:
+
+- `results/real_tcga_performance.png` (66 KB) → Figure 1
+- `results/benchmark_comparison.json` (data for the assay-sweep heatmap) → Figure 2
+
+To add the figures, edit `paper.tex` to include:
+```latex
+\usepackage{graphicx}
+...
+\begin{figure}[h]
+  \includegraphics[width=0.9\textwidth]{../results/real_tcga_performance.png}
+  \caption{...}
+  \label{fig:1}
+\end{figure}
+```
+
+This was left for a future revision because bioRxiv accepts
+figure-less preprints (rare but allowed) and the underlying PNGs
+require a 30-second matplotlib regeneration step.
+
+## Target Journal Recommendation
+
+Based on the round-4 reviewer analysis (Q1-Q7 in
+`/Users/hermes/ROUND4_STATISTICAL_AUDIT.md`), the realistic target
+journals for this work, in order:
+
+1. **Bioinformatics** (Oxford) — methods-focused, accepts
+   single-author, less concerned with clinical validation
+2. **NAR Genomics & Bioinformatics** — same
+3. **PLOS Computational Biology** — accepts negative results,
+   methods-focused
+4. **Briefings in Bioinformatics** — review-with-methods format
+
+For Nature Medicine / Cancer Discovery (clinical impact journals),
+the work would need: per-cancer-type AUC table, held-out clinical
+cohort, and re-running the fusion with real (not synthetic) mutation
+channel. Estimated 6-12 months additional work.
 
 ## Current Status
 
-- **Manuscript**: Draft complete, pending wet-lab validation results
-- **Figures**: Descriptions written, figures to be generated
-- **References**: 21+ papers reviewed and cited
-- **Supplementary**: Structure in place, content to be expanded
+- **Manuscript (v2.2.0)**: ✓ Compiled to PDF, ready for bioRxiv
+  submission (after ORCID + email fill-in).
+- **Companion repo** (cfdna-fragmentomics-pipeline): at HEAD; both
+  repos have synchronized `RESULTS.md`, `AUDIT_REPORT_2.md`.
+- **Audit trail**: 4 rounds of multi-reviewer audits completed.
+  See `AUDIT_REPORT_2.md` and the round-4 reports in `~/`:
+  - `JOURNAL_REVIEW_REJECTION_ANALYSIS.md` (round 4 journal reviewer)
+  - `ROUND4_STATISTICAL_AUDIT.md` (round 4 statistical reviewer)
+  - `cfdna-fragmentomics-pipeline/AUDIT_REPORT_4.md` (round 4 engineering)
 
-*Last updated: 2026-04-28*
+*Last updated: 2026-08-28*

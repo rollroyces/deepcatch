@@ -344,8 +344,29 @@ tested rigorously with multiple approaches:
 | Adding 3 nucleosome ratio features | +0.0003 AUC | Sub-noise |
 | Removing PCA(200) from LR pipeline | +0.0037 AUC | Real, kept |
 | C=1000 regularization | +0.0050 AUC total | Real, kept |
-| Trying Gemma 2 9B as baseline | LR beats it by 0.39 AUC | LLMs not competitive |
+| Trying Gemma 2 9B as baseline | LR beats it by 0.40 AUC | LLMs not competitive |
 | Trying Gemma 3, larger LLMs, etc. | Not tested | Same expected outcome |
+
+**Traceability of the +0.0050 headline**: The "+0.0050 AUC at C=1000"
+is the SUM of two independent steps:
+
+  - **+0.0037** from removing PCA(200) — reproduced by:
+    ```
+    python scripts/lr_no_pca_vs_pca200.py --seeds 10
+    ```
+    (LR no-PCA at default C=1.0 vs LR+PCA(200) on the same 627 cohort.)
+
+  - **+0.0013** from C=1000 regularization on top of LR no-PCA —
+    reproduced by:
+    ```
+    python scripts/lr_regularization_sweep.py --seeds 5 --c-values 1000 --skip-l1
+    ```
+    (LR no-PCA at C=1000 vs LR no-PCA at default C=1.0; both no-PCA.)
+
+The two are independent operations (one is a preprocessing choice,
+the other is a hyperparameter choice) and both have been validated
+in 5–10 seed paired-t tests. See Section 7 for the full
+reproduction command list.
 
 The **honest answer is**: the 1-2 percentage point gain the user
 hoped for is **not available** through feature engineering or

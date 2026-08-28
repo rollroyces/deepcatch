@@ -8,7 +8,7 @@ on:
       - 'paper/references_final.bib'
       - 'paper/paper.tex'
       - 'paper/PAPER.md'
-      - 'paper/figures/**'
+      - 'paper/biorxiv_submission_v2.2.0.pdf'
   workflow_dispatch:
 
 jobs:
