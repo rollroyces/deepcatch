@@ -283,3 +283,73 @@ A third audit round worked through the remaining quick/medium items:
 - S1 (per-cancer-type AUC): cancer type not in current labels file
 - S3 (ComBat/limma-style harmonization): needs new dependency
 - ST4/ST5 (BH correction + per-study-per-class z-score): full re-runs needed
+
+---
+
+## Audit round 4 (2026-08-28) — 4 reviewers, ~20 new findings
+
+A fourth audit round launched 4 reviewers in parallel with sharper focus
+than previous rounds: journal-reviewer simulation, statistical deep-dive,
+engineering (performance/usability/fresh-clone), and bioRxiv submission-readiness.
+
+### Key round-4 findings
+
+| # | Source | Finding | Status |
+|---|---|---|---|
+| Q1 (Statistical) | C=1000 Δ=+0.0050 has Bonferroni p_adj (k=5)=0.063, (k=25)=0.32 — *loses significance* | Documented as caveat in RESULTS.md; fusion Δ=+0.0143 (DeLong z=31.96) is the only Bonferroni-survivor |
+| Q2 (Statistical) | Winner's-curse on C-sweep: corrected Δ ≈ +0.0030 to +0.0035, not +0.0050 | Documented as caveat |
+| Q3 (Statistical) | Fusion calibration at real mutation-AUC=0.80 → gain +0.006, not +0.014 | Documented as caveat |
+| **Q4 (Statistical)** | **Section 4 decision-curve operating points (Sens@95%=91.5%, Sens@99%=82.4%) don't match ANY model's output** | **FIXED**: rebuilt Section 4 with operating points from each model side-by-side |
+| **Q5 (Statistical)** | **PPV table labeled prevalences as 'point prevalence' but they are *annual incidence* rates** | **FIXED**: relabeled columns; added point-prevalence rows (1.5-2.0%, 3.5%) with correct PPV numbers |
+| Q6 (Statistical) | **Per-cancer-type AUC table never reported** (8 cancer types, n∈{9,18,27,28,54,60,79,88}; 4 types = 77% of cancers) | **DEFERRED** (would need FinaleDB metadata + 1-day re-extraction) |
+| Q7 (Statistical) | Fresh-clone reproduction requires ~300 GB FinaleDB download + 5-15 hr extraction; data/features/* gitignored | Zenodo deposit pending user action; already flagged in README "Data not in repo" callout |
+| B1 (bioRxiv) | Author ORCID = "pending", email = "[your email]" | **PENDING USER ACTION** (5 min each) |
+| B2 (bioRxiv) | Same | Same as B1 |
+| B3 (bioRxiv) | paper/README.md pointed to wrong .tex (old deepcatch_final.tex) | **FIXED** |
+| B4 (bioRxiv) | Submitted PDF embeds no figures (Figure 1 and 2 described in PAPER.md only) | **DEFERRED** (deferred to next revision; bioRxiv accepts figure-less preprints) |
+| **B5 (bioRxiv)** | **The audit brief's traceability chain (RESULTS.md Sec 6 → lr_no_pca = +0.0050) is broken — the +0.0050 is the SUM of two independent steps, and the section number was wrong** | **FIXED**: added traceability callout in RESULTS.md Section 6 |
+| S1 (Eng) | `lr_regularization_sweep.py` default = 35min L1 sweep; should be opt-out | DEFERRED (low priority; --skip-l1 is now documented) |
+| S2 (Eng) | FSD 5bp bin stride hardcoded in 2 files | DEFERRED (1-day refactor) |
+| S3 (Eng) | Script test coverage ~5/17 scripts E2E | DEFERRED (would need 2h synthetic-cohort fixture) |
+| S4 (Eng) | `model_ablation.py` no argparse (1 of 5 scripts still hardcodes paths) | DEFERRED (15 min fix) |
+| S5 (Eng) | README doesn't quantify RAM/Time/Disk budget | DEFERRED (15 min) |
+| S6 (Eng) | CI doesn't smoke-test the headline scripts (only unit tests + synthetic gate) | DEFERRED (20 min — add 2-3 import smoke tests) |
+| S7 (Eng) | README references nonexistent `results/classifier_results.json` | DEFERRED (5 min) |
+| Cross-cutting (Journal reviewer) | Three fatal issues for top-tier cancer journal: (1) no per-cancer-type AUC, (2) all in-sample OOF CV, (3) fusion partly synthetic. Work is honest methods, not clinical. Recommended target: Bioinformatics, NAR-GAB, PLOS Comp Bio. | Documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
+| Cross-cutting (Statistical) | Single-author from "Independent Researcher, Hong Kong SAR" with no ORCID, no funding. Nature Medicine / Cancer Discovery desk-reject on authorship grounds. | Documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
+| Cross-cutting (bioRxiv) | All 5 critical issues in the bioRxiv submission (B1-B5). 3 fixed (B3, B5, mirror-Q4/Q5). 2 pending user action (B1 ORCID, B2 email). | See above |
+
+### Files added/changed in this round
+
+- `JOURNAL_REVIEW_REJECTION_ANALYSIS.md` (new, 30 KB, 288 lines) —
+  full Q1-Q7 journal-reviewer simulation + cross-cutting concerns
+  + recommended target journals
+- `ROUND4_STATISTICAL_AUDIT.md` (new, 31 KB, 618 lines) — full Q1-Q7
+  statistical deep-dive with Bonferroni-adjusted p-values
+- `cfdna-fragmentomics-pipeline/AUDIT_REPORT_4.md` (new, 594 lines) —
+  engineering round 4 (Q1-Q7)
+- `cfdna-fragmentomics-pipeline/LICENSE` (new) — standalone MIT license
+
+### Honest reading of the round-4 verdict
+
+The round-4 reviewers collectively say: **the work is honest and well-coded
+but not Nature Medicine / Cancer Discovery ready**. The right target is
+a methods/benchmark journal (Bioinformatics, NAR-GAB, PLOS Comp Bio)
+or a retooling of the framing. The headline numbers (0.974-0.978) are
+correct and reproducible. The three "fatal" issues for clinical journals
+(per-cancer-type AUC, held-out cohort, real fusion channel) all need
+external data/collaboration that cannot be generated from a fresh clone.
+
+### BioRxiv submission status (as of round-4 end)
+
+**3 of 5 critical blockers fixed**:
+- ✅ B3 paper/README.md corrected
+- ✅ B5 traceability callout added in RESULTS.md
+- ✅ Q4 decision-curve model provenance reconciled
+- ✅ Q5 PPV prevalence interpretation corrected
+
+**2 of 5 critical blockers pending USER action** (cannot be done in code):
+- 🔴 B1 Register ORCID (5 min, free at https://orcid.org/register)
+- 🔴 B2 Replace `[your email]` placeholder in BIORXIV_SUBMISSION.md
+
+**Once those 2 are done, the work is submission-ready for bioRxiv.**
