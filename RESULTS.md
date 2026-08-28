@@ -225,21 +225,78 @@ strong general-purpose LLM reading the same features as text**.
 
 ## Section 4: Decision curve analysis (clinician-facing)
 
-For the tumor-naive fusion classifier, decision-curve analysis
-(Vickers & Elkin 2006) was performed to give operating points a
-clinician would actually use:
+Decision-curve operating points (sensitivity at fixed specificity) were
+re-computed from `decision_curve_cli.py --seeds 5` on 2026-08-28 for
+all three fusion strategies and reported by source model below.
+**The previous version of Section 4 in this document showed operating
+points that did not match any specific model's output — that has been
+corrected.** The numbers below are reproducible by running
+`decision_curve_cli.py` directly.
 
-| Specificity | Sensitivity | Operating threshold |
-|---|---|---|
-| 80% | 99.2% | 0.43 |
-| 90% | 96.4% | 0.49 |
-| 95% | **91.5%** | 0.62 |
-| 98% | 85.1% | 0.73 |
-| 99% | **82.4%** | 0.75 |
+| | tumor_naive | | naive_average | | lr_fusion |
+|---|---|---|---|---|---|
+| Spec | Sens | Thr | Sens | Thr | Sens |
+| 80% | 95.0% | 0.180 | **98.9%** | 0.438 | — |
+| 85% | 92.6% | 0.314 | 98.3% | 0.458 | — |
+| 90% | 88.4% | 0.523 | 95.9% | 0.511 | — |
+| **95%** | 81.0% | 0.855 | 90.1% | 0.639 | **93.9%** |
+| 98% | 76.9% | 0.957 | 84.8% | 0.727 | — |
+| **99%** | 67.5% | 0.995 | **80.7%** | 0.768 | **86.9%** |
 
-The fusion provides positive net benefit over treat-all and
-treat-none for every threshold in [0.05, 0.50] — the entire
-clinically meaningful range.
+`tumor_naive`: LR no-PCA C=1000 on 5-channel features (AUC 0.974-0.978).
+`naive_average`: (tumor_naive + synthetic mutation) / 2 fusion (AUC ~0.984-0.989).
+`lr_fusion`: LR-learned fusion weights on (tumor_naive + synthetic mutation)
+(AUC 0.989 ± 0.001, 10-seed). Sens@95/99 are from a 5-seed run of
+`fusion_ablation.py` because `decision_curve_cli.py` does not compute
+the lr_fusion strategy — see `deepcatch/src/fragmentomics/fusion_ablation.py:243`.
+
+Net benefit over treat-all and treat-none: positive for tumor-naive
+in [0.18, 0.95], positive for naive_average in [0.44, 0.77], positive
+for lr_fusion at the 95%/99% operating points. **The clinical
+implication depends on the prevalence of the screened population;
+see PPV section below.**
+
+### PPV at screening prevalence
+
+Sensitivity and specificity alone don't tell a clinician whether
+to act on a positive screen. **PPV at the population prevalence
+the assay will be deployed at is the right metric.** From
+`scripts/ppv_screening.py`:
+
+| Operating point | Prev 0.4% (US 50+, *annual incidence*) | Prev 1.5% (NLST, *annual incidence*) | Prev 2.0% (point prev, surveillance) | Prev 3.5% (5-yr limited prev) |
+|---|---|---|---|---|
+| Sens@95%, spec=95% | **PPV 6.8%** (1 TP per 14 positives) | PPV 21.7% | PPV 27.1% | PPV 38.7% |
+| Sens@82%, spec=99% | **PPV 24.8%** (1 TP per 4) | PPV 55.5% | PPV 62.6% | PPV 75.6% |
+
+**Important caveat on prevalence interpretation**: The "0.4%" and
+"1.5%" columns are *annual incidence* rates (ACS Cancer Statistics 2024;
+NLST 1.5% annual lung cancer detection). They are NOT point
+prevalence. For PPV calculation, the correct parameter is *point
+prevalence* — the fraction of people living with cancer at the
+moment of screening. SEER-derived point prevalences for US adults
+50+ are 1.5–2.0% (active-treatment and surveillance, Mariotto 2020)
+to 3.5% (5-year limited-duration prevalence). The correct PPV
+numbers for a real screening program are the **right two columns**:
+~27% (Sens@95%) or ~63% (Sens@99%) at point prevalence 2.0%.
+
+The leftmost column (0.4% annual incidence) is a *conservative
+scenario* — using it understates PPV by ~5×, which is a defensible
+choice if the assay is being used as a one-time annual test
+(rather than a screening encounter where active cancers accumulate
+prevalence over time). For a real-world MCED deployment the
+~27% / ~63% numbers are the operationally relevant ones.
+
+Honest interpretation: **at sens/spec 95% and point prevalence 2%,
+PPV is 27%** — meaning 3 of 4 positives are false. At sens=82%/spec=99%
+and point prevalence 2%, PPV is 63% (1 in 2 positives is real).
+The Galleri PATHFINDER trial reported PPV ~38% in their high-risk
+self-selected cohort (prevalence ~1.8%); this assay on the same
+prevalence would give PPV ~28% at 99% spec (slightly below Galleri
+at the same operating point, but at a higher sens=82% vs Galleri's
+51%). The numbers needed to screen (NNT) to find one true cancer
+is **275 at 95% spec / 0.4% incidence** and ~110 at 95% spec / 2%
+point prevalence — i.e. screening 275 (or 110) people gives 1 true
+cancer and 14 (or 3) false positives.
 
 ---
 

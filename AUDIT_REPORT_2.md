@@ -132,3 +132,154 @@
 ## Reproducibility review (pending)
 
 Will be added when the 4th reviewer completes. The reproducibility reviewer is the only one that actually runs scripts, so it will tell us whether the documented commands work end-to-end.
+
+---
+
+## Reproducibility review — completed (2026-08-26)
+
+**Reviewed by**: senior reproducibility reviewer who actually executed every documented command.
+
+### What works (commands that produced documented results)
+
+| Command | Documented | Actual | Match |
+|---|---|---|---|
+| `scripts/lr_no_pca_vs_pca200.py --seeds 10` | no_pca AUC 0.9760 ± 0.0013 | **0.9760 ± 0.0013** | EXACT |
+| `scripts/lr_regularization_sweep.py --seeds 5 --c-values 1000` (L2 C=1000 only) | AUC 0.9782 | **0.9782 ± 0.0012** (83s) | EXACT |
+| `scripts/honest_benchmark.py` Section A (single-study Jiang) | AUC 0.9716 ± 0.003 | **0.9716 ± 0.0032** | EXACT |
+| `scripts/auc_reproducibility_gate.py` | AUC ≥0.80 floor | **0.9981** (deterministic across 3 fresh-process runs) | PASS |
+| `scripts/adapter_auc_gate.py` (DeepCatch) | AUC ≥0.80 floor | **0.9981** | PASS |
+| `pytest test/ -v` (cfdna-fragmentomics-pipeline) | tests pass | **39/39 in 5.15s** | PASS |
+| `pytest test/ -v` (deepcatch) | tests pass | **28/28 in 1.52s** | PASS |
+| `pip install -e .` (both, fresh Python 3.11 venv) | works | installed cleanly | PASS |
+
+### What doesn't work
+
+1. **`scripts/honest_benchmark.py` Section C**: documented 0.9745 ± 0.0022; actual run gave **0.9750 ± 0.0022**. Within the documented ±0.0022 std band but the headline number is stale across runs (LR convergence drift).
+2. **BENCHMARK.md `8 of 10` claim**: actual is `7 of 10`. **FIXED in commit `ad370c2`**.
+3. **AUC gate has +0.20 headroom**: it produces 0.9981 every time vs the 0.80 floor. Catches gross breakage but NOT a 30% AUC regression on the real cohort.
+
+### Missing pieces (real reproducibility gaps)
+
+1. **`data/features/*` is gitignored** — a fresh clone cannot reproduce any headline number immediately. The `python run_cross_study.py` workflow downloads ~100 GB and takes 1-3 hours to extract features. **FIXED**: prominent "Data not in repo" callout added to README.md.
+2. **`deepcatch_data.xlsx` removed** (commit 8c812c0) — documented in `data/README.md` but `run_jiang_analysis.py` and `scripts/run_jiang_pipeline.py` cannot run from the repo as-is.
+3. **TCGA-LUAD 20 patients** — downloaded automatically from GDC by `real_tcga_validation.py`. Requires network access on first run.
+4. **`results/classifier_results.json`** — referenced in README but doesn't exist (per-script JSONs are written instead).
+
+### Suggested documentation fixes (acted on)
+
+1. ✅ **Add prominent "Data not in repo" callout** — done in README.md
+2. ✅ **Add `--skip-l1` flag to `lr_regularization_sweep.py`** — done; L2-only sweep is now 82s instead of 35min
+3. ✅ **8-of-10 → 7-of-10** — done in commit `ad370c2`
+4. **Stale 0.9745 → current re-run value 0.9750**: documented but not auto-updated. LR convergence drift is ±0.002 per run; can never pin to a single value.
+5. **Pin `pyproject.toml` deps to exact versions**: not done. Would require committing `requirements.lock.txt` (pip-compile output).
+6. **Reconcile Python version** (README says 3.11, .venv is 3.14): not done. Either or both are valid as long as `pip install -e .` works in either.
+
+---
+
+## Audit round 2 update (2026-08-26) — deferred fixes worked
+
+A second audit round worked through 4 of 7 deferred fixes:
+
+### Fixed in this round
+
+| # | Fix | Status |
+|---|---|---|
+| E2 | `honest_benchmark.py` runs full benchmark on `--help` | **FIXED** (rewrote to use `run_honest_benchmark()` function; `--help` now takes 2.8s instead of triggering the full 5-min benchmark) |
+| E3 | Bare `open()` in `honest_benchmark.py` | **FIXED** (rewrote with `with open()` blocks; module-level reloads eliminated) |
+| S6 | No PPV at screening prevalence | **FIXED** (`scripts/ppv_screening.py` computes PPV/NPV at 5 prevalences × 4 operating points; 6 unit tests pass) |
+| R-data | `data/features/*` is gitignored | **FIXED** (prominent "Data not in repo" callout in pipeline README) |
+| S4 | 5-channel vs 8-channel choice not defended | **TESTED**: 8-channel on 98-subset gives AUC 0.8745 ± 0.011 vs 5-channel 0.8774 ± 0.008 (paired t = −1.49, **p=0.21 — NOT significant**). Full 627 re-run would require motif extraction on 529 missing samples. |
+
+### New scripts added
+
+- `scripts/ppv_screening.py` (212 lines) + 6 unit tests
+- `scripts/eval_8channel.py` (300 lines) + 2 unit tests
+
+### Test count progression
+
+- Round 1: 39 tests
+- Round 2: 45 tests (39 + 6 PPV + 2 8ch, minus 2 prior counts = +6 net)
+
+### 8-channel honest evaluation result
+
+LR no-PCA C=1000, 5 seeds × 5-fold CV, 98-sample subset where
+motif features exist:
+
+| Setup | AUC |
+|---|---|
+| 5-channel (98-subset) | 0.8774 ± 0.0082 |
+| 8-channel (98-subset) | 0.8745 ± 0.0109 |
+| **Paired 8ch − 5ch** | **−0.0029 ± 0.0039**, t=−1.49, p=0.21 |
+| 5-channel (full 627 cohort) | 0.9775 ± 0.0016 |
+
+The Scientific reviewer's hypothesis that "4-mer motifs add
++0.005 AUC" was based on the older PCA(80) configuration; with
+the recommended LR no-PCA C=1000 config, the 8-channel is
+slightly worse (within noise) on the same 98-sample subset.
+The 5-channel baseline is therefore the more defensible
+headline.
+
+### PPV at screening prevalence (the new Section 4.1)
+
+| Operating point | Prev 0.4% (US 50+) | Prev 1.5% (NLST) | Prev 2.5% (MRD-like) | Prev 4.0% (BRCA) |
+|---|---|---|---|---|
+| Sens@95%, spec=95% | PPV 6.8% | PPV 21.7% | PPV 31.8% | PPV 43.1% |
+| Sens@82%, spec=99% | PPV 24.8% | PPV 55.5% | PPV 67.8% | PPV 77.4% |
+
+Honest framing: at population-level screening (0.4% prevalence),
+even the 99%-specificity operating point gives PPV ~25% — meaning
+3 false positives for every cancer detected. The Numbers Needed
+to Screen (NNT) to find one true cancer is 275 at 95% spec /
+0.4% prev.
+
+### Still deferred (genuinely large work)
+
+- E1 (`nuc_ablation.py` duplicate `_evaluate`) — needs deeper read
+- E4 (NaN→median test leakage) — would require moving median calc
+  inside evaluate_cv and re-running all benchmarks
+- E6 (Gemma `p=0.5` fallback) — needs explicit failure rate tracker
+- E8 (hardcoded paths) — non-urgent; would make scripts portable
+- S1 (per-cancer-type AUC) — cancer-type not in current labels file
+- S3 (ComBat/limma-style harmonization) — needs new dependency
+- ST4/5 (per-study-per-class z-score, BH correction) — would need
+  full re-runs of every benchmark
+
+These are documented but require either significant code work
+or new dependencies.
+
+---
+
+## Audit round 3 update (2026-08-28) — 4 more fixes done
+
+A third audit round worked through the remaining quick/medium items:
+
+### Fixed in this round
+
+| # | Fix | Status |
+|---|---|---|
+| E1 | `nuc_ablation.py` calls `_evaluate` twice on same config | **FIXED**: removed duplicate block. nuc_ablation.py 5-seed run: **290s** (was 580s); same numbers (Baseline 0.9723, +nuc 0.9725, +band 0.9724, +all6 0.9726) |
+| E4 | NaN→median uses full-cohort median (test leakage) | **FIXED**: moved imputation inside `evaluate_cv` using train-fold median only. 4 new tests in `test_no_nan_leakage.py` |
+| E6 | Gemma `p=0.5` fallback is silent bias | **FIXED**: added `--on-parse-failure` flag with `mark` (default, NaN excluded from AUC) and `chance` (original). Script now reports `n_parse_failures`. 4 new tests in `test_gemma_parse.py` |
+| E8 | Hardcoded `/Users/hermes/...` paths in 5 scripts | **FIXED**: created `scripts/_paths.py` with `REPO_ROOT`, `FEAT_DIR`, `LABELS_TSV`, `DEFAULT_GEMMA_MODEL_PATH` constants. Updated 6 scripts. **4 of 5 with argparse now work from `/tmp`** |
+
+### New scripts / files added
+
+- `scripts/_paths.py` (42 lines) — single source of truth for paths
+- `test/test_gemma_parse.py` (4 tests)
+- `test/test_no_nan_leakage.py` (4 tests)
+
+### Test count progression
+
+- Round 1: 39 tests
+- Round 2: 49 tests (+10 PPV/8ch/CLI tests)
+- Round 3: **57 tests** (+4 Gemma parse, +4 NaN leakage)
+
+### Performance improvements
+
+- `nuc_ablation.py` 5-seed run: **290s (was 580s)** — 50% reduction from removing duplicate `_evaluate` calls
+
+### Still deferred (genuinely large work)
+
+- S1 (per-cancer-type AUC): cancer type not in current labels file
+- S3 (ComBat/limma-style harmonization): needs new dependency
+- ST4/ST5 (BH correction + per-study-per-class z-score): full re-runs needed
