@@ -1,0 +1,16 @@
+# GitHub Sponsors configuration for DeepCatch.
+#
+# Once the rollroyces Sponsors profile is enabled (manual step — see
+# /Users/hermes/passive_income/SPONSORS_ACTIVATION.md), the "Sponsor" button
+# will appear automatically on every repo that uses this file.
+#
+# To enable Sponsors:
+#   1. Go to https://github.com/sponsors/rollroyces
+#   2. Click "Join the waitlist" if not yet approved, or "Complete your profile"
+#   3. Set tiers: $5, $49, $499 monthly (matches api/billing.py)
+#   4. Add bank account / payout method via Stripe Connect
+#
+# Tier details: see .github/SPONSORS.md in this repo.
+# Reference:  https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+github: [rollroyces]

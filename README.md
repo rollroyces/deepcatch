@@ -6,12 +6,15 @@
 [![Tests](https://img.shields.io/badge/Tests-228%2F228%20passing-brightgreen)]()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
 
 > **🔥 Seeking expert review — see [REVIEWERS.md](REVIEWERS.md).**
 > Tag v2.2.0: panel-based MRD benchmark, all data open-access.
 > PR open for review: https://github.com/rollroyces/deepcatch/pull/2
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
+
+> 💚 **Sponsor this work:** See [.github/SPONSORS.md](.github/SPONSORS.md) for tier descriptions ($5/$49/$499 monthly). 100% of funds go to compute and maintenance. [GitHub Sponsors →](https://github.com/sponsors/rollroyces)
 
 v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
 
