@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Royce (Independent Researcher)"},
+    {name = "Yu Ching Lam (Independent Researcher)"},
 ]
 keywords = ["cfDNA", "ctDNA", "liquid-biopsy", "cancer-detection",
             "variant-calling", "panel-LLR", "fragmentomics", "methylation"]

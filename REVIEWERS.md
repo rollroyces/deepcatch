@@ -105,7 +105,7 @@ torch 2.13, torch_geometric.
 
 ## Contact
 
-**Royce** — DeepCatch Project
+**Yu Ching Lam** — DeepCatch Project
 **Repo:** github.com/rollroyces/deepcatch
 **PR for review:** github.com/rollroyces/deepcatch/pull/2
 

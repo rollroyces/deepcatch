@@ -10,7 +10,7 @@ This directory contains the LaTeX source for the DeepCatch manuscript
 | `paper.tex` | **Primary manuscript (submitted to bioRxiv)** | ✓ Submission PDF: `biorxiv_submission_v2.2.0.pdf` |
 | `biorxiv_submission_v2.2.0.pdf` | Compiled submission PDF (201 KB, 5 pages) | ✓ Ready for bioRxiv |
 | `BIORXIV_SUBMISSION.md` | Submission-form metadata + author info | ✓ Required fields present |
-| `deepcatch_final.tex` | OLD DRAFT (different title, different scope, by "Royce Lam") | ✗ Deprecated; do not use |
+| `deepcatch_final.tex` | OLD DRAFT (different title, different scope, by "Yu Ching Lam") | ✗ Deprecated; do not use |
 | `references_final.bib` | Bibliography (50 entries; 12 keys cited in `paper.tex`) | ✓ |
 | `supplementary.tex` | Supplementary materials (16 sections) | Self-contained; not auto-compiled by CI |
 | `figures/` | (empty — see notes below) | |

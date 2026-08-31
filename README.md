@@ -777,7 +777,7 @@ python -m src.fragmentomics.decision_curve_cli \
 @software{deepcatch2026,
   title        = {{DeepCatch}: Multi-Modal Longitudinal MCED Framework
                    for Early Cancer Detection from cfDNA},
-  author       = {Royce and DeepCatch Contributors},
+  author       = {Yu Ching Lam and DeepCatch Contributors},
   year         = {2026},
   version      = {2.1.0},
   url          = {https://github.com/rollroyces/deepcatch},

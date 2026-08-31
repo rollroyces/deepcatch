@@ -20,7 +20,7 @@ It has not been validated on a held-out clinical cohort. See
 | **Model name** | DeepCatch v2.2.0 |
 | **Version** | 2.2.0 (release tag, commit `0842600`) |
 | **Date** | 2026-08-11 |
-| **Authors** | Royce (Independent Researcher, ORCID [pending]) |
+| **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
 | **Repository** | https://github.com/rollroyces/deepcatch |
 | **Companion pipeline** | [cfdna-fragmentomics-pipeline](https://github.com/rollroyces/cfdna-fragmentomics-pipeline) (the source of the tumor-naive channel) |
@@ -176,7 +176,7 @@ python scripts/adapter_auc_gate.py
 
 ```bibtex
 @software{deepcatch_v2_2_0,
-  author = {Royce},
+  author = {Yu Ching Lam},
   title  = {DeepCatch: Mutation-informed Ultra-Sensitive cfDNA Detection},
   year   = {2026},
   url    = {https://github.com/rollroyces/deepcatch},

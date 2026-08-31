@@ -5,7 +5,7 @@
 Added a Graph Neural Network (GNN) branch to DeepCatch Stage 1 (Capture) pipeline for detecting pre-cancer epigenetic field defects through methylation network reconstruction.
 
 **Date:** 2026-05-31  
-**Author:** Research Sub-agent (implementation) / Royce (design)  
+**Author:** Research Sub-agent (implementation) / Yu Ching Lam (design)  
 **Module:** `src/methylation_gnn/`
 
 ## Motivation

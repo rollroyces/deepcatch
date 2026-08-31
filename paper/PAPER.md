@@ -1,10 +1,10 @@
 # An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations
 
-**Authors:** Royce¹
+**Authors:** Yu Ching Lam¹
 
 ¹ Independent researcher, DeepCatch Project — github.com/rollroyces/deepcatch
 
-**Corresponding author:** Royce (via GitHub issues on the project repository)
+**Corresponding author:** Yu Ching Lam (via GitHub issues on the project repository)
 
 **Keywords:** cell-free DNA (cfDNA), circulating tumor DNA (ctDNA), molecular residual disease (MRD), liquid biopsy, early cancer detection, panel-based detection, duplex sequencing, fragmentomics, open science
 

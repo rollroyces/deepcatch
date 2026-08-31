@@ -15,12 +15,12 @@ collaborative team as the right people appear.
 
 ## 1. Current team (as of 2026-08-28)
 
-### 1.1 Lead — Royce (Independent Researcher, Hong Kong SAR)
+### 1.1 Lead — Yu Ching Lam (Independent Researcher, Hong Kong SAR)
 
 **Role**: project founder, sole author, sole maintainer, sole
 contributor of every commit across both repos as of 2026-08-28.
 
-**What Royce does**:
+**What Yu Ching Lam does**:
 - Writes all code (Python, shell, LaTeX)
 - Designs the experimental methodology
 - Runs the benchmarks
@@ -28,16 +28,18 @@ contributor of every commit across both repos as of 2026-08-28.
 - Maintains the bioRxiv submission package
 - Manages the GitHub issues, PRs, releases
 
-**What Royce does NOT have**:
+**What Yu Ching Lam does NOT have**:
 - Wet-lab access (this is a computational-only project)
 - Clinical collaborators with patient samples
-- An ORCID (TODO — 5 min on https://orcid.org/register)
-- Institutional affiliation, funding, or computing cluster
+- An institutional affiliation (the ORCID profile lists University
+  of Michigan as a verified email domain, but Yu Ching is not
+  currently enrolled there in a relevant capacity — needs
+  clarification if claiming this affiliation), funding, or computing cluster
 - A co-author for clinical-impact journals
 
 **Contact** (placeholder — fill in before submission):
-- bioRxiv profile: pending
-- ORCID: pending
+- bioRxiv profile: https://orcid.org/0009-0008-9113-769X
+- ORCID: 0009-0008-9113-769X
 - Email: `[your email]`
 - GitHub: `@rollroyces`
 - Country: Hong Kong SAR
@@ -177,7 +179,7 @@ corresponding-author address.
 **What we'd want from you**: copy-edit the READMEs, USAGE.md, and
 bioRxiv submission package for grammar, clarity, and tone. The
 project currently has 3500+ lines of user-facing documentation
-written by one person (Royce); an outside editor would catch
+written by one person (Yu Ching Lam); an outside editor would catch
 issues the author is too close to see.
 
 **Time commitment**: 1-2 days of async review.
@@ -187,7 +189,7 @@ issues the author is too close to see.
 ### 2.7 Bioinformatician student / postdoc — **LOW PRIORITY**
 
 **What we'd want from you**: a 3-6 month project using this framework
-to answer a research question that Royce hasn't had time to address.
+to answer a research question that Yu Ching Lam hasn't had time to address.
 Suggested topics:
 - Per-cancer-type performance (the §6.1 deferred item)
 - Methylation GNN head-to-head vs the fragmentomics baseline
@@ -196,7 +198,7 @@ Suggested topics:
 
 **Time commitment**: 3-6 months, part-time or full-time.
 
-**Compensation**: first-author on the resulting paper. (Royce
+**Compensation**: first-author on the resulting paper. (Yu Ching Lam
 co-authors; your advisor co-supervises.)
 
 **Contact**: open an issue tagged `student-project` or email the
@@ -267,14 +269,14 @@ governance model**. Specifically:
 ### 4.1 Decision authority
 
 - **Code changes** (anything that doesn't touch the headline
-  numbers, license, or maintainer): Royce has final say after
+  numbers, license, or maintainer): Yu Ching Lam has final say after
   one round of community review.
 - **Headline changes** (changes to `RESULTS.md` TL;DR, `BENCHMARK.md`
   top section, `paper/PAPER.md` abstract, `paper/biorxiv_submission_v2.2.0.pdf`):
-  requires Royce approval + 2 weeks of public discussion.
-- **License changes**: requires Royce approval + 1 month of
+  requires Yu Ching Lam approval + 2 weeks of public discussion.
+- **License changes**: requires Yu Ching Lam approval + 1 month of
   public discussion + 2 community-member agreement.
-- **Maintainer changes**: requires Royce approval + a clear
+- **Maintainer changes**: requires Yu Ching Lam approval + a clear
   handoff plan documented in `TEAM.md`.
 
 ### 4.2 What is NOT in the governance
@@ -291,11 +293,11 @@ will be revisited.
 
 ### 4.3 Conflict resolution
 
-If Royce and a contributor disagree on a change:
+If Yu Ching Lam and a contributor disagree on a change:
 1. Try to resolve in the PR comments.
 2. If unresolved, open a `governance` issue with both positions.
-3. After 2 weeks of public discussion, Royce has tiebreaker authority.
-4. If the contributor feels Royce is being unreasonable, they
+3. After 2 weeks of public discussion, Yu Ching Lam has tiebreaker authority.
+4. If the contributor feels Yu Ching Lam is being unreasonable, they
    may fork the project under the MIT license (which they are
    free to do).
 
@@ -308,8 +310,8 @@ in the next 6 months:
 
 | Quarter | Goal | Required collaboration |
 |---|---|---|
-| **Q1 (now)** | bioRxiv preprint (current state) | None — Royce is preparing |
-| Q1 | ORCID + Zenodo deposit (manual) | None — Royce |
+| **Q1 (now)** | bioRxiv preprint (current state) | None — Yu Ching Lam is preparing |
+| Q1 | ORCID + Zenodo deposit (manual) | None — Yu Ching Lam |
 | Q2 | Per-cancer-type AUC table | §2.4 software engineer (data prep) |
 | Q2 | Head-to-head vs Galleri (methylation) | §2.2 methylation expert |
 | Q3 | Held-out clinical validation | §2.1 clinical co-author |

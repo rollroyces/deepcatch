@@ -2,10 +2,10 @@ cff-version: 1.2.0
 message: "If you use DeepCatch in your research, please cite it as follows."
 title: "DeepCatch v2.2.0: An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations"
 authors:
-  - given-names: "Royce"
-    family-names: "(independent researcher)"
+  - given-names: "Yu Ching"
+    family-names: "Lam"
     affiliation: "DeepCatch Project — Independent Researcher, Hong Kong SAR"
-    orcid: "https://orcid.org/0009-0000-0000-0000"
+    orcid: "https://orcid.org/0009-0008-9113-769X"
 year: 2026
 doi: "10.5281/zenodo.to-be-assigned-on-first-release"
 url: "https://github.com/rollroyces/deepcatch"

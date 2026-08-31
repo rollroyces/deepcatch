@@ -453,7 +453,7 @@ bug that was discovered and fixed).
 
 ```bibtex
 @software{deepcatch_v2_2_0,
-  author = {Royce},
+  author = {Yu Ching Lam},
   title  = {DeepCatch v2.2.0: An Open-Source Benchmark for Panel-Based
             Ultra-Sensitive Detection of Circulating Tumor DNA from
             Real Tumor Mutations},
@@ -463,7 +463,7 @@ bug that was discovered and fixed).
 }
 
 @software{cfdna_fragmentomics_v0_2_0,
-  author = {Royce},
+  author = {Yu Ching Lam},
   title  = {cfdna-fragmentomics-pipeline v0.2.0: Tumor-Naive cfDNA
             Cancer Detection via 5Mb + 100kb Short/Long Ratio,
             Median-Normalized Coverage, and FSD Histogram},
