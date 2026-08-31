@@ -15,10 +15,12 @@ collaborative team as the right people appear.
 
 ## 1. Current team (as of 2026-08-28)
 
-### 1.1 Lead — Yu Ching Lam (Independent Researcher, Hong Kong SAR)
+### 1.1 Lead — Yu Ching Lam (Independent Researcher, no affiliation)
 
 **Role**: project founder, sole author, sole maintainer, sole
 contributor of every commit across both repos as of 2026-08-28.
+
+**Location**: Hong Kong SAR (location only, **not** an institutional affiliation).
 
 **What Yu Ching Lam does**:
 - Writes all code (Python, shell, LaTeX)
@@ -31,18 +33,18 @@ contributor of every commit across both repos as of 2026-08-28.
 **What Yu Ching Lam does NOT have**:
 - Wet-lab access (this is a computational-only project)
 - Clinical collaborators with patient samples
-- An institutional affiliation (the ORCID profile lists University
-  of Michigan as a verified email domain, but Yu Ching is not
-  currently enrolled there in a relevant capacity — needs
-  clarification if claiming this affiliation), funding, or computing cluster
+- An institutional affiliation (no current enrollment anywhere;
+  the umich.edu verified email on the ORCID profile is from a
+  previous .edu address, not active enrollment)
+- Funding or computing cluster (work done on consumer hardware)
 - A co-author for clinical-impact journals
 
-**Contact** (placeholder — fill in before submission):
+**Contact**:
+- ORCID: [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
 - bioRxiv profile: https://orcid.org/0009-0008-9113-769X
-- ORCID: 0009-0008-9113-769X
-- Email: `[your email]`
+- Email: `[your email]` (pending user action before submission)
 - GitHub: `@rollroyces`
-- Country: Hong Kong SAR
+- Location: Hong Kong SAR
 
 ### 1.2 Indirect contributors (acknowledged but not yet authors)
 

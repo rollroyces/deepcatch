@@ -316,7 +316,7 @@ engineering (performance/usability/fresh-clone), and bioRxiv submission-readines
 | S6 (Eng) | CI doesn't smoke-test the headline scripts (only unit tests + synthetic gate) | DEFERRED (20 min — add 2-3 import smoke tests) |
 | S7 (Eng) | README references nonexistent `results/classifier_results.json` | DEFERRED (5 min) |
 | Cross-cutting (Journal reviewer) | Three fatal issues for top-tier cancer journal: (1) no per-cancer-type AUC, (2) all in-sample OOF CV, (3) fusion partly synthetic. Work is honest methods, not clinical. Recommended target: Bioinformatics, NAR-GAB, PLOS Comp Bio. | Documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
-| Cross-cutting (Statistical) | Single-author from "Independent Researcher, Hong Kong SAR" with no ORCID, no funding. Nature Medicine / Cancer Discovery desk-reject on authorship grounds. | Documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
+| Cross-cutting (Statistical) | Single-author independent researcher with no institutional affiliation, no funding. Nature Medicine / Cancer Discovery desk-reject on authorship grounds. (Original review also flagged "no ORCID" — this was addressed 2026-08-31: ORCID 0009-0008-9113-769X is now registered.) | Documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
 | Cross-cutting (bioRxiv) | All 5 critical issues in the bioRxiv submission (B1-B5). 3 fixed (B3, B5, mirror-Q4/Q5). 2 pending user action (B1 ORCID, B2 email). | See above |
 
 ### Files added/changed in this round
