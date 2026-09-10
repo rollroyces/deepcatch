@@ -313,9 +313,11 @@ in the next 6 months:
 | Quarter | Goal | Required collaboration |
 |---|---|---|
 | **Q1 (now)** | bioRxiv preprint (current state) | None — Yu Ching Lam is preparing |
+| **Q1 (active)** | **Methylation channel** (Phase 0-2, ~13 weeks; see `METHYLATION_PROJECT.md`) | None for Phases 0-2 |
 | Q1 | ORCID + Zenodo deposit (manual) | None — Yu Ching Lam |
 | Q2 | Per-cancer-type AUC table | §2.4 software engineer (data prep) |
 | Q2 | Head-to-head vs Galleri (methylation) | §2.2 methylation expert |
+| Q2 (conditional) | Methylation GNN training on real data (Phase 4) | §2.2 methylation expert + GPU access |
 | Q3 | Held-out clinical validation | §2.1 clinical co-author |
 | Q3 | ComBat / limma harmonization comparison | §2.3 statistician |
 | Q4 | Methods-journal submission (Bioinformatics) | All of the above |

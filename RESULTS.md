@@ -359,7 +359,7 @@ is the SUM of two independent steps:
   - **+0.0013** from C=1000 regularization on top of LR no-PCA —
     reproduced by:
     ```
-    python scripts/lr_regularization_sweep.py --seeds 5 --c-values 1000 --skip-l1
+    python scripts/lr_regularization_sweep.py --seeds 5 --c-values 1000
     ```
     (LR no-PCA at C=1000 vs LR no-PCA at default C=1.0; both no-PCA.)
 
@@ -555,3 +555,18 @@ If the user has access to a clinical cohort where these models can
 be properly validated, the framework is ready. Until then, the
 headline AUC numbers in this document come from the sklearn pipeline,
 not from the torch models.
+
+---
+
+## Active extension project
+
+**Methylation channel** (started 2026-09-10): a complementary CpG-methylation
+detection channel is being added to the fragmentomics pipeline. Phase 0-2 of
+the plan will use FinaleMe (Liu 2024) to impute CpG methylation from the
+existing FinaleDB WGS — no new raw-data downloads required.
+
+The full scope, data strategy, phased timeline, and exit criteria are in
+[`rollroyces/deepcatch/METHYLATION_PROJECT.md`](https://github.com/rollroyces/deepcatch/blob/main/METHYLATION_PROJECT.md).
+
+Headline question: *Does CpG methylation add signal beyond fragmentomics on
+a 627-sample cross-study cohort?* Answer expected end of Q1 2027.

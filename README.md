@@ -18,6 +18,9 @@
 
 v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
 
+> 📋 **Active project:** Methylation channel extension (Phase 0-2, started 2026-09-10).
+> Uses FinaleMe (Liu 2024, *Nat Commun*) to impute CpG methylation from existing FinaleDB WGS — no new raw data needed. See [`METHYLATION_PROJECT.md`](METHYLATION_PROJECT.md) for the full plan.
+
 ---
 
 > ⚠️ **Research-stage software.** Not for clinical diagnosis. See §11 for real-plasma validation status.
