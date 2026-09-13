@@ -9,6 +9,7 @@ on:
       - 'paper/paper.tex'
       - 'paper/PAPER.md'
       - 'paper/biorxiv_submission_v2.2.0.pdf'
+      - 'paper/figures/**'
   workflow_dispatch:
 
 jobs:
