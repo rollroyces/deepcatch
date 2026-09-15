@@ -13,6 +13,8 @@ permissions:
   pages: write
   id-token: write
 
+# Cancel any in-flight deploys when a new push arrives — Pages hosts one
+# build at a time, so this prevents stuck runs from blocking a fresh release.
 concurrency:
   group: pages
   cancel-in-progress: true
@@ -24,17 +26,25 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      # Pin Node 24 explicitly to avoid the "Node.js 20 is deprecated"
+      # runner warning. actions/checkout@v5+ and the rest of the Pages
+      # stack now require Node 24.
+      - name: Setup Node 24
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./docs
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

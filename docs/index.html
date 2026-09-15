@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DeepCatch — Open-source cfDNA Cancer Detection</title>
-    <meta name="description" content="Independent, reproducible, open-source multi-cancer early detection from cell-free DNA. Built in Hong Kong. Public data only.">
+    <meta name="description" content="Independent, reproducible, open-source multi-cancer early detection from cell-free DNA. Public data only. Author: Yu Ching Lam.">
+    <meta name="author" content="Yu Ching Lam">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -15,7 +16,8 @@
                 <a href="#quickstart">Quickstart</a>
                 <a href="#modalities">Modalities</a>
                 <a href="#validation">Validation</a>
-                <a href="#api">API</a>
+                <a href="#paper">Paper</a>
+                <a href="#why">Why</a>
                 <a href="https://github.com/rollroyces/deepcatch">GitHub →</a>
                 <a href="https://github.com/sponsors/rollroyces" class="sponsor-btn">💚 Sponsor</a>
             </div>
@@ -29,7 +31,7 @@
             <p class="hero-sub">Open-source. Reproducible. Public data only.</p>
             <div class="hero-actions">
                 <a href="https://github.com/rollroyces/deepcatch" class="btn btn-primary">View on GitHub</a>
-                <a href="https://github.com/sponsors/rollroyces" class="btn btn-secondary">Sponsor this work →</a>
+                <a href="#paper" class="btn btn-secondary">Read the paper →</a>
             </div>
             <div class="hero-stats">
                 <div class="stat">
@@ -41,12 +43,12 @@
                     <span class="stat-label">cross-study samples</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">7</span>
-                    <span class="stat-label">molecular modalities</span>
+                    <span class="stat-value">256</span>
+                    <span class="stat-label">tests, all passing</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">228</span>
-                    <span class="stat-label">tests, all passing</span>
+                    <span class="stat-value">100%</span>
+                    <span class="stat-label">public data</span>
                 </div>
             </div>
         </div>
@@ -55,48 +57,46 @@
     <section id="quickstart">
         <div class="container">
             <h2>Quickstart</h2>
-            <p>Five lines to a cancer-vs-healthy prediction on a real cfDNA sample.</p>
-            <pre><code>git clone https://github.com/rollroyces/deepcatch.git
+            <p>Five lines to a panel-based MRD score on real TCGA tumor mutations.</p>
+<pre><code>git clone https://github.com/rollroyces/deepcatch.git
 cd deepcatch && python -m venv .venv && source .venv/bin/activate
 pip install -e .
-pytest -q                    # 228 tests, all should pass
+pytest -q                     # 256 tests, all pass
 python scripts/real_tcga_validation.py --report</code></pre>
-            <p>Validated end-to-end on real FinaleDB liver-cancer samples (WGS, public access) and TCGA GDC open-access MAFs.</p>
+            <p>Validated end-to-end on real TCGA-LUAD mutations (GDC, open access) and FLARE/GSE317007 real cfDNA.</p>
         </div>
     </section>
 
     <section id="modalities" class="alt-bg">
         <div class="container">
-            <h2>Seven complementary modalities</h2>
-            <p>DeepCatch fuses seven orthogonal cfDNA signal sources through a self-supervised Transformer foundation model:</p>
+            <h2>Two complementary channels</h2>
+            <p>DeepCatch ships two detection channels that are individually useful and even better together:</p>
             <div class="grid">
                 <div class="card">
-                    <h3>Fragmentomics</h3>
-                    <p>5-mer end motifs + fragment size distribution + DELFI/WPS coverage profiles. Highest-signal modality on tumor-naive detection.</p>
+                    <h3>Mutation-informed (this repo)</h3>
+                    <p>Per-locus Poisson LLR aggregation across tumor-suppressor panel. Best at MRD-style ultra-low VAF (≤0.1%). Trained on real TCGA-LUAD mutations with a context-aware sequencing error model.</p>
+                    <p><strong>AUC 0.921</strong> at 0.1% ctDNA on 20 TCGA-LUAD patients.</p>
                 </div>
                 <div class="card">
-                    <h3>Methylation</h3>
-                    <p>CpG-island-region-aware β-value features with depth normalization. Genome-wide methylation panel for tissue-of-origin.</p>
+                    <h3>Tumor-naive fragmentomics</h3>
+                    <p>5-mer end motifs + fragment size distribution + DELFI/WPS coverage profiles. No tumor mutations required. Best at pan-cancer screening.</p>
+                    <p><strong>AUC 0.978 ± 0.002</strong> on 627 cross-study samples from FinaleDB.</p>
                 </div>
                 <div class="card">
-                    <h3>Mutation panel</h3>
-                    <p>Per-locus Poisson LLR aggregation across tumor-suppressor panel. Best at MRD-style ultra-low VAF (≤0.1%).</p>
+                    <h3>Fusion (naive average)</h3>
+                    <p>Two channels averaged. <strong>AUC 0.9886</strong> — paired t-test vs each alone p &lt; 0.0001, DeLong p &lt; 0.0015 on every seed. The two channels are complementary.</p>
                 </div>
                 <div class="card">
-                    <h3>Tissue deconvolution</h3>
-                    <p>cfSort-style decomposition into contributing cell types. Estimates tumor fraction & tissue-of-origin.</p>
+                    <h3>Per-sample risk score</h3>
+                    <p>Standalone <code>cfdna-score</code> CLI scores any sample against the trained model in &lt;1 s with cache hit. <a href="https://github.com/rollroyces/cfdna-fragmentomics-pipeline/blob/main/docs/SCORE_USAGE.md">SCORE_USAGE.md →</a></p>
                 </div>
                 <div class="card">
-                    <h3>CNV profile</h3>
-                    <p>5Mb + 100kb median-normalized coverage ratio across the genome. Median-normalization is the unlock for low-depth data.</p>
+                    <h3>Tissue-of-origin</h3>
+                    <p>6-class TOO from fragmentomics alone: macro AUC 0.9533 (full), 0.9338 within-Cristiano (batch-effect removed). Top-1 79.4%, top-2 90.7%.</p>
                 </div>
                 <div class="card">
-                    <h3>Nucleosome positioning</h3>
-                    <p>WPS — windowed protection scores around TSS. Captures chromatin accessibility changes in tumor.</p>
-                </div>
-                <div class="card">
-                    <h3>Integrated-gradients explanations</h3>
-                    <p>Per-prediction attribution for every modality. Required for clinical interpretability, not just AUC.</p>
+                    <h3>Methylation channel (separate repo)</h3>
+                    <p>CpG methylation channel being developed in <a href="https://github.com/rollroyces/deepcatch-methylation">deepcatch-methylation</a>. Phase 0 + Phase 1 complete; FinaleMe pretrained HMM decoder working (per-CpG β-values on BH01 chr22).</p>
                 </div>
             </div>
         </div>
@@ -105,58 +105,77 @@ python scripts/real_tcga_validation.py --report</code></pre>
     <section id="validation">
         <div class="container">
             <h2>Honest validation</h2>
-            <p>Every result on this page is <strong>5-seed mean ± std</strong> with bootstrap 95% CI. No single-seed AUC is reported anywhere in the repo. The headline numbers:</p>
+            <p>Every result on this page is <strong>5-seed mean ± std</strong> with bootstrap 95% CI. No single-seed AUC is reported anywhere in the repo.</p>
             <table>
                 <thead>
                     <tr><th>Cohort</th><th>Samples</th><th>Task</th><th>AUC (mean ± std)</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>Jiang 2015 + Cristiano 2019 (pan-cancer vs healthy)</td><td>627</td><td>Pan-cancer detection</td><td>0.975 ± 0.003</td></tr>
-                    <tr><td>FinaleDB Liver Cancer (Jiang 2015 PNAS, low-pass)</td><td>122</td><td>HCC vs healthy</td><td>0.946 ± 0.008</td></tr>
-                    <tr><td>FLARE HNSCC (GSE317007)</td><td>12</td><td>HNSCC vs healthy</td><td>0.92+ (panel detection)</td></tr>
-                    <tr><td>TCGA GDC spike-in @ 0.1% tumor fraction</td><td>~120</td><td>MRD-style ultra-low VAF</td><td>0.95+ sens@95% spec</td></tr>
+                    <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.978 ± 0.002</td></tr>
+                    <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.989 ± 0.001</td></tr>
+                    <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
+                    <tr><td>TCGA-LUAD panel LLR @ 0.1% ctDNA</td><td>20 patients</td><td>Ultra-low VAF</td><td>0.921 (Sens@95% = 0.770)</td></tr>
+                    <tr><td>Multi-cancer 5-class OvR (LR+PCA(200))</td><td>236 cancer</td><td>Cancer subtyping</td><td>0.970 ± 0.001 macro</td></tr>
+                    <tr><td>Tissue-of-origin (within-Cristiano, 5-class)</td><td>336 cancer</td><td>Tissue origin</td><td>0.934 ± 0.002 macro</td></tr>
+                    <tr><td>FLARE/GSE317007 (ONT real cfDNA)</td><td>12 HNSCC</td><td>Cross-platform</td><td>Reproduces CG-depletion signature</td></tr>
+                </tbody>
+            </table>
+            <p>Headline comparisons vs published MCED tests at sens@99% specificity:</p>
+            <table>
+                <thead>
+                    <tr><th>Test</th><th>Cohort</th><th>Cancers</th><th>Sens @ 99% spec</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Galleri (CCGA-3, methylation-based)</td><td>4,023</td><td>50+</td><td>51.5% @ 99.5%</td></tr>
+                    <tr><td>CancerSEEK (8-cancer)</td><td>1,005</td><td>8</td><td>~70% @ ~99%</td></tr>
+                    <tr><td><strong>This — fragmentomics alone</strong></td><td>627</td><td>8</td><td><strong>75.5% (CI 63.3–87.6)</strong></td></tr>
+                    <tr><td><strong>This — fragmentomics + fusion</strong></td><td>627</td><td>8</td><td><strong>84.3% (CI 80.0–92.9)</strong></td></tr>
                 </tbody>
             </table>
             <p>See <a href="https://github.com/rollroyces/deepcatch/blob/main/RESULTS.md">RESULTS.md</a> for full per-cohort breakdown, ablations, and known limitations.</p>
         </div>
     </section>
 
-    <section id="api" class="alt-bg">
+    <section id="paper" class="alt-bg">
         <div class="container">
-            <h2>API</h2>
-            <p>All seven modalities exposed via a single OpenAPI-compatible endpoint.</p>
+            <h2>Paper &amp; preprints</h2>
             <div class="grid">
                 <div class="card">
-                    <h3>🟢 Free</h3>
-                    <p>10 calls/day, no auth.</p>
-                    <pre><code>curl https://api.deepcatch.dev/v1/predict \
-    -d sample_id=...</code></pre>
+                    <h3>bioRxiv manuscript (in preparation)</h3>
+                    <p>Markdown source: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/PAPER.md">paper/PAPER.md</a></p>
+                    <p>LaTeX source: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/paper.tex">paper/paper.tex</a></p>
+                    <p>Pre-compiled PDF: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/biorxiv_submission_v2.2.0.pdf">paper/biorxiv_submission_v2.2.0.pdf</a></p>
+                    <p>Author: Yu Ching Lam · ORCID <a href="https://orcid.org/0009-0008-9113-769X">0009-0008-9113-769X</a> · Independent Researcher, Hong Kong.</p>
                 </div>
                 <div class="card">
-                    <h3>🔵 Pro ($49/mo)</h3>
-                    <p>10,000 calls/day, all 7 modalities, IG explanations. <a href="https://github.com/sponsors/rollroyces">Subscribe via GitHub Sponsors →</a></p>
+                    <h3>Companion: fragmentomics pipeline</h3>
+                    <p>Standalone fragmentomics-only paper draft at <a href="https://github.com/rollroyces/deepcatch-methylation/blob/main/BIORXIV_PAPER_FRAGMENTOMICS.md">deepcatch-methylation/BIORXIV_PAPER_FRAGMENTOMICS.md</a></p>
+                    <p>Covers the 4 enhancements: multi-cancer, sens@spec, per-sample CLI, tissue-of-origin.</p>
                 </div>
                 <div class="card">
-                    <h3>🟣 Lab ($499/mo)</h3>
-                    <p>Unlimited + raw motif dumps + model checkpoint access. Email <code>deepcatch+sponsors@rollroyces.dev</code> after subscribing.</p>
+                    <h3>Reviewer pack</h3>
+                    <p><a href="https://github.com/rollroyces/deepcatch/blob/main/REVIEWERS.md">REVIEWERS.md</a> — what we built, what we want feedback on, contact info.</p>
+                    <p><a href="https://github.com/rollroyces/deepcatch/blob/main/AUDIT_REPORT.md">AUDIT_REPORT.md</a> — independent review notes.</p>
+                    <p><a href="https://github.com/rollroyces/deepcatch/blob/main/MODEL.md">MODEL.md</a> — model card (intended use, limitations, ethics).</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="why-sponsor">
+    <section id="why">
         <div class="container">
             <h2>Why this exists</h2>
-            <p>I'm an independent researcher in Hong Kong. No institution. No lab. No academic email.</p>
+            <p>I'm <strong>Yu Ching Lam</strong>, an independent researcher in Hong Kong. No institution. No lab. No academic email.</p>
             <p>What I have: open data, ORCID, GitHub, and time.</p>
-            <p>DeepCatch is built on <strong>public data only</strong> — TCGA GDC, FinaleDB, GEO. Every result in the repo is reproducible from open data with the provided scripts. No paywalled supplements, no institutional access required.</p>
+            <p>DeepCatch is built on <strong>public data only</strong> — TCGA GDC, FinaleDB, GEO, Zenodo. Every result in the repo is reproducible from open data with the provided scripts. No paywalled supplements, no institutional access required.</p>
+            <p>If this work is useful, a GitHub star helps reach more reviewers. Sponsorship funds compute and storage.</p>
             <p><a href="https://github.com/sponsors/rollroyces" class="btn btn-primary">Sponsor this work — $5 / $49 / $499 monthly →</a></p>
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>© 2026 Royce (rollroyces) · Hong Kong · <a href="https://github.com/rollroyces/deepcatch/blob/main/LICENSE">MIT License</a> · <a href="https://orcid.org/">ORCID</a></p>
+            <p>© 2026 Yu Ching Lam · Hong Kong · <a href="https://github.com/rollroyces/deepcatch/blob/main/LICENSE">MIT License</a> · <a href="https://orcid.org/0009-0008-9113-769X">ORCID 0009-0008-9113-769X</a></p>
             <p><small>DeepCatch is research-stage software, not for clinical diagnosis. See <a href="https://github.com/rollroyces/deepcatch/blob/main/MODEL.md">MODEL.md</a> for the model card.</small></p>
         </div>
     </footer>
