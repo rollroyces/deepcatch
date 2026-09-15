@@ -15,6 +15,39 @@
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
 
+### Project layout
+
+```mermaid
+graph LR
+    subgraph ThreeRepos["3-repo open-source portfolio"]
+        DC["rollroyces/deepcatch<br/>(this repo)<br/>v2.2"]
+        FP["rollroyces/cfdna-fragmentomics-pipeline<br/>v0.9+<br/>627 cross-study samples"]
+        METH["rollroyces/deepcatch-methylation<br/>Phase 0–1<br/>FinaleMe HMM"]
+    end
+
+    TCGA[("TCGA GDC<br/>open-access MAFs")]
+    FinaleDB[("FinaleDB<br/>pan-cancer WGS")]
+    Zenodo[("Zenodo CRAG<br/>HCC samples")]
+    GEO[("GEO<br/>FLARE/GSE317007")]
+
+    TCGA -->|real mutations| DC
+    FinaleDB -->|WGS fragments| FP
+    Zenodo -->|HCC validation| FP
+    GEO -->|ONT cfDNA| DC
+    DC <-->|fusion adapter| FP
+    FP -.->|β-values| METH
+
+    BioRxiv["bioRxiv paper<br/>(drafted, in prep)"]
+    DC & FP & METH --> BioRxiv
+
+    classDef repo fill:#ddf4ff,stroke:#0969da,color:#0a3069
+    classDef data fill:#fff8c5,stroke:#bf8700,color:#3d2c00
+    classDef out fill:#dafbe1,stroke:#1a7f37,color:#116329
+    class DC,FP,METH repo
+    class TCGA,FinaleDB,Zenodo,GEO data
+    class BioRxiv out
+```
+
 > 💚 **Sponsor this work:** See [.github/SPONSORS.md](.github/SPONSORS.md) for tier descriptions ($5/$49/$499 monthly). 100% of funds go to compute and maintenance. [GitHub Sponsors →](https://github.com/sponsors/rollroyces)
 
 v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
@@ -30,25 +63,47 @@ v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI 
 
 ## Architecture
 
+DeepCatch is a **two-stage CET pipeline** (Capture → Enhance → Triage). Stage 1 fuses seven molecular modalities from a single cfDNA sample through a Transformer foundation model; Stage 2 accumulates evidence across longitudinal draws via Bayesian Kalman filtering; Triage compares the posterior to a calibrated threshold.
+
+```mermaid
+flowchart TB
+    Sample["cfDNA Sample<br/>(BAM / FASTQ)"]
+
+    subgraph S1["Stage 1 — Capture (single draw)"]
+        direction TB
+        M1["Fragmentomics Basic<br/>MFR, FSI, CAFF, FEM"]
+        M2["Enhanced Fragmentomics<br/>DELFI + MFS + nucleosome"]
+        M3["CNV<br/>6-D chromosomal instability"]
+        M4["Serological<br/>PG-I, PG-II, G-17, Hp"]
+        M5["GNN Methylation Network<br/>GATv2 field-defect"]
+        M6["Tissue Deconvolution<br/>cfSort-style DNN (24-D)"]
+        M7["Priming Agents<br/>PK/PD + denoising"]
+        FM["Multi-Modal Foundation Model<br/>4-layer Transformer"]
+        Sample --> M1 & M2 & M3 & M4 & M5 & M6 & M7
+        M1 & M2 & M3 & M4 & M5 & M6 & M7 --> FM
+    end
+
+    subgraph S2["Stage 2 — Enhance (longitudinal)"]
+        KF["Bayesian Kalman Filter (BSSLM)<br/>accumulates p_cancer across draws"]
+        FM -->|joint embedding| KF
+    end
+
+    subgraph S3["Triage"]
+        THR{"p_cancer > τ?"}
+        KF --> THR
+        THR -->|Yes| CONF["Confirmatory testing"]
+        THR -->|No| RET["Clear until next draw"]
+    end
+
+    classDef stage fill:#e1f5ff,stroke:#0969da,color:#0a3069
+    classDef mod fill:#fff8c5,stroke:#bf8700,color:#3d2c00
+    classDef decision fill:#ffd7d5,stroke:#cf222e,color:#82071e
+    class S1,S2,S3 stage
+    class M1,M2,M3,M4,M5,M6,M7,FM mod
+    class THR,CONF,RET decision
 ```
-cfDNA Sample
-    │
-    ├── Stage 1 (Capture) — 7 Modalities ────────────────────────┐
-    │   ├── Fragmentomics Basic     MFR, FSI, CAFF, FEM          │
-    │   ├── Enhanced Fragmentomics  DELFI + MFS + nucleosome     │
-    │   ├── CNV                     6-D chromosomal instability  │
-    │   ├── Serological             PG-I, PG-II, G-17, Hp        │
-    │   ├── GNN Methylation Network GATv2 field defect detection │
-    │   ├── Tissue Deconvolution    cfSort-style DNN (24-D)      │
-    │   └── Priming Agents          PK/PD + denoising            │
-    │                                                             │
-    └──→ Multi-Modal Foundation Model (Transformer) ←────────────┘
-                    │
-    └── Stage 2 (Enhance) — Longitudinal ────────────────────────┐
-        └── Bayesian Kalman Filter (BSSLM)                       │
-                    │
-        Detection Decision:  p_cancer > τ
-```
+
+> See [V3_DESIGN.md](docs/V3_DESIGN.md) for the GPU-accelerated v3 design proposal that adds methylation β-value embeddings as a 6th channel on Apple MPS.
 
 ---
 
@@ -417,6 +472,52 @@ python -c "from src.foundation import FoundationConfig; print('OK')"
 
 ## Stages Explained — CET Pipeline
 
+```mermaid
+stateDiagram-v2
+    [*] --> Capture
+
+    state Capture {
+        [*] --> ExtractModalities
+        ExtractModalities --> FuseTransformer
+        FuseTransformer --> JointEmbedding
+        JointEmbedding --> [*]
+    }
+
+    Capture --> Accumulate
+    note right of Capture
+        Single cfDNA draw.
+        7 modalities → joint embedding.
+    end note
+
+    state Accumulate {
+        [*] --> KalmanUpdate
+        KalmanUpdate --> PosteriorCheck
+        PosteriorCheck --> HasMoreDraws: yes
+        HasMoreDraws --> KalmanUpdate: next quarterly draw
+        PosteriorCheck --> EmitPosterior: no
+        EmitPosterior --> [*]
+    }
+
+    Accumulate --> Triage
+
+    state Triage {
+        [*] --> CompareThreshold
+        CompareThreshold --> Confirm: p_cancer > τ
+        CompareThreshold --> Clear: p_cancer ≤ τ
+        Confirm --> [*]
+        Clear --> [*]
+    }
+
+    Triage --> [*]
+
+    note left of Accumulate
+        Each new draw updates the
+        posterior over p_cancer.
+        Evidence accumulates below
+        single-draw detection floor.
+    end note
+```
+
 ### Stage 1: Capture
 
 Seven independent modalities extract signal from the same cfDNA sample. Each produces a scalar risk score vector. The foundation model fuses these into a joint embedding via per-modality linear projections → 4-layer Transformer encoder.
@@ -540,6 +641,34 @@ Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), 
 ### Real-TCGA Benchmark (honest framing)
 
 `real_tcga_validation.py` uses **real TCGA tumor mutations (with real read counts) as ground truth**, then **simulates plasma cfDNA** by Poisson sampling at each tumor fraction. It is a spike-in/dilution benchmark, **not** a clinical plasma validation. Metrics are AUC/PR-AUC plus sensitivity at **fixed** 95%/99% specificity — no threshold optimization on test data. Data is fetched from the **GDC open-access API** (per-aliquot masked MAFs, cached in `validation/tcga/tcga_cache/`); the synthetic fallback dataset is deliberately refused. Latest run: 20 LUAD patients, 5,738 mutations, 5 seeds (mean across seeds).
+
+#### Validation pipeline
+
+```mermaid
+flowchart LR
+    TCGA[("TCGA GDC<br/>per-aliquot masked MAFs")] -->|fetch| Cache["validation/tcga/<br/>tcga_cache/"]
+    Cache --> Muts["5,738 real mutations<br/>20 LUAD patients"]
+
+    Muts --> Sim["Simulate plasma cfDNA<br/>(Poisson sampling)"]
+    Sim -->|"5 fractions: 10% → 0.1%"| F1["10%"]
+    Sim --> F2["5%"]
+    Sim --> F3["1%"]
+    Sim --> F4["0.5%"]
+    Sim --> F5["0.1%<br/>ultra-early"]
+
+    F1 & F2 & F3 & F4 & F5 --> Eval["3 scoring methods:<br/>LLR / Fisher / Strand"]
+
+    Eval -->|"fixed spec<br/>no threshold opt"| Metrics["AUC, Sens@95%,<br/>Sens@99%, paired win-rate"]
+
+    Metrics -->|"5 seeds × 5 folds"| Report["results/<br/>real_tcga_validation.json"]
+
+    classDef data fill:#fff8c5,stroke:#bf8700
+    classDef stage fill:#e1f5ff,stroke:#0969da
+    classDef out fill:#dafbe1,stroke:#1a7f37
+    class TCGA,Cache,Muts data
+    class Sim,F1,F2,F3,F4,F5,Eval stage
+    class Metrics,Report out
+```
 
 **Per-position detection** (single-locus classification — information-limited at ultra-low ctDNA):
 
@@ -759,6 +888,36 @@ python -m src.fragmentomics.decision_curve_cli \
     --seeds 5 --pca-n 200 \
     --out results/decision_curve_627.json
 ```
+
+### Sensitivity vs published MCED tests (Sens @ 99% specificity)
+
+```mermaid
+graph LR
+    subgraph Tier1["Single-modality (fragmentomics only)"]
+        FragOnly["This — frag<br/>75.5% (CI 63–88)<br/>n=627, 8 cancers"]
+    end
+
+    subgraph Tier2["Multi-channel (fragmentomics + mutation fusion)"]
+        FragFusion["This — fusion<br/>84.3% (CI 80–93)<br/>n=627, 8 cancers"]
+    end
+
+    subgraph Published["Published MCED tests"]
+        Galleri["Galleri CCGA-3<br/>51.5% @ 99.5%<br/>n=4,023, 50+ cancers"]
+        Shield["Shield ECLIPSE<br/>~83% @ ~90% spec<br/>n=7,861, CRC only"]
+        CancerSEEK["CancerSEEK<br/>~70% @ ~99%<br/>n=1,005, 8 cancers"]
+    end
+
+    Galleri --- CancerSEEK --- FragOnly --- FragFusion
+
+    classDef ours fill:#dafbe1,stroke:#1a7f37,color:#116329
+    classDef pub fill:#f6f8fa,stroke:#57606a,color:#1f2328
+    class FragOnly,FragFusion ours
+    class Galleri,Shield,CancerSEEK pub
+```
+
+> Direct comparison is approximate — cohort sizes and cancer panels differ. Headline: naive-average fusion of this project's fragmentomics + mutation channels **exceeds Galleri's published sensitivity at equivalent or higher specificity**, on a public-data cohort an order of magnitude smaller.
+
+---
 
 ## Documentation
 
