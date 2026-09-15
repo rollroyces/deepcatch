@@ -8,6 +8,10 @@ on:
       - '.github/workflows/deploy-docs.yml'
   workflow_dispatch:
 
+# Note: deploys docs/site/ (the public-facing landing page) rather than
+# docs/ root. The docs/ root now contains a README.md that renders on
+# github.com and links to the deployed /site/ sub-page.
+
 permissions:
   contents: read
   pages: write
@@ -43,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./docs
+          path: ./docs/site
 
       - name: Deploy to GitHub Pages
         id: deployment
