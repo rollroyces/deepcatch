@@ -10,7 +10,8 @@ on:
 
 # Note: deploys docs/site/ (the public-facing landing page) rather than
 # docs/ root. The docs/ root now contains a README.md that renders on
-# github.com and links to the deployed /site/ sub-page.
+# github.com. The artifact is uploaded from ./docs/site, and GitHub
+# Pages serves its index.html at the project root URL.
 
 permissions:
   contents: read

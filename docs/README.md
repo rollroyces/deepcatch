@@ -1,7 +1,7 @@
 # DeepCatch documentation
 
 > 📘 **Looking for the project landing page?**
-> → [https://rollroyces.github.io/deepcatch/site/](https://rollroyces.github.io/deepcatch/site/)
+> → [https://rollroyces.github.io/deepcatch/](https://rollroyces.github.io/deepcatch/)
 >
 > That page is the public-facing entry point. The files below are the source
 > documents — Markdown source for the paper, design notes, and reviewer pack.
@@ -11,7 +11,7 @@ This directory holds the canonical docs for the DeepCatch project:
 ## Public-facing docs site (deployed to GitHub Pages)
 
 - **[site/index.html](site/index.html)** — landing page (rendered at
-  [/site/](https://rollroyces.github.io/deepcatch/site/))
+  [https://rollroyces.github.io/deepcatch/](https://rollroyces.github.io/deepcatch/))
 - **[site/assets/style.css](site/assets/style.css)** — site stylesheet
 
 ## Manuscript + preprints (sources)

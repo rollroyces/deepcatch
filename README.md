@@ -3,10 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-228%2F228%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-256%2F256%20passing-brightgreen)]()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
+[![Docs Site](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
 
 > **🔥 Seeking expert review — see [REVIEWERS.md](REVIEWERS.md).**
 > Tag v2.2.0: panel-based MRD benchmark, all data open-access.
