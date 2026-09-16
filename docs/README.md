@@ -25,7 +25,8 @@ This directory holds the canonical docs for the DeepCatch project:
 ## Design + planning
 
 - **[V3_DESIGN.md](V3_DESIGN.md)** — next-generation model design (GPU-accelerated, MPS)
-- **[PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md)** — productionization plan
+- **[PORTFOLIO_ROADMAP.md](PORTFOLIO_ROADMAP.md)** — unified roadmap covering all 3 repos (supersedes the older NEXT_STEPS.md / PRODUCTION_ROADMAP.md)
+- **[PRODUCTION_ROADMAP.md](PRODUCTION_ROADMAP.md)** — productionization plan (historical — superseded by PORTFOLIO_ROADMAP.md §2 Phase D)
 
 ## Long-form guides
 
