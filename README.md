@@ -712,6 +712,39 @@ Restricting the 5,738-mutation panel to the **top-K highest-CADD mutations** (PH
 
 **Caveat documented honestly:** match rate dropped from 86% (20-patient curated LUAD driver set) to **8.9%** (382-patient bulk-WXS includes passengers not in gnomAD r3.0). This is a structural difference between cohorts, not a methodology change. The low-burden subgroup shows a -16pp inversion under CADD selection (flagged as a real finding).
 
+**CADD Top-K pipeline (data flow):**
+
+```mermaid
+flowchart LR
+    Panel["Full panel<br/>5,738 TCGA-LUAD<br/>mutations"]
+    Score["CADD PHRED score<br/>per mutation<br/>(Kircher et al. 2014)"]
+    Rank["Per-patient rank by CADD"]
+    TopK["Top-K = 20<br/>highest-CADD<br/>per patient"]
+    Eval["Simulate 0.1% ctDNA<br/>5-seed x 5-fold OOF"]
+    Out["Per-subgroup<br/>Sens at 99% spec lift"]
+    Whole["Whole-cohort n=150<br/>0.278 to 0.627<br/>+35 pp"]
+    TP53["TP53_mutant n=73<br/>0.228 to 0.689<br/>+46 pp"]
+    KRAS["KRAS_wildtype n=103<br/>0.275 to 0.663<br/>+39 pp"]
+    High["High burden n=75<br/>0.271 to 0.773<br/>+50 pp"]
+    Match["Match rate<br/>86% on 20-patient curated<br/>8.9% on 382-patient bulk-WXS"]
+
+    Panel --> Score --> Rank --> TopK --> Eval --> Out
+    Out --> Whole
+    Out --> TP53
+    Out --> KRAS
+    Out --> High
+    TopK -. caveat .-> Match
+
+    classDef data fill:#fff8c5,stroke:#bf8700
+    classDef stage fill:#e1f5ff,stroke:#0969da
+    classDef out fill:#dafbe1,stroke:#1a7f37
+    classDef caveat fill:#ffebe9,stroke:#cf222e
+    class Panel,Score,Rank,TopK data
+    class Eval stage
+    class Whole,TP53,KRAS,High,Out out
+    class Match caveat
+```
+
 **Honest negative results preserved:**
 - **Continuous per-cancer weighting** (CADD-style linear / sigmoid weights on channels) — regresses vs hard top-K (subagent commit `eb1529e`)
 - **CADD + AlphaMissense multiplicative weight** — underperforms CADD alone at all ctDNA fractions (commit `29374a6`)
