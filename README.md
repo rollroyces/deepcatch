@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-57%2F57%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-63%2F63%20passing-brightgreen)]()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
