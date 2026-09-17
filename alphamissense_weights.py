@@ -49,6 +49,7 @@ import json
 import logging
 import os
 import pickle
+import re
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -172,10 +173,11 @@ def _try_build_from_tsv(tsv_path: Path,
                         wanted_keys: Iterable[str]) -> Dict[str, AMWeight]:
     """Stream AlphaMissense_hg38.tsv and collect only the wanted variants.
 
-    Columns (Cheng 2023 release): ``uniprot_id  uniprot_pos  ref_aa  alt_aa
-    am_pathogenicity  am_class``. No header in the released TSV — column
-    order is fixed. This is intentionally a streaming scan; the full TSV
-    is ~5.5 GB and we only need a tiny fraction.
+    Columns (Cheng 2023 release):
+        0=CHROM 1=POS 2=REF 3=ALT 4=genome 5=uniprot_id 6=transcript_id
+        7=protein_variant (e.g. "V2L") 8=am_pathogenicity 9=am_class.
+    Comment lines start with ``#``. This is intentionally a streaming scan;
+    the full TSV is ~5.5 GB and we only need a tiny fraction.
     """
     wanted = set(wanted_keys)
     out: Dict[str, AMWeight] = {}
@@ -189,19 +191,28 @@ def _try_build_from_tsv(tsv_path: Path,
                 if not row or row.startswith("#"):
                     continue
                 fields = row.split("\t")
-                if len(fields) < 5:
+                if len(fields) < 10:
                     continue
-                up, pp, ref, alt, score = fields[0], fields[1], fields[2], fields[3], fields[4]
-                key = f"{up}:{pp}:{ref}:{alt}"
+                up = fields[5]
+                pv = fields[7]
+                score_s = fields[8]
+                n_rows += 1
+                # Parse protein_variant like "V2L" → (ref_aa='V', prot_pos=2, alt_aa='L')
+                try:
+                    ref_aa = pv[0]
+                    alt_aa = pv[-1]
+                    pp = int(pv[1:-1])
+                except (ValueError, IndexError):
+                    continue
+                key = am_key(up, pp, ref_aa, alt_aa)
                 if key not in wanted:
-                    n_rows += 1
                     continue
                 try:
-                    s = float(score)
+                    s = float(score_s)
                 except ValueError:
                     continue
                 out[key] = AMWeight(
-                    uniprot=up, prot_pos=int(pp), ref_aa=ref, alt_aa=alt,
+                    uniprot=up, prot_pos=pp, ref_aa=ref_aa, alt_aa=alt_aa,
                     score=s, classification=classify_am(s), source="tsvlocal",
                 )
                 if len(out) == len(wanted):
@@ -285,7 +296,8 @@ def load_tcga_mutations_with_protein(cache_dir: str) -> List[Dict]:
             "Hugo_Symbol", "Tumor_Sample_Barcode", "Chromosome",
             "Start_Position", "Reference_Allele", "Tumor_Seq_Allele2",
             "Variant_Classification", "SWISSPROT", "Protein_position",
-            "HGVSp", "t_alt_count", "t_ref_count",
+            "HGVSp", "HGVSp_Short", "Amino_acids",
+            "t_alt_count", "t_ref_count",
         ) if n in header}
         if not {"Hugo_Symbol", "Chromosome", "Start_Position",
                 "Reference_Allele", "Tumor_Seq_Allele2",
@@ -320,6 +332,45 @@ def load_tcga_mutations_with_protein(cache_dir: str) -> List[Dict]:
             # AlphaMissense is missense-only — silently exclude other classes
             if vc != "Missense_Mutation":
                 continue
+            # Derive single-letter amino acids. Prefer the explicit
+            # `Amino_acids` column (format "R/L"). Fall back to HGVSp_Short
+            # (format "p.R247L"). Three-letter codes → one-letter.
+            _AA3 = {
+                "Ala": "A", "Arg": "R", "Asn": "N", "Asp": "D", "Cys": "C",
+                "Glu": "E", "Gln": "Q", "Gly": "G", "His": "H", "Ile": "I",
+                "Leu": "L", "Lys": "K", "Met": "M", "Phe": "F", "Pro": "P",
+                "Ser": "S", "Thr": "T", "Trp": "W", "Tyr": "Y", "Val": "V",
+                "Ter": "*", "Sec": "U",
+            }
+            ref_aa = alt_aa = None
+            if "Amino_acids" in col:
+                aa_field = f_[col["Amino_acids"]].strip()
+                if "/" in aa_field:
+                    a, b = aa_field.split("/", 1)
+                    if len(a) == 1 and len(b) == 1:
+                        ref_aa, alt_aa = a, b
+            if (ref_aa is None or alt_aa is None) and "HGVSp_Short" in col:
+                m = re.match(r"p\.([A-Z][a-z]{2})(\d+)([A-Z][a-z]{2})",
+                             f_[col["HGVSp_Short"]].strip())
+                if m:
+                    ref_aa = _AA3.get(m.group(1), m.group(1)[0])
+                    alt_aa = _AA3.get(m.group(3), m.group(3)[0])
+                    # Also fix prot_pos if missing
+                    try:
+                        pp_int = int(m.group(2))
+                    except ValueError:
+                        pass
+            if (ref_aa is None or alt_aa is None) and "HGVSp" in col:
+                m = re.match(r"p\.([A-Z][a-z]{2})(\d+)([A-Z][a-z]{2})",
+                             f_[col["HGVSp"]].strip())
+                if m:
+                    ref_aa = _AA3.get(m.group(1), m.group(1)[0])
+                    alt_aa = _AA3.get(m.group(3), m.group(3)[0])
+                    try:
+                        pp_int = int(m.group(2))
+                    except ValueError:
+                        pass
+
             out.append({
                 "gene": f_[col["Hugo_Symbol"]],
                 "sample": f_[col["Tumor_Sample_Barcode"]][:12],
@@ -329,6 +380,8 @@ def load_tcga_mutations_with_protein(cache_dir: str) -> List[Dict]:
                 "alt": alt,
                 "uniprot": sw.split(".")[0],
                 "prot_pos": pp_int,
+                "ref_aa": ref_aa,
+                "alt_aa": alt_aa,
                 "variant_class": vc,
                 "t_alt": t_alt,
                 "t_depth": t_alt + t_ref,

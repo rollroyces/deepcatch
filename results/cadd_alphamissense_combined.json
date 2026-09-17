@@ -1,0 +1,1008 @@
+{
+  "experiment": "Combined CADD + AlphaMissense per-mutation weights for DeepCatch panel LLR",
+  "cohort": {
+    "n_patients": 20,
+    "n_mutations": 5738
+  },
+  "joint_match": {
+    "n_cadd_matched": 4882,
+    "n_am_wanted": 4066,
+    "n_joint_matched": 3946,
+    "joint_match_rate_of_cadd": 0.8082752970094224,
+    "joint_match_rate_of_cohort": 0.6876960613454165,
+    "cadd_phred_stats_matched": {
+      "min": 0.001,
+      "max": 61.0,
+      "median": 23.4,
+      "mean": 22.000613273248668
+    },
+    "am_score_stats_matched": {
+      "min": 0.0447,
+      "max": 1.0,
+      "median": 0.2449,
+      "mean": 0.39883365433350226
+    }
+  },
+  "schemes": {
+    "weight_cadd_only": {
+      "description": "CADD Top-K=200 per patient (1 if in top-K by CADD PHRED, 0 else)",
+      "top_k": 200,
+      "per_patient_kept_stats": {
+        "min": 109,
+        "median": 200.0,
+        "max": 200
+      },
+      "results": {
+        "panel_llr_weighted": [
+          {
+            "tumor_fraction": 0.1,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "auc",
+            "mean": 0.9785,
+            "std": 0.01737455035389407,
+            "per_seed": {
+              "42": 0.9775,
+              "123": 0.9925,
+              "456": 0.95,
+              "789": 0.9924999999999999,
+              "1024": 0.98
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_95_spec",
+            "mean": 0.93,
+            "std": 0.04472135954999579,
+            "per_seed": {
+              "42": 0.95,
+              "123": 0.95,
+              "456": 0.85,
+              "789": 0.95,
+              "1024": 0.95
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_99_spec",
+            "mean": 0.9099999999999999,
+            "std": 0.04183300132670376,
+            "per_seed": {
+              "42": 0.9,
+              "123": 0.9,
+              "456": 0.85,
+              "789": 0.95,
+              "1024": 0.95
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          }
+        ]
+      }
+    },
+    "weight_alphamissense_only": {
+      "description": "AlphaMissense Top-K=200 per patient (1 if in top-K by AM pathogenicity, 0 else)",
+      "top_k": 200,
+      "per_patient_kept_stats": {
+        "min": 90,
+        "median": 177.5,
+        "max": 200
+      },
+      "results": {
+        "panel_llr_weighted": [
+          {
+            "tumor_fraction": 0.1,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "auc",
+            "mean": 0.959,
+            "std": 0.02247220505424424,
+            "per_seed": {
+              "42": 0.9375,
+              "123": 0.9775,
+              "456": 0.9325,
+              "789": 0.98,
+              "1024": 0.9675
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_95_spec",
+            "mean": 0.8800000000000001,
+            "std": 0.057008771254956875,
+            "per_seed": {
+              "42": 0.8,
+              "123": 0.9,
+              "456": 0.85,
+              "789": 0.95,
+              "1024": 0.9
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_99_spec",
+            "mean": 0.8500000000000002,
+            "std": 0.1,
+            "per_seed": {
+              "42": 0.8,
+              "123": 0.9,
+              "456": 0.7,
+              "789": 0.95,
+              "1024": 0.9
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          }
+        ]
+      }
+    },
+    "weight_combined": {
+      "description": "w_i = (CADD_i / max_CADD) * (AM_i / max_AM); loci missing either score get w=0 (no imputation)",
+      "per_patient_nonzero_stats": {
+        "min": 90,
+        "median": 177.5,
+        "max": 524
+      },
+      "results": {
+        "panel_llr_weighted": [
+          {
+            "tumor_fraction": 0.1,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.1,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.05,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "auc",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "sens_at_99_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.01,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "auc",
+            "mean": 0.9995,
+            "std": 0.0011180339887499207,
+            "per_seed": {
+              "42": 0.9974999999999999,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_95_spec",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "sens_at_99_spec",
+            "mean": 0.99,
+            "std": 0.022360679774997918,
+            "per_seed": {
+              "42": 0.95,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.005,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "auc",
+            "mean": 0.891,
+            "std": 0.0553567972339441,
+            "per_seed": {
+              "42": 0.84,
+              "123": 0.9575,
+              "456": 0.8275,
+              "789": 0.92,
+              "1024": 0.9099999999999999
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_95_spec",
+            "mean": 0.7300000000000001,
+            "std": 0.10368220676663861,
+            "per_seed": {
+              "42": 0.65,
+              "123": 0.85,
+              "456": 0.6,
+              "789": 0.8,
+              "1024": 0.75
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "sens_at_99_spec",
+            "mean": 0.51,
+            "std": 0.06519202405202648,
+            "per_seed": {
+              "42": 0.45,
+              "123": 0.55,
+              "456": 0.45,
+              "789": 0.6,
+              "1024": 0.5
+            }
+          },
+          {
+            "tumor_fraction": 0.001,
+            "metric": "paired_win_rate",
+            "mean": 1.0,
+            "std": 0.0,
+            "per_seed": {
+              "42": 1.0,
+              "123": 1.0,
+              "456": 1.0,
+              "789": 1.0,
+              "1024": 1.0
+            }
+          }
+        ]
+      }
+    }
+  },
+  "headline_by_tumor_fraction": [
+    {
+      "tumor_fraction": 0.1,
+      "cadd_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "cadd_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "winner_sens99": "tie"
+    },
+    {
+      "tumor_fraction": 0.05,
+      "cadd_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "cadd_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "winner_sens99": "tie"
+    },
+    {
+      "tumor_fraction": 0.01,
+      "cadd_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "cadd_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "winner_sens99": "tie"
+    },
+    {
+      "tumor_fraction": 0.005,
+      "cadd_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_sens99": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_sens99": {
+        "mean": 0.99,
+        "std": 0.022360679774997918
+      },
+      "cadd_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "am_auc": {
+        "mean": 1.0,
+        "std": 0.0
+      },
+      "combined_auc": {
+        "mean": 0.9995,
+        "std": 0.0011180339887499207
+      },
+      "winner_sens99": "tie"
+    },
+    {
+      "tumor_fraction": 0.001,
+      "cadd_sens99": {
+        "mean": 0.9099999999999999,
+        "std": 0.04183300132670376
+      },
+      "am_sens99": {
+        "mean": 0.8500000000000002,
+        "std": 0.1
+      },
+      "combined_sens99": {
+        "mean": 0.51,
+        "std": 0.06519202405202648
+      },
+      "cadd_auc": {
+        "mean": 0.9785,
+        "std": 0.01737455035389407
+      },
+      "am_auc": {
+        "mean": 0.959,
+        "std": 0.02247220505424424
+      },
+      "combined_auc": {
+        "mean": 0.891,
+        "std": 0.0553567972339441
+      },
+      "winner_sens99": "cadd"
+    }
+  ],
+  "tumor_fractions": [
+    0.1,
+    0.05,
+    0.01,
+    0.005,
+    0.001
+  ],
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1024
+  ],
+  "license": "AlphaMissense: CC BY-NC-SA 4.0 (non-commercial); CADD: CC BY-NC-SA 4.0 (non-commercial)",
+  "references": [
+    "Kircher M, Witten DM, Jain P, O'Roak BJ, Cooper GM, Shendure J. A general framework for estimating the relative pathogenicity of human genetic variants. Nat Genet. 2014;46(3):310-315.",
+    "Cheng J, Novati G, Pan J, et al. Accurate proteome-wide missense variant effect prediction with AlphaMissense. Science 381, eadg7492 (2023)."
+  ],
+  "determinism_note": "All three weight schemes are deterministic functions of (CADD PHRED, AM pathogenicity, cohort membership). No parameters are learned from the data."
+}
