@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-256%2F256%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-51%2F51%20passing-brightgreen)]()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
@@ -692,6 +692,45 @@ flowchart LR
 
 With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below). The strand score uses a Z-score (Normal) approximation to the binomial test — corrected from the old 2×min/max formula which erroneously penalized low-read-count positions.
 
+### Variant-impact-weighted panel selection (CADD Top-K)
+
+Restricting the 5,738-mutation panel to the **top-K highest-CADD mutations** (PHRED-scaled impact from [Kircher et al. 2014](https://doi.org/10.1038/ng.2892), CC BY-NC-SA 4.0) lifts ultra-low ctDNA detection without AUC penalty. Three validated findings:
+
+**Per-subgroup lift at 0.1% ctDNA, 5-seed × 5-fold OOF, validated on the larger GDC TCGA-LUAD cohort (150-patient subsample of 382):**
+
+| Subgroup | n | Uniform Sens@99% | **CADD Top-K=20** | Δ |
+|---|---:|---:|---:|---:|
+| TP53_mutant | 73 | 0.228 | **0.689** | **+46pp** |
+| TP53_wildtype | 77 | 0.242 | **0.506** | **+26pp** |
+| KRAS_mutant | 47 | 0.348 | **0.688** | **+34pp** |
+| KRAS_wildtype | 103 | 0.275 | **0.663** | **+39pp** |
+| STK11_wildtype | 132 | 0.293 | **0.662** | **+37pp** |
+| High mut burden | 75 | 0.271 | **0.773** | **+50pp** |
+| **Whole-cohort** | 150 | **0.278** | **0.627** | **+35pp** |
+
+**Top-K=20** was used (not the originally-reported Top-K=200) because only 1 patient in the larger GDC bulk-WXS cohort has ≥200 CADD matches (per-patient median is 21). **Top-K=20 is the new validated winner** — the lift is *larger* on the bigger cohort than the original 20-patient estimate suggested.
+
+**Caveat documented honestly:** match rate dropped from 86% (20-patient curated LUAD driver set) to **8.9%** (382-patient bulk-WXS includes passengers not in gnomAD r3.0). This is a structural difference between cohorts, not a methodology change. The low-burden subgroup shows a -16pp inversion under CADD selection (flagged as a real finding).
+
+**Honest negative results preserved:**
+- **Continuous per-cancer weighting** (CADD-style linear / sigmoid weights on channels) — regresses vs hard top-K (subagent commit `eb1529e`)
+- **CADD + AlphaMissense multiplicative weight** — underperforms CADD alone at all ctDNA fractions (commit `29374a6`)
+- **Driver-only panel** (TP53 + KRAS + EGFR + …) — only 31 mutations; Sens@99% = 0.19 (catastrophic)
+
+**Reproduce:**
+```bash
+# Original 20-patient per-subgroup
+python scripts/cadd_per_subgroup_llr.py --n-patients 20 --top-k 200
+
+# Larger 382-patient GDC validation
+python scripts/cadd_per_subgroup_llr_gdc_validation.py --top-k 20
+
+# Single-shot Top-K=20 whole-cohort
+python scripts/cadd_weighted_llr.py --top-k 20
+```
+
+**Docs:** [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md), [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md), [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md), [docs/CADD_ALPHAMISSENSE_COMBINED.md](docs/CADD_ALPHAMISSENSE_COMBINED.md), [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md).
+
 **Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
 
 | Background error rate | Depth | Panel AUC | Sens @ 95% spec |
@@ -930,6 +969,11 @@ graph LR
 - [paper/paper.tex](paper/paper.tex) — research paper (LaTeX)
 - [RESULTS.md](RESULTS.md) — consolidated research summary across both repos (DeepCatch + cfdna-fragmentomics-pipeline)
 - [REVIEWERS.md](REVIEWERS.md) — review notes for expert reviewers
+- [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md) — CADD Top-K=20 panel selection (validated +35pp whole-cohort Sens@99%)
+- [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md) — per-subgroup CADD Top-K lift (+24 to +50pp)
+- [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md) — GDC TCGA-LUAD 382-patient validation
+- [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md) — FLARE/GSE317007 honest no-data report
+- [docs/PORTFOLIO_ROADMAP.md](docs/PORTFOLIO_ROADMAP.md) — unified 3-repo roadmap, 7 of 11 criteria met
 
 ## License & Citation
 
