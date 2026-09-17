@@ -417,14 +417,20 @@ def weight_cohort(
     }
 
     # Build the list of wanted keys (missense SNVs only — AM is missense).
+    # KEY CONSTRUCTION: AlphaMissense is keyed by *protein* coordinates
+    # (Uniprot, prot_pos, ref_amino_acid, alt_amino_acid). The cohort
+    # carries both nucleotide (``ref``/``alt``) and amino-acid
+    # (``ref_aa``/``alt_aa``) fields; we must use the amino acids for the
+    # lookup key. Using the nucleotide would cause every missense SNV to
+    # miss the AM TSV (which carries protein_change strings like "V600E").
     wanted_keys: List[str] = []
     missense_input: List[Dict] = []
     for m in cohort_mutations:
         info["missense_total"] += 1
         up = m.get("uniprot")
         pp = m.get("prot_pos")
-        ref = m.get("ref")
-        alt = m.get("alt")
+        ref = m.get("ref_aa") or m.get("ref")
+        alt = m.get("alt_aa") or m.get("alt")
         vc = m.get("variant_class", "")
         if vc == "Missense_Mutation" and up and pp is not None \
                 and ref and alt and len(ref) == 1 and len(alt) == 1:
@@ -465,8 +471,8 @@ def weight_cohort(
             score = proxy_am_for_variant(vc)
             up = m["uniprot"]
             pp = int(m["prot_pos"])
-            ref = m["ref"]
-            alt = m["alt"]
+            ref = m.get("ref_aa") or m["ref"]
+            alt = m.get("alt_aa") or m["alt"]
             final[key] = AMWeight(
                 uniprot=up, prot_pos=pp, ref_aa=ref, alt_aa=alt,
                 score=score, classification=classify_am(score),

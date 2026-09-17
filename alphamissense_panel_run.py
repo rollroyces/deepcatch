@@ -1,28 +1,43 @@
 """
 AlphaMissense-weighted panel-LLR comparison for DeepCatch v2.2.
 
-Runs the real-TCGA-LUAD panel-LLR benchmark with four aggregation
+Runs the real-TCGA-LUAD panel-LLR benchmark with several aggregation
 strategies, on the same cohort and seeds:
 
-  1. panel_llr_uniform     — Σ LLR_i  (existing baseline; AUC 0.921 @ 0.1%)
-  2. panel_llr_am          — Σ w_i · LLR_i   (AM-pathogenicity-weighted)
-  3. panel_llr_topk_500    — Σ w_i · LLR_i   restricted to top-500 AM
-  4. panel_llr_topk_1000   — Σ w_i · LLR_i   restricted to top-1000 AM
-  5. panel_llr_topk_2000   — Σ w_i · LLR_i   restricted to top-2000 AM
-  6. panel_llr_pathogenic  — Σ w_i · LLR_i   restricted to AM-pathogenic
-                              (score >= 0.564 per Cheng 2023 thresholds)
+  1. panel_llr_uniform                  — Σ LLR_i  (baseline; AUC 0.921 @ 0.1%)
+  2. panel_llr_am                       — Σ w_i · LLR_i   (AM-pathogenicity-weighted)
+  3. panel_llr_am_topk_select_K         — per-patient top-K SELECTION by AM
+                                            pathogenicity, then uniform LLR over
+                                            those K. This is the apples-to-apples
+                                            counterpart of CADD Top-K=20/200.
+  4. panel_llr_topk_K                   — Σ w_i · LLR_i restricted to the top-K
+                                            largest `w*LLR` contributions
+                                            (post-hoc; kept for back-compat).
+  5. panel_llr_pathogenic               — Σ w_i · LLR_i restricted to AM-pathogenic
+                                            loci (score >= 0.564 per Cheng 2023).
 
-AM weights are loaded once from a local per-Uniprot pickle if present,
+AM weights are loaded once from a local per-Uniprot pickle if present
+(default paths searched in order; see alphamissense_weights._find_index_path),
 else from the raw AlphaMissense_hg38.tsv if present, else from a
 deterministic per-variant-class published-prior PROXY (clearly flagged
 in the output). All runs share the same seeds and simulated read counts
 so per-patient deltas are attributable to the weighting change alone.
 
-Writes:
-  results/alphamissense_weighted_llr.json
+Key construction note (commit TBD fix):
+  AlphaMissense is keyed by *protein* coordinates
+  (UP:POS:REF_AMINO_ACID:ALT_AMINO_ACID). The cohort carries both
+  nucleotide (``ref``/``alt``) and amino-acid (``ref_aa``/``alt_aa``)
+  fields; the loader MUST use the amino acids for the lookup, otherwise
+  every missense SNV silently falls back to the proxy (0.55) and
+  the panel-LLR AUCs collapse to ~uniform. The fix is in
+  ``alphamissense_weights.weight_cohort`` and the per-patient weight
+  vector builder in ``run_comparison``.
 
-The companion `docs/ALPHAMISSENSE_WEIGHTED_LLR.md` is written by a
-separate step and contains the honest findings table.
+Writes:
+  results/alphamissense_weighted_llr.json    (or via --output)
+
+The companion `docs/ALPHAMISSENSE_WEIGHTED_LLR.md` (proxy) and
+`docs/ALPHAMISSENSE_REAL_LLR.md` (real scores) contain the honest findings.
 """
 
 from __future__ import annotations
@@ -99,6 +114,30 @@ def _panel_score_pathogenic(per_pos_llr: np.ndarray,
     return float(contrib.sum())
 
 
+def _panel_score_topk_select(per_pos_llr: np.ndarray,
+                             am_raw: np.ndarray,
+                             top_k: int,
+                             missing_value: float = 0.0) -> float:
+    """Per-panel score: sum LLR over the top-K mutations ranked by AM
+    pathogenicity (apples-to-apples with `build_topk_per_patient_weights`
+    in cadd_weighted_llr.py).
+
+    Loci without an AM score (am_raw == 0) are treated as missing and
+    are NOT considered in the top-K selection. If fewer than ``top_k``
+    loci have a real AM score, all of them contribute.
+    """
+    has_am = np.asarray(am_raw, dtype=float) > 0.0
+    if not np.any(has_am):
+        return 0.0
+    sub_llr = per_pos_llr[has_am]
+    sub_raw = am_raw[has_am]
+    n = len(sub_raw)
+    k = min(int(top_k), n)
+    # Top-K indices by AM pathogenicity (descending).
+    idx = np.argsort(sub_raw)[::-1][:k]
+    return float(sub_llr[idx].sum())
+
+
 # ---------------------------------------------------------------------------
 # Main comparison runner
 # ---------------------------------------------------------------------------
@@ -118,6 +157,9 @@ def run_comparison(
 ) -> Dict[str, Any]:
     """Run the multi-strategy comparison and aggregate across seeds."""
     methods = ["panel_llr_uniform", "panel_llr_am"]
+    # Per-patient top-K SELECTION (apples-to-apples with CADD Top-K=20)
+    methods += [f"panel_llr_am_topk_select_{k}" for k in topk_values]
+    # Existing post-hoc top-K-by-contribution (kept for back-compat with proxy run)
     methods += [f"panel_llr_topk_{k}" for k in topk_values]
     methods += ["panel_llr_pathogenic"]
 
@@ -160,6 +202,7 @@ def run_comparison(
                 continue
             # Look up via cohort_mutations for the Uniprot / prot_pos.
             uniprot = None; prot_pos = None
+            ref_aa = None; alt_aa = None
             for mr in cohort_mutations:
                 if (mr["sample"] == m.get("sample")
                         and mr["chrom"] == m.get("chrom")
@@ -168,13 +211,17 @@ def run_comparison(
                         and mr["ref"] == ref and mr["alt"] == alt):
                     uniprot = mr["uniprot"]
                     prot_pos = mr["prot_pos"]
+                    # AM is keyed by *protein* coordinates, so use amino-acid
+                    # fields when available (fall back to nt — will then miss).
+                    ref_aa = mr.get("ref_aa") or ref
+                    alt_aa = mr.get("alt_aa") or alt
                     break
-            if uniprot is None or prot_pos is None:
+            if uniprot is None or prot_pos is None or not ref_aa or not alt_aa:
                 ws.append(0.0)
                 rs.append(0.0)
                 ks.append("")
                 continue
-            key = amw.am_key(uniprot, prot_pos, ref, alt)
+            key = amw.am_key(uniprot, prot_pos, ref_aa, alt_aa)
             w = am_weights.get(key)
             if w is None:
                 ws.append(0.0)
@@ -236,6 +283,10 @@ def run_comparison(
                     elif method == "panel_llr_am":
                         sp = _panel_score_with_weights(lp, w)
                         sn = _panel_score_with_weights(ln, w)
+                    elif method.startswith("panel_llr_am_topk_select_"):
+                        k = int(method.split("_")[-1])
+                        sp = _panel_score_topk_select(lp, raw, top_k=k)
+                        sn = _panel_score_topk_select(ln, raw, top_k=k)
                     elif method.startswith("panel_llr_topk_"):
                         k = int(method.split("_")[-1])
                         sp = _panel_score_with_weights(lp, w, top_k=k)
@@ -293,6 +344,10 @@ def main():
     parser.add_argument("--seeds", type=int, default=5)
     parser.add_argument("--cfdna-depth", type=int, default=5000)
     parser.add_argument("--bg-error-rate", type=float, default=0.002)
+    parser.add_argument("--topk-values", default="20,200,500,1000,2000",
+                        help="Comma-separated Top-K values to compare.")
+    parser.add_argument("--force-no-cadd-anchor", action="store_true",
+                        help="Skip the CADD anchor even if cadd_per_subgroup_llr.json exists.")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -343,6 +398,7 @@ def main():
     # 5) Run comparison
     seeds = [42, 123, 456, 789, 1024][: args.seeds]
     tumor_fractions = [0.1, 0.05, 0.01, 0.005, 0.001]
+    topk_values = tuple(int(x) for x in str(args.topk_values).split(",") if x.strip())
 
     am_raw_arr = np.array([w.score for w in am_weights.values()], dtype=float)
     am_norm_arr = np.array([w.norm for w in am_weights.values()], dtype=float)
@@ -354,7 +410,7 @@ def main():
         seeds=seeds,
         cfdna_depth=args.cfdna_depth,
         bg_error_rate=args.bg_error_rate,
-        topk_values=(500, 1000, 2000),
+        topk_values=topk_values,
     )
     elapsed = time.time() - t0
 
