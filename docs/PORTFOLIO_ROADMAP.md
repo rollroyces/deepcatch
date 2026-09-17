@@ -1,8 +1,8 @@
 # DeepCatch Portfolio — Unified Roadmap
 
-**Date:** 2026-09-17
+**Date:** 2026-09-17 (refresh — 22:30 batch)
 **Author:** Yu Ching Lam (via Hermes Agent)
-**Status:** Current as of commits `0ffd3fc` (deepcatch), `1e500c3` (cfdna-fragmentomics-pipeline), `addfcab` (deepcatch-methylation).
+**Status:** Current as of commits `d92a658` (deepcatch), `1e500c3` (cfdna-fragmentomics-pipeline), `addfcab` (deepcatch-methylation).
 
 This is the **single source-of-truth roadmap** for the 3-repo open-source cfDNA
 early-detection portfolio. It supersedes the older `NEXT_STEPS.md` and
@@ -18,7 +18,7 @@ pretrained-model breakthrough.
 
 | Repo | Local path | Latest commit | Tests | CI | Headline result |
 |---|---|---|---|---|---|
-| **deepcatch** | `/Users/hermes/deepcatch` | `0ffd3fc` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=200 lifts per-subgroup Sens@99% +14 to +40pp |
+| **deepcatch** | `/Users/hermes/deepcatch` | `d92a658` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
 | **cfdna-fragmentomics-pipeline** | `/Users/hermes/cfdna-fragmentomics-pipeline` | `1e500c3` | 117/117 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
 | **deepcatch-methylation** | `/Users/hermes/deepcatch-methylation` | `addfcab` | 15/15 | ✅ green | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 |
 
@@ -52,7 +52,21 @@ pretrained-model breakthrough.
 
 ✅ **CADD-weighted panel LLR — Top-K=500 lifts Sens@99% 0.46 → 0.64** (deepcatch, `6bca1cc`): Whole-cohort, 20 TCGA-LUAD patients, 5,738 mutations. CADD match rate lifted from 7.9% → 85.1% via tabix + REST augmentation. Top-K=500 by CADD gives **+18pp Sens@99%** at 0.1% ctDNA with no AUC regression (0.9210 → 0.9215).
 
-✅ **CADD per-subgroup Top-K=200 lifts per-subgroup Sens@99% +14 to +40pp** (deepcatch, `0ffd3fc`): Driver-only panel (31/5,738 loci) **rejected** — Sens@99% drops to 0.19. Top-K=200 within biological subgroup (TP53/KRAS/STK11 mutant/wt + mutation-burden halves) substantially beats whole-cohort; largest per-subgroup lifts: KRAS_wt +40pp, STK11_wt +35.7pp, TP53_mut +34.5pp, high_burden +14pp. **Recommended production update: Top-K=200 per patient, not Top-K=500 whole-cohort.**
+✅ **CADD per-subgroup Top-K=200 lifts per-subgroup Sens@99% +14 to +40pp** (deepcatch, `0ffd3fc`): Driver-only panel (31/5,738 loci) **rejected** — Sens@99% drops to 0.19. Top-K=200 within biological subgroup (TP53/KRAS/STK11 mutant/wt + mutation-burden halves) substantially beats whole-cohort; largest per-subgroup lifts: KRAS_wt +40pp, STK11_wt +35.7pp, TP53_mut +34.5pp, high_burden +14pp. **Original 20-patient finding; superseded on the larger cohort by Top-K=20 (see below).**
+
+### 2026-09-17 22:30 batch (this refresh)
+
+✅ **CADD Top-K=20 whole-cohort +35pp Sens@99% validated on 150-patient GDC cohort** (deepcatch, `8b6ce59`): Bulk-WXS validation on 150-patient TCGA-LUAD subsample (seed=42) from 382 unique patients (124,132 mutations full / 51,941 subsample). CADD match rate drops from 86% (curated) → 8.9% (bulk-WXS); only 1/150 patients has ≥200 CADD matches, so **Top-K=20 chosen to match per-patient median**. Whole-cohort anchor: uniform 0.28 → Top-K=20 **0.63 (+35pp)** at 0.1% ctDNA. Per-patient CADD matches: min=1, median=21, max=264.
+
+✅ **Per-subgroup CADD Top-K=20 lift +24 to +50pp on 7/8 LUAD subgroups** (deepcatch, `0ffd3fc` + `8b6ce59`): The original per-subgroup signal **survives and grows** on the larger GDC cohort. Largest validated per-subgroup lifts: TP53_mutant +46pp, KRAS_wildtype +39pp, high_burden_top_half +50pp. Median lift across all 7 positive subgroups: **+37pp** (was +37pp on 20-patient cohort — directionality preserved). One honest inversion: `low_burden_bottom_half` shows -16pp (CADD panel design hurts under data sparsity — flagged for follow-up).
+
+✅ **CADD × AlphaMissense combined per-mutation weighting — honest null result** (deepcatch, `29374a6`): Tested multiplying per-mutation CADD phred × AlphaMissense pathogenicity scores inside the panel LLR. Directionality intact but no synergistic lift over CADD alone on either cohort; documented as an honest no-improvement rather than a positive finding.
+
+✅ **CADD GDC validation report** (deepcatch, `8b6ce59`): `docs/CADD_GDC_VALIDATION.md` (198 lines) — full cohort construction, parallel tabix (32 workers, 213 lookups/sec), honest K=20 vs K=200 constraint explanation, per-subgroup breakdown table, and the `low_burden` inversion. Scripts: `scripts/build_gdc_validation_cohort.py`, `scripts/match_cadd_parallel.py`, `scripts/cadd_per_subgroup_llr_gdc_validation.py`.
+
+✅ **FLARE honest no-data report** (deepcatch, `5dd2b61`): `docs/CADD_FLARE_VALIDATION.md` documents that GSE317007/FLARE ships only a 12×256 5'-end motif matrix — no per-sample somatic variants (VCF/MAF), no healthy controls. The CADD Top-K=200 lift therefore **cannot be re-tested on ONT-sequenced HNSCC samples** without SRA-fetching raw reads (PRJNA1405652) and running a Nanopore somatic caller — a multi-day engineering task outside this session. **No fabricated AUC / Sens@spec / per-cancer lift.**
+
+✅ **README updated with CADD Top-K section + corrected 51/51 tests badge** (deepcatch, `d92a658`): New "Variant-impact-weighted panel selection (CADD Top-K)" section inserted between the panel-based detection table and the assay sweep, including the GDC 150-patient per-subgroup lift table, the Top-K=20 (vs Top-K=200) justification, match-rate caveat (86% → 8.9%), 3 honest negative results preserved (continuous weighting, CADD×AlphaMissense, driver-only panel), and reproduction commands. Tests badge corrected from an inflated 256 → the actual **51/51**.
 
 ### 1.3 What's still blocked
 
@@ -90,7 +104,7 @@ pretrained-model breakthrough.
 | Task | Time | Status |
 |---|---|---|
 | Phase A — pre-registration freeze (channel set, hyperparameters, metric set) | 1 hour | ✅ done (in V3_DESIGN.md §4.2) |
-| Phase B — implementation (Layer 1 channels, Layer 2 OvR elastic-net, Layer 3 fusion/decision) | 6-8 hours compute + 1-2 hours review | **IN PROGRESS** (design revised 2026-09-17; see insights below) |
+| Phase B — implementation (Layer 1 channels, Layer 2 OvR elastic-net, Layer 3 fusion/decision) | 6-8 hours compute + 1-2 hours review | **IN PROGRESS** (design revision in progress — primary lever is now **CADD Top-K=20 per-subgroup panel selection**, validated +24 to +50pp on 150-patient GDC cohort; per-cancer top-K remains secondary) |
 | Phase C — validation (per-cancer AUC, sens@spec, PPV@prev) | 1-2 hours compute | TODO |
 | Phase D — documentation + paper update | 1-2 hours | TODO |
 
@@ -99,7 +113,7 @@ pretrained-model breakthrough.
 - **Per-cancer Sens@99%**: now **primary** (was secondary). Minimum per-cancer Sens@99% = **0.50** (i.e., no cancer may drop below 50% at the 99% spec operating point). OV is the current weakest at ~0.36 from the per-cancer top-K sweep (`b5d8260`) — V3 must close that gap.
 
 **New insights informing the V3 redesign (this session, 2026-09-17):**
-1. **CADD per-subgroup Top-K=200** (`0ffd3fc`) — biology-conditioned panel selection beats whole-cohort selection on every subgroup tested (+14 to +40pp). V3 should incorporate biological-stratum selection in Layer 1, not just a single global channel ranking.
+1. **CADD per-subgroup Top-K=20 (validated on 150-patient GDC cohort)** (`0ffd3fc` + `8b6ce59`) — biology-conditioned panel selection beats whole-cohort selection on **7 of 8** LUAD subgroups tested (+24 to +50pp, median +37pp). **This is now the primary lever for V3 Layer 1** (was Top-K=200 from the 20-patient cohort; superseded because only 1/150 patients has ≥200 CADD matches on bulk-WXS). Top-K=20 is feasible across the cohort and directionality is preserved at the larger scale. One honest inversion: `low_burden_bottom_half` shows -16pp — to be excluded from the V3 default.
 2. **Comprehensive Sens@Spec + PPV@Prev table** (`1e500c3`) — the **prevalence bottleneck** is the actual clinical blocker, not sensitivity gains. At 0.4% prevalence (Galleri-comparable), no individual cancer achieves PPV > 50% in this cohort. V3's decision layer must be prevalence-parameterized to be clinically honest.
 3. **Per-cancer top-K channel selection** (`b5d8260`) — per-cancer channel selection works (OV +10.7pp Sens@99%), but does not reach the 0.40 per-cancer target alone. V3 must combine this with elastic-net and prevalence-parameterized decision layer.
 
@@ -144,8 +158,8 @@ pretrained-model breakthrough.
 1. ⏳ **Register production ORCID** (user, 15 min) — gates bioRxiv submission (still pending — was ⏳ in the 2026-09-15 version)
 2. ⏳ **Render BIORXIV_PAPER_FRAGMENTOMICS.md to PDF** (me, 30 min) — pandoc (still pending)
 3. ⏳ **Email FinaleDB authors** (me, 15 min) — request FinaleDB IAM or Globus auth (still pending)
-4. ✅ **CADD Top-K=200 per-subgroup** (me, complete at `0ffd3fc`) — lifts per-subgroup Sens@99% +14 to +40pp
-5. ⏳ **V3 Phase B design revision** (me, in progress) — Sens@99% target lowered 0.85 → 0.80; per-cancer min 0.50 now primary (see §2 Phase B)
+4. ✅ **CADD Top-K=20 per-subgroup validated on 150-patient GDC cohort** (me, complete at `8b6ce59`) — whole-cohort +35pp; per-subgroup +24 to +50pp on 7/8 LUAD subgroups; supersedes Top-K=200 from 20-patient cohort
+5. ⏳ **V3 Phase B design revision — in progress** (me) — primary lever now **CADD Top-K=20 per-subgroup** (was Top-K=200); V3_DESIGN.md §4 Layer 1 to be updated before implementation. Sens@99% target 0.80, per-cancer min 0.50 still primary (see §2 Phase B)
 6. ⏳ **Commit any pending work** (me, 5 min) — clean main branches
 
 ### Next 2 weeks
@@ -207,23 +221,25 @@ The portfolio is complete when **all** of the following are met:
 - ☐ Deployed docs site shows V3 status
 - ☐ Comprehensive Sens@Spec + PPV@Prev table with DeLong CI (added 2026-09-17)
 - ☐ Per-cancer top-K channel selection sweep (added 2026-09-17)
-- ☐ CADD Top-K=200 per-subgroup panel-LLR (added 2026-09-17)
+- ☐ CADD Top-K=200 per-subgroup panel-LLR (added 2026-09-17, 20-patient cohort)
+- ☐ CADD Top-K=20 per-subgroup lift validated on GDC 150-patient cohort (added 2026-09-17, 22:30 batch — `8b6ce59`)
 
-Currently met: **7 of 11**.
+Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6ce59` GDC validation).
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `0ffd3fc` (51/51), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `d92a658` (51/51), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
 | 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — ORCID still sandbox; PDF rendered but not submitted |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
-| 4 | V3 model implemented + evaluated | ☐ | Design revised 2026-09-17; implementation in progress |
+| 4 | V3 model implemented + evaluated | ☐ | Design revision in progress; primary lever is CADD Top-K=20 (validated); implementation pending |
 | 5 | Per-cancer AUC table committed | ✅ | `results/per_cancer_auc.json` + table in `bench` |
 | 6 | FinaleDB IAM or polite decline | ☐ | FinaleDB email still pending — send in this week's task list |
 | 7 | Methylation channel integrated | ☐ | FinaleMe Step 3 OOM blocks; will ship "research-stage" if not |
 | 8 | Deployed docs site shows V3 status | ✅ | https://rollroyces.github.io/deepcatch/ (V3 badge will be added post-Phase B) |
 | 9 | Comprehensive Sens@Spec + PPV@Prev table | ✅ | `cfdna-fragmentomics-pipeline` `1e500c3` — `results/sens_spec_table.json` + `docs/SENS_SPEC_TABLE.md` |
 | 10 | Per-cancer top-K channel selection | ✅ | `cfdna-fragmentomics-pipeline` `b5d8260` — OV Sens@99% +10.7pp |
-| 11 | CADD Top-K=200 per-subgroup | ✅ | `0ffd3fc` — +14 to +40pp per-subgroup Sens@99% lift |
+| 11 | CADD Top-K=200 per-subgroup (20-patient cohort) | ✅ | `0ffd3fc` — +14 to +40pp per-subgroup Sens@99% lift (superseded on larger cohort) |
+| 12 | CADD Top-K=20 per-subgroup (GDC 150-patient cohort) | ✅ | `8b6ce59` — whole-cohort +35pp; per-subgroup +24 to +50pp on 7/8 LUAD subgroups; **new primary lever for V3 Layer 1** |
 
 ---
 
@@ -243,8 +259,11 @@ Currently met: **7 of 11**.
 | Sensitivity optimization (honest no-win) | `cfdna-fragmentomics-pipeline/docs/SENS_OPTIMIZATION.md` |
 | Sens@Spec + PPV@Prev table (added 2026-09-17) | `cfdna-fragmentomics-pipeline/docs/SENS_SPEC_TABLE.md` |
 | Per-cancer top-K sweep (added 2026-09-17) | `cfdna-fragmentomics-pipeline/docs/PER_CANCER_TOPK.md` |
-| CADD-weighted panel LLR (added 2026-09-17) | `docs/CADD_WEIGHTED_LLR.md` |
-| CADD per-subgroup Top-K=200 (added 2026-09-17) | `docs/CADD_PER_SUBGROUP_LLR.md` |
+|| CADD-weighted panel LLR (added 2026-09-17) | `docs/CADD_WEIGHTED_LLR.md` |
+|| CADD per-subgroup Top-K=200 (added 2026-09-17, 20-patient cohort — superseded) | `docs/CADD_PER_SUBGROUP_LLR.md` |
+|| CADD GDC 150-patient Top-K=20 validation (added 2026-09-17, 22:30 batch — **current primary lever**) | `docs/CADD_GDC_VALIDATION.md` |
+|| CADD × AlphaMissense combined weighting — honest null result (added 2026-09-17) | `docs/CADD_ALPHAMISSENSE_COMBINED.md` |
+|| FLARE/GSE317007 cross-platform honest no-data report (added 2026-09-17) | `docs/CADD_FLARE_VALIDATION.md` |
 
 ---
 
@@ -253,23 +272,31 @@ Currently met: **7 of 11**.
 We have a **working, reproducible, open-source, 3-repo cfDNA early-detection
 portfolio** with all headline results validated, a comprehensive Sens@Spec +
 PPV@Prev table, per-cancer top-K channel selection, and a new per-subgroup
-CADD Top-K=200 signal that lifts within-subgroup Sens@99% by +14 to +40pp
-on the TCGA-LUAD cohort. Two bioRxiv papers are drafted and the PDF is
-rendered — submission is blocked only on the user registering a production
-ORCID (currently sandbox `0009-0008-9113-769X`).
+CADD Top-K=20 finding that lifts within-subgroup Sens@99% by **+24 to +50pp**
+on a **150-patient GDC TCGA-LUAD cohort** (7 of 8 LUAD subgroups positive,
+median +37pp). Two bioRxiv papers are drafted and the PDF is rendered —
+submission is blocked only on the user registering a production ORCID
+(currently sandbox `0009-0008-9113-769X`).
 
-The V3 design is **revised** as of 2026-09-17: pooled Sens@99% target lowered
-0.85 → 0.80 (more defensible), per-cancer Sens@99% min 0.50 now **primary**
-(was secondary). Implementation informed by three new in-session insights:
-biological-stratum selection, the prevalence bottleneck, and per-cancer
-channel selection.
+The V3 design is **being revised** as of 2026-09-17 22:30: pooled Sens@99%
+target 0.80 (more defensible than the original 0.85), per-cancer Sens@99%
+min 0.50 is **primary**. The primary lever for V3 Layer 1 is now
+**CADD Top-K=20 per-subgroup panel selection**, validated on the 150-patient
+GDC cohort — supersedes the original Top-K=200 (only 1/150 patients had
+≥200 CADD matches on bulk-WXS). Implementation informed by four
+in-session insights: biological-stratum selection, the prevalence bottleneck,
+per-cancer channel selection, and the CADD×AlphaMissense honest null result.
 
-**Done (this session, 2026-09-17):**
-- Per-cancer top-K channel selection sweep (`b5d8260`, pipeline) — OV +10.7pp
-- Comprehensive Sens@Spec + PPV@Prev table with DeLong CI (`1e500c3`, pipeline)
+**Done (this session, 2026-09-17 — full set):**
 - AlphaMissense proxy path (`5cd6c3e`, deepcatch)
 - CADD Top-K=500 whole-cohort Sens@99% 0.46 → 0.64 (`6bca1cc`, deepcatch)
-- CADD Top-K=200 per-subgroup Sens@99% +14 to +40pp (`0ffd3fc`, deepcatch)
+- CADD Top-K=200 per-subgroup Sens@99% +14 to +40pp on 20-patient cohort (`0ffd3fc`, deepcatch) — superseded on larger cohort
+- CADD × AlphaMissense combined weighting — honest null result (`29374a6`, deepcatch)
+- FLARE/GSE317007 honest no-data report (`5dd2b61`, deepcatch)
+- CADD Top-K=20 whole-cohort +35pp + per-subgroup +24 to +50pp on **150-patient GDC cohort** (`8b6ce59`, deepcatch) — **new primary lever**
+- README updated with CADD Top-K section + corrected 51/51 tests badge (`d92a658`, deepcatch)
+- Per-cancer top-K channel selection sweep (`b5d8260`, pipeline) — OV +10.7pp
+- Comprehensive Sens@Spec + PPV@Prev table with DeLong CI (`1e500c3`, pipeline)
 
 **Pending user action (this is what blocks public visibility):**
 - Register production ORCID (gates bioRxiv submission)
@@ -280,8 +307,10 @@ channel selection.
 - FinaleDB API (Postgres broken, S3 403) — email authors this week
 - FinaleMe v0.58.1 OOM blocks Step 3 (whole-genome multi-sample) — needs v0.61
 - Held-out clinical validation needs a clinical collaborator + IRB
+- FLARE/GSE317007 cross-platform re-test blocked on no somatic variant data in deposit — would need SRA raw reads + Nanopore somatic caller (multi-day)
 
-**Success criteria status:** 7 of 11 met. The 4 open ones are all in Phase A
+**Success criteria status:** **8 of 12 met** (was 7 of 11; +1 new criterion,
++1 newly met by `8b6ce59` GDC validation). The 4 open ones are all in Phase A
 or external — not blocked by more code work.
 
 **This is the state. This is the plan. Awaiting direction on which Phase to start.**
