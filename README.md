@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-51%2F51%20passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-57%2F57%20passing-brightgreen)]()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
@@ -749,6 +749,8 @@ flowchart LR
 - **Continuous per-cancer weighting** (CADD-style linear / sigmoid weights on channels) — regresses vs hard top-K (subagent commit `eb1529e`)
 - **CADD + AlphaMissense multiplicative weight** — underperforms CADD alone at all ctDNA fractions (commit `29374a6`)
 - **Driver-only panel** (TP53 + KRAS + EGFR + …) — only 31 mutations; Sens@99% = 0.19 (catastrophic)
+- **Proxy (constant 0.55) AlphaMissense weighting** hid the real AM signal — the previous run reported every AM-weighted method at AUC ≈ 0.917 (proxy indistinguishable from uniform 0.921). With **REAL** AlphaMissense scores (key-construction bug fixed in commit `ec16e0d`), AM Top-K=200 lifts AUC from 0.9210 → **0.9775** at 0.1% ctDNA (+0.057, not the proxy's 0)
+- **AM ≈ CADD at K=200** (0.9775 vs 0.9785 on the same 20-patient cohort, within 1 std) — once K is large enough, the scoring function barely matters; panel size dominates. See `docs/ALPHAMISSENSE_REAL_LLR.md` for the bug-fix details and per-patient coverage.
 
 **Reproduce:**
 ```bash
@@ -762,7 +764,59 @@ python scripts/cadd_per_subgroup_llr_gdc_validation.py --top-k 20
 python scripts/cadd_weighted_llr.py --top-k 20
 ```
 
-**Docs:** [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md), [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md), [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md), [docs/CADD_ALPHAMISSENSE_COMBINED.md](docs/CADD_ALPHAMISSENSE_COMBINED.md), [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md).
+**Docs:** [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md), [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md), [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md), [docs/CADD_ALPHAMISSENSE_COMBINED.md](docs/CADD_ALPHAMISSENSE_COMBINED.md), [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md), [docs/ALPHAMISSENSE_REAL_LLR.md](docs/ALPHAMISSENSE_REAL_LLR.md).
+
+### REAL AlphaMissense + CADD Top-K=200 (apples-to-apples, commit `ec16e0d`)
+
+The CADD Top-K=20 finding above is the winner on the **150-patient GDC bulk-WXS cohort**. On the **smaller 20-patient TCGA-LUAD curated driver set** (the original CADD validation cohort), an apples-to-apples comparison with the SAME 5,738-mutation panel and SAME 5 seeds shows a slightly different ranking: **CADD Top-K=200 wins narrowly over AM Top-K=200 at 0.1% ctDNA**, with both dramatically beating the uniform baseline. Both findings are positive — the K that maximises AUC is just cohort-dependent (more matches per patient on the curated set → K=200 is fine; fewer matches on bulk-WXS → K=20 is the binding choice).
+
+**Apples-to-apples headline (0.1% ctDNA, 5 seeds × 20 patients, panel of 5,738 mutations, full CADD + AM scoring pipelines re-run on identical cohort, results from `results/cadd_vs_alphamissense_topk_20patient.json`):**
+
+| Method                       | 0.1% ctDNA AUC | Δ vs uniform | Notes |
+|------------------------------|---------------:|-------------:|-------|
+| **Uniform** (no weighting)   |     **0.9210** |          ref | reproduces the documented 0.921 ± 0.0188 exactly |
+| **CADD Top-K=20** (gnomAD-matched) |  0.9345 |      +0.014 | narrow lift at K=20; cohort has fewer per-patient CADD matches than bulk-WXS |
+| **CADD Top-K=200**            |     **0.9785** |      **+0.058** | **best on the 20-patient cohort** |
+| AM Top-K=20 (REAL scores)     |     0.9135     |      −0.008 | matches ≈ CADD's K=20 (within 1 std) |
+| **AM Top-K=200 (REAL scores)** |   **0.9775** |      **+0.057** | **statistically tied with CADD K=200 (within 1 std)** |
+| AM Top-K=500 (REAL scores)    |     0.9260     |      +0.005  | regresses past K=200 — too many loci dilute the signal |
+
+**Bug fix that unlocked the AM result** (commit `ec16e0d`, full writeup in `docs/ALPHAMISSENSE_REAL_LLR.md`): the previous AlphaMissense-weighted LLR run (commit `5cd6c3e`) was building AM lookup keys from the *nucleotide* `ref/alt` columns of the MAFs, but AlphaMissense is keyed by *amino-acid* `ref_aa/alt_aa` at protein coordinates (`P01116:12:G:D` = KRAS G12D). The bug silently dropped the per-mutation match rate to ≈ 0% and substituted the per-variant-class proxy (0.55). With the fix, **AM match rate on the 20-patient missense cohort jumped from ≈ 0% → 97.23%** (15,462 / 15,903 missense SNVs hit the 71.7M-row AM TSV via a 69,575-key pickle built by streaming the full TSV once in 47 s). The proxy was indistinguishable from uniform at AUC ≈ 0.917; the real scores reveal the +0.057 lift at K=200.
+
+**Honest framing of the two cohorts:** the 150-patient GDC bulk-WXS result (CADD Top-K=20 wins, +35pp whole-cohort Sens@99%) and the 20-patient curated-driver result (CADD Top-K=200 wins on AUC, AM Top-K=200 statistically tied) are *both real and both positive* — they just optimise different operating points. The right K is whichever is ≤ the per-patient median CADD match count; the right scoring function (CADD vs AM) barely matters once K is large enough (the K=200 numbers are within 0.001 of each other).
+
+```mermaid
+flowchart LR
+    Panel["Full panel<br/>5,738 TCGA-LUAD<br/>mutations"]
+    Uniform["Uniform<br/>no weighting<br/>AUC = 0.9210"]
+    CADD["CADD Top-K=200<br/>PHRED-scaled<br/>(Kircher 2014)<br/>AUC = 0.9785<br/>+0.0575"]
+    AM["AM Top-K=200<br/>REAL AlphaMissense<br/>(Cheng 2023)<br/>AUC = 0.9775<br/>+0.0565"]
+
+    Panel --> Uniform
+    Panel --> CADD
+    Panel --> AM
+
+    Note["K=200 ≈ 5,738 × 0.04<br/>selection of the<br/>top ~4% of loci"]
+
+    CADD -. comparison .- Note
+    AM    -. tied within 1 std .- CADD
+
+    classDef base fill:#fff8c5,stroke:#bf8700
+    classDef win fill:#dafbe1,stroke:#1a7f37,color:#116329
+    classDef meta fill:#f6f8fa,stroke:#57606a
+    class Panel base
+    class Uniform base
+    class CADD,AM win
+    class Note meta
+```
+
+**Reproduce:**
+```bash
+# Apples-to-apples CADD vs REAL AlphaMissense (20-patient cohort)
+env -u PYTHONPATH ./.venv/bin/python scripts/cadd_vs_alphamissense_topk.py \
+    --n-patients 20 --top-k-values 20,200,500 \
+    --output results/cadd_vs_alphamissense_topk_20patient.json
+```
 
 **Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
 
@@ -1006,7 +1060,8 @@ graph LR
 - [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md) — per-subgroup CADD Top-K lift (+24 to +50pp)
 - [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md) — GDC TCGA-LUAD 382-patient validation
 - [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md) — FLARE/GSE317007 honest no-data report
-- [docs/PORTFOLIO_ROADMAP.md](docs/PORTFOLIO_ROADMAP.md) — unified 3-repo roadmap, 7 of 11 criteria met
+- [docs/ALPHAMISSENSE_REAL_LLR.md](docs/ALPHAMISSENSE_REAL_LLR.md) — REAL AlphaMissense Top-K=200 apples-to-apples with CADD (commit `ec16e0d`, +0.057 AUC lift at 0.1% ctDNA, key-construction bug fix)
+- [docs/PORTFOLIO_ROADMAP.md](docs/PORTFOLIO_ROADMAP.md) — unified 3-repo roadmap, 8 of 12 criteria met (2026-09-17 22:30 batch)
 
 ## License & Citation
 
