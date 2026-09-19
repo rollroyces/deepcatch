@@ -173,6 +173,11 @@ def test_cli_with_seeds1_emits_all_four_fusion_methods(tmp_path):
     """End-to-end: running the CLI with --seeds 1 must produce a JSON
     that contains all 4 fusion strategies (mutation_only, naive_average,
     lr_fusion, lr_fusion_isotonic) with non-trivial AUC > 0.5.
+
+    This test requires the companion cfdna-fragmentomics-pipeline repo
+    to be checked out as a sibling directory (../cfdna-fragmentomics-pipeline/).
+    It is skipped if that sibling is absent — typical in CI where the
+    pipeline repo is not pulled.
     """
     import json
     import os
@@ -183,10 +188,17 @@ def test_cli_with_seeds1_emits_all_four_fusion_methods(tmp_path):
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     pipeline_root = os.path.abspath(os.path.join(repo_root, "..", "cfdna-fragmentomics-pipeline"))
 
+    # Skip if the companion pipeline repo is not available.
+    if not os.path.exists(os.path.join(pipeline_root, "data/features/labels_cross_study.tsv")):
+        pytest.skip(
+            f"Companion pipeline repo not found at {pipeline_root}; "
+            "this CLI integration test requires ../cfdna-fragmentomics-pipeline/"
+        )
+
     out_json = tmp_path / "fusion_ablation_test.json"
     cmd = [
         "env", "-u", "PYTHONPATH",
-        ".venv/bin/python",
+        sys.executable,
         "-m", "src.fragmentomics.fusion_ablation",
         "--features-dir", os.path.join(pipeline_root, "data/features"),
         "--labels", os.path.join(pipeline_root, "data/features/labels_cross_study.tsv"),
