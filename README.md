@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-67%2F67%20passing-brightgreen)()
+![Tests](https://img.shields.io/badge/Tests-70%2F70%20passing-brightgreen)()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
@@ -910,22 +910,33 @@ strict mode, missing artifacts, label parsing, channel subsets
 
 `src/fragmentomics/fusion_ablation.py` combines the tumor-naive channel
 with a synthetic mutation-informed channel (calibrated to a target AUC)
-and compares four strategies under the same 5-seed CV hygiene. End-to-end
+and compares five strategies under the same 5-seed CV hygiene. End-to-end
 on the 627 cross-study cohort:
 
 | Strategy | AUC (10-seed mean ± std) | Sens@95% | Sens@99% |
 |---|---|---|---|
-| Tumor-naive only | 0.9743 ± 0.002 | 0.883 | 0.760 |
-| Mutation-only (calibrated AUC 0.92) | 0.9242 | 0.656 | 0.336 |
-| Naive average of scores | **0.9886** | **0.927** | 0.859 |
-| LR fusion (learned weights) | **0.9887** | **0.937** | 0.845 |
+| Tumor-naive only | 0.9734 ± 0.002 | 0.885 | 0.766 |
+| Mutation-only (calibrated AUC 0.92) | 0.9020 | 0.595 | 0.267 |
+| Naive average of scores | **0.9882** | **0.924** | **0.856** |
+| LR fusion (learned weights) | **0.9883** | **0.930** | 0.850 |
+| LR fusion (isotonic-calibrated) | 0.9848 | 0.928 | 0.764 |
 
 **Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
 (t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]).
 The naive average is essentially equal to the learned LR-fusion
-(0.9886 vs 0.9887), so the **recommended recipe is the simple average**
+(0.9882 vs 0.9883), so the **recommended recipe is the simple average**
 — equal-weight fusion of two well-calibrated scores is already optimal
 in this regime.
+
+**Isotonic post-hoc calibration of LR fusion was tested and rejected.**
+`lr_fusion_isotonic` regressed on every seed (mean Δ AUC = −0.0035,
+Δ Sens@99 = −0.086 vs uncalibrated LR fusion) and in one seed produced
+Sens@99 = 0 because the isotonic step function collapsed the test-fold
+scores onto a single value. The LR fusion output is already
+well-calibrated on the [0,1] probability scale (both inputs are
+`predict_proba` or sigmoid-mapped LLR), so re-fitting a monotone mapping
+on a single training fold removes information rather than adding it.
+Full results: [`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md).
 
 **Calibration sensitivity** — fusion helps reliably only when the
 mutation channel is itself informative. Below mutation AUC ~0.80, fusion

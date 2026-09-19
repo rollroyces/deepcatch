@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-67%2F67%20passing-brightgreen)()
+![Tests](https://img.shields.io/badge/Tests-70%2F70%20passing-brightgreen)()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
@@ -891,16 +891,19 @@ python -m src.fragmentomics.train_tumor_naive \
 
 ### Mutation-informed + tumor-naive 融合
 
-`src/fragmentomics/fusion_ablation.py` 将 tumor-naive 通道与合成的 mutation-informed 通道（校准到目标 AUC）相结合，并在同一 5 种子 CV 卫生条件下比较四种策略。在 627 跨研究队列上的端到端结果：
+`src/fragmentomics/fusion_ablation.py` 将 tumor-naive 通道与合成的 mutation-informed 通道（校准到目标 AUC）相结合，并在同一 5 种子 CV 卫生条件下比较五种策略。在 627 跨研究队列上的端到端结果：
 
 | 策略 | AUC（10 种子均值 ± std） | Sens@95% | Sens@99% |
 |---|---|---|---|
-| 仅 Tumor-naive | 0.9743 ± 0.002 | 0.883 | 0.760 |
-| 仅 Mutation（校准 AUC 0.92） | 0.9242 | 0.656 | 0.336 |
-| 朴素分数平均 | **0.9886** | **0.927** | 0.859 |
-| LR 融合（学习权重） | **0.9887** | **0.937** | 0.845 |
+| 仅 Tumor-naive | 0.9734 ± 0.002 | 0.885 | 0.766 |
+| 仅 Mutation（校准 AUC 0.92） | 0.9020 | 0.595 | 0.267 |
+| 朴素分数平均 | **0.9882** | **0.924** | **0.856** |
+| LR 融合（学习权重） | **0.9883** | **0.930** | 0.850 |
+| LR 融合（isotonic 校准） | 0.9848 | 0.928 | 0.764 |
 
-**配对 t 检验（10 种子）**：LR-fusion AUC − tumor-naive AUC = **+0.0143**（t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]）。朴素平均与学习到的 LR-fusion 本质相当（0.9886 vs 0.9887），因此 **推荐方案为简单平均**——两个良好校准分数的等权融合在该区间内已经是最优的。
+**配对 t 检验（10 种子）**：LR-fusion AUC − tumor-naive AUC = **+0.0143**（t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]）。朴素平均与学习到的 LR-fusion 本质相当（0.9882 vs 0.9883），因此 **推荐方案为简单平均**——两个良好校准分数的等权融合在该区间内已经是最优的。
+
+**Isotonic 后置校准已测试并被拒绝。** `lr_fusion_isotonic` 在每一个种子都出现回退（相对未校准 LR 融合：均值 Δ AUC = −0.0035，Δ Sens@99 = −0.086），并在某个种子中 Sens@99 = 0，因为 isotonic 阶梯函数将测试折分数压缩到单一值。LR 融合的输出在 [0,1] 概率尺度上已经校准良好（两个输入都是 `predict_proba` 或 sigmoid 映射的 LLR），因此在单一训练折上重新拟合单调映射只会去掉信息而非增加。完整结果：[`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md)。
 
 **校准敏感性** —— 只有当 mutation 通道本身具有信息量时，融合才能稳定带来增益。Mutation AUC 低于 ~0.80 时，融合为中性或略有损害；高于 ~0.85 时，融合可稳定提升 1–2 pp AUC。DeepCatch 在 0.1% VAF 下的 panel-LLR（AUC 0.92）稳稳落在"融合有效"的区间内。
 

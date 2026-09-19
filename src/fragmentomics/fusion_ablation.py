@@ -12,6 +12,8 @@ as the honest benchmark in cfdna-fragmentomics-pipeline):
                           number for every seed — see _simulate_mutation_scores)
       Naive-avg fusion:   (tumor_naive_score + mut_score) / 2
       LR-fusion:          LR on [tumor_naive_score, mut_score], trained on 4/5
+      LR-fusion (iso):    Same LR, then per-fold isotonic calibration on the
+                          train fold's in-sample LR scores (no leakage)
     Collect out-of-fold scores for all 627 samples.
     Compute AUC / Sens@95 / Sens@99 from the pooled OOF predictions.
 
@@ -176,6 +178,42 @@ def _fusion_lr_score(tn_tr: np.ndarray, mut_tr: np.ndarray, y_tr: np.ndarray,
     return LogisticRegression(max_iter=2000).fit(Xtr, y_tr).predict_proba(Xte)[:, 1]
 
 
+def _fusion_lr_isotonic_score(tn_tr: np.ndarray, mut_tr: np.ndarray,
+                              y_tr: np.ndarray,
+                              tn_te: np.ndarray, mut_te: np.ndarray
+                              ) -> np.ndarray:
+    """LR fusion followed by isotonic calibration on the *train fold only*.
+
+    Pipeline per fold:
+        1. Fit LR on (tn_tr, mut_tr) → y_tr   (same as _fusion_lr_score).
+        2. Score the *train* fold with that LR → lr_tr_scores (in-sample
+           is OK here: we're calibrating, not fitting the LR).
+        3. Fit sklearn.isotonic.IsotonicRegression on
+           (lr_tr_scores, y_tr). This learns a monotone non-decreasing
+           mapping that aligns the LR's raw scores with empirical P(y=1).
+        4. Score the *test* fold with the LR → lr_te_scores.
+        5. Apply the isotonic mapping to lr_te_scores → calibrated scores.
+
+    Returns
+    -------
+    Calibrated test-fold scores in [0, 1], monotone in raw LR scores.
+    """
+    from sklearn.isotonic import IsotonicRegression
+    # 1) Fit LR on train fold
+    Xtr = np.column_stack([tn_tr, mut_tr])
+    Xte = np.column_stack([tn_te, mut_te])
+    lr = LogisticRegression(max_iter=2000).fit(Xtr, y_tr)
+    # 2) In-sample train scores → isotonic fits on these + y_tr
+    lr_tr_scores = lr.predict_proba(Xtr)[:, 1]
+    # 3) Fit isotonic calibrator on the train fold only (no leakage)
+    iso = IsotonicRegression(y_min=0.0, y_max=1.0,
+                             out_of_bounds="clip").fit(lr_tr_scores, y_tr)
+    # 4) Score the test fold
+    lr_te_scores = lr.predict_proba(Xte)[:, 1]
+    # 5) Apply calibration
+    return iso.predict(lr_te_scores)
+
+
 def _summarize(y_true: np.ndarray, y_score: np.ndarray) -> dict:
     auc = float(roc_auc_score(y_true, y_score))
     fpr, tpr, _ = roc_curve(y_true, y_score)
@@ -192,7 +230,8 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
                    harmonize: bool) -> dict:
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=seed)
     out = {"tumor_naive": [], "mutation_only": [],
-           "naive_average": [], "lr_fusion": [], "y_true": []}
+           "naive_average": [], "lr_fusion": [],
+           "lr_fusion_isotonic": [], "y_true": []}
     for tr, te in cv.split(X, y):
         # Channel 1: tumor-naive (LR on PCA of features)
         tn_score_te = _tumor_naive_score(
@@ -216,10 +255,19 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
         lrf = _fusion_lr_score(tn_score_tr, mut_score[tr], y[tr],
                                tn_score_te, mut_te)
 
+        # Isotonic-calibrated LR fusion: same 2-D input, but the LR's
+        # raw scores are passed through a per-fold isotonic regressor
+        # fit on the *training fold only* (no leakage). This should
+        # improve the high-specificity operating point (Sens@99) without
+        # disturbing the AUC much.
+        lrfi = _fusion_lr_isotonic_score(tn_score_tr, mut_score[tr], y[tr],
+                                         tn_score_te, mut_te)
+
         out["tumor_naive"].extend(tn_score_te.tolist())
         out["mutation_only"].extend(mut_te.tolist())
         out["naive_average"].extend(navg.tolist())
         out["lr_fusion"].extend(lrf.tolist())
+        out["lr_fusion_isotonic"].extend(lrfi.tolist())
         out["y_true"].extend(y[te].tolist())
 
     y_true = np.asarray(out.pop("y_true"))
@@ -232,7 +280,8 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
     # is the standard way to assess whether the fusion gives a *statistically
     # significant* AUC improvement on correlated scores.
     delong_vs_tn: dict[str, dict] = {}
-    for strat in ("mutation_only", "naive_average", "lr_fusion"):
+    for strat in ("mutation_only", "naive_average", "lr_fusion",
+                  "lr_fusion_isotonic"):
         try:
             d = _delong_test_fn(y_true, np.asarray(out["tumor_naive"]),
                                 np.asarray(out[strat]))
@@ -329,7 +378,7 @@ def main() -> int:
                           for seed_res in per_seed])
         return float(arr.mean()), float(arr.std())
     strategies = ["tumor_naive", "mutation_only",
-                  "naive_average", "lr_fusion"]
+                  "naive_average", "lr_fusion", "lr_fusion_isotonic"]
     summary = {
         "n_samples": int(X.shape[0]),
         "n_cancer": int((y == 1).sum()),
