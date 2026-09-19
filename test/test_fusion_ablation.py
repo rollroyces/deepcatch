@@ -175,21 +175,27 @@ def test_cli_with_seeds1_emits_all_four_fusion_methods(tmp_path):
     lr_fusion, lr_fusion_isotonic) with non-trivial AUC > 0.5.
     """
     import json
+    import os
     import subprocess
+
+    # Resolve paths relative to repo root (parent of test/). Works in
+    # both local dev and CI where the repo is checked out elsewhere.
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    pipeline_root = os.path.abspath(os.path.join(repo_root, "..", "cfdna-fragmentomics-pipeline"))
 
     out_json = tmp_path / "fusion_ablation_test.json"
     cmd = [
         "env", "-u", "PYTHONPATH",
         ".venv/bin/python",
         "-m", "src.fragmentomics.fusion_ablation",
-        "--features-dir", "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
-        "--labels", "/Users/hermes/cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv",
+        "--features-dir", os.path.join(pipeline_root, "data/features"),
+        "--labels", os.path.join(pipeline_root, "data/features/labels_cross_study.tsv"),
         "--seeds", "1",
         "--pca-n", "50",  # smaller for speed
         "--out", str(out_json),
     ]
     result = subprocess.run(cmd, capture_output=True, text=True,
-                            timeout=300, cwd="/Users/hermes/deepcatch")
+                            timeout=300, cwd=repo_root)
     assert result.returncode == 0, (
         f"CLI failed (rc={result.returncode})\n"
         f"STDOUT:\n{result.stdout[-2000:]}\n"
