@@ -341,9 +341,15 @@ def load_tcga_mutations_with_ref_alt(cache_dir: str) -> List[Dict]:
             chrom = f_[col["Chromosome"]]
             ref = f_[col["Reference_Allele"]]
             alt = f_[col["Tumor_Seq_Allele2"]]
-            if not ref or not alt or len(ref) != 1 or len(alt) != 1:
-                # AVI Atlas SNV table covers SNVs only; skip indels here
+            if not ref or not alt:
+                # Malformed allele string — only thing we still drop.
                 continue
+            # Indels (len(ref) != 1 or len(alt) != 1) are KEPT. The Atlas
+            # SNV table only covers SNVs, so indels will receive deterministic
+            # proxy weights via `_PROXY_BY_CLASS` below (Frame_Shift_Del=29.5,
+            # In_Frame_Del=16.0, etc.) and be clearly tagged source="proxy".
+            # This recovers 992 / 124,841 mutations (~0.79%) that the previous
+            # SNV-only filter silently discarded.
             vc = f_[col.get("Variant_Classification", -1)] if "Variant_Classification" in col else ""
             out.append({
                 "gene": f_[col["Hugo_Symbol"]],

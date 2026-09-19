@@ -91,12 +91,17 @@ def test_results_json_schema_and_proxy_flag():
     )
     assert md["avi_n_proxy"] > 0
 
-    # Method coverage
+    # Method coverage (5 -> 8 after the 3-fix patch: 2 baselines + 3 top-K by
+    # w*LLR + 3 top-K by raw AVI)
     expected_methods = {
         "panel_llr_uniform", "panel_llr_avi",
         "panel_llr_topk_500", "panel_llr_topk_1000", "panel_llr_topk_2000",
+        "panel_llr_topk_by_avi_500", "panel_llr_topk_by_avi_1000",
+        "panel_llr_topk_by_avi_2000",
     }
-    assert expected_methods.issubset(set(r["results"].keys()))
+    assert expected_methods.issubset(set(r["results"].keys())), (
+        f"missing methods: {expected_methods - set(r['results'].keys())}"
+    )
 
     # AUC regression floor at 0.1% ctDNA (proxy run must not regress)
     for m in expected_methods:
@@ -158,3 +163,118 @@ def test_weight_cohort_falls_back_to_proxy_without_key():
 def test_fetch_avi_via_atlas_requires_key():
     """If a key is ever added, fetch_avi_via_atlas must succeed."""
     pytest.skip("requires real AlphaGenome API key")
+
+
+# ---------------------------------------------------------------------------
+# Regression tests for the 3-fix patch (issue #1: indels; #2: top-K-by-AVI)
+# ---------------------------------------------------------------------------
+
+def test_load_tcga_mutations_keeps_indels():
+    """After patch 1, indels must be retained (was 0, now 992 of 124,841).
+
+    This is the headline honesty regression: previously the loader dropped
+    Frame_Shift_Del/Ins, In_Frame_Del/Ins, Splice_Site variants with
+    `len(ref) != 1`, costing 992 mutations (~0.79% of cohort).
+    """
+    cache_dir = Path(__file__).resolve().parent.parent / "validation" / "tcga" / "tcga_cache"
+    if not cache_dir.exists():
+        pytest.skip(f"{cache_dir} not present — TCGA cache not downloaded")
+    muts = aw.load_tcga_mutations_with_ref_alt(str(cache_dir))
+    assert len(muts) > 0
+    indels = [m for m in muts if len(m["ref"]) != 1 or len(m["alt"]) != 1]
+    assert len(indels) > 0, (
+        "loader dropped indels again — patch 1 regressed; expected >= 992 "
+        "indels in LUAD MAF cache"
+    )
+    # Sanity: indel fraction is small (~0.79%) but non-zero
+    assert len(indels) < len(muts) * 0.05, (
+        f"indel fraction {len(indels)/len(muts):.2%} suspiciously large"
+    )
+    # Indels should all carry a non-empty variant_class so the proxy has a target
+    assert all(m.get("variant_class") for m in indels), (
+        "indels without variant_class cannot receive proxy weights"
+    )
+
+
+def test_indel_keys_have_source_proxy_when_weighted():
+    """After patch 1, indels weighted via the proxy path must be tagged
+    ``source="proxy"`` (not silently missing). The proxy is honest because
+    it is clearly flagged; silently dropping indels is not.
+    """
+    fake_muts = [
+        # SNV
+        {"chrom": "1", "pos": 100, "ref": "A", "alt": "T",
+         "variant_class": "Missense_Mutation"},
+        # Indels (the four classes the proxy table covers)
+        {"chrom": "2", "pos": 200, "ref": "AT", "alt": "A",
+         "variant_class": "Frame_Shift_Del"},
+        {"chrom": "3", "pos": 300, "ref": "A", "alt": "ATG",
+         "variant_class": "Frame_Shift_Ins"},
+        {"chrom": "4", "pos": 400, "ref": "AT", "alt": "A",
+         "variant_class": "In_Frame_Del"},
+        {"chrom": "5", "pos": 500, "ref": "A", "alt": "ATG",
+         "variant_class": "In_Frame_Ins"},
+    ]
+    weights, primary_source = aw.weight_cohort(fake_muts)
+    assert primary_source == "proxy"
+    for vk, w in weights.items():
+        # variant_key format: "chrN:POS:REF>ALT"  -> 4 colon-separated fields
+        # where REF>ALT may itself contain colons if REF or ALT is multi-base.
+        # We split on ":" max 3 times to separate (chrom, pos, ref>alt).
+        parts = vk.split(":", 3)       # ['chrN', 'POS', 'REF>ALT']
+        if len(parts) != 4:
+            # Indel keys may have extra colons in the allele (e.g. insertion).
+            # Re-join the trailing portion as the allele field.
+            allele_field = ":".join(parts[2:])
+        else:
+            allele_field = parts[3]
+        ref, alt = allele_field.split(">", 1)
+        is_indel = len(ref) != 1 or len(alt) != 1
+        if is_indel:
+            assert w.source == "proxy", (
+                f"indel {vk} should be weighted by proxy; got source={w.source!r}"
+            )
+            assert w.avi_score > 0.0, (
+                f"indel {vk} proxy weight should be positive; got {w.avi_score}"
+            )
+
+
+def test_panel_score_with_weights_by_avi_is_deterministic():
+    """The new top-K-by-AVI selector must be deterministic.
+
+    Same inputs -> same output, every time. (We compare two separate calls;
+    np.argsort on identical input is guaranteed stable for our numpy version.)
+    """
+    # Import the runner's helper without running the whole module CLI.
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from alphagenome_panel_run import _panel_score_with_weights_by_avi
+
+    rng = np.random.default_rng(0)
+    llr = rng.normal(size=200)
+    avi = rng.uniform(0.05, 1.0, size=200)
+    weights = avi.copy()      # weights = AVI norm in the runner
+    out1 = _panel_score_with_weights_by_avi(llr, avi, weights, top_k=20)
+    out2 = _panel_score_with_weights_by_avi(llr, avi, weights, top_k=20)
+    assert out1 == out2, f"non-deterministic: {out1} vs {out2}"
+    # Length-mismatch guard
+    with pytest.raises(ValueError):
+        _panel_score_with_weights_by_avi(llr, avi[:50], weights, top_k=20)
+
+
+def test_run_comparison_includes_topk_by_avi_methods():
+    """The methods list in run_comparison must include the new top-K-by-AVI
+    family alongside the existing top-K-by-w*LLR family.
+    """
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    import alphagenome_panel_run as apr
+
+    # Inspect the source to confirm the method-family strings are emitted.
+    # (We don't call run_comparison directly — it requires a full cohort.)
+    src = (Path(__file__).resolve().parent.parent / "alphagenome_panel_run.py").read_text()
+    assert "panel_llr_topk_by_avi_" in src, (
+        "panel_llr_topk_by_avi_ not present in alphagenome_panel_run.py"
+    )
+    # Both the joint-criterion family and the new pure-prior family must exist
+    assert "panel_llr_topk_" in src
+    # And the helper must exist
+    assert hasattr(apr, "_panel_score_with_weights_by_avi")

@@ -1,14 +1,14 @@
 {
   "metadata": {
     "runner": "alphagenome_panel_run.py",
-    "date": "2026-09-17 23:00:52",
+    "date": "2026-09-19 09:26:42",
     "data_source": "gdc_maf",
     "cancer_types": [
       "LUAD"
     ],
     "n_patients": 20,
     "n_mutations_in_cohort": 19421,
-    "n_mutations_with_ref_alt": 123849,
+    "n_mutations_with_ref_alt": 124841,
     "cfdna_depth": 5000,
     "bg_error_rate": 0.002,
     "seeds_used": [
@@ -27,7 +27,7 @@
     ],
     "avi_primary_source": "proxy",
     "avi_n_real": 0,
-    "avi_n_proxy": 113833,
+    "avi_n_proxy": 114735,
     "avi_n_missing": 0,
     "avi_raw_range": [
       1.0,
@@ -42,9 +42,12 @@
       "panel_llr_avi",
       "panel_llr_topk_500",
       "panel_llr_topk_1000",
-      "panel_llr_topk_2000"
+      "panel_llr_topk_2000",
+      "panel_llr_topk_by_avi_500",
+      "panel_llr_topk_by_avi_1000",
+      "panel_llr_topk_by_avi_2000"
     ],
-    "elapsed_seconds": 443.9202401638031,
+    "elapsed_seconds": 430.05854320526123,
     "pipeline_type": "REAL_MUTATIONS_+_SIMULATED_PLASMA_READS",
     "note": "Ground-truth variants come from real TCGA-LUAD MAF data; plasma reads are simulated by Poisson sampling. Panel LLR is computed with AVI weights from AlphaGenome Atlas when available; otherwise a deterministic per-variant-class proxy is used (see avi_primary_source). Avi weights are applied as fixed scalars in a deterministic aggregation \u2014 not as features to a learned model \u2014 which complies with the AlphaGenome Terms of Use non-training clause."
   },
@@ -239,13 +242,13 @@
       {
         "tumor_fraction": 0.001,
         "metric": "auc",
-        "mean": 0.9924999999999999,
-        "std": 0.0049999999999999906,
+        "mean": 0.993,
+        "std": 0.005419870847169682,
         "per_seed": {
           "42": 0.9974999999999999,
           "123": 0.99,
           "456": 0.985,
-          "789": 0.995,
+          "789": 0.9974999999999999,
           "1024": 0.995
         }
       }
@@ -383,7 +386,208 @@
           "1024": 0.995
         }
       }
+    ],
+    "panel_llr_topk_by_avi_500": [
+      {
+        "tumor_fraction": 0.1,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.05,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.01,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.005,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.001,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      }
+    ],
+    "panel_llr_topk_by_avi_1000": [
+      {
+        "tumor_fraction": 0.1,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.05,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.01,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.005,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.001,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      }
+    ],
+    "panel_llr_topk_by_avi_2000": [
+      {
+        "tumor_fraction": 0.1,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.05,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.01,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.005,
+        "metric": "auc",
+        "mean": 1.0,
+        "std": 0.0,
+        "per_seed": {
+          "42": 1.0,
+          "123": 1.0,
+          "456": 1.0,
+          "789": 1.0,
+          "1024": 1.0
+        }
+      },
+      {
+        "tumor_fraction": 0.001,
+        "metric": "auc",
+        "mean": 0.9894999999999999,
+        "std": 0.0037080992435478423,
+        "per_seed": {
+          "42": 0.99,
+          "123": 0.9874999999999999,
+          "456": 0.985,
+          "789": 0.99,
+          "1024": 0.995
+        }
+      }
     ]
   },
-  "elapsed_seconds": 443.9202401638031
+  "elapsed_seconds": 430.05854320526123
 }

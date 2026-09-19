@@ -4,62 +4,65 @@
   ✓ 20 patients, 19421 mutations (source: gdc_maf)
   Top genes: [('TTN', 118), ('CSMD3', 48), ('RYR2', 47), ('MUC16', 47), ('LRP1B', 45), ('USH2A', 44), ('FLG', 31), ('APOB', 28), ('XIRP2', 27), ('COL11A1', 26)]
   Cohort: 20 patients, 19421 mutations
-  Ref/alt-augmented pool: 123849 mutations (123849 SNVs)
-  AVI source: proxy  (real=0  proxy=113833  missing=0)
+  Ref/alt-augmented pool: 124841 mutations (123849 SNVs)
+  AVI source: proxy  (real=0  proxy=114735  missing=0)
   AVI raw range:  1.00 .. 30.00
   AVI norm range: 0.050 .. 1.000
 
 === Tumor fraction 10.00% ===
-  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
+  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
 
 === Tumor fraction 5.00% ===
-  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
+  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
 
 === Tumor fraction 1.00% ===
-  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
+  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
 
 === Tumor fraction 0.50% ===
-  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
-  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000
+  seed   42:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  123:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  456:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed  789:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
+  seed 1024:  panel_llr_uniform=1.0000  panel_llr_avi=1.0000  panel_llr_topk_500=1.0000  panel_llr_topk_1000=1.0000  panel_llr_topk_2000=1.0000  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=1.0000
 
 === Tumor fraction 0.10% ===
-  seed   42:  panel_llr_uniform=0.9900  panel_llr_avi=0.9900  panel_llr_topk_500=0.9975  panel_llr_topk_1000=0.9900  panel_llr_topk_2000=0.9900
-  seed  123:  panel_llr_uniform=0.9875  panel_llr_avi=0.9875  panel_llr_topk_500=0.9900  panel_llr_topk_1000=0.9875  panel_llr_topk_2000=0.9875
-  seed  456:  panel_llr_uniform=0.9825  panel_llr_avi=0.9850  panel_llr_topk_500=0.9850  panel_llr_topk_1000=0.9850  panel_llr_topk_2000=0.9850
-  seed  789:  panel_llr_uniform=0.9900  panel_llr_avi=0.9900  panel_llr_topk_500=0.9950  panel_llr_topk_1000=0.9900  panel_llr_topk_2000=0.9900
-  seed 1024:  panel_llr_uniform=0.9950  panel_llr_avi=0.9950  panel_llr_topk_500=0.9950  panel_llr_topk_1000=0.9950  panel_llr_topk_2000=0.9950
+  seed   42:  panel_llr_uniform=0.9900  panel_llr_avi=0.9900  panel_llr_topk_500=0.9975  panel_llr_topk_1000=0.9900  panel_llr_topk_2000=0.9900  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=0.9900
+  seed  123:  panel_llr_uniform=0.9875  panel_llr_avi=0.9875  panel_llr_topk_500=0.9900  panel_llr_topk_1000=0.9875  panel_llr_topk_2000=0.9875  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=0.9875
+  seed  456:  panel_llr_uniform=0.9825  panel_llr_avi=0.9850  panel_llr_topk_500=0.9850  panel_llr_topk_1000=0.9850  panel_llr_topk_2000=0.9850  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=0.9850
+  seed  789:  panel_llr_uniform=0.9900  panel_llr_avi=0.9900  panel_llr_topk_500=0.9975  panel_llr_topk_1000=0.9900  panel_llr_topk_2000=0.9900  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=0.9900
+  seed 1024:  panel_llr_uniform=0.9950  panel_llr_avi=0.9950  panel_llr_topk_500=0.9950  panel_llr_topk_1000=0.9950  panel_llr_topk_2000=0.9950  panel_llr_topk_by_avi_500=1.0000  panel_llr_topk_by_avi_1000=1.0000  panel_llr_topk_by_avi_2000=0.9950
 
   📁 Results saved to results/alphagenome_weighted_llr.json
-  ⏱  Wall time: 443.9s
+  ⏱  Wall time: 430.1s
 
 ========================================================================
   PANEL-LLR COMPARISON  (mean AUC ± std across seeds)
 ========================================================================
-  TF         panel_llr_uniform         panel_llr_avi    panel_llr_topk_500   panel_llr_topk_1000   panel_llr_topk_2000
-  10.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
-   5.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
-   1.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
-   0.50%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
-   0.10%         0.9890±0.0045         0.9895±0.0037         0.9925±0.0050         0.9895±0.0037         0.9895±0.0037
+  TF         panel_llr_uniform         panel_llr_avi    panel_llr_topk_500   panel_llr_topk_1000   panel_llr_topk_2000panel_llr_topk_by_avi_500panel_llr_topk_by_avi_1000panel_llr_topk_by_avi_2000
+  10.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
+   5.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
+   1.00%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
+   0.50%         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000         1.0000±0.0000
+   0.10%         0.9890±0.0045         0.9895±0.0037         0.9930±0.0054         0.9895±0.0037         0.9895±0.0037         1.0000±0.0000         1.0000±0.0000         0.9895±0.0037
 ========================================================================
 
   Bottom-line Δ vs panel_llr_uniform (AUC @ 0.1%):
     ≈           panel_llr_avi: AUC 0.9895  Δ=+0.0005
-    ≈      panel_llr_topk_500: AUC 0.9925  Δ=+0.0035
+    ≈      panel_llr_topk_500: AUC 0.9930  Δ=+0.0040
     ≈     panel_llr_topk_1000: AUC 0.9895  Δ=+0.0005
     ≈     panel_llr_topk_2000: AUC 0.9895  Δ=+0.0005
+    ≈  panel_llr_topk_by_avi_500: AUC 1.0000  Δ=+0.0110
+    ≈  panel_llr_topk_by_avi_1000: AUC 1.0000  Δ=+0.0110
+    ≈  panel_llr_topk_by_avi_2000: AUC 0.9895  Δ=+0.0005

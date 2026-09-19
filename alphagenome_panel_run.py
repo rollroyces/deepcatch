@@ -58,6 +58,11 @@ def _panel_score_with_weights(per_pos_llr: np.ndarray,
 
     If weights is None: uniform sum (baseline).
     If top_k is given: only the top-K weighted positions contribute.
+
+    Top-K here is selected by `w * LLR` ranking — a joint criterion that
+    conflates AVI prior with LLR magnitude. See
+    `_panel_score_with_weights_by_avi` for the pure-prior selector that
+    decouples the two.
     """
     if weights is None:
         contrib = per_pos_llr
@@ -68,6 +73,33 @@ def _panel_score_with_weights(per_pos_llr: np.ndarray,
         idx = np.argsort(contrib)[::-1][:top_k]
         return float(contrib[idx].sum())
     return float(contrib.sum())
+
+
+def _panel_score_with_weights_by_avi(per_pos_llr: np.ndarray,
+                                     avi_norm: np.ndarray,
+                                     weights: np.ndarray,
+                                     top_k: int) -> float:
+    """Top-K-by-raw-AVI panel score: select positions by AVI priority only,
+    then sum their weighted LLR (weights * LLR).
+
+    Decouples AVI prior (`avi_norm`) from LLR magnitude: positions are
+    chosen purely by their AVI priority, regardless of whether the LLR at
+    that position is large or small. The aggregation is still weighted,
+    so the contribution of a chosen position scales with its AVI weight.
+
+    Unlike `_panel_score_with_weights(..., top_k=...)` which ranks by the
+    joint `w * LLR` criterion, this method ranks by AVI alone. The two
+    selectors are equivalent only when LLR ordering happens to match AVI
+    ordering rank-by-rank, which is rare.
+    """
+    if len(avi_norm) != len(per_pos_llr):
+        raise ValueError(
+            f"avi_norm length ({len(avi_norm)}) != per_pos_llr length "
+            f"({len(per_pos_llr)})"
+        )
+    # Select top-K by raw AVI priority (largest first), independent of LLR.
+    idx = np.argsort(avi_norm)[::-1][:top_k]
+    return float((weights[idx] * per_pos_llr[idx]).sum())
 
 
 # ---------------------------------------------------------------------------
@@ -94,11 +126,13 @@ def run_comparison(
       - mean ± std of per-seed AUC
     """
     methods = ["panel_llr_uniform", "panel_llr_avi"]
-    methods += [f"panel_llr_topk_{k}" for k in topk_values]
+    methods += [f"panel_llr_topk_{k}" for k in topk_values]      # top-K by w*LLR (joint)
+    methods += [f"panel_llr_topk_by_avi_{k}" for k in topk_values]  # top-K by raw AVI (pure prior)
 
     # Pre-build per-patient weights (sorted by AVI desc within patient)
     patients = list(cohort["patients"].keys())
     patient_weights: Dict[str, np.ndarray] = {}
+    patient_avi: Dict[str, np.ndarray] = {}      # raw AVI norm (for top-K-by-AVI selector)
     patient_keys: Dict[str, List[str]] = {}
     for p in patients:
         mlist = cohort["patients"][p]
@@ -106,6 +140,7 @@ def run_comparison(
         # as "no signal" — the LLR contribution is also 0 for error-only reads
         # so this is safe).
         ws: List[float] = []
+        avis: List[float] = []
         ks: List[str] = []
         for m in mlist:
             # Look up by mutation identity: the cohort mutation dicts lack
@@ -121,10 +156,13 @@ def run_comparison(
                     break
             if vkey and vkey in avi_weights:
                 ws.append(avi_weights[vkey].avi_norm)
+                avis.append(avi_weights[vkey].avi_norm)
             else:
                 ws.append(0.0)
+                avis.append(0.0)
             ks.append(vkey or "?")
         patient_weights[p] = np.asarray(ws, dtype=float)
+        patient_avi[p] = np.asarray(avis, dtype=float)
         patient_keys[p] = ks
 
     # Aggregation container
@@ -182,8 +220,13 @@ def run_comparison(
                     elif method == "panel_llr_avi":
                         sp = _panel_score_with_weights(lp, w)
                         sn = _panel_score_with_weights(ln, w)
+                    elif method.startswith("panel_llr_topk_by_avi_"):
+                        # Top-K by raw AVI priority (decoupled from LLR)
+                        k = int(method.split("_")[-1])
+                        sp = _panel_score_with_weights_by_avi(lp, patient_avi[p], w, top_k=k)
+                        sn = _panel_score_with_weights_by_avi(ln, patient_avi[p], w, top_k=k)
                     else:
-                        # panel_llr_topk_{K}
+                        # panel_llr_topk_{K} — top-K by w*LLR (joint criterion)
                         k = int(method.split("_")[-1])
                         sp = _panel_score_with_weights(lp, w, top_k=k)
                         sn = _panel_score_with_weights(ln, w, top_k=k)
