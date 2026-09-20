@@ -140,7 +140,7 @@ class CAFFCalculator:
     
     def __init__(self, n_top_arms: int = 5):
         self.n_top_arms = n_top_arms
-    
+
     def compute(
         self,
         per_arm_coverage: Dict[str, float],
@@ -148,23 +148,125 @@ class CAFFCalculator:
     ) -> Dict[str, float]:
         """
         Compute CAFF score from per-chromosome-arm coverage.
-        
+
         Returns dict with caff_score, aberrant_arms, per_arm_z_scores.
         """
         z_scores = {}
         for arm, cov in per_arm_coverage.items():
             z_scores[arm] = abs(cov - expected_coverage) / (expected_coverage + 1e-6)
-        
+
         sorted_arms = sorted(z_scores.items(), key=lambda x: x[1], reverse=True)
         top_arms = sorted_arms[:self.n_top_arms]
-        
+
         caff_score = np.mean([z for _, z in top_arms])
-        
+
         return {
             'caff_score': float(caff_score),
             'aberrant_arms': [arm for arm, _ in top_arms],
             'per_arm_z_scores': {arm: float(z) for arm, z in top_arms},
         }
+
+    # Mapping from common chromosome naming conventions to the
+    # ``CHROM_ARM_BOUNDARIES`` keys. Accepts ``"chr1"`` (UCSC) and
+    # ``"1"`` (Ensembl) interchangeably.
+    _CHROM_NORMALIZE = {
+        "1": "1", "chr1": "1",
+        "2": "2", "chr2": "2",
+        "3": "3", "chr3": "3",
+        "4": "4", "chr4": "4",
+        "5": "5", "chr5": "5",
+        "6": "6", "chr6": "6",
+        "7": "7", "chr7": "7",
+        "8": "8", "chr8": "8",
+        "9": "9", "chr9": "9",
+        "10": "10", "chr10": "10",
+        "11": "11", "chr11": "11",
+        "12": "12", "chr12": "12",
+        "13": "13", "chr13": "13",
+        "14": "14", "chr14": "14",
+        "15": "15", "chr15": "15",
+        "16": "16", "chr16": "16",
+        "17": "17", "chr17": "17",
+        "18": "18", "chr18": "18",
+        "19": "19", "chr19": "19",
+        "20": "20", "chr20": "20",
+        "21": "21", "chr21": "21",
+        "22": "22", "chr22": "22",
+        "X": "X", "chrX": "X",
+        "Y": "Y", "chrY": "Y",
+    }
+
+    @classmethod
+    def from_fragments(
+        cls,
+        fragments: List[Dict],
+        genome_length: int = 3_000_000_000,
+    ) -> Dict[str, float]:
+        """Derive per-chromosome-arm coverage from a fragment list.
+
+        Each fragment dict must carry ``chrom`` (any of ``"chr1"``,
+        ``"1"``, ...) and ``start`` (genomic bp). Coverage per arm is
+        the fragment count, normalized by arm length in Mb so that
+        arms of different physical sizes are comparable (a copy-number
+        gain on chr22q should score similarly to chr1p after this
+        normalization). The median arm coverage is returned as 1.0
+        so that ``compute(expected_coverage=1.0)`` reads the
+        deviations as copy-ratio deviations.
+
+        Fragments with unrecognized chromosomes are silently dropped.
+        This matches the Bie 2023 / THEMIS convention (autosomes 1-22
+        + sex chromosomes).
+
+        Parameters
+        ----------
+        fragments : list of dict
+            Each dict has ``chrom`` and ``start`` keys.
+        genome_length : int
+            Total genome length in bp (default 3 Gb for human). Not
+            used directly today (per-arm lengths come from
+            ``CHROM_ARM_BOUNDARIES``) but kept for forward
+            compatibility with build-specific references.
+
+        Returns
+        -------
+        per_arm_coverage : dict
+            Maps ``"1p"``, ``"1q"``, ..., ``"22q"`` to coverage-per-Mb.
+            Empty dict if no fragments match.
+        """
+        # Aggregate raw counts per chromosome first.
+        chrom_counts: Dict[str, int] = {}
+        for frag in fragments:
+            raw_chrom = frag.get("chrom", "")
+            chrom = cls._CHROM_NORMALIZE.get(raw_chrom)
+            if chrom is None:
+                continue
+            chrom_counts[chrom] = chrom_counts.get(chrom, 0) + 1
+
+        # Convert to per-arm coverage normalized by arm length (Mb).
+        # Arm length comes from CHROM_ARM_BOUNDARIES so that arm-bp
+        # is the denominator, not the autosome-wide coverage.
+        per_arm: Dict[str, float] = {}
+        for arm, (start_bp, end_bp) in cls.CHROM_ARM_BOUNDARIES.items():
+            # Parse arm key like "1p" → chrom "1", side "p" or "q".
+            # Chromosomes 13/14/15/21/22 are conventionally "q" only.
+            chrom_digits = "".join(c for c in arm if c.isdigit())
+            if chrom_digits:
+                chrom = chrom_digits
+            else:
+                chrom = arm.replace("p", "").replace("q", "")
+            chrom_count = chrom_counts.get(chrom, 0)
+            arm_len_mb = max(end_bp - start_bp, 1) / 1e6
+            per_arm[arm] = chrom_count / arm_len_mb
+
+        # Median-normalize so the median arm reads as 1.0 (matches
+        # ``compute(expected_coverage=1.0)`` downstream). Falls back
+        # to 1.0 across all arms if the median is degenerate.
+        if per_arm:
+            vals = np.array(list(per_arm.values()), dtype=np.float64)
+            med = float(np.median(vals))
+            if med > 0:
+                per_arm = {arm: v / med for arm, v in per_arm.items()}
+        return per_arm
 
 
 class FEMCalculator:

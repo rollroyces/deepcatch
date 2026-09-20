@@ -254,12 +254,35 @@ class FoundationDownstream:
         modalities_t = self._modalities_to_tensors(modalities)
         labels_t = torch.from_numpy(labels.astype(np.int64)).to(self.device)
 
-        # Train/val split
-        n_samples = labels_t.shape[0]
-        n_val = max(1, int(n_samples * validation_split))
-        indices = torch.randperm(n_samples)
-        train_idx = indices[n_val:]
-        val_idx = indices[:n_val]
+        # Stratified train/val split that preserves class balance.
+        # The previous torch.randperm split could produce val sets
+        # with no positives (when validation_split * n_positives < 1),
+        # in which case F.cross_entropy on the val fold returns NaN
+        # and the early-stopping patience increments forever. The
+        # stratified split also gives more reliable val-loss estimates
+        # on imbalanced cfDNA screening cohorts.
+        n_samples = int(labels_t.shape[0])
+        rng = np.random.default_rng(self.config.seed)
+        labels_np = labels.astype(np.int64)
+        idx_pos = np.where(labels_np == 1)[0]
+        idx_neg = np.where(labels_np == 0)[0]
+        rng.shuffle(idx_pos)
+        rng.shuffle(idx_neg)
+        n_val_pos = max(0, int(round(len(idx_pos) * validation_split)))
+        n_val_neg = max(0, int(round(len(idx_neg) * validation_split)))
+        # Guarantee at least one of each class when both classes exist.
+        if n_classes >= 2 and len(idx_pos) >= 2 and n_val_pos == 0:
+            n_val_pos = 1
+        if n_classes >= 2 and len(idx_neg) >= 2 and n_val_neg == 0:
+            n_val_neg = 1
+        val_idx_np = np.concatenate(
+            [idx_pos[:n_val_pos], idx_neg[:n_val_neg]]
+        )
+        train_idx_np = np.concatenate(
+            [idx_pos[n_val_pos:], idx_neg[n_val_neg:]]
+        )
+        train_idx = torch.from_numpy(train_idx_np).to(self.device)
+        val_idx = torch.from_numpy(val_idx_np).to(self.device)
 
         # Training mode
         self.encoder.train()
@@ -275,6 +298,7 @@ class FoundationDownstream:
         best_val_loss = float("inf")
         best_state = None
         patience_counter = 0
+        nan_guard = 0  # NaN/Inf loss counter — separate from patience
 
         for epoch in range(n_epochs):
             # Shuffle training indices
@@ -297,6 +321,20 @@ class FoundationDownstream:
                 logits = self.classifier(joint)  # (B, n_classes)
                 loss = F.cross_entropy(logits, batch_labels)
 
+                # NaN/Inf guard: skip this step (don't poison grads).
+                # If we see too many in a row, abort training — the
+                # current best state (or random init) is preserved.
+                if torch.isnan(loss) or torch.isinf(loss):
+                    nan_guard += 1
+                    if nan_guard >= patience:
+                        logger.warning(
+                            "FoundationDownstream: %d consecutive NaN/Inf "
+                            "training losses; aborting at epoch %d.",
+                            nan_guard, epoch + 1,
+                        )
+                        break
+                    continue
+
                 # Backward
                 self._optimizer.zero_grad()
                 loss.backward()
@@ -304,6 +342,10 @@ class FoundationDownstream:
                 self._optimizer.step()
 
                 epoch_loss += loss.item()
+                nan_guard = 0  # reset on a successful step
+
+            if nan_guard >= patience:
+                break
 
             avg_loss = epoch_loss / max(1, n_batches)
             self._loss_history.append(avg_loss)
@@ -320,6 +362,18 @@ class FoundationDownstream:
 
                 self.encoder.train()
                 self.classifier.train()
+
+                # NaN/Inf val-loss guard: don't update best_state on
+                # garbage and don't increment patience counter so the
+                # loop terminates normally.
+                if torch.isnan(val_loss) or torch.isinf(val_loss):
+                    if verbose:
+                        logger.warning(
+                            "FoundationDownstream: NaN/Inf val loss at "
+                            "epoch %d; skipping early-stopping update.",
+                            epoch + 1,
+                        )
+                    continue
 
                 if val_loss < best_val_loss - 1e-4:
                     best_val_loss = val_loss.item()
