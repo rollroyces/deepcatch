@@ -48,7 +48,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -62,6 +62,7 @@ sys.path.insert(0, str(_ROOT))
 def _try_load_real_panel_scores(
     n_patients: int, seeds: List[int],
     tumor_fraction: float, cfdna_depth: int, bg_error_rate: float,
+    features_dir: Optional[str] = None,
 ) -> Dict[str, Dict[str, np.ndarray]] | None:
     """Return per-seed dicts of {y_true, panel_scores, frag_scores} from real TCGA data,
     or None if the cache is unavailable / broken.
@@ -83,8 +84,17 @@ def _try_load_real_panel_scores(
     """
     try:
         import real_tcga_validation as rtv  # noqa: E402
-        cache_dir = _ROOT / "validation" / "tcga" / "tcga_cache"
+        if features_dir is not None:
+            cache_dir = Path(features_dir)
+        else:
+            cache_dir = _ROOT / "validation" / "tcga" / "tcga_cache"
         if not cache_dir.exists():
+            return None
+        # Check if the cache directory actually has MAF files before
+        # calling load_tcga_cohort (which would try to download from
+        # cBioPortal if empty — too slow and unreliable for tests).
+        maf_files = list(cache_dir.glob("*.maf.gz"))
+        if not maf_files:
             return None
         cohort = rtv.load_tcga_cohort(
             cache_dir=str(cache_dir),
@@ -552,6 +562,14 @@ def main() -> int:
     ap.add_argument("--cfdna-depth", type=int, default=5000)
     ap.add_argument("--bg-error-rate", type=float, default=0.002)
     ap.add_argument(
+        "--features-dir",
+        default=None,
+        help="Override the TCGA cache directory. If unset, defaults to "
+             "validation/tcga/tcga_cache. Point this at an empty directory "
+             "to force the synthetic-fallback path (used by the smoke "
+             "tests to verify the fallback works).",
+    )
+    ap.add_argument(
         "--out",
         default=str(_ROOT / "results" / "foundation_real_smoke.json"),
         help="Output JSON path.",
@@ -567,6 +585,7 @@ def main() -> int:
         tumor_fraction=args.tumor_fraction,
         cfdna_depth=args.cfdna_depth,
         bg_error_rate=args.bg_error_rate,
+        features_dir=args.features_dir,
     )
 
     if real_data is not None:

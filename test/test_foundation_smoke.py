@@ -23,8 +23,13 @@ except ImportError:
     _HAS_TORCH = False
 
 
-def _run_smoke(tmp_dir: str) -> dict:
-    """Run the smoke test in fallback (no TCGA cache) mode and parse JSON."""
+def _run_smoke(tmp_dir: str, features_dir: str | None = None) -> dict:
+    """Run the smoke test in fallback (no TCGA cache) mode and parse JSON.
+
+    If ``features_dir`` is provided it is passed as ``--features-dir``
+    to the smoke script. Pass an empty / non-existent directory to
+    force the synthetic-fallback path.
+    """
     out_path = os.path.join(tmp_dir, "foundation_real_smoke.json")
     log_path = os.path.join(tmp_dir, "foundation_real_smoke.log")
     # Resolve the repo root robustly. This test file may be symlinked
@@ -57,6 +62,8 @@ def _run_smoke(tmp_dir: str) -> dict:
         "--seeds", "3",
         "--n-patients", "20",
     ]
+    if features_dir is not None:
+        cmd.extend(["--features-dir", features_dir])
     with open(log_path, "w") as logf:
         result = subprocess.run(
             cmd, cwd=repo_root, env=env, capture_output=True, text=True,
@@ -151,10 +158,18 @@ def test_smoke_foundation_auc_above_chance(tmp_path):
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
 def test_smoke_data_source_is_synthetic_when_no_cache(tmp_path):
-    """When TCGA cache is absent the data_source must say synthetic."""
-    d = _run_smoke(str(tmp_path))
+    """When TCGA cache is absent the data_source must say synthetic.
+
+    Point --features-dir at an empty directory so the loader sees
+    no MAF files and falls back to the synthetic cohort. We verify
+    the data_source field reflects that fallback.
+    """
+    empty_cache = os.path.join(tmp_path, "empty_tcga_cache")
+    os.makedirs(empty_cache, exist_ok=True)
+    d = _run_smoke(str(tmp_path), features_dir=empty_cache)
     assert "synthetic" in d["data_source"].lower(), (
-        f"expected 'synthetic' in data_source, got {d['data_source']!r}"
+        f"expected 'synthetic' in data_source with empty TCGA cache, "
+        f"got {d['data_source']!r}"
     )
 
 
