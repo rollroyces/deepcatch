@@ -130,3 +130,29 @@ def test_smoke_data_source_is_synthetic_when_no_cache(tmp_path):
     assert "synthetic" in d["data_source"].lower(), (
         f"expected 'synthetic' in data_source, got {d['data_source']!r}"
     )
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_smoke_foundation_within_lr_baseline_band(tmp_path):
+    """The foundation score (variant B weighted 0.7 + variant A 0.3)
+    should track the lr_baseline AUC within ~3pp on n=40 — same data,
+    same signal source, different model class. If the gap is wider
+    than 5pp the variant-A trainable transformer is dominating the
+    score, which is the overfitting failure mode we want to detect.
+    """
+    d = _run_smoke(str(tmp_path))
+    gap = d["lr_baseline_auc_mean"] - d["foundation_auc_mean"]
+    assert gap < 0.05, (
+        f"foundation AUC {d['foundation_auc_mean']:.3f} is "
+        f"{gap:.3f} below lr_baseline AUC {d['lr_baseline_auc_mean']:.3f}; "
+        f"variant-A trainable transformer is over-dominating the score"
+    )
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_smoke_all_three_gates_present(tmp_path):
+    """The JSON must report all three gate thresholds + pass/fail."""
+    d = _run_smoke(str(tmp_path))
+    for key in ("gate_auc", "gate_sens99", "gate_foundation_auc", "gate_pass"):
+        assert key in d, f"smoke output missing key {key!r}"
+    assert isinstance(d["gate_pass"], bool)
