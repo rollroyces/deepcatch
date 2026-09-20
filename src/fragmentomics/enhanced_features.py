@@ -605,59 +605,125 @@ class NucleosomeFootprint:
     # followed by periodic peaks at ~200 bp intervals
     EXPECTED_PATTERN_BINS = 80  # ±2000 bp / 50 bp bins
 
-    def __init__(self, tss_window: int = 2000, bin_size: int = 50):
+    # Default nucleosome parameters. These are the canonical values
+    # for human cfDNA reported in Snyder et al. 2016 (Cell 164:57-68)
+    # and Jiang et al. 2020 (Cancer Discovery 10:664-673):
+    #   - Nucleosome repeat length ~195 bp (mean nucleosome + linker)
+    #   - TSS depletion dip ~150 bp half-width
+    #   - Dip amplitude 0.5 (50% coverage reduction at the TSS)
+    #   - Sinusoidal amplitude 0.3 (modest periodicity signal)
+    # These can be overridden per-instance for non-canonical cfDNA
+    # sources (e.g. yeast nucleosomes ~165 bp, mouse ES ~190 bp).
+    DEFAULT_NUCLEOSOME_PERIOD_BP = 195.0
+    DEFAULT_TSS_DIP_HALFWIDTH_BP = 150.0
+    DEFAULT_TSS_DIP_AMPLITUDE = 0.5
+    DEFAULT_PERIODIC_AMPLITUDE = 0.3
+
+    def __init__(
+        self,
+        tss_window: int = 2000,
+        bin_size: int = 50,
+        nucleosome_period_bp: float = DEFAULT_NUCLEOSOME_PERIOD_BP,
+        tss_dip_halfwidth_bp: float = DEFAULT_TSS_DIP_HALFWIDTH_BP,
+        tss_dip_amplitude: float = DEFAULT_TSS_DIP_AMPLITUDE,
+        periodic_amplitude: float = DEFAULT_PERIODIC_AMPLITUDE,
+    ):
         self.tss_window = tss_window
         self.bin_size = bin_size
+        self.nucleosome_period_bp = nucleosome_period_bp
+        self.tss_dip_halfwidth_bp = tss_dip_halfwidth_bp
+        self.tss_dip_amplitude = tss_dip_amplitude
+        self.periodic_amplitude = periodic_amplitude
 
     def tss_coverage_profile(
         self,
-        tss_positions: List[int],
+        tss_positions: List,
         fragments: List[Dict],
         n_bins: int = 80
     ) -> np.ndarray:
-        """
-        Aggregate coverage around a set of TSS positions.
+        """Aggregate coverage around a set of TSS positions.
 
-        For each TSS, counts fragments whose midpoint falls within
-        ±tss_window.  Results are stacked and averaged across all TSS.
+        Each TSS must be a ``(chrom, pos)`` tuple. Fragments must have
+        a ``chrom`` field; fragments on chromosomes with no TSS in the
+        provided list are skipped. This per-chromosome matching
+        prevents the previous bug where a fragment on chr5 was
+        incorrectly counted against a chr1 TSS, inflating apparent
+        coverage of unrelated promoters.
+
+        For backwards compatibility, a ``TSS`` passed as a bare int is
+        treated as chromosome "unknown"; fragments must also carry
+        ``chrom="unknown"`` to match. The recommended path is to pass
+        ``[(chrom, pos), ...]`` from a UCSC refFlat TSS table.
 
         Parameters
         ----------
-        tss_positions : list of int
-            Genomic coordinates of transcription start sites.
+        tss_positions : list of (chrom, pos) tuples or list of int
+            Genomic TSS coordinates. Bare ints are accepted for legacy
+            callers but the chrom-agnostic mode is unsafe for whole-
+            genome cfDNA — prefer the (chrom, pos) form.
         fragments : list of dict
-            Each dict with 'start', 'length' keys.  Midpoint = start + length/2.
+            Each dict must have ``start``, ``length``, and ``chrom``
+            keys.  Midpoint = start + length/2.
         n_bins : int
             Number of bins across the ±tss_window region.
 
         Returns
         -------
         np.ndarray, shape (n_bins,)
-            Mean fragment count per bin across all TSS.
+            Mean fragment count per bin across all TSS, normalised by
+            the number of TSS that received at least one matching
+            fragment. Empty / no-match returns an all-zero profile.
         """
         profile = np.zeros(n_bins, dtype=np.float64)
 
         if not tss_positions or not fragments:
             return profile
 
-        # Build fragment midpoint index for fast lookup
-        frag_midpoints = np.array([
-            frag['start'] + frag.get('length', 0) / 2.0
-            for frag in fragments
-        ])
+        # Normalize TSS to (chrom, pos) tuples.
+        tss_by_chrom: Dict[str, List[int]] = {}
+        for tss in tss_positions:
+            if isinstance(tss, (tuple, list)) and len(tss) == 2:
+                chrom, pos = tss[0], tss[1]
+            else:
+                # Legacy bare-int path — only matches fragments with
+                # chrom == "unknown". Documented as unsafe for WGS data.
+                chrom, pos = "unknown", int(tss)
+            tss_by_chrom.setdefault(chrom, []).append(int(pos))
+
+        # Pre-group fragment midpoints per chromosome for O(N+M) work.
+        frag_by_chrom_lists: Dict[str, List[float]] = {}
+        for frag in fragments:
+            chrom = frag.get("chrom", "unknown")
+            mid = frag["start"] + frag.get("length", 0) / 2.0
+            frag_by_chrom_lists.setdefault(chrom, []).append(mid)
+        frag_by_chrom: Dict[str, np.ndarray] = {
+            chrom: np.asarray(mids, dtype=np.float64)
+            for chrom, mids in frag_by_chrom_lists.items()
+        }
 
         bin_edges = np.linspace(-self.tss_window, self.tss_window, n_bins + 1)
         total_tss = 0
 
-        for tss in tss_positions:
-            # Relative positions of fragment midpoints to this TSS
-            relative_pos = frag_midpoints - tss
-            mask = (relative_pos >= -self.tss_window) & (relative_pos < self.tss_window)
-            if mask.sum() == 0:
+        for chrom, tss_list in tss_by_chrom.items():
+            mids = frag_by_chrom.get(chrom)
+            if mids is None or len(mids) == 0:
+                # No fragments on this chromosome → skip all TSS.
                 continue
-            hist, _ = np.histogram(relative_pos[mask], bins=bin_edges)
-            profile += hist.astype(np.float64)
-            total_tss += 1
+            tss_arr = np.asarray(tss_list, dtype=np.float64)
+            # Vectorize: relative position of every fragment midpoint
+            # vs every TSS on this chromosome → (n_mids, n_tss).
+            relative_pos = mids[:, None] - tss_arr[None, :]
+            mask = (relative_pos >= -self.tss_window) & (
+                relative_pos < self.tss_window
+            )
+            for j in range(tss_arr.shape[0]):
+                col = relative_pos[:, j]
+                col_mask = mask[:, j]
+                if not col_mask.any():
+                    continue
+                hist, _ = np.histogram(col[col_mask], bins=bin_edges)
+                profile += hist.astype(np.float64)
+                total_tss += 1
 
         if total_tss > 0:
             profile /= total_tss
@@ -671,8 +737,12 @@ class NucleosomeFootprint:
         """
         Generate expected nucleosome pattern around TSS.
 
-        Produces a sinusoidal pattern at ~195 bp period, with a depletion
-        dip at the TSS centre.
+        Produces a sinusoidal pattern at the configured nucleosome
+        repeat length (default ~195 bp from Snyder 2016 / Jiang 2020),
+        with a Gaussian depletion dip at the TSS centre. The hard-
+        coded 195 bp period and 150 bp dip half-width from the
+        original implementation are now class-level defaults and can be
+        overridden per-instance for non-canonical sources.
 
         Parameters
         ----------
@@ -684,13 +754,17 @@ class NucleosomeFootprint:
         np.ndarray, shape (n_bins,)
         """
         x = np.arange(n_bins)
-        # Centre at n_bins // 2
         centre = n_bins / 2.0
-        # Periodic signal at nucleosome spacing
-        period_bins = 195.0 / self.bin_size  # ≈ 3.9 bins at 50-bp resolution
-        periodic = 1.0 + 0.3 * np.cos(2 * np.pi * (x - centre) / period_bins)
-        # Depletion dip at TSS (±150 bp → ±3 bins)
-        dip = 1.0 - 0.5 * np.exp(-0.5 * ((x - centre) / 3.0) ** 2)
+        # Periodic signal at the configured nucleosome repeat length.
+        period_bins = self.nucleosome_period_bp / self.bin_size
+        periodic = 1.0 + self.periodic_amplitude * np.cos(
+            2 * np.pi * (x - centre) / period_bins
+        )
+        # Gaussian depletion dip at TSS.
+        dip_halfwidth_bins = self.tss_dip_halfwidth_bp / self.bin_size
+        dip = 1.0 - self.tss_dip_amplitude * np.exp(
+            -0.5 * ((x - centre) / max(dip_halfwidth_bins, 1e-6)) ** 2
+        )
         pattern = periodic * dip
         return pattern / pattern.mean()
 
@@ -844,9 +918,10 @@ class RefinedEndMotifs:
     Refined fragment end motif analysis.
 
     Extends the basic 4-mer FEM from ``themis_features.py`` with:
-    - 5-mer frequencies with PCA-based dimensionality reduction
-    - Motif diversity stratified by fragment length bin
-    - GC-bias correction for motif frequencies
+    - Top-N per-motif deviation scores (NOT a true PCA — see
+      ``_top_motif_deviations`` for the algorithm description).
+    - Motif diversity stratified by fragment length bin.
+    - GC-bias correction for motif frequencies.
     """
 
     SHORT_MAX = 150
@@ -912,23 +987,49 @@ class RefinedEndMotifs:
 
         return short, mid, long_c
 
-    def _pca_reduce(
+    def _top_motif_deviations(
         self,
         counts: np.ndarray,
         n_components: int = 10
     ) -> np.ndarray:
-        """
-        PCA-based dimensionality reduction via SVD on centred frequencies.
+        """Top-N per-motif deviation scores (NOT a true PCA projection).
+
+        This is a per-sample rank-weighted deviation vector, NOT a
+        principal-component projection. There is no inter-sample
+        covariance structure; each sample's motifs are scored against
+        the uniform-background null independently. The function was
+        previously named ``_pca_reduce`` and emitted keys prefixed
+        ``fem_5mer_pc*``, which misleadingly suggested a true PCA. The
+        keys are kept as ``fem_5mer_pc*`` for backwards compatibility
+        with callers/tests, but the implementation is honest about what
+        it computes.
+
+        Algorithm
+        ---------
+        1. Convert raw counts to frequencies ``freqs``.
+        2. Subtract the uniform-background null ``bg = 1/n_motifs``.
+        3. Sort motif indices by count (descending); take the top N.
+        4. For each of the top-N motifs, emit the per-motif deviation
+           ``(freqs[i] - bg[i]) / norm * sqrt(n_motifs)`` where
+           ``norm = ||freqs - bg||``.
+
+        For a true cohort-level PCA reduction (motif × sample matrix
+        → first N principal components per sample) use a separate
+        external pipeline; this function is the per-sample deviation
+        summary used by ``extract()``.
 
         Parameters
         ----------
         counts : np.ndarray, shape (n_motifs,)
+            Per-sample motif counts (1024 for 5-mers, 256 for 4-mers).
         n_components : int
-            Number of principal components to retain.
+            Number of top-motif deviation scores to return.
 
         Returns
         -------
         np.ndarray, shape (n_components,)
+            Top-N per-motif deviation scores. Zero-filled when counts
+            are empty or all-zero.
         """
         total = counts.sum()
         if total == 0:
@@ -936,19 +1037,19 @@ class RefinedEndMotifs:
 
         freqs = counts.astype(np.float64) / total
 
-        # Simple SVD-based PCA on a single sample: use background model
-        # We construct a pseudo-covariance via outer product
+        # Uniform-background null. This is an OK null for 5-mers in
+        # cfDNA (Jiang 2020 reports near-uniform background over
+        # non-cancer controls) but a more accurate null would condition
+        # on the local GC content — left for a future revision.
         bg = np.ones_like(freqs) / len(freqs)
         diff = freqs - bg
-
-        # Use the direction as the "PC scores" (scaled by singular value proxy)
         norm = np.linalg.norm(diff)
         if norm == 0:
             return np.zeros(n_components)
 
-        # Project onto top n_components via power iteration or direct SVD
-        # For single vector, just return scaled components
-        # We need to produce n_components values → compute entropy-weighted deviations
+        # Sort by count descending; emit the top-N per-motif deviations.
+        # We sort by count (not by |deviation|) so the ordering is
+        # stable across samples with similar but not identical motifs.
         n_motifs = len(counts)
         sorted_indices = np.argsort(-counts)[:n_components]
         pc_scores = np.zeros(n_components)
@@ -966,6 +1067,17 @@ class RefinedEndMotifs:
         """
         Compute motif diversity (Simpson 1-D) per length bin.
 
+        For each length bin, the Simpson diversity is normalized
+        against the *effective* motif alphabet in that bin (the number
+        of motifs that received at least one count), not the universe
+        size of 1024. The previous version used the universe
+        denominator for every bin, which inflated MDS for length bins
+        with sparse motif coverage (e.g. short fragments <150 bp
+        typically only exercise a subset of all 1024 5-mers because
+        DNASE1L3 cutting preferences are biased). Normalizing against
+        the effective alphabet makes MDS values comparable across bins
+        regardless of coverage sparsity.
+
         Parameters
         ----------
         short, mid, long_counts : np.ndarray of shape (1024,)
@@ -980,9 +1092,16 @@ class RefinedEndMotifs:
             if total == 0:
                 return 0.0
             p = c / total
-            simpson = np.sum(p ** 2)
-            n = len(c)
-            return float((1.0 - simpson) / (1.0 - 1.0 / n))
+            simpson = float(np.sum(p ** 2))
+            # Effective alphabet: count motifs with at least one
+            # observation in this bin. For sparse bins this can be
+            # <<1024 and the normalizer (1 - 1/n_eff) prevents MDS
+            # from being artificially inflated by zero-count motifs
+            # that could never contribute to the numerator.
+            n_eff = int((c > 0).sum())
+            if n_eff <= 1:
+                return 0.0
+            return (1.0 - simpson) / (1.0 - 1.0 / n_eff)
 
         return {
             'fem_mds_short': _simpson_diversity(short),
@@ -1086,10 +1205,11 @@ class RefinedEndMotifs:
         feats: Dict[str, float] = {}
         counts_5mer = self._count_5mers(end_sequences, fragment_lengths)
 
-        # PCA-reduced 5-mer features
-        pc_scores = self._pca_reduce(counts_5mer, n_components=10)
+        # Per-motif deviation scores (formerly mis-named 'PCA'; see
+        # ``_top_motif_deviations`` for the honest algorithm description).
+        dev_scores = self._top_motif_deviations(counts_5mer, n_components=10)
         for i in range(10):
-            feats[f'fem_5mer_pc{i}'] = float(pc_scores[i])
+            feats[f'fem_5mer_pc{i}'] = float(dev_scores[i])
 
         # 5-mer entropy
         total_5 = counts_5mer.sum()
@@ -1177,8 +1297,14 @@ class EnhancedFragmentomics:
             Pre-computed per-window coverage profile. If None, computed
             from ``fragments``.
         methylation_data : np.ndarray or None
-            Reserved for future per-fragment methylation arrays.
-            Currently unused; methylation is read from ``fragments`` dicts.
+            Optional per-fragment methylation array (bool or 0/1).
+            Length must match ``fragments`` when provided. If set and
+            ``fragments`` dicts lack a ``methylated`` field, this
+            array is attached to each fragment so MFS-style features
+            get a real methylation signal. When ``methylation_data``
+            is None and ``fragments`` has no ``methylated`` field,
+            MFS methylation-dependent features return zero (the
+            documented fallback).
         end_sequences : list of str or None
             DNA sequences at fragment 5' ends (for motif analysis).
             If None, motif features return zeros.
@@ -1202,6 +1328,21 @@ class EnhancedFragmentomics:
             fragments = None
             end_sequences = None
             tss_positions = None
+
+        # Backfill per-fragment methylation status from the standalone
+        # ``methylation_data`` array if the fragments don't already
+        # carry a ``methylated`` field. This is the path real cfDNA
+        # methylation pipelines take (e.g. FinaleMe outputs a
+        # per-fragment β-value thresholded at 0.5) and previously the
+        # array was silently ignored.
+        if (
+            fragments is not None
+            and methylation_data is not None
+            and len(methylation_data) == len(fragments)
+        ):
+            for frag, meth in zip(fragments, methylation_data):
+                if "methylated" not in frag:
+                    frag["methylated"] = bool(meth)
 
         # 1. DELFI features
         delfi_feats = self.delfi.extract(

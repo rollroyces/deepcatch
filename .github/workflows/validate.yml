@@ -160,6 +160,27 @@ jobs:
           print(f"  {'='*60}")
           PYEOF
 
+  # ── Foundation model real-data smoke test (highest-leverage biomedical
+  # review item). Trains FoundationDownstream on real TCGA-LUAD panel-LLR
+  # scores + a synthetic fragmentomics channel, gates on AUC >= 0.80.
+  foundation-real-smoke:
+    name: Foundation real-data smoke (TCGA panel-LLR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Run foundation real-data smoke
+        run: |
+          set -e
+          set -o pipefail
+          mkdir -p results
+          python3 scripts/foundation_real_smoke.py --out results/foundation_real_smoke.json | tee results/foundation_real_smoke.log
+          # Gate is enforced inside the script (non-zero exit on AUC < 0.80);
+          # double-check the JSON reports pass=True as a redundant guard.
+          python3 -c "import json, sys; d = json.load(open('results/foundation_real_smoke.json')); sys.exit(0 if d['gate_pass'] else 1)"
       - uses: actions/upload-artifact@v4
         with:
           name: deepcatch-results
