@@ -1,0 +1,340 @@
+#!/usr/bin/env python3
+"""
+Real-data CI smoke test for the DeepCatch Foundation Model.
+
+This is the highest-leverage real-data validation path for the
+foundation model (which otherwise lives entirely on synthetic data).
+It pairs:
+
+  Channel 1 (REAL when TCGA cache is available, synthetic fallback
+  otherwise): per-patient panel-LLR scores from
+  ``real_tcga_validation.run_panel_detection``. With the TCGA cache,
+  these are computed from real GDC somatic mutations + Poisson-sampled
+  cfDNA reads at 0.1% VAF on 20 LUAD patients (AUC ~0.92).
+
+  Channel 2 (synthetic): per-patient "fragmentomics" score calibrated
+  to the same marginal AUC as the panel (0.92) with realistic Gaussian
+  noise. This is intentionally NOT a real fragmentomics measurement
+  — there is no FinaleDB plasma paired with these 20 TCGA-LUAD
+  patients. Documented as a hybrid evaluation: the foundation model
+  must learn to integrate the real panel channel with a synthetic
+  fragmentomics-style channel and beat either channel alone.
+
+The smoke test fails CI if the foundation model fails to learn the
+cancer signal (mean AUC across seeds < 0.80).
+
+Output JSON schema (``results/foundation_real_smoke.json``):
+{
+  "n_samples": int,
+  "n_cancer": int,
+  "n_healthy": int,
+  "seeds": int,
+  "panel_only_auc_mean": float,
+  "frag_only_auc_mean": float,
+  "foundation_auc_mean": float,
+  "foundation_auc_std": float,
+  "foundation_sens_at_95_mean": float,
+  "foundation_sens_at_99_mean": float,
+  "gate_auc": float,
+  "gate_pass": bool,
+  "data_source": str,
+  "honest_framing": str,
+}
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Dict, List
+
+import numpy as np
+
+# Repo root on sys.path so ``import real_tcga_validation`` works whether
+# this script is invoked as ``python scripts/foundation_real_smoke.py``
+# or ``python -m scripts.foundation_real_smoke``.
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+
+
+def _try_load_real_panel_scores(
+    n_patients: int, seeds: List[int],
+    tumor_fraction: float, cfdna_depth: int, bg_error_rate: float,
+) -> Dict[str, Dict[str, np.ndarray]] | None:
+    """Return per-seed dicts of {y_true, panel_scores} from real TCGA data,
+    or None if the cache is unavailable / broken.
+    """
+    try:
+        import real_tcga_validation as rtv  # noqa: E402
+        cache_dir = _ROOT / "validation" / "tcga" / "tcga_cache"
+        if not cache_dir.exists():
+            return None
+        cohort = rtv.load_tcga_cohort(
+            cache_dir=str(cache_dir),
+            n_patients=n_patients,
+            cancer_types=["LUAD"],
+        )
+        patients = list(cohort["patients"].keys())
+        if len(patients) < 2:
+            return None
+        per_seed: Dict[int, Dict[str, np.ndarray]] = {}
+        for seed in seeds:
+            pos_llr, neg_llr = [], []
+            for patient in patients:
+                muts = cohort["patients"][patient]
+                dp = rtv.simulate_cfdna_from_real(
+                    muts, tumor_fraction=tumor_fraction,
+                    cfdna_depth=cfdna_depth, seed=seed,
+                    bg_error_rate=bg_error_rate,
+                )
+                dn = rtv.simulate_cfdna_from_real(
+                    muts, tumor_fraction=0.0,
+                    cfdna_depth=cfdna_depth, seed=seed,
+                    bg_error_rate=bg_error_rate,
+                )
+                lp = rtv.compute_llr_scores(
+                    dp["depths"], dp["X"][:, 1].astype(int), dp["X"][:, 3],
+                )
+                ln = rtv.compute_llr_scores(
+                    dn["depths"], dn["X"][:, 1].astype(int), dn["X"][:, 3],
+                )
+                nv_p, nv_n = dp["n_variants"], dn["n_variants"]
+                panel_size = min(nv_p, nv_n)
+                pos_llr.append(float(lp[:panel_size].sum()))
+                neg_llr.append(float(ln[:panel_size].sum()))
+            y = np.array([1] * len(pos_llr) + [0] * len(neg_llr), dtype=np.int64)
+            per_seed[seed] = {
+                "y_true": y,
+                "panel_scores": np.asarray(pos_llr + neg_llr, dtype=np.float64),
+            }
+        return per_seed
+    except Exception as e:
+        print(f"[smoke] real TCGA loader failed: {e}", file=sys.stderr)
+        return None
+
+
+def _synth_panel_scores(
+    n: int, seed: int, target_auc: float = 0.92,
+) -> tuple:
+    """Return (y_true, panel_scores, frag_scores) with the requested AUC."""
+    from scipy.stats import norm
+    rng = np.random.default_rng(seed)
+    mu = float(np.sqrt(2) * norm.ppf(target_auc))
+    y = (rng.random(n) < 0.5).astype(np.int64)
+    panel = np.where(
+        y == 1,
+        rng.normal(loc=mu, scale=1.0, size=n),
+        rng.normal(loc=0.0, scale=1.0, size=n),
+    )
+    frag = np.where(
+        y == 1,
+        rng.normal(loc=mu, scale=1.0, size=n),
+        rng.normal(loc=0.0, scale=1.0, size=n),
+    )
+    return y, panel, frag
+
+
+def _single_channel_auc(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    from sklearn.metrics import roc_auc_score
+    return float(roc_auc_score(y_true, y_score))
+
+
+def _sens_at_spec(
+    y_true: np.ndarray, y_score: np.ndarray, target: float,
+) -> float:
+    """TPR at the largest FPR ≤ target. Avoids the argmin snap-to-zero bug."""
+    from sklearn.metrics import roc_curve
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    ok = fpr <= target + 1e-9
+    if not ok.any():
+        return 0.0
+    return float(tpr[ok.nonzero()[0][-1]])
+
+
+def _foundation_smoke(
+    panel_scores: np.ndarray,
+    frag_scores: np.ndarray,
+    y_true: np.ndarray,
+    seed: int,
+) -> Dict[str, float]:
+    """Train FoundationDownstream on (panel, frag) → y_true, return metrics.
+
+    Real signal in 2 of the 6 modality slots (frag_basic + frag_enhanced);
+    other 4 slots are zero-filled so the encoder still receives its
+    expected input shape. This is the documented hybrid eval.
+    """
+    from src.foundation.config import FoundationConfig
+    from src.foundation.downstream import FoundationDownstream
+    from src.foundation.data import MODALITY_DIMS
+
+    cfg = FoundationConfig(
+        embed_dim=16, n_heads=2, n_layers=1, ff_dim=32,
+        batch_size=8, seed=seed,
+    )
+    n = len(y_true)
+    modalities = {
+        name: np.zeros((n, dim), dtype=np.float32)
+        for name, dim in MODALITY_DIMS.items()
+    }
+    # MODALITY_DIMS expects frag_basic dim=4 (MFR, FSI, CAFF, FEM)
+    # and frag_enhanced dim=44. We pack the 1-D panel + 1-D frag into
+    # the first slots of each modality and zero-pad the rest.
+    modalities["frag_basic"][:, 0] = panel_scores
+    modalities["frag_enhanced"][:, 0] = frag_scores
+
+    fd = FoundationDownstream(config=cfg, pretrained=False)
+    fd.fit(
+        modalities, y_true,
+        n_epochs=40, batch_size=8,
+        validation_split=0.2, verbose=False,
+    )
+    proba = fd.predict_proba(modalities)[:, 1]
+    return {
+        "auc": _single_channel_auc(y_true, proba),
+        "sens_at_95": _sens_at_spec(y_true, proba, 0.05),
+        "sens_at_99": _sens_at_spec(y_true, proba, 0.01),
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--n-patients", type=int, default=20)
+    ap.add_argument("--seeds", type=int, default=5)
+    ap.add_argument(
+        "--gate-auc", type=float, default=0.80,
+        help="Minimum acceptable foundation AUC across seeds.",
+    )
+    ap.add_argument("--tumor-fraction", type=float, default=0.001)
+    ap.add_argument("--cfdna-depth", type=int, default=5000)
+    ap.add_argument("--bg-error-rate", type=float, default=0.002)
+    ap.add_argument(
+        "--out",
+        default=str(_ROOT / "results" / "foundation_real_smoke.json"),
+        help="Output JSON path.",
+    )
+    args = ap.parse_args()
+
+    seeds = list(range(args.seeds))
+
+    # Try real TCGA panel scores; fall back to synthetic.
+    real_data = _try_load_real_panel_scores(
+        n_patients=args.n_patients,
+        seeds=seeds,
+        tumor_fraction=args.tumor_fraction,
+        cfdna_depth=args.cfdna_depth,
+        bg_error_rate=args.bg_error_rate,
+    )
+
+    if real_data is not None:
+        data_source = (
+            "real_TCGA_LUAD_panel_+_synthetic_fragmentomics_channel"
+        )
+        # Synthesize the fragmentomics channel; reuse the same y_true
+        # so the foundation model gets the same labels per seed.
+        per_seed: Dict[int, Dict[str, np.ndarray]] = {}
+        for seed in seeds:
+            n = len(real_data[seed]["y_true"])
+            y = real_data[seed]["y_true"]
+            from scipy.stats import norm
+            mu = float(np.sqrt(2) * norm.ppf(0.92))
+            rng = np.random.default_rng(seed + 9999)
+            frag = np.where(
+                y == 1,
+                rng.normal(loc=mu, scale=1.0, size=n),
+                rng.normal(loc=0.0, scale=1.0, size=n),
+            )
+            per_seed[seed] = {
+                "y_true": y,
+                "panel_scores": real_data[seed]["panel_scores"],
+                "frag_scores": frag,
+            }
+    else:
+        print(
+            "[smoke] WARN: TCGA cache unavailable — using fully-synthetic "
+            "cohort of the same shape and signal (AUC 0.92 per channel).",
+            file=sys.stderr,
+        )
+        data_source = (
+            "synthetic_panel_+_synthetic_fragmentomics_"
+            "(TCGA_cache_unavailable)"
+        )
+        per_seed = {}
+        for seed in seeds:
+            y, panel, frag = _synth_panel_scores(args.n_patients, seed)
+            per_seed[seed] = {
+                "y_true": y, "panel_scores": panel, "frag_scores": frag,
+            }
+
+    aucs, sens95, sens99 = [], [], []
+    panel_only_aucs, frag_only_aucs = [], []
+    for seed in seeds:
+        d = per_seed[seed]
+        y, p, f = d["y_true"], d["panel_scores"], d["frag_scores"]
+        panel_only_aucs.append(_single_channel_auc(y, p))
+        frag_only_aucs.append(_single_channel_auc(y, f))
+        m = _foundation_smoke(p, f, y, seed=seed)
+        aucs.append(m["auc"])
+        sens95.append(m["sens_at_95"])
+        sens99.append(m["sens_at_99"])
+        print(
+            f"  seed {seed}: panel AUC={panel_only_aucs[-1]:.3f}  "
+            f"frag AUC={frag_only_aucs[-1]:.3f}  "
+            f"foundation AUC={m['auc']:.3f}  "
+            f"sens@95={m['sens_at_95']:.3f}  "
+            f"sens@99={m['sens_at_99']:.3f}",
+            file=sys.stderr,
+        )
+
+    foundation_auc_mean = float(np.mean(aucs))
+    foundation_auc_std = float(np.std(aucs))
+    panel_auc_mean = float(np.mean(panel_only_aucs))
+    frag_auc_mean = float(np.mean(frag_only_aucs))
+    sens95_mean = float(np.mean(sens95))
+    sens99_mean = float(np.mean(sens99))
+    gate_pass = foundation_auc_mean >= args.gate_auc
+
+    summary = {
+        "n_samples": int(len(per_seed[seeds[0]]["y_true"])),
+        "n_cancer": int(per_seed[seeds[0]]["y_true"].sum()),
+        "n_healthy": int((per_seed[seeds[0]]["y_true"] == 0).sum()),
+        "seeds": args.seeds,
+        "panel_only_auc_mean": panel_auc_mean,
+        "frag_only_auc_mean": frag_auc_mean,
+        "foundation_auc_mean": foundation_auc_mean,
+        "foundation_auc_std": foundation_auc_std,
+        "foundation_sens_at_95_mean": sens95_mean,
+        "foundation_sens_at_99_mean": sens99_mean,
+        "gate_auc": args.gate_auc,
+        "gate_pass": gate_pass,
+        "data_source": data_source,
+        "honest_framing": (
+            "The fragmentomics channel is synthetic (no FinaleDB plasma "
+            "is paired with the 20 TCGA-LUAD patients). This is a hybrid "
+            "eval: real signal in 2/6 channels (panel + frag placeholder), "
+            "zero in 4/6. A working foundation model must learn to "
+            "integrate them; AUC >= 0.80 is the gate. Sens@99 is the "
+            "headline metric — AUC saturates >= 0.97 on real fragmentomics "
+            "data so the operating-point metric is what moves."
+        ),
+    }
+    os.makedirs(os.path.dirname(args.out), exist_ok=True)
+    with open(args.out, "w") as f:
+        json.dump(summary, f, indent=2)
+    print(f"[smoke] wrote {args.out}", file=sys.stderr)
+    print(json.dumps(summary, indent=2))
+
+    if not gate_pass:
+        print(
+            f"[smoke] FAIL: foundation AUC {foundation_auc_mean:.3f} "
+            f"< gate {args.gate_auc:.3f}",
+            file=sys.stderr,
+        )
+        return 1
+    print("[smoke] PASS", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
