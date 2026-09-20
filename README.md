@@ -107,6 +107,44 @@ flowchart TB
 
 ---
 
+## Validation Scope — What's Real vs What's Synthetic
+
+> **Every DeepCatch claim is traceable to computations in `validation/` and `src/`. No numbers are invented. No clinical claims are intended.**
+
+The repo contains two distinct validation surfaces; reviewers should not conflate them:
+
+### ✅ Validated against real cfDNA / clinical-grade simulation
+
+| Component | Validation surface | Reference |
+|---|---|---|
+| `real_tcga_validation.py` (panel-LLR, Fisher, strand) | TCGA GDC open-access MAFs (real somatic mutations) + Poisson-sampled cfDNA reads at target VAF. AUC 0.92 at 0.1% VAF on 20 LUAD patients; +18pp Sens@99% with CADD Top-K=200. | `results/real_tcga_validation.json`, `docs/CADD_*` |
+| `src/fragmentomics/tumor_naive_adapter.py` + `fusion_ablation.py` | FinaleDB public cfDNA WGS fragments (170 MB per sample). 627-sample cross-study pan-cancer cohort, 5-channel profile (5Mb + 100kb short/long ratio + coverage + 196-bin FSD). AUC 0.9753 ± 0.002 (tumor-naive alone); 0.9886 ± 0.001 (naive-avg fusion vs synthetic mutation channel @ AUC 0.92). DeLong p<0.0015 across 5 seeds. | `docs/FUSION_ISOTONIC.md`, sister repo `cfdna-fragmentomics-pipeline` |
+| `src/fragmentomics/normalization.py` (DELFI LOESS GC correction + per-bin median-centering) | Standard DELFI protocol from Cristiano et al. 2019 (Nature 570:385-389). LOESS smoothing with `statsmodels`; quadratic polynomial fallback. | `validation/cfdna/` artifacts |
+| `src/fragmentomics/themis_features.py` (MFR, FSI, CAFF, FEM) | THEMIS gastric-cancer detection framework (Bie 2023, Nature Communications). 4-mer FEM calibrated on Jiang 2020 (Cancer Discovery). | `run_jiang_analysis.py --nested-cv --report` |
+| `src/multimodal_fusion/advanced_fusion.py` (PyTorch rewrite) | sklearn-LR-API drop-in replacement. PyTorch modules train end-to-end with stratified val split + NaN guards. Synthetic-data AUC ≥ 0.99 on separable data; no real-cfDNA training. | this PR (commit 64c5aeb) |
+
+### 🧪 Synthetic-data only — NOT validated against real cfDNA
+
+| Component | Validation surface | Why listed here |
+|---|---|---|
+| `src/foundation/` (MultiModalEncoder + PretrainHead + ContrastiveHead + FoundationDownstream) | `MultiModalDataGenerator` synthetic 6-modality dataset. Pretraining (3-phase MMP + contrastive + joint) and downstream fine-tuning are closed-loop on synthetic features. | Documents the architecture; no claim is made about real-cfDNA performance. |
+| `src/methylation_gnn/` (GATv2 + ReconstructionDecoder + AnomalyHead) | Synthetic per-fragment methylation arrays. Real cfDNA methylation data is not wired in (see `src/methylation_gnn/CHANGES.md` for the planned FinaleMe integration). | Architecture-only reference. |
+| `src/tissue_deconv/` (cfSort-style 4-layer MLP, 29 tissues) | Synthetic tissue atlas. Real plasma methylation β-values are not used in training. | Architecture-only reference. |
+| `src/clinical/`, `src/priming/` (clinical decision-curve, PK/PD, whitepaper) | Synthetic data and threshold sweeps. | Decision-theoretic scaffolding. |
+| `model/tokenizer.py` (BPE subword tokenizer + neural motif model) | Synthetic FASTA motif benchmark (100% vs 46.5% accuracy on synthetic data). | Architecture-only reference. |
+
+### The fusion number that IS validated end-to-end
+
+The `fusion_ablation.py` AUC of **0.9886** (naive average of tumor-naive 5-channel fragmentomics + a **synthetic** mutation channel calibrated to AUC 0.92) is a clean what-if experiment that answers: "given a mutation-informed channel of this quality, does fusion help?". The +0.0143 fusion gain (paired t p<0.0001, DeLong p<0.0015 on every seed) is honest on its cohort. The mutation score is **not** a measurement from the same plasma samples as the fragmentomics score — pairing them on real plasma is the next phase.
+
+### What is NOT in this repo
+
+- **No real plasma cfDNA sample has ever been processed end-to-end through the foundation model.** The pretraining → fine-tuning → evaluation loop uses synthetic features only. A real-data CI smoke test is the highest-leverage next step (see `docs/PORTFOLIO_ROADMAP.md` and Phase 2 of the biomedical review).
+- **No held-out clinical validation.** All reported AUCs are in-sample 5-fold or pooled OOF on the same cohort the model was trained on.
+- **No clinical-grade operating-point thresholds.** The decision-curve analyzer reports per-specificity operating tables but the recommended threshold τ is calibrated against the training cohort, not a screening cohort with prevalence ~0.4%.
+
+---
+
 ## Installation
 
 ```bash
