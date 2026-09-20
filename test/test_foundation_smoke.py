@@ -75,16 +75,42 @@ def _run_smoke(tmp_dir: str) -> dict:
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
 def test_smoke_returns_all_three_channel_metrics(tmp_path):
-    """The smoke output must report foundation + lr_baseline + naive_avg."""
+    """The smoke output must report foundation + lr_baseline + naive_avg,
+    plus the shuffled-label negative control and the signal-to-artifact
+    ratio so reviewers can verify the AUC is signal-driven, not artifact.
+    """
     d = _run_smoke(str(tmp_path))
     for key in (
         "foundation_auc_mean", "foundation_auc_std",
         "foundation_sens_at_99_mean",
         "lr_baseline_auc_mean", "lr_baseline_sens_at_99_mean",
         "naive_avg_auc_mean", "naive_avg_sens_at_99_mean",
+        "shuffled_lr_baseline_auc_mean",
+        "shuffled_naive_avg_auc_mean",
+        "shuffled_foundation_auc_mean",
+        "signal_to_artifact_ratio",
         "gate_pass", "data_source", "honest_framing",
     ):
         assert key in d, f"smoke output missing key {key!r}"
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_smoke_shuffled_label_auc_is_below_real(tmp_path):
+    """Sanity check: when labels are shuffled, the model AUC must be
+    meaningfully below the real-labels AUC. Otherwise the real AUC is
+    an artifact of the paired cancer/control design.
+
+    We allow shuffled_auc up to 0.65 (some patient-pair structure
+    always leaks through); we require shuffled_auc < real_auc - 0.10.
+    """
+    d = _run_smoke(str(tmp_path))
+    real = d["lr_baseline_auc_mean"]
+    shuf = d["shuffled_lr_baseline_auc_mean"]
+    assert shuf < real - 0.10, (
+        f"shuffled lr_baseline AUC {shuf:.3f} is too close to real "
+        f"{real:.3f}; the real AUC may be artifact, not signal. "
+        f"signal_to_artifact_ratio = {d['signal_to_artifact_ratio']:.2f}"
+    )
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")

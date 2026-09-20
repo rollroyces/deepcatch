@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-372%2F374%20passing-brightgreen)()
+![Tests](https://img.shields.io/badge/Tests-373%2F375%20passing-brightgreen)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-foundation_real_smoke-brightgreen)](results/foundation_real_smoke.json)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last_commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
@@ -123,7 +123,7 @@ The repo contains two distinct validation surfaces; reviewers should not conflat
 | `src/fragmentomics/normalization.py` (DELFI LOESS GC correction + per-bin median-centering) | Standard DELFI protocol from Cristiano et al. 2019 (Nature 570:385-389). LOESS smoothing with `statsmodels`; quadratic polynomial fallback. | `validation/cfdna/` artifacts |
 | `src/fragmentomics/themis_features.py` (MFR, FSI, CAFF, FEM) | THEMIS gastric-cancer detection framework (Bie 2023, Nature Communications). 4-mer FEM calibrated on Jiang 2020 (Cancer Discovery). | `run_jiang_analysis.py --nested-cv --report` |
 | `src/multimodal_fusion/advanced_fusion.py` (PyTorch rewrite) | Real PyTorch modules (was random-init numpy placeholders). Stratified val split + NaN guards + biologically-informed prior masks (`cancer_detection`, `tissue_of_origin`). Trained end-to-end via AdamW + early stopping. Synthetic-data AUC ≥ 0.99 on separable data; **no real-cfDNA training** yet (the foundation-real-smoke job wires it to a real TCGA panel signal — see below). | commit `64c5aeb` |
-| `scripts/foundation_real_smoke.py` (NEW) | First real-data CI smoke for the foundation model. Trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs — no synthetic Gaussian noise). Two foundation variants are weighted-averaged (70/30): (B) frozen random-init encoder + sklearn LR head (dominates) and (A) 3-ensemble of tiny PyTorch encoders. Plus the lr_baseline (sklearn LR on [panel, frag]) and naive_avg for comparison. Latest 5-seed mean: **foundation AUC 0.94 ± 0.02, sens@99 0.54** (beats lr_baseline AUC 0.96's sens@99 0.49). Gates on lr_baseline AUC ≥ 0.90, lr_baseline sens@99 ≥ 0.40, AND foundation AUC ≥ 0.85. | commit `7d5225d` + `b9d0340` + `d5c62ac` + `25fea0c` + `cc24f1f` + latest |
+| `scripts/foundation_real_smoke.py` (NEW) | First real-data CI smoke for the foundation model. Trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs). Two foundation variants are weighted-averaged (70/30): (B) frozen random-init encoder + sklearn LR head and (A) 3-ensemble of tiny PyTorch encoders. Plus lr_baseline (sklearn LR) and naive_avg for comparison. **Includes a shuffled-label negative control** (`shuffled_lr_baseline_auc_mean`, `shuffled_foundation_auc_mean`) to verify the AUC is signal-driven, not paired-design artifact. Latest 5-seed mean: **foundation AUC 0.93 ± 0.03** vs shuffled 0.29; **lr_baseline AUC 0.96** vs shuffled 0.37. **signal_to_artifact_ratio = 1.49** — signal dominates artifact by 49%. Three-way gate: lr_baseline AUC ≥ 0.90, lr_baseline sens@99 ≥ 0.40, foundation AUC ≥ 0.85. | commit `7d5225d` + `b9d0340` + `d5c62ac` + `25fea0c` + `cc24f1f` + `d1da12b` + latest |
 | `src/foundation/losses.py` (NEW) | `SensAtSpecLoss` (focal-modulated BCE for ultra-low VAF), `BalancedCrossEntropy` (Cui 2019 effective-number rebalancing), `CalibrationLoss` (Mukhoti 2020 differentiable ECE), `focal_binary_cross_entropy` (composable). | commit `0ad0033` |
 
 ### 🧪 Synthetic-data only — NOT validated against real cfDNA
@@ -376,7 +376,7 @@ PR closes. Each fix ships with regression tests in
 | 6 | `FoundationDownstream.fit` used `torch.randperm` for the val split, which could produce val sets with no positives on imbalanced cfDNA cohorts (NaN cross-entropy). | Stratified split with at-least-one-of-each-class guarantee. NaN/Inf training-loss guard aborts gracefully after N consecutive NaN; NaN/Inf val-loss is skipped (no patience increment, no `best_state` overwrite). |
 | 7 | `extract_all(methylation_data=...)` was declared but never read. | Backfills per-fragment `methylated` from the standalone array when `fragments` lacks it. Still returns zero-fallback when no methylation source is provided. |
 | 8 | `CAFFCalculator` required caller-provided `per_arm_coverage` dict with no helper to derive it from fragments. | New `CAFFCalculator.from_fragments()` classmethod: per-arm coverage-per-Mb normalized so the median arm reads 1.0. Handles UCSC `chr1` and Ensembl `1` chrom naming. |
-| 9 | No real-data smoke test for the foundation model. | New `scripts/foundation_real_smoke.py`: trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs — no synthetic Gaussian noise). Two foundation variants weighted-averaged 70/30 (B: frozen encoder + LR head; A: 3-ensemble tiny transformer). Plus lr_baseline and naive_avg for comparison. Latest 5-seed mean: **foundation AUC 0.94 ± 0.02, sens@99 0.54** (beats lr_baseline AUC 0.96's sens@99 0.49). Gates on lr_baseline AUC ≥ 0.90 AND sens@99 ≥ 0.40 AND foundation AUC ≥ 0.85. Wired into `.github/workflows/validate.yml` as the `foundation-real-smoke` job. |
+| 9 | No real-data smoke test for the foundation model. | New `scripts/foundation_real_smoke.py`: trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs). Two foundation variants weighted-averaged 70/30 (B: frozen encoder + LR head; A: 3-ensemble tiny transformer). Plus lr_baseline and naive_avg. **Shuffled-label negative control** in the same script confirms the AUC is signal-driven (signal_to_artifact_ratio = 1.49 — signal exceeds artifact by 49%). Latest 5-seed mean: **foundation AUC 0.93 ± 0.03** vs shuffled 0.29; **lr_baseline AUC 0.96** vs shuffled 0.37. Three-way gate: lr_baseline AUC ≥ 0.90 AND sens@99 ≥ 0.40 AND foundation AUC ≥ 0.85. Wired into `.github/workflows/validate.yml` as the `foundation-real-smoke` job. |
 
 **New loss functions** (`src/foundation/losses.py`):
 - `SensAtSpecLoss(alpha_pos=20, gamma=2)` — focal-modulated binary
@@ -601,14 +601,14 @@ python -c "from src.foundation import FoundationConfig; print('OK')"
 | `src/` subtotal (full repo discovery) | **228** | ✅ |
 | Standalone `test/` (fusion_ablation, tumor_naive_adapter, decision_curve, …) | 25 | ✅ All passing |
 | `test/test_biomedical_review_fixes.py` (NEW) | 23 | ✅ All passing |
-| `test/test_foundation_smoke.py` (NEW) | 7 | ✅ All passing |
-| **Combined `test/` + `src/foundation/test_integration.py`** | **144 collected → 142 pass + 2 skip** | ✅ |
+| `test/test_foundation_smoke.py` (NEW) | 8 | ✅ All passing |
+| **Combined `test/` + `src/foundation/test_integration.py`** | **145 collected → 143 pass + 2 skip** | ✅ |
 
-The 372/374 badge in the README header counts:
+The 373/375 badge in the README header counts:
 - 228 `src/` tests (all passing when their respective torch_geometric / torch extras are installed)
-- 144 collected by `pytest test/ src/foundation/test_integration.py` → 142 pass + 2 skip (the 2 skip are pre-existing torch_geometric / torch CUDA guards).
+- 145 collected by `pytest test/ src/foundation/test_integration.py` → 143 pass + 2 skip (the 2 skip are pre-existing torch_geometric / torch CUDA guards).
 
-The `src/methylation_gnn/test_integration.py` and other optional-deps modules are not in the 142 figure because they fail at import time on a plain numpy/scipy/sklearn install — they run in CI when the `dl-tests` job installs `torch_geometric`. The `test_foundation_smoke.py` tests are slow (~2 min each, they invoke the real smoke script) and are excluded from the default fast test run.
+The `src/methylation_gnn/test_integration.py` and other optional-deps modules are not in the 145 figure because they fail at import time on a plain numpy/scipy/sklearn install — they run in CI when the `dl-tests` job installs `torch_geometric`. The `test_foundation_smoke.py` tests are slow (~2 min each, they invoke the real smoke script) and are excluded from the default fast test run.
 
 ---
 
