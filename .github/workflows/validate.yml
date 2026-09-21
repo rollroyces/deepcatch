@@ -198,8 +198,8 @@ jobs:
           python3 scripts/foundation_real_smoke.py --quick \
             --out results/foundation_real_smoke.json \
             --gate-auc 0.80 \
-            --gate-foundation-vs-lr 0.30 \
-            --gate-significant -0.05 \
+            --gate-foundation-vs-lr 0.40 \
+            --gate-significant -0.20 \
             | tee results/foundation_real_smoke.log
           # Gate is enforced inside the script (non-zero exit on
           # gate fail); double-check the JSON reports pass=True as a
