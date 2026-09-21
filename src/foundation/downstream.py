@@ -263,6 +263,16 @@ class FoundationDownstream:
         # on imbalanced cfDNA screening cohorts.
         n_samples = int(labels_t.shape[0])
         rng = np.random.default_rng(self.config.seed)
+        # Audit-2 P0-D fix: seed PyTorch too. Without this, the
+        # trainable transformer (variant A) drifts between runs
+        # because torch.randperm + dropout jitter + attention
+        # softmax jitter are unseeded. The downstream effect is
+        # that two --quick runs with the same seed produce
+        # different JSONs (the foundation smoke JSON is therefore
+        # not bit-reproducible across runs).
+        torch.manual_seed(self.config.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(self.config.seed)
         labels_np = labels.astype(np.int64)
         idx_pos = np.where(labels_np == 1)[0]
         idx_neg = np.where(labels_np == 0)[0]

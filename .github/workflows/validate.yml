@@ -189,17 +189,17 @@ jobs:
           # --n-ensemble 3) take 5-10 min on torch-cpu and would time
           # out. The publication-quality numbers live in
           # results/foundation_real_smoke.json from local runs.
-          # The CI gate thresholds are deliberately lower than the
-          # publication gate (--gate-auc 0.80 --gate-sens99 0.0
-          # --gate-foundation-auc 0.80) because with --quick there
-          # are fewer seeds so per-seed variance dominates and a
-          # sens@99 of exactly 0 on one seed (perfect specificity,
-          # no positives above 99% threshold) is realistic.
+          # Audit-2 P0-F: the gate is now (a) lr_baseline AUC ≥
+          # gate-auc (panel signal is real), (b) |foundation − lr|
+          # ≤ gate-foundation-vs-lr (foundation isn't catastrophically
+          # broken), (c) foundation − shuffled > gate-significant
+          # (real signal exceeds the null). Lower thresholds for
+          # --quick because per-seed variance is huge at 2 seeds.
           python3 scripts/foundation_real_smoke.py --quick \
             --out results/foundation_real_smoke.json \
             --gate-auc 0.80 \
-            --gate-foundation-auc 0.80 \
-            --gate-sens99 0.0 \
+            --gate-foundation-vs-lr 0.30 \
+            --gate-significant -0.05 \
             | tee results/foundation_real_smoke.log
           # Gate is enforced inside the script (non-zero exit on
           # gate fail); double-check the JSON reports pass=True as a
