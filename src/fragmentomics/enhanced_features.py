@@ -419,17 +419,24 @@ class MFSFeatures:
         xs = mean_sizes[mask]
         ys = meth_fracs[mask]
 
-        x_std = np.std(xs)
-        y_std = np.std(ys)
+        # Be paranoid about zero-variance inputs. Some numpy/scipy
+        # versions return NaN from pearsonr() on constant input,
+        # others return 0.0 — and either way the function shouldn't
+        # be returning NaN silently. Force 0.0 here.
+        with np.errstate(invalid="ignore", divide="ignore"):
+            x_std = float(np.std(xs))
+            y_std = float(np.std(ys))
 
-        if x_std == 0 or y_std == 0:
+        if not np.isfinite(x_std) or not np.isfinite(y_std) or x_std < 1e-12 or y_std < 1e-12:
             return 0.0
 
         try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                r, _ = pearsonr(xs, ys)
-            return float(r) if not np.isnan(r) else 0.0
+                r, _ = pearsonr(xs.astype(float), ys.astype(float))
+            if not np.isfinite(r):
+                return 0.0
+            return float(r)
         except Exception:
             return 0.0
 
