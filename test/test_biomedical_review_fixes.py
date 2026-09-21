@@ -398,3 +398,70 @@ def test_gcn_too_returns_pred_and_proba():
     assert pred.shape == (n,)
     assert proba.shape == (n, 2)
     assert np.all((proba >= 0) & (proba <= 1))
+
+
+# ── Test #24: module imports cleanly without torch installed ─────────────
+# Regression for the CI core-tests failure: advanced_fusion.py's
+# module-level class definitions (`class _GatedCrossAttention(nn.Module):`)
+# crashed at import time when torch wasn't installed, which broke the
+# core-tests job (no torch → ImportError on the whole module → all tests
+# in src/multimodal_fusion fail to collect → pytest exit 2).
+#
+# We simulate "no torch" by stubbing out sys.modules['torch'] *before*
+# importing advanced_fusion. The new code path installs a synthetic
+# nn.Module so class definitions succeed and the module imports; the
+# public API then raises a clear error at call time.
+
+
+def test_advanced_fusion_imports_without_torch():
+    """Importing the module must not crash when torch is unavailable."""
+    import importlib
+    import sys
+    import types
+
+    # Save real torch
+    real_torch = sys.modules.get("torch")
+    real_nn = sys.modules.get("torch.nn")
+    real_func = sys.modules.get("torch.nn.functional")
+
+    try:
+        # Stub torch with no nn.Module (simulates partial install)
+        fake = types.ModuleType("torch")
+        fake.nn = types.ModuleType("torch.nn")
+        fake.nn.functional = types.ModuleType("torch.nn.functional")
+        sys.modules["torch"] = fake
+        sys.modules["torch.nn"] = fake.nn
+        sys.modules["torch.nn.functional"] = fake.nn.functional
+
+        # Drop cached advanced_fusion
+        for mod in list(sys.modules):
+            if "src.multimodal_fusion" in mod or "src.foundation" in mod:
+                sys.modules.pop(mod, None)
+
+        # Import must succeed
+        import src.multimodal_fusion.advanced_fusion as af
+        assert af._HAS_TORCH is False, "should detect missing torch"
+        # nn.Module should be a stub class, not None
+        assert hasattr(af.nn, "Module"), "stub nn should have Module"
+
+        # Public API should raise a clear error at call time
+        try:
+            af.CrossAttentionFusion(n_modalities=4).fit(
+                [np.random.randn(20, 8) for _ in range(4)],
+                np.random.randint(0, 2, 20),
+            )
+            assert False, "should have raised"
+        except (ImportError, RuntimeError) as e:
+            assert "torch" in str(e).lower(), f"error should mention torch, got: {e}"
+    finally:
+        # Restore real torch
+        if real_torch is not None:
+            sys.modules["torch"] = real_torch
+        if real_nn is not None:
+            sys.modules["torch.nn"] = real_nn
+        if real_func is not None:
+            sys.modules["torch.nn.functional"] = real_func
+        # Drop cached modules
+        for mod in list(sys.modules):
+            if "src.multimodal_fusion" in mod:
+                sys.modules.pop(mod, None)

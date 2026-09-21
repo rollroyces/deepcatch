@@ -66,12 +66,105 @@ try:
     import torch.nn as nn
     import torch.nn.functional as F
 
+    # Some stub-torch environments (partial installs) have nn.Module
+    # missing. Verify before declaring _HAS_TORCH = True so the
+    # class definitions below don't crash.
+    if not hasattr(nn, "Module"):
+        raise AttributeError("torch.nn.Module missing — broken stub torch")
+
     _HAS_TORCH = True
-except ImportError:  # pragma: no cover
+except (ImportError, AttributeError):  # pragma: no cover
+    # ImportError: torch not installed.
+    # AttributeError: stub torch without nn.Module (partial installs).
+    # We need real, working classes for module-level class definitions
+    # like `class _GatedCrossAttention(nn.Module):` to succeed — so
+    # we install a stub `nn.Module` and friends. Public API methods
+    # that actually need torch check _HAS_TORCH at call time.
     _HAS_TORCH = False
-    torch = None  # type: ignore
-    nn = None  # type: ignore
-    F = None  # type: ignore
+    import types as _types
+    import sys as _sys
+
+    def _make_stub_module(name, forward=lambda *a, **k: None):
+        return type(name, (), {
+            "__init__": lambda self, *a, **k: None,
+            "forward": forward,
+        })
+
+    def _make_stub_optimizer(name):
+        return type(name, (), {
+            "__init__": lambda self, *a, **k: None,
+            "zero_grad": lambda self: None,
+            "step": lambda self: None,
+            "state_dict": lambda self: {},
+            "load_state_dict": lambda self, *a, **k: None,
+        })
+
+    def _make_stub_optim_module():
+        m = _types.ModuleType("_stub_torch_optim")
+        m.Optimizer = _make_stub_optimizer("_StubOptimizer")
+        m.AdamW = _make_stub_optimizer("_StubAdamW")
+        m.SGD = _make_stub_optimizer("_StubSGD")
+        return m
+
+    def _make_stub_torch():
+        mod = _types.ModuleType("_stub_torch")
+        mod.nn = _types.ModuleType("_stub_torch_nn")
+        mod.nn.Module = _make_stub_module("_StubModule")
+        mod.nn.Linear = _make_stub_module("_StubLinear")
+        mod.nn.Sequential = _make_stub_module("_StubSequential")
+        mod.nn.ModuleList = _make_stub_module("_StubModuleList")
+        mod.nn.LayerNorm = _make_stub_module("_StubLayerNorm")
+        mod.nn.Dropout = _make_stub_module("_StubDropout")
+        mod.nn.GELU = _make_stub_module("_StubGELU")
+        mod.nn.functional = _types.ModuleType("_stub_torch_nn_functional")
+        mod.nn.utils = _types.ModuleType("_stub_torch_nn_utils")
+        mod.nn.utils.clip_grad_norm_ = lambda *a, **k: None
+        mod.optim = _make_stub_optim_module()
+        mod.no_grad = lambda: (lambda f: f)  # no-op decorator
+        mod.enable_grad = lambda: (lambda f: f)
+        mod.inference_mode = lambda *a, **k: (lambda f: f)
+        mod.from_numpy = lambda x, **k: x
+        mod.tensor = lambda *a, **k: 0
+        mod.zeros_like = lambda x, **k: x
+        mod.full_like = lambda x, **k: x
+        mod.float32 = "float32"
+        mod.int64 = "int64"
+        mod.bool = "bool"
+        mod.long = "long"
+        mod.device = lambda *a, **k: "cpu"
+        mod.manual_seed = lambda *a, **k: None
+        mod.stack = lambda xs, *a, **k: xs
+        mod.cat = lambda xs, *a, **k: xs
+        mod.where = lambda cond, x, y, **k: x
+        mod.isnan = lambda x: False
+        mod.isinf = lambda x: False
+        mod.is_floating_point = lambda x: False
+        mod.softmax = lambda x, *a, **k: x
+        mod.sigmoid = lambda x: x
+        mod.tanh = lambda x: x
+        mod.relu = lambda x: x
+        mod.clamp = lambda x, *a, **k: x
+        mod.abs = lambda x: x
+        mod.amin = lambda x, *a, **k: x
+        mod.amax = lambda x, *a, **k: x
+        mod.argmax = lambda x, *a, **k: 0
+        mod.minimum = lambda x, y: x
+        mod.maximum = lambda x, y: x
+        return mod
+
+    fake_torch = _make_stub_torch()
+    _sys.modules["torch"] = fake_torch
+    _sys.modules["torch.nn"] = fake_torch.nn
+    _sys.modules["torch.nn.functional"] = fake_torch.nn.functional
+    _sys.modules["torch.nn.utils"] = fake_torch.nn.utils
+    torch = fake_torch  # type: ignore
+    nn = fake_torch.nn  # type: ignore
+    F = fake_torch.nn.functional  # type: ignore
+
+# Belt-and-braces: if for any reason nn.Module is still missing,
+# force _HAS_TORCH = False (the public API will raise at call time).
+if _HAS_TORCH and not hasattr(nn, "Module"):
+    _HAS_TORCH = False
 
 
 logger = logging.getLogger(__name__)
