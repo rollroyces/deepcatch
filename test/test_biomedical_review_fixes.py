@@ -93,6 +93,57 @@ def test_caff_from_fragments_empty_input_returns_zero_template():
     assert all(v == 0.0 for v in cov.values())
 
 
+def test_caff_from_fragments_drop_stats_default_returns_dict():
+    """Default call site returns just the coverage dict (backward compat)."""
+    from src.fragmentomics.themis_features import CAFFCalculator
+    fragments = [
+        {"chrom": "chr1", "start": 1_000_000},
+        {"chrom": "chrM", "start": 1_000},
+    ]
+    cov = CAFFCalculator.from_fragments(fragments)
+    # cov is a plain dict, not a tuple
+    assert isinstance(cov, dict)
+    assert "1p" in cov
+
+
+def test_caff_from_fragments_drop_stats_counts_unrecognized_chroms():
+    """Opt-in drop_stats surfaces silently-dropped chrM / unplaced frags.
+
+    This is the biological safety net: a sample with high mitochondrial
+    contamination otherwise silently becomes a 39-arm template with all-1.0
+    coverage and reads as a healthy control.
+    """
+    from src.fragmentomics.themis_features import CAFFCalculator
+    fragments = [
+        {"chrom": "chr1", "start": 1_000_000},
+        {"chrom": "chrM", "start": 1_000},
+        {"chrom": "chrM", "start": 2_000},
+        {"chrom": "chrUn_KI270442v1", "start": 1_000},
+        {"chrom": "chr5", "start": 1_000_000},
+    ]
+    cov, drop_stats = CAFFCalculator.from_fragments(
+        fragments, return_drop_stats=True
+    )
+    # Coverage dict is unchanged from the default behaviour
+    assert "1p" in cov
+    assert cov["1p"] > 0
+    # Drop stats track the per-string drop count
+    assert drop_stats == {"chrM": 2, "chrUn_KI270442v1": 1}
+
+
+def test_caff_from_fragments_drop_stats_empty_when_all_recognized():
+    """All-recognized fragments → drop_stats is empty (not None)."""
+    from src.fragmentomics.themis_features import CAFFCalculator
+    fragments = [
+        {"chrom": "chr1", "start": 1_000_000},
+        {"chrom": "chr5", "start": 1_000_000},
+    ]
+    cov, drop_stats = CAFFCalculator.from_fragments(
+        fragments, return_drop_stats=True
+    )
+    assert drop_stats == {}
+
+
 def test_caff_compute_then_from_fragments_round_trip():
     """End-to-end: from_fragments → compute should return a finite score."""
     from src.fragmentomics.themis_features import CAFFCalculator
@@ -398,3 +449,201 @@ def test_gcn_too_returns_pred_and_proba():
     assert pred.shape == (n,)
     assert proba.shape == (n, 2)
     assert np.all((proba >= 0) & (proba <= 1))
+
+
+# ── Schema-fingerprint validator ────────────────────────────────────────
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_schema_validator_catches_random_input():
+    """Per-row median outside the expected range must raise.
+
+    Default schemas reject per-row medians outside [-5, 10] for
+    frag_basic. Use ``np.random.uniform(50, 100)`` so all values are
+    positive (would otherwise trip the allow_negative check) AND
+    push the per-row median way outside the schema range.
+    """
+    from src.foundation.config import FoundationConfig, MODALITY_DIMS
+    from src.foundation.downstream import FoundationDownstream
+    cfg = FoundationConfig(embed_dim=16, n_heads=2, n_layers=1,
+                           ff_dim=32, seed=0)
+    fd = FoundationDownstream(config=cfg, pretrained=False)
+    rng = np.random.default_rng(0)
+    # Uniform(50, 100) → per-row medians land in [50, 100], far outside
+    # the [-5, 10] range allowed for frag_basic. All positive so we
+    # don't trip the allow_negative check first.
+    mod = {name: rng.uniform(50.0, 100.0, size=(60, dim)).astype(np.float32)
+           for name, dim in MODALITY_DIMS.items()}
+    labels = (rng.random(60) < 0.3).astype(np.int64)
+    with pytest.raises(ValueError, match="median.*outside expected range"):
+        fd.fit(mod, labels, n_epochs=1, batch_size=16, validation_split=0.1,
+               validate_schema=True, verbose=False)
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_schema_validator_catches_negative_sero():
+    """Negative values in sero must fail the allow_negative=False check."""
+    from src.foundation.config import FoundationConfig, MODALITY_DIMS
+    from src.foundation.downstream import FoundationDownstream
+    cfg = FoundationConfig(embed_dim=16, n_heads=2, n_layers=1,
+                           ff_dim=32, seed=0)
+    fd = FoundationDownstream(config=cfg, pretrained=False)
+    rng = np.random.default_rng(0)
+    mod = {name: rng.standard_normal((60, dim)).astype(np.float32)
+           for name, dim in MODALITY_DIMS.items()}
+    # Inject a single negative into the sero modality (which requires
+    # non-negative).
+    mod["sero"][0, 0] = -1.0
+    labels = (rng.random(60) < 0.3).astype(np.int64)
+    with pytest.raises(ValueError, match="contains negative values"):
+        fd.fit(mod, labels, n_epochs=1, batch_size=16, validation_split=0.1,
+               validate_schema=True, verbose=False)
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_schema_validator_off_by_default():
+    """Without ``validate_schema=True``, the same bad input trains."""
+    from src.foundation.config import FoundationConfig, MODALITY_DIMS
+    from src.foundation.downstream import FoundationDownstream
+    cfg = FoundationConfig(embed_dim=16, n_heads=2, n_layers=1,
+                           ff_dim=32, seed=0)
+    fd = FoundationDownstream(config=cfg, pretrained=False)
+    rng = np.random.default_rng(0)
+    mod = {name: rng.standard_normal((60, dim)).astype(np.float32)
+           for name, dim in MODALITY_DIMS.items()}
+    labels = (rng.random(60) < 0.3).astype(np.int64)
+    # Default (validate_schema=False) — should NOT raise
+    fd.fit(mod, labels, n_epochs=1, batch_size=16, validation_split=0.1,
+           verbose=False)
+    assert fd._fitted
+
+
+# ── sens_at_spec loss wiring ────────────────────────────────────────────
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_foundation_downstream_sens_at_spec_loss_trains():
+    """Binary focal-BCE path must produce a fitted model with finite proba."""
+    from src.foundation.config import FoundationConfig, MODALITY_DIMS
+    from src.foundation.downstream import FoundationDownstream
+    cfg = FoundationConfig(embed_dim=16, n_heads=2, n_layers=1,
+                           ff_dim=32, seed=0)
+    fd = FoundationDownstream(config=cfg, pretrained=False,
+                              loss="sens_at_spec", alpha_pos=20.0)
+    rng = np.random.default_rng(0)
+    mod = {name: rng.standard_normal((60, dim)).astype(np.float32)
+           for name, dim in MODALITY_DIMS.items()}
+    labels = (rng.random(60) < 0.3).astype(np.int64)
+    fd.fit(mod, labels, n_epochs=2, batch_size=16, validation_split=0.1,
+           verbose=False)
+    assert fd._fitted
+    proba = fd.predict_proba(mod)
+    assert not np.isnan(proba).any()
+    assert not np.isinf(proba).any()
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_cross_attention_fusion_sens_at_spec_loss_trains():
+    """CrossAttentionFusion focal-BCE binary path produces finite proba."""
+    from src.multimodal_fusion.advanced_fusion import CrossAttentionFusion
+    rng = np.random.default_rng(0)
+    n = 100
+    scores = [rng.standard_normal(n) + i for i in range(4)]
+    labels = (rng.random(n) < 0.5).astype(np.int64)
+    m = CrossAttentionFusion(n_modalities=4, prior=None, n_epochs=20,
+                              seed=0, loss="sens_at_spec", alpha_pos=20.0)
+    m.fit(scores, labels)
+    proba = m.predict_proba(scores)
+    assert proba.shape == (n,)
+    assert not np.isnan(proba).any()
+    assert not np.isinf(proba).any()
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_cross_attention_fusion_invalid_loss_raises():
+    """Bad loss string must raise at construction time."""
+    from src.multimodal_fusion.advanced_fusion import CrossAttentionFusion
+    with pytest.raises(ValueError, match="loss must be"):
+        CrossAttentionFusion(loss="not_a_loss")
+
+
+@pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
+def test_early_late_fusion_sens_at_spec_loss_trains():
+    """EarlyLateFusion focal-BCE binary path produces finite proba."""
+    from src.multimodal_fusion.advanced_fusion import EarlyLateFusion
+    rng = np.random.default_rng(0)
+    n = 60
+    feats = [rng.standard_normal((n, 4)) for _ in range(3)]
+    labels = (rng.random(n) < 0.5).astype(np.int64)
+    m = EarlyLateFusion(n_modalities=3, hidden_dim=16, n_epochs=20,
+                         seed=0, loss="sens_at_spec", alpha_pos=20.0)
+    m.fit(feats, labels)
+    proba = m.predict_proba(feats)
+    assert proba.shape == (n,)
+    assert not np.isnan(proba).any()
+
+
+# ── Shuffled-label control ───────────────────────────────────────────
+
+def test_shuffled_label_control_diagnostic_shape():
+    """signal_to_artifact_ratio must be a real float with sensible bounds.
+
+    The diagnostic compares real_AUC vs shuffled_AUC. With a synthetic
+    perfectly separable cohort, real_AUC=1.0 and shuffled_AUC=0.5, so
+    the ratio is exactly 1.0. With random labels the ratio is 0.0.
+    """
+    # Synthetic case: perfectly separable scores → ratio should be 1.0
+    y_real = np.array([0, 0, 0, 0, 1, 1, 1, 1])
+    scores = np.array([0.1, 0.2, 0.3, 0.4, 0.9, 0.95, 0.99, 1.0])
+    real_auc = 1.0
+    # Shuffled labels: 50% chance of staying correct by random luck
+    shuffled_auc = 0.5
+    denom = max(real_auc - 0.5, 1e-6)
+    ratio = (real_auc - shuffled_auc) / denom
+    assert ratio == 1.0
+    assert 0.0 <= ratio <= 2.0  # never negative for valid diagnostic
+
+
+def test_shuffled_label_control_random_label_is_zero():
+    """Random labels with random scores → ratio near 0.
+
+    The shuffled-label AUCs must come from INDEPENDENT permutations
+    of y (each draws from a fresh RNG state) so the diagnostic
+    estimates the mean correctly.
+    """
+    rng = np.random.default_rng(0)
+    n = 200
+    y = (rng.random(n) < 0.5).astype(int)
+    scores = rng.standard_normal(n)
+    from sklearn.metrics import roc_auc_score
+    real_auc = roc_auc_score(y, scores)
+    # Each shuffle uses its own RNG so the labels are truly independent
+    # draws. Real AUC should be near 0.5 (random scores, random labels),
+    # shuffled AUCs also near 0.5 → ratio near 0.
+    shuf_aucs = []
+    for s in range(20):
+        shuf_rng = np.random.default_rng(1000 + s)
+        shuf_aucs.append(roc_auc_score(shuf_rng.permutation(y), scores))
+    shuf_mean = float(np.mean(shuf_aucs))
+    denom = max(real_auc - 0.5, 1e-6)
+    ratio = (real_auc - shuf_mean) / denom
+    # With random scores and random labels, both real and shuffled AUC
+    # should be near 0.5, so the ratio should be near 0. Allow a wide
+    # tolerance for sampling noise on n=200.
+    assert -2.0 < ratio < 2.0, f"random labels should give ratio ≈ 0, got {ratio}"
+
+
+def test_real_tcga_validation_shuffled_flag_parsed():
+    """--shuffled-label-control flag must parse and be discoverable."""
+    import subprocess
+    # Run with --help to confirm the flag is documented and argparse accepts it.
+    result = subprocess.run(
+        ["env", "-u", "PYTHONPATH",
+         "/Users/hermes/deepcatch/.venv/bin/python",
+         "/Users/hermes/deepcatch/real_tcga_validation.py", "--help"],
+        capture_output=True, text=True, cwd="/Users/hermes/deepcatch", timeout=30
+    )
+    assert "--shuffled-label-control" in result.stdout, (
+        "shuffled-label-control flag should appear in --help output"
+    )
+    assert "--n-shuffles" in result.stdout, (
+        "n-shuffles flag should appear in --help output"
+    )

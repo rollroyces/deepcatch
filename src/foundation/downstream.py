@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import logging
 import os
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -47,6 +48,64 @@ from .config import (
 )
 from .model import MultiModalEncoder
 from .pretrain import FoundationPretrainer
+
+
+# ── Modality schema fingerprint ─────────────────────────────────────
+# Per-modality expected_dim + per-row median range + allow_negative.
+# A modality whose per-row median falls outside the expected range is
+# almost certainly garbage input (random Gaussian, all-zeros, wrong
+# scale). Catching this BEFORE training prevents the silent-failure
+# class where the model produces plausible numbers for the wrong
+# reasons. Used by FoundationDownstream.fit(validate_schema=True).
+
+@dataclass(frozen=True)
+class ModalitySchema:
+    """Schema-fingerprint for a single modality."""
+    name: str
+    expected_dim: int
+    min_median: float
+    max_median: float
+    allow_negative: bool = True
+
+
+# Default medians derived from MultiModalDataGenerator.HEALTHY_RANGES
+# (frag_basic=0.3, frag_enhanced=0.0, cnv=0.0, sero=0.5, gnn=0.0,
+# tissue=0.0) plus a wide tolerance for real-data variation. These
+# ranges are intentionally generous — the goal is to catch RANDOM
+# input (e.g. accidental np.random.randn) rather than gate real
+# biological variation.
+MODALITY_SCHEMAS: Dict[str, ModalitySchema] = {
+    "frag_basic": ModalitySchema(
+        "frag_basic", MODALITY_DIMS["frag_basic"],
+        min_median=-5.0, max_median=10.0,
+        allow_negative=False,
+    ),
+    "frag_enhanced": ModalitySchema(
+        "frag_enhanced", MODALITY_DIMS["frag_enhanced"],
+        min_median=-5.0, max_median=5.0,
+        allow_negative=True,
+    ),
+    "cnv": ModalitySchema(
+        "cnv", MODALITY_DIMS["cnv"],
+        min_median=-3.0, max_median=3.0,
+        allow_negative=True,
+    ),
+    "sero": ModalitySchema(
+        "sero", MODALITY_DIMS["sero"],
+        min_median=0.0, max_median=1000.0,
+        allow_negative=False,
+    ),
+    "gnn": ModalitySchema(
+        "gnn", MODALITY_DIMS["gnn"],
+        min_median=-3.0, max_median=3.0,
+        allow_negative=True,
+    ),
+    "tissue": ModalitySchema(
+        "tissue", MODALITY_DIMS["tissue"],
+        min_median=0.0, max_median=1.0,
+        allow_negative=False,
+    ),
+}
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +168,34 @@ class FoundationDownstream:
         checkpoint_path: Optional[str] = None,
         freeze_encoder: bool = False,
         device: Optional[str] = None,
+        loss: str = "ce",
+        alpha_pos: float = 20.0,
+        gamma: float = 2.0,
     ):
+        """FoundationDownstream constructor.
+
+        Parameters
+        ----------
+        loss : {"ce", "sens_at_spec"}
+            Loss function for binary classification. "ce" (default)
+            preserves all existing benchmark numbers.
+            "sens_at_spec" uses focal-modulated BCE with
+            ``alpha_pos`` rebalancing for ultra-low VAF cohorts.
+            Multi-class always uses CE.
+        alpha_pos : float
+            Positive-class weight for focal-BCE. Ignored when
+            ``loss="ce"``. Default 20.0 is the documented starting
+            point for 0.1% VAF cohorts.
+        gamma : float
+            Focal modulation exponent. Ignored when ``loss="ce"``.
+        """
+        if loss not in ("ce", "sens_at_spec"):
+            raise ValueError(
+                f"loss must be 'ce' or 'sens_at_spec', got {loss!r}"
+            )
+        self.loss = loss
+        self.alpha_pos = alpha_pos
+        self.gamma = gamma
         self.config = config if config is not None else (
             PROTOTYPE_CONFIG if pretrained else DEFAULT_CONFIG
         )
@@ -196,6 +282,67 @@ class FoundationDownstream:
                         f"expected {expected_dim}"
                     )
 
+    def _validate_modality_schema(
+        self,
+        modalities: Dict[str, np.ndarray],
+    ) -> List[str]:
+        """Schema-fingerprint check: catch silent fallbacks to random data.
+
+        Per-modality ``expected_dim``, ``min_median``, ``max_median``,
+        and ``allow_negative`` bounds are defined in
+        ``MODALITY_SCHEMAS`` (this module). A modality whose per-row
+        median falls outside its expected range is almost certainly
+        garbage input (random Gaussian, zeros, wrong scale). This
+        catches silent fallbacks before the model trains on noise.
+
+        Returns a list of warning strings for non-fatal anomalies
+        (e.g. a sample whose median is near the boundary). Raises
+        ValueError when an input clearly does not match the schema
+        (e.g. expected non-negative but contains negatives).
+
+        Only called when ``fit(..., validate_schema=True)`` is set.
+        """
+        warnings_list: List[str] = []
+        for name in MODALITY_NAMES:
+            arr = modalities[name]
+            schema = MODALITY_SCHEMAS.get(name)
+            if schema is None:
+                # No schema registered — skip silently.
+                continue
+            # Compute per-row median for the 2-D batched case, else
+            # median of the 1-D vector.
+            if arr.ndim == 2:
+                row_medians = np.median(arr, axis=1)
+            else:
+                row_medians = np.array([float(np.median(arr))])
+            med = float(np.median(row_medians))
+            if not (schema.min_median <= med <= schema.max_median):
+                raise ValueError(
+                    f"Modality '{name}' median {med:.4g} outside expected "
+                    f"range [{schema.min_median}, {schema.max_median}]. "
+                    f"This usually means the modality is random noise, "
+                    f"all-zeros, or wrong-scale. Pass "
+                    f"validate_schema=False to skip this check."
+                )
+            if not schema.allow_negative and (arr < 0).any():
+                raise ValueError(
+                    f"Modality '{name}' contains negative values but the "
+                    f"schema requires non-negative inputs."
+                )
+            # Soft warning when the median is in the outer 10% of the
+            # allowed range — caller may want to inspect.
+            span = schema.max_median - schema.min_median
+            if span > 0:
+                lo_warn = schema.min_median + 0.1 * span
+                hi_warn = schema.max_median - 0.1 * span
+                if not (lo_warn <= med <= hi_warn):
+                    warnings_list.append(
+                        f"Modality '{name}' median {med:.4g} is near the "
+                        f"edge of expected range "
+                        f"[{schema.min_median}, {schema.max_median}]."
+                    )
+        return warnings_list
+
     def fit(
         self,
         modalities: Dict[str, np.ndarray],
@@ -207,6 +354,7 @@ class FoundationDownstream:
         early_stopping: bool = False,
         patience: int = 10,
         verbose: bool = False,
+        validate_schema: bool = False,
     ) -> "FoundationDownstream":
         """
         Fine-tune (or train from scratch) the foundation model.
@@ -220,7 +368,7 @@ class FoundationDownstream:
         n_epochs : int
             Number of fine-tuning epochs.
         batch_size : int
-            Batch size.
+            Mini-batch size.
         lr : float, optional
             Learning rate (default from config).
         validation_split : float
@@ -231,12 +379,22 @@ class FoundationDownstream:
             Patience for early stopping.
         verbose : bool
             Print training progress.
+        validate_schema : bool
+            If True, run ``_validate_modality_schema`` before training
+            and raise ``ValueError`` on out-of-range per-row medians
+            or negative values in non-negative modalities. Default
+            False to preserve existing behavior. Recommended True
+            for any clinical / production training path.
 
         Returns
         -------
         self
         """
         self._validate_modalities(modalities)
+        if validate_schema:
+            schema_warnings = self._validate_modality_schema(modalities)
+            for w in schema_warnings:
+                logger.warning(w)
 
         lr = lr or self.config.finetune_lr
 
@@ -294,6 +452,27 @@ class FoundationDownstream:
             params, lr=lr, weight_decay=1e-5
         )
 
+        # Focal-BCE: only when binary and user requested it.
+        focal_bce_fn = None
+        if self.loss == "sens_at_spec" and n_classes == 2:
+            from src.foundation.losses import focal_binary_cross_entropy
+            focal_bce_fn = focal_binary_cross_entropy
+
+        def _compute_batch_loss(logits: "torch.Tensor",
+                                batch_labels: "torch.Tensor") -> "torch.Tensor":
+            if focal_bce_fn is not None and n_classes == 2:
+                if logits.dim() == 2 and logits.shape[-1] == 2:
+                    bin_logit = logits[:, 1] - logits[:, 0]
+                else:
+                    bin_logit = logits.squeeze(-1)
+                tgt = batch_labels.float() if batch_labels.dtype != torch.float32 else batch_labels
+                return focal_bce_fn(
+                    bin_logit, tgt,
+                    alpha_pos=self.alpha_pos, alpha_neg=1.0,
+                    gamma=self.gamma, reduction="mean",
+                )
+            return F.cross_entropy(logits, batch_labels)
+
         self._loss_history = []
         best_val_loss = float("inf")
         best_state = None
@@ -319,7 +498,7 @@ class FoundationDownstream:
                 # Forward
                 joint = self.encoder(batch_mod)  # (B, N, D)
                 logits = self.classifier(joint)  # (B, n_classes)
-                loss = F.cross_entropy(logits, batch_labels)
+                loss = _compute_batch_loss(logits, batch_labels)
 
                 # NaN/Inf guard: skip this step (don't poison grads).
                 # If we see too many in a row, abort training — the
@@ -358,7 +537,7 @@ class FoundationDownstream:
                     val_mod = {k: v[val_idx] for k, v in modalities_t.items()}
                     val_joint = self.encoder(val_mod)
                     val_logits = self.classifier(val_joint)
-                    val_loss = F.cross_entropy(val_logits, labels_t[val_idx])
+                    val_loss = _compute_batch_loss(val_logits, labels_t[val_idx])
 
                 self.encoder.train()
                 self.classifier.train()

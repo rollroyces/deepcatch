@@ -904,6 +904,8 @@ def run_panel_detection(
     bg_error_rate: float = 0.002,
     call_threshold: float = 2.0,
     clean_panel: bool = False,
+    shuffled_label_control: bool = False,
+    n_shuffles: int = 10,
 ) -> Dict[str, Any]:
     """Per-SAMPLE detection by aggregating evidence across the mutation panel.
 
@@ -930,6 +932,18 @@ def run_panel_detection(
     aggregated as mean ± std across seeds.
     When clean_panel=True, only variants in clean genomic contexts (avoiding
     CpG/homopolymer sites) are kept — simulating a well-designed panel.
+
+    When ``shuffled_label_control=True``, also computes a shuffled-label
+    negative control at TF=0.1% (the most clinically-relevant operating
+    point): labels are permuted across the paired samples so the
+    per-patient signature is preserved but the cancer/control label is
+    random. The metric ``signal_to_artifact_ratio`` =
+    (real_AUC − shuffled_AUC) / (real_AUC − 0.5) tells you whether the
+    headline AUC is real signal or per-patient-pair artifact. A ratio
+    near or below 1.0 means most of the AUC is leak — the paired design
+    alone is not enough. Required for clinical-grade publication
+    readiness (Nature Medicine / Cancer Discovery reviewers will flag
+    this immediately otherwise).
     """
     if tumor_fractions is None:
         tumor_fractions = [0.1, 0.05, 0.01, 0.005, 0.001]
@@ -937,9 +951,11 @@ def run_panel_detection(
         seeds = [42, 123, 456, 789, 1024]
 
     patients = list(cohort['patients'].keys())
-    # Metrics across scoring methods
-    results = {'panel_llr': [], 'panel_fisher': [], 'panel_strand': [],
-               'call_count': []}
+    # Metrics across scoring methods. Each entry is a list of
+    # per-tf × per-metric summary dicts. The shuffled_label_control
+    # entry (added below) is a single dict keyed by tf.
+    results: Dict[str, Any] = {'panel_llr': [], 'panel_fisher': [],
+                               'panel_strand': [], 'call_count': []}
 
     for tf in tumor_fractions:
         print(f"\n  Panel detection @ TF={tf*100:.2f}% ({len(patients)} patients × {len(seeds)} seeds"
@@ -1018,7 +1034,135 @@ def run_panel_detection(
                     'per_seed': {str(s): by_seed[s][m] for s in seeds},
                 })
 
+    # Shuffled-label negative control at TF=0.1% (the paired design's
+    # leak is invisible to nested CV — only a label-permutation test
+    # can surface it). Per-patient signal invariant across the pair;
+    # shuffle y across the pair so the classifier learns "is this
+    # patient" instead of "is this cancer".
+    if shuffled_label_control:
+        print(f"\n  Shuffled-label negative control at TF=0.1% ({n_shuffles} permutations)...")
+        results['shuffled_label_control'] = _shuffled_label_control(
+            cohort, seeds=seeds, cfdna_depth=cfdna_depth,
+            bg_error_rate=bg_error_rate, clean_panel=clean_panel,
+            n_shuffles=n_shuffles,
+        )
+
     return results
+
+
+def _shuffled_label_control(
+    cohort: Dict[str, Any],
+    seeds: List[int],
+    cfdna_depth: int,
+    bg_error_rate: float,
+    clean_panel: bool,
+    n_shuffles: int,
+    tf: float = 0.001,
+) -> Dict[str, Any]:
+    """Compute shuffled-label AUC and signal_to_artifact_ratio at TF=0.1%.
+
+    For each real seed, we generate the same paired cancer/control
+    samples, but we permute the labels across the pair (keeping the
+    patient-pair structure intact). The shuffled-AUC tells us how much
+    of the real AUC comes from per-patient signature rather than from
+    cancer signal. The diagnostic:
+
+        signal_to_artifact_ratio = (real_AUC - shuffled_AUC) / (real_AUC - 0.5)
+
+    A ratio > 1.0 means the signal dominates the artifact; the
+    headline AUC reflects cancer-vs-control discrimination, not
+    "is this patient". A ratio <= 1.0 means most of the AUC is
+    per-patient leak and unpaired / larger-cohort validation is
+    required.
+
+    Returns
+    -------
+    dict
+        Per-seed real AUC, shuffled AUCs, and aggregated
+        signal_to_artifact_ratio.
+    """
+    from sklearn.metrics import roc_auc_score
+
+    patients = list(cohort['patients'].keys())
+    real_aucs: List[float] = []
+    shuffled_aucs_per_seed: List[List[float]] = []
+
+    for seed in seeds:
+        pos_llr, neg_llr = [], []
+        for patient in patients:
+            muts = cohort['patients'][patient]
+            dp = simulate_cfdna_from_real(
+                muts, tumor_fraction=tf, cfdna_depth=cfdna_depth,
+                seed=seed, bg_error_rate=bg_error_rate,
+                clean_panel=clean_panel,
+            )
+            dn = simulate_cfdna_from_real(
+                muts, tumor_fraction=0.0, cfdna_depth=cfdna_depth,
+                seed=seed, bg_error_rate=bg_error_rate,
+                clean_panel=clean_panel,
+            )
+            lp = compute_llr_scores(
+                dp['depths'], dp['X'][:, 1].astype(int), dp['X'][:, 3]
+            )
+            ln = compute_llr_scores(
+                dn['depths'], dn['X'][:, 1].astype(int), dn['X'][:, 3]
+            )
+            nv_p, nv_n = dp['n_variants'], dn['n_variants']
+            panel_size = min(nv_p, nv_n)
+            pos_llr.append(float(lp[:panel_size].sum()))
+            neg_llr.append(float(ln[:panel_size].sum()))
+
+        y = np.array([1] * len(pos_llr) + [0] * len(neg_llr))
+        scores = np.array(pos_llr + neg_llr)
+        real_auc = float(roc_auc_score(y, scores))
+        real_aucs.append(real_auc)
+
+        # Shuffled AUCs: keep the patient-pair structure, permute y.
+        # The seed for the label shuffle is derived from the outer seed
+        # so each real seed maps to a stable set of shuffles.
+        shuf_rng = np.random.default_rng(seed + 0xBADF00D)
+        per_seed_shufs: List[float] = []
+        for _ in range(n_shuffles):
+            y_shuf = shuf_rng.permutation(y)
+            try:
+                per_seed_shufs.append(float(roc_auc_score(y_shuf, scores)))
+            except ValueError:
+                # All-positive or all-negative shuffle (very rare); skip.
+                per_seed_shufs.append(0.5)
+        shuffled_aucs_per_seed.append(per_seed_shufs)
+
+    # Aggregate across seeds.
+    real_auc_mean = float(np.mean(real_aucs))
+    real_auc_std = float(np.std(real_aucs, ddof=1)) if len(real_aucs) > 1 else 0.0
+    # Shuffled: mean across both shuffles AND seeds.
+    flat_shuf = [v for row in shuffled_aucs_per_seed for v in row]
+    shuffled_mean = float(np.mean(flat_shuf))
+    shuffled_std = float(np.std(flat_shuf))
+    # signal_to_artifact_ratio: how much of the real AUC is real signal
+    # rather than per-patient-pair artifact. The denominator is the
+    # max possible "above random" margin.
+    denom = max(real_auc_mean - 0.5, 1e-6)
+    ratio = (real_auc_mean - shuffled_mean) / denom
+    # Pass criterion: ratio > 0.5 means the signal dominates the artifact
+    # floor. Below 0.5 → paired design is leaking per-patient signature
+    # and unpaired validation is required.
+    return {
+        'tumor_fraction': tf,
+        'real_auc_mean': real_auc_mean,
+        'real_auc_std': real_auc_std,
+        'shuffled_auc_mean': shuffled_mean,
+        'shuffled_auc_std': shuffled_std,
+        'shuffled_auc_per_seed': [float(np.mean(r)) for r in shuffled_aucs_per_seed],
+        'signal_to_artifact_ratio': float(ratio),
+        'n_shuffles': n_shuffles,
+        'passes_clinical_robustness_gate': bool(ratio > 0.5),
+        'note': (
+            'ratio > 1.0 = signal dominates artifact; '
+            '0.5 < ratio <= 1.0 = signal partially real; '
+            'ratio <= 0.5 = most of the AUC is per-patient leak. '
+            'See cfdna-early-detection-validation skill for diagnostic.'
+        ),
+    }
 
 
 def run_ultraearly_sweep(
@@ -1214,6 +1358,13 @@ def main():
     parser.add_argument('--bg-error-rate', type=float, default=0.002,
                         help='Background sequencing error rate (default 0.002; '
                              'duplex-UMI consensus ~1e-4)')
+    parser.add_argument('--shuffled-label-control', action='store_true',
+                        help='Compute shuffled-label negative control at TF=0.1%% '
+                             'and emit signal_to_artifact_ratio. Recommended for '
+                             'any clinical / publication-grade run.')
+    parser.add_argument('--n-shuffles', type=int, default=10,
+                        help='Number of label permutations per seed for the '
+                             'shuffled-label control (default 10)')
     args = parser.parse_args()
 
     cancer_types = [ct.strip() for ct in args.cancer_types.split(',') if ct.strip()]
@@ -1263,6 +1414,8 @@ def main():
             cfdna_depth=args.cfdna_depth,
             bg_error_rate=args.bg_error_rate,
             clean_panel=args.clean_panel,
+            shuffled_label_control=args.shuffled_label_control,
+            n_shuffles=args.n_shuffles,
         )
 
     # Ultra-early assay sweep (error rate × depth at 0.1% ctDNA)
@@ -1369,6 +1522,22 @@ def main():
         for tf in sorted(llr_auc):
             print(f"  {tf*100:5.1f}%{'':6} {llr_auc[tf]['mean']:8.4f} {fish_auc[tf]['mean']:8.4f} "
                   f"{str_auc[tf]['mean']:8.4f} {sens95[tf]['mean']:9.3f} {win[tf]['mean']:7.3f}")
+
+    # Shuffled-label control summary (only when --shuffled-label-control
+    # was passed). This is the honest diagnostic for the paired-design
+    # per-patient leak — required for clinical/publication readiness.
+    if panel_results and 'shuffled_label_control' in panel_results:
+        slc = panel_results['shuffled_label_control']
+        print("\n  SHUFFLED-LABEL NEGATIVE CONTROL (paired design artifact)")
+        print("-" * 70)
+        print(f"  TF={slc['tumor_fraction']*100:.2f}%  "
+              f"real_AUC = {slc['real_auc_mean']:.4f} ± {slc['real_auc_std']:.4f}")
+        print(f"  TF={slc['tumor_fraction']*100:.2f}%  "
+              f"shuffled_AUC = {slc['shuffled_auc_mean']:.4f} ± {slc['shuffled_auc_std']:.4f}  "
+              f"(over {slc['n_shuffles']} permutations per seed)")
+        gate = "✅ PASS" if slc['passes_clinical_robustness_gate'] else "❌ FAIL"
+        print(f"  signal_to_artifact_ratio = {slc['signal_to_artifact_ratio']:.3f}  {gate}")
+        print(f"  ({slc['note']})")
 
     if sweep_results:
         print("\n  ULTRA-EARLY ASSAY SWEEP (0.1% ctDNA, panel detection)")

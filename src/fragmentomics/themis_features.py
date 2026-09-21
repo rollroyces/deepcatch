@@ -201,7 +201,8 @@ class CAFFCalculator:
         cls,
         fragments: List[Dict],
         genome_length: int = 3_000_000_000,
-    ) -> Dict[str, float]:
+        return_drop_stats: bool = False,
+    ):
         """Derive per-chromosome-arm coverage from a fragment list.
 
         Each fragment dict must carry ``chrom`` (any of ``"chr1"``,
@@ -213,9 +214,18 @@ class CAFFCalculator:
         so that ``compute(expected_coverage=1.0)`` reads the
         deviations as copy-ratio deviations.
 
-        Fragments with unrecognized chromosomes are silently dropped.
-        This matches the Bie 2023 / THEMIS convention (autosomes 1-22
-        + sex chromosomes).
+        Fragments with unrecognized chromosomes are dropped. The
+        default behaviour (return type ``dict``) is preserved for
+        backward compatibility; pass ``return_drop_stats=True`` to
+        receive a ``(per_arm_coverage, drop_stats)`` tuple where
+        ``drop_stats`` is a dict mapping the original ``chrom`` string
+        to the number of fragments dropped for that reason.
+
+        This matters biologically: a sample with high mitochondrial
+        contamination (chrM) silently becomes a 39-arm template with
+        all-1.0 coverage and reads as a healthy control. Surfacing the
+        drop counter exposes that contamination so a downstream caller
+        can flag or exclude the sample.
 
         Parameters
         ----------
@@ -226,19 +236,28 @@ class CAFFCalculator:
             used directly today (per-arm lengths come from
             ``CHROM_ARM_BOUNDARIES``) but kept for forward
             compatibility with build-specific references.
+        return_drop_stats : bool
+            If True, return ``(per_arm_coverage, drop_stats)`` where
+            ``drop_stats`` is a dict of ``{raw_chrom: n_dropped}``.
+            Default False (returns just ``per_arm_coverage``).
 
         Returns
         -------
         per_arm_coverage : dict
             Maps ``"1p"``, ``"1q"``, ..., ``"22q"`` to coverage-per-Mb.
             Empty dict if no fragments match.
+        drop_stats : dict (only when return_drop_stats=True)
+            ``{raw_chrom_string: n_dropped}`` for unrecognized chroms.
         """
-        # Aggregate raw counts per chromosome first.
+        # Aggregate raw counts per chromosome first, tracking
+        # unrecognized chrom strings so we can surface drop counts.
         chrom_counts: Dict[str, int] = {}
+        drop_stats: Dict[str, int] = {}
         for frag in fragments:
             raw_chrom = frag.get("chrom", "")
             chrom = cls._CHROM_NORMALIZE.get(raw_chrom)
             if chrom is None:
+                drop_stats[raw_chrom] = drop_stats.get(raw_chrom, 0) + 1
                 continue
             chrom_counts[chrom] = chrom_counts.get(chrom, 0) + 1
 
@@ -266,6 +285,8 @@ class CAFFCalculator:
             med = float(np.median(vals))
             if med > 0:
                 per_arm = {arm: v / med for arm, v in per_arm.items()}
+        if return_drop_stats:
+            return per_arm, drop_stats
         return per_arm
 
 

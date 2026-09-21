@@ -276,11 +276,35 @@ class CrossAttentionFusion:
         weight_decay: float = 1e-4,
         device: Optional[str] = None,
         seed: int = 0,
+        loss: str = "ce",
+        alpha_pos: float = 20.0,
+        gamma: float = 2.0,
     ):
+        """CrossAttentionFusion constructor.
+
+        Parameters
+        ----------
+        loss : {"ce", "sens_at_spec"}
+            Loss function for binary classification. "ce" (default) is
+            standard cross-entropy — preserves all existing benchmark
+            numbers. "sens_at_spec" switches to focal-modulated BCE
+            with the alpha_pos rebalance recommended for ultra-low VAF
+            cohorts (see ``src/foundation/losses.py``).
+        alpha_pos : float
+            Positive-class weight for focal-BCE. Ignored when
+            ``loss="ce"``. Default 20.0 is the documented starting
+            point for 0.1% VAF cohorts.
+        gamma : float
+            Focal modulation exponent. Ignored when ``loss="ce"``.
+        """
         if not _HAS_TORCH:
             raise ImportError(
                 "CrossAttentionFusion (PyTorch rewrite) requires torch. "
                 "Install with `pip install torch`."
+            )
+        if loss not in ("ce", "sens_at_spec"):
+            raise ValueError(
+                f"loss must be 'ce' or 'sens_at_spec', got {loss!r}"
             )
         self.n_modalities = n_modalities
         self.embed_dim = embed_dim
@@ -292,6 +316,9 @@ class CrossAttentionFusion:
         self.weight_decay = weight_decay
         self.device = device or _device()
         self.seed = seed
+        self.loss = loss
+        self.alpha_pos = alpha_pos
+        self.gamma = gamma
 
         # Build prior mask of shape (n_modalities, n_modalities); pad
         # with identity if user requests a smaller mask than
@@ -393,13 +420,46 @@ class CrossAttentionFusion:
         best_state: Optional[Dict[str, torch.Tensor]] = None
         patience = 20
         bad = 0
+
+        # Focal-BCE import is deferred to first use so non-torch callers
+        # (or environments without torch) get a clean ImportError rather
+        # than a ModuleNotFoundError at import time.
+        focal_bce_fn = None
+        if self.loss == "sens_at_spec" and self._n_classes == 2:
+            from src.foundation.losses import focal_binary_cross_entropy
+            focal_bce_fn = focal_binary_cross_entropy
+
+        def _compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+            """Branch on loss mode. Multi-class (TOO) always uses CE."""
+            if (
+                focal_bce_fn is not None
+                and self._n_classes == 2
+                and targets.dim() <= 1
+            ):
+                # Rebuild a single binary logit from the 2-class logits
+                # (pos - neg is a numerically stable difference; the
+                # softmax of (pos - neg) equals sigmoid(pos - neg)).
+                if logits.dim() == 2 and logits.shape[-1] == 2:
+                    bin_logit = logits[:, 1] - logits[:, 0]
+                else:
+                    bin_logit = logits.squeeze(-1)
+                return focal_bce_fn(
+                    bin_logit,
+                    targets.float() if targets.dtype != torch.float32 else targets,
+                    alpha_pos=self.alpha_pos,
+                    alpha_neg=1.0,
+                    gamma=self.gamma,
+                    reduction="mean",
+                )
+            return F.cross_entropy(logits, targets)
+
         for epoch in range(self.n_epochs):
             self._model.train()
             train_in = [t[train_idx] for t in tensors]
             train_y = y_t[train_idx]
             self._optimizer.zero_grad()
             logits = self._model(train_in)
-            loss = F.cross_entropy(logits, train_y)
+            loss = _compute_loss(logits, train_y)
             if torch.isnan(loss) or torch.isinf(loss):
                 bad += 1
                 if bad >= patience:
@@ -418,7 +478,7 @@ class CrossAttentionFusion:
                 if val_y.unique().numel() < 2:
                     continue
                 val_logits = self._model(val_in)
-                val_loss = F.cross_entropy(val_logits, val_y)
+                val_loss = _compute_loss(val_logits, val_y)
             if torch.isnan(val_loss) or torch.isinf(val_loss):
                 bad += 1
                 if bad >= patience:
@@ -718,6 +778,14 @@ class EarlyLateFusion:
         MLP hidden dimension.
     n_epochs, lr, weight_decay, device, seed
         Training hyperparameters.
+    loss : {"ce", "sens_at_spec"}
+        Loss function. "ce" (default) preserves all existing
+        benchmark numbers. "sens_at_spec" uses focal-modulated BCE
+        for ultra-low VAF cohorts. Multi-class (n_classes > 2)
+        always uses CE.
+    alpha_pos, gamma
+        Focal-BCE hyperparameters (only used when
+        ``loss="sens_at_spec"``).
     """
 
     def __init__(
@@ -729,10 +797,18 @@ class EarlyLateFusion:
         weight_decay: float = 1e-4,
         device: Optional[str] = None,
         seed: int = 0,
+        loss: str = "ce",
+        alpha_pos: float = 20.0,
+        gamma: float = 2.0,
     ):
         if not _HAS_TORCH:
             raise ImportError(
-                "EarlyLateFusion (PyTorch rewrite) requires torch."
+                "EarlyLateFusion (PyTorch rewrite) requires torch. "
+                "Install with `pip install torch`."
+            )
+        if loss not in ("ce", "sens_at_spec"):
+            raise ValueError(
+                f"loss must be 'ce' or 'sens_at_spec', got {loss!r}"
             )
         self.n_modalities = n_modalities
         self.hidden_dim = hidden_dim
@@ -741,6 +817,9 @@ class EarlyLateFusion:
         self.weight_decay = weight_decay
         self.device = device or _device()
         self.seed = seed
+        self.loss = loss
+        self.alpha_pos = alpha_pos
+        self.gamma = gamma
         self._model: Optional[nn.Module] = None
         self._optimizer: Optional[torch.optim.Optimizer] = None
         self._fitted = False
@@ -804,6 +883,27 @@ class EarlyLateFusion:
             self._model.parameters(), lr=self.lr,
             weight_decay=self.weight_decay,
         )
+
+        # Focal-BCE: only when binary and user requested it.
+        focal_bce_fn = None
+        if self.loss == "sens_at_spec" and n_classes == 2:
+            from src.foundation.losses import focal_binary_cross_entropy
+            focal_bce_fn = focal_binary_cross_entropy
+
+        def _compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+            if focal_bce_fn is not None and n_classes == 2:
+                if logits.dim() == 2 and logits.shape[-1] == 2:
+                    bin_logit = logits[:, 1] - logits[:, 0]
+                else:
+                    bin_logit = logits.squeeze(-1)
+                tgt = targets.float() if targets.dtype != torch.float32 else targets
+                return focal_bce_fn(
+                    bin_logit, tgt,
+                    alpha_pos=self.alpha_pos, alpha_neg=1.0,
+                    gamma=self.gamma, reduction="mean",
+                )
+            return F.cross_entropy(logits, targets)
+
         best_val = float("inf")
         best_state: Optional[Dict[str, torch.Tensor]] = None
         bad = 0
@@ -812,7 +912,7 @@ class EarlyLateFusion:
             self._model.train()
             self._optimizer.zero_grad()
             logits = self._model(x_t)
-            loss = F.cross_entropy(logits[train_idx], y_t[train_idx])
+            loss = _compute_loss(logits[train_idx], y_t[train_idx])
             if torch.isnan(loss) or torch.isinf(loss):
                 bad += 1
                 if bad >= patience:
@@ -829,7 +929,7 @@ class EarlyLateFusion:
                 vy = y_t[val_idx]
                 if vy.unique().numel() < 2:
                     continue
-                v_loss = F.cross_entropy(v_logits[val_idx], vy)
+                v_loss = _compute_loss(v_logits[val_idx], vy)
             if torch.isnan(v_loss) or torch.isinf(v_loss):
                 bad += 1
                 if bad >= patience:
