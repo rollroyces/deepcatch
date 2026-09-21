@@ -16,7 +16,7 @@ jobs:
       - name: Run core test suite
         run: |
           python -m pytest src/fragmentomics src/preprocessing src/clinical \
-            src/multimodal_fusion test/ -q --no-header
+            src/multimodal_fusion test/ -q --no-header -s
 
   # ── Deep-learning module tests (torch + torch_geometric) ──────────────
   dl-tests:

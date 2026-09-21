@@ -256,6 +256,20 @@ class TestMFSFeatures(unittest.TestCase):
                 'methylated': methylated,
             })
         result = self.mfs.extract(frags)
+        # Diagnostic for CI: print the histogram values to catch
+        # environment-specific variance in pearsonr / np.std.
+        import numpy as np
+        fc, ms, mf = self.mfs._build_joint_histogram(frags, 3_000_000_000)
+        mask = fc >= 2
+        if mask.sum() >= 3:
+            xs = ms[mask]
+            ys = mf[mask]
+            print(
+                f"\n[debug] mfs_size_meth_corr={result['mfs_size_meth_corr']:.4f} "
+                f"n_bins={mask.sum()} "
+                f"x_std={float(np.std(xs)):.4f} y_std={float(np.std(ys)):.4f} "
+                f"ys_unique={sorted(set(ys.tolist()))}"
+            )
         # Should have strong positive correlation
         self.assertGreater(abs(result['mfs_size_meth_corr']), 0.3)
 
