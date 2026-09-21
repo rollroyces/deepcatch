@@ -538,6 +538,27 @@ def main() -> int:
     ap.add_argument("--n-patients", type=int, default=20)
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument(
+        "--n-folds", type=int, default=5,
+        help="Number of stratified K-fold splits for the OOF CV. "
+             "Default 5. The CI smoke uses --n-folds 2 to keep the "
+             "torch-cpu runtime under the 10-minute CI timeout.",
+    )
+    ap.add_argument(
+        "--n-ensemble", type=int, default=3,
+        help="Number of inits per fold for the trainable-transformer "
+             "variant (variant A). Default 3. The CI smoke uses "
+             "--n-ensemble 1 to keep the torch-cpu runtime manageable.",
+    )
+    ap.add_argument(
+        "--quick", action="store_true",
+        help="Quick CI mode: --seeds 2 --n-folds 2 --n-ensemble 1 "
+             "--n-patients 16. Runs in ~30s on M4 Mac, ~3min on "
+             "torch-cpu in CI. Use this for the foundation-real-smoke "
+             "CI job to stay under the 10-minute timeout. The default "
+             "settings (--seeds 5 --n-folds 5 --n-ensemble 3) are the "
+             "publication-quality numbers; --quick is a fast smoke.",
+    )
+    ap.add_argument(
         "--gate-auc", type=float, default=0.90,
         help="Minimum acceptable lr_baseline AUC across seeds. "
              "Gating on the sklearn LR baseline (which is what the "
@@ -575,6 +596,18 @@ def main() -> int:
         help="Output JSON path.",
     )
     args = ap.parse_args()
+
+    # --quick mode is the CI-friendly default. It produces a smaller
+    # but still informative AUC estimate — the publication-quality
+    # numbers come from running with --seeds 5 --n-folds 5
+    # --n-ensemble 3 on a workstation (not CI).
+    if args.quick:
+        if args.seeds == 5:  # default unchanged
+            args.seeds = 2
+        if args.n_patients == 20:  # default unchanged
+            args.n_patients = 16
+        args.n_folds = 2
+        args.n_ensemble = 1
 
     seeds = list(range(args.seeds))
 
@@ -638,7 +671,10 @@ def main() -> int:
         y, p, f = d["y_true"], d["panel_scores"], d["frag_scores"]
         panel_only_aucs.append(_single_channel_auc(y, p))
         frag_only_aucs.append(_single_channel_auc(y, f))
-        m = _foundation_smoke(p, f, y, seed=seed)
+        m = _foundation_smoke(
+            p, f, y, seed=seed,
+            n_folds=args.n_folds, n_ensemble=args.n_ensemble,
+        )
         aucs.append(m["auc"])
         sens95.append(m["sens_at_95"])
         sens99.append(m["sens_at_99"])
