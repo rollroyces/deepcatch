@@ -1,0 +1,122 @@
+{
+  "n_seeds": 5,
+  "n_patients": 20,
+  "n_samples_total": 40,
+  "n_cancer": 20,
+  "n_healthy": 20,
+  "tumor_fraction": 0.001,
+  "alpha_pos_sens": 20.0,
+  "ce_loss_name": "ce",
+  "sens_loss_name": "sens_at_spec",
+  "data_source": "real_TCGA_LUAD_panel_+_real_mutation_derived_fragmentomics",
+  "ce_run_path": "/Users/hermes/deepcatch/results/sens_at_spec_ce.json",
+  "sens_run_path": "/Users/hermes/deepcatch/results/sens_at_spec_sens.json",
+  "foundation_aucs_ce": [
+    0.935,
+    0.98,
+    0.9225,
+    0.9175,
+    0.95
+  ],
+  "foundation_aucs_sens_at_spec": [
+    0.9275,
+    0.99,
+    0.9375,
+    0.9375,
+    0.9500000000000001
+  ],
+  "foundation_auc_mean_ce": 0.9410000000000001,
+  "foundation_auc_mean_sens_at_spec": 0.9484999999999999,
+  "foundation_auc_std_ce": 0.025161975280172257,
+  "foundation_auc_std_sens_at_spec": 0.024533140850694187,
+  "foundation_auc_paired_t": {
+    "n": 5,
+    "mean_diff": 0.007500000000000018,
+    "std_diff": 0.011180339887498959,
+    "se_diff": 0.0050000000000000044,
+    "t_stat": 1.5000000000000022,
+    "df": 4,
+    "p_value": 0.2079999999999993,
+    "ci95_lo": -0.006382225525988962,
+    "ci95_hi": 0.021382225525988997
+  },
+  "foundation_sens_at_99_ce": [
+    0.25,
+    0.85,
+    0.65,
+    0.05,
+    0.6
+  ],
+  "foundation_sens_at_99_sens_at_spec": [
+    0.55,
+    0.9,
+    0.7,
+    0.3,
+    0.5
+  ],
+  "foundation_sens_at_99_mean_ce": 0.48,
+  "foundation_sens_at_99_mean_sens_at_spec": 0.5900000000000001,
+  "foundation_sens_at_99_paired_t": {
+    "n": 5,
+    "mean_diff": 0.11000000000000001,
+    "std_diff": 0.16355427233796127,
+    "se_diff": 0.07314369419163896,
+    "t_stat": 1.5038890394542594,
+    "df": 4,
+    "p_value": 0.20704645695192814,
+    "ci95_lo": -0.09307945171446025,
+    "ci95_hi": 0.3130794517144603
+  },
+  "foundation_sens_at_95_ce": [
+    0.85,
+    0.85,
+    0.7,
+    0.7,
+    0.7
+  ],
+  "foundation_sens_at_95_sens_at_spec": [
+    0.65,
+    0.95,
+    0.85,
+    0.75,
+    0.7
+  ],
+  "foundation_sens_at_95_mean_ce": 0.76,
+  "foundation_sens_at_95_mean_sens_at_spec": 0.78,
+  "foundation_sens_at_95_paired_t": {
+    "n": 5,
+    "mean_diff": 0.020000000000000018,
+    "std_diff": 0.13509256086106294,
+    "se_diff": 0.06041522986797285,
+    "t_stat": 0.33104235544094757,
+    "df": 4,
+    "p_value": 0.7572283499374892,
+    "ci95_lo": -0.14773956924633272,
+    "ci95_hi": 0.18773956924633275
+  },
+  "lr_baseline_aucs_ce": [
+    0.9774999999999999,
+    0.9824999999999999,
+    0.9375,
+    0.96,
+    0.9375
+  ],
+  "lr_baseline_aucs_sens_at_spec": [
+    0.9774999999999999,
+    0.9824999999999999,
+    0.9375,
+    0.96,
+    0.9375
+  ],
+  "lr_baseline_aucs_match": true,
+  "verdict_auc": "positive",
+  "verdict_sens_at_99": "positive",
+  "verdict_summary": {
+    "auc": "positive (\u0394 +0.0075 AUC, p=0.208)",
+    "sens_at_99": "positive (\u0394 +0.110 sens@99, p=0.207)",
+    "smoke_gate_pass_ce": false,
+    "smoke_gate_pass_sens_at_spec": false,
+    "signal_to_artifact_ce": 1.471655328798186,
+    "signal_to_artifact_sens_at_spec": 1.496098104793757
+  }
+}

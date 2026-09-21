@@ -325,6 +325,8 @@ def _foundation_smoke(
     seed: int,
     n_folds: int = 5,
     n_ensemble: int = 3,
+    loss: str = "ce",
+    alpha_pos: float = 20.0,
 ) -> Dict[str, float]:
     """Train FoundationDownstream on (panel, frag) → y_true, return metrics.
 
@@ -405,7 +407,7 @@ def _foundation_smoke(
             modalities_te["frag_basic"][:, 0] = panel_scores[te]
             modalities_te["frag_enhanced"][:, 0] = frag_scores[te]
 
-            fd = FoundationDownstream(config=cfg, pretrained=False)
+            fd = FoundationDownstream(config=cfg, pretrained=False, loss=loss, alpha_pos=alpha_pos)
             fd.fit(
                 modalities_tr, y_true[tr],
                 n_epochs=40, batch_size=8,
@@ -436,7 +438,7 @@ def _foundation_smoke(
         modalities_tr_b["frag_enhanced"][:, 0] = frag_scores[tr]
         modalities_te_b["frag_basic"][:, 0] = panel_scores[te]
         modalities_te_b["frag_enhanced"][:, 0] = frag_scores[te]
-        fd_b = FoundationDownstream(config=cfg_b, pretrained=False)
+        fd_b = FoundationDownstream(config=cfg_b, pretrained=False, loss=loss, alpha_pos=alpha_pos)
         fd_b.fit(
             modalities_tr_b, y_true[tr],
             n_epochs=20, batch_size=8,
@@ -502,7 +504,7 @@ def _foundation_smoke(
         modalities_tr_b["frag_enhanced"][:, 0] = frag_scores[tr]
         modalities_te_b["frag_basic"][:, 0] = panel_scores[te]
         modalities_te_b["frag_enhanced"][:, 0] = frag_scores[te]
-        fd_b = FoundationDownstream(config=cfg_b, pretrained=False)
+        fd_b = FoundationDownstream(config=cfg_b, pretrained=False, loss=loss, alpha_pos=alpha_pos)
         fd_b.fit(
             modalities_tr_b, y_shuf[tr],
             n_epochs=20, batch_size=8,
@@ -568,6 +570,23 @@ def main() -> int:
              "validation/tcga/tcga_cache. Point this at an empty directory "
              "to force the synthetic-fallback path (used by the smoke "
              "tests to verify the fallback works).",
+    )
+    ap.add_argument(
+        "--loss",
+        choices=("ce", "sens_at_spec"),
+        default="ce",
+        help="Loss function passed to FoundationDownstream. "
+             "'ce' (default) preserves the existing benchmark numbers. "
+             "'sens_at_spec' uses focal-modulated BCE with alpha_pos "
+             "rebalancing for ultra-low VAF cohorts. Multi-class always "
+             "uses CE regardless of this flag.",
+    )
+    ap.add_argument(
+        "--alpha-pos",
+        type=float,
+        default=20.0,
+        help="Positive-class weight for focal-BCE when --loss=sens_at_spec. "
+             "Ignored when --loss=ce.",
     )
     ap.add_argument(
         "--out",
@@ -638,7 +657,10 @@ def main() -> int:
         y, p, f = d["y_true"], d["panel_scores"], d["frag_scores"]
         panel_only_aucs.append(_single_channel_auc(y, p))
         frag_only_aucs.append(_single_channel_auc(y, f))
-        m = _foundation_smoke(p, f, y, seed=seed)
+        m = _foundation_smoke(
+            p, f, y, seed=seed,
+            loss=args.loss, alpha_pos=args.alpha_pos,
+        )
         aucs.append(m["auc"])
         sens95.append(m["sens_at_95"])
         sens99.append(m["sens_at_99"])
@@ -687,6 +709,22 @@ def main() -> int:
         "n_cancer": int(per_seed[seeds[0]]["y_true"].sum()),
         "n_healthy": int((per_seed[seeds[0]]["y_true"] == 0).sum()),
         "seeds": args.seeds,
+        "loss": args.loss,
+        "alpha_pos": args.alpha_pos,
+        "panel_only_aucs": [float(x) for x in panel_only_aucs],
+        "frag_only_aucs": [float(x) for x in frag_only_aucs],
+        "foundation_aucs": [float(x) for x in aucs],
+        "foundation_sens_at_95": [float(x) for x in sens95],
+        "foundation_sens_at_99": [float(x) for x in sens99],
+        "lr_baseline_aucs": [float(x) for x in lr_aucs],
+        "lr_baseline_sens_at_95": [float(x) for x in lr_sens95],
+        "lr_baseline_sens_at_99": [float(x) for x in lr_sens99],
+        "naive_avg_aucs": [float(x) for x in naive_aucs],
+        "naive_avg_sens_at_95": [float(x) for x in naive_sens95],
+        "naive_avg_sens_at_99": [float(x) for x in naive_sens99],
+        "shuffled_lr_baseline_aucs": [float(x) for x in shuf_lr_aucs],
+        "shuffled_naive_avg_aucs": [float(x) for x in shuf_naive_aucs],
+        "shuffled_foundation_aucs": [float(x) for x in shuf_found_aucs],
         "panel_only_auc_mean": panel_auc_mean,
         "frag_only_auc_mean": frag_auc_mean,
         "foundation_auc_mean": foundation_auc_mean,

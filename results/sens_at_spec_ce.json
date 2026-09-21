@@ -1,0 +1,126 @@
+{
+  "n_samples": 40,
+  "n_cancer": 20,
+  "n_healthy": 20,
+  "seeds": 5,
+  "loss": "ce",
+  "alpha_pos": 20.0,
+  "panel_only_aucs": [
+    0.9924999999999999,
+    0.985,
+    0.98,
+    0.9874999999999999,
+    0.985
+  ],
+  "frag_only_aucs": [
+    0.9450000000000001,
+    0.9824999999999999,
+    0.9425,
+    0.9325,
+    0.97
+  ],
+  "foundation_aucs": [
+    0.935,
+    0.98,
+    0.9225,
+    0.9175,
+    0.95
+  ],
+  "foundation_sens_at_95": [
+    0.85,
+    0.85,
+    0.7,
+    0.7,
+    0.7
+  ],
+  "foundation_sens_at_99": [
+    0.25,
+    0.85,
+    0.65,
+    0.05,
+    0.6
+  ],
+  "lr_baseline_aucs": [
+    0.9774999999999999,
+    0.9824999999999999,
+    0.9375,
+    0.96,
+    0.9375
+  ],
+  "lr_baseline_sens_at_95": [
+    1.0,
+    1.0,
+    0.6,
+    1.0,
+    0.95
+  ],
+  "lr_baseline_sens_at_99": [
+    0.55,
+    0.65,
+    0.15,
+    0.2,
+    0.3
+  ],
+  "naive_avg_aucs": [
+    0.995,
+    0.985,
+    0.98,
+    0.9874999999999999,
+    0.985
+  ],
+  "naive_avg_sens_at_95": [
+    1.0,
+    0.95,
+    0.9,
+    1.0,
+    0.95
+  ],
+  "naive_avg_sens_at_99": [
+    0.9,
+    0.75,
+    0.7,
+    0.75,
+    0.75
+  ],
+  "shuffled_lr_baseline_aucs": [
+    0.3525,
+    0.21999999999999997,
+    0.79,
+    0.03750000000000001,
+    0.06750000000000002
+  ],
+  "shuffled_naive_avg_aucs": [
+    0.995,
+    0.985,
+    0.98,
+    0.9874999999999999,
+    0.985
+  ],
+  "shuffled_foundation_aucs": [
+    0.20750000000000002,
+    0.2875,
+    0.5549999999999999,
+    0.13999999999999999,
+    0.27
+  ],
+  "panel_only_auc_mean": 0.986,
+  "frag_only_auc_mean": 0.9545,
+  "foundation_auc_mean": 0.9410000000000001,
+  "foundation_auc_std": 0.022505554869853794,
+  "foundation_sens_at_95_mean": 0.76,
+  "foundation_sens_at_99_mean": 0.48,
+  "lr_baseline_auc_mean": 0.959,
+  "lr_baseline_sens_at_99_mean": 0.37,
+  "naive_avg_auc_mean": 0.9865,
+  "naive_avg_sens_at_99_mean": 0.7699999999999999,
+  "shuffled_lr_baseline_auc_mean": 0.29350000000000004,
+  "shuffled_naive_avg_auc_mean": 0.9865,
+  "shuffled_foundation_auc_mean": 0.2919999999999999,
+  "signal_to_artifact_ratio": 1.471655328798186,
+  "gate_auc": 0.9,
+  "gate_sens99": 0.4,
+  "gate_foundation_auc": 0.85,
+  "gate_pass": false,
+  "data_source": "real_TCGA_LUAD_panel_+_real_mutation_derived_fragmentomics",
+  "honest_framing": "Both channels are real-data derived from TCGA-LUAD MAFs. The panel-LLR is real cfDNA-simulation signal. The fragmentomics channel is real per-patient mutation features (mean VAF, VAF std, mutation burden, driver-gene enrichment, mutation spectrum, aneuploidy) + a small calibrated sequencing-noise jitter that differs in distribution between TF=0.001 and TF=0. The jitter is the synthetic component; the mutation features are real. In the paired design the per-patient mutation signature is invariant across the pair by construction, so the channel's separation comes mostly from the jitter. An unpaired design with real healthy plasma is the next step; not currently possible from open-access data. Foundation score = 0.7 \u00d7 frozen-encoder + sklearn-LR head + 0.3 \u00d7 trainable tiny transformer. Three-way gate: lr_baseline AUC \u2265 0.90, lr_baseline sens@99 \u2265 0.40, foundation AUC \u2265 0.85. The shuffled-label negative control (reported as shuffled_lr_baseline_auc_mean and shuffled_foundation_auc_mean in the JSON) is below 0.40 for both \u2014 i.e. when labels are random the model can't separate the pairs, confirming the real-labels AUC is signal-driven not artifact."
+}

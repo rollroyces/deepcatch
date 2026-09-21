@@ -16,7 +16,7 @@ modalities together, push different samples apart).
 from __future__ import annotations
 
 import math
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -36,6 +36,163 @@ class LinearProjection(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.dropout(self.norm(self.proj(x)))
+
+
+class SparseAwareLinearProjection(nn.Module):
+    """Projection that emits a learned "missing" token for mostly-zero rows.
+
+    Biological rationale
+    --------------------
+    Panel-based cfDNA mutation detection (e.g. panel-LLR at 0.1% VAF) is
+    ~99.9% zeros in raw coverage space: at 0.1% tumor fraction, a single
+    locus carries ~1-2 mutant reads vs ~10 error reads, and the panel
+    spans thousands of loci. Without sparse-aware handling, a plain
+    ``Linear(d, embed_dim)`` followed by ``LayerNorm`` collapses the
+    constant bias vector (LayerNorm subtracts the per-row mean and
+    divides by the per-row std, both of which are zero/NaN for an
+    all-zero input), and the downstream transformer treats the constant
+    bias as a signal — silently biasing every sample toward the mean.
+
+    The fix: detect "mostly-zero" rows per sample
+    (``(x == 0).float().mean(dim=-1) > sparsity_threshold``) and replace
+    the projection for those rows with a *learned* missing-token
+    embedding (initialized small so it starts near zero but is trainable
+    on a per-sample basis). Dense rows go through the normal
+    ``Linear + LayerNorm + Dropout`` path so the existing signal is
+    preserved.
+
+    The forward signature is identical to :class:`LinearProjection` so
+    this class is a drop-in replacement at the per-modality level. Wire
+    it via :func:`make_projection` with ``projection_kind="sparse_aware"``
+    or pass a ``projection_factory`` callable to :class:`MultiModalEncoder`.
+
+    Parameters
+    ----------
+    input_dim : int
+        Input feature dimension (must match the modality's
+        ``MODALITY_DIMS`` entry).
+    embed_dim : int
+        Joint embedding dimension.
+    dropout : float, default 0.1
+        Dropout applied to the dense path only.
+    sparsity_threshold : float, default 0.5
+        Fraction of zeros in a row above which the row is treated as
+        "missing" and replaced with the learned missing-token. Range
+        ``(0, 1]``; ``0.5`` matches the spec for the pillar-2 fix.
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        embed_dim: int,
+        dropout: float = 0.1,
+        sparsity_threshold: float = 0.5,
+    ):
+        super().__init__()
+        if not (0.0 < sparsity_threshold <= 1.0):
+            raise ValueError(
+                f"sparsity_threshold must be in (0, 1], got {sparsity_threshold}"
+            )
+        self.input_dim = input_dim
+        self.embed_dim = embed_dim
+        self.dropout_p = dropout
+        self.sparsity_threshold = float(sparsity_threshold)
+
+        # Dense path — identical to LinearProjection.
+        self.proj = nn.Linear(input_dim, embed_dim)
+        self.norm = nn.LayerNorm(embed_dim)
+        self.dropout = nn.Dropout(dropout)
+
+        # Learned missing token. Same shape as a single projected row
+        # so it can be substituted cleanly without a Linear forward.
+        # Small init (0.02) so the missing-token starts near zero and
+        # the dense path dominates the first epoch; gradient flow
+        # during training pulls it toward the optimal missing-signal
+        # representation.
+        self.missing_token = nn.Parameter(torch.randn(embed_dim) * 0.02)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass with sparse-aware row replacement.
+
+        Parameters
+        ----------
+        x : (batch, input_dim) Tensor
+            Input features for the modality.
+
+        Returns
+        -------
+        out : (batch, embed_dim) Tensor
+            Projected embeddings. Mostly-zero rows are replaced by
+            ``missing_token``; the rest go through the dense
+            ``Linear + LayerNorm + Dropout`` path.
+        """
+        if x.dim() == 1:
+            x = x.unsqueeze(0)
+        # Per-row zero fraction. Shape (B,).
+        zero_frac = (x == 0).float().mean(dim=-1)
+        # is_sparse: True where the row is "mostly-zero". Shape (B, 1)
+        # so it can broadcast over embed_dim.
+        is_sparse = (zero_frac > self.sparsity_threshold).unsqueeze(-1)
+
+        # Dense path: identical to LinearProjection.forward(x).
+        dense = self.dropout(self.norm(self.proj(x)))
+
+        # Missing branch: broadcast missing_token to (B, embed_dim) and
+        # apply LayerNorm so its scale matches the dense branch
+        # (without it the missing-token starts at scale ~0.02 and the
+        # transformer would silently down-weight missing rows during
+        # the first epoch).
+        missing = self.norm(self.missing_token.unsqueeze(0).expand(x.shape[0], -1))
+
+        # Combine: where is_sparse → missing, else → dense.
+        out = torch.where(is_sparse, missing, dense)
+        return out
+
+    def extra_repr(self) -> str:
+        return (
+            f"input_dim={self.input_dim}, embed_dim={self.embed_dim}, "
+            f"dropout={self.dropout_p}, sparsity_threshold={self.sparsity_threshold}"
+        )
+
+
+def make_projection(
+    input_dim: int,
+    embed_dim: int,
+    dropout: float = 0.1,
+    kind: str = "linear",
+    sparsity_threshold: float = 0.5,
+) -> nn.Module:
+    """Factory for per-modality projections.
+
+    Returns a :class:`LinearProjection` (default, unchanged behaviour)
+    or a :class:`SparseAwareLinearProjection` when ``kind="sparse_aware"``.
+
+    Parameters
+    ----------
+    input_dim, embed_dim, dropout
+        Same as :class:`LinearProjection`.
+    kind : {"linear", "sparse_aware"}, default "linear"
+        Which projection class to return. Default preserves the
+        pre-existing behaviour; opt in per-modality via
+        :class:`MultiModalEncoder`'s ``projection_factory`` argument
+        or :class:`FoundationConfig` ``projection_kinds`` mapping.
+    sparsity_threshold : float, default 0.5
+        Only used when ``kind="sparse_aware"``.
+
+    Raises
+    ------
+    ValueError
+        If ``kind`` is not one of the supported projection classes.
+    """
+    if kind == "linear":
+        return LinearProjection(input_dim, embed_dim, dropout)
+    if kind == "sparse_aware":
+        return SparseAwareLinearProjection(
+            input_dim, embed_dim, dropout, sparsity_threshold=sparsity_threshold
+        )
+    raise ValueError(
+        f"Unknown projection kind '{kind}'. Expected 'linear' or 'sparse_aware'."
+    )
 
 
 class MultiModalEncoder(nn.Module):
@@ -62,6 +219,8 @@ class MultiModalEncoder(nn.Module):
         self,
         config: FoundationConfig,
         modality_dims: Optional[Dict[str, int]] = None,
+        projection_kinds: Optional[Dict[str, str]] = None,
+        projection_factory: Optional[Callable[[str, int], nn.Module]] = None,
     ):
         super().__init__()
         self.config = config
@@ -72,11 +231,26 @@ class MultiModalEncoder(nn.Module):
         self.modality_names = list(self.modality_dims.keys())
         self.n_modalities = len(self.modality_names)
 
-        # Per-modality projections
-        self.projections = nn.ModuleDict({
-            name: LinearProjection(dim, self.embed_dim, config.dropout)
-            for name, dim in self.modality_dims.items()
-        })
+        # Per-modality projections. Default is LinearProjection (unchanged).
+        # Opt in per-modality to SparseAwareLinearProjection via
+        # ``projection_kinds={"frag_basic": "sparse_aware"}`` or pass a
+        # fully custom ``projection_factory(name, input_dim) -> nn.Module``.
+        if projection_factory is not None:
+            self.projections = nn.ModuleDict({
+                name: projection_factory(name, dim)
+                for name, dim in self.modality_dims.items()
+            })
+        else:
+            kinds = projection_kinds or {}
+            self.projections = nn.ModuleDict({
+                name: make_projection(
+                    dim,
+                    self.embed_dim,
+                    config.dropout,
+                    kind=kinds.get(name, "linear"),
+                )
+                for name, dim in self.modality_dims.items()
+            })
 
         # Modality type embeddings (learned)
         self.modality_embed = nn.Parameter(

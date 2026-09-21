@@ -1,0 +1,76 @@
+{
+  "checkpoint_path": "/Users/hermes/deepcatch/checkpoints/foundation_pretrained_finaledb.pt",
+  "checkpoint_size_mb": 0.459,
+  "cohort_npz": "/Users/hermes/deepcatch/data/finaledb_pretrain_cohort.npz",
+  "n_samples": 16,
+  "n_healthy": 8,
+  "n_cancer": 8,
+  "studies": [
+    "cristiano",
+    "jiang"
+  ],
+  "feature_dim": 2256,
+  "config": {
+    "embed_dim": 64,
+    "n_modalities": 6,
+    "n_heads": 2,
+    "n_layers": 2,
+    "ff_dim": 128,
+    "dropout": 0.2,
+    "mask_ratio": 0.3,
+    "temperature": 0.1,
+    "lambda_mask": 1.0,
+    "lambda_contrast": 0.5,
+    "pretrain_lr": 0.0001,
+    "finetune_lr": 1e-05,
+    "batch_size": 8,
+    "n_epochs": 10,
+    "contrastive_margin": 0.5,
+    "seed": 42,
+    "device": "cpu"
+  },
+  "encoder_num_params": 73920,
+  "epochs": 5,
+  "device": "cpu",
+  "pretrain_losses": {
+    "phase1": [
+      0.186374,
+      0.182344,
+      0.16441,
+      0.199598,
+      0.187716
+    ],
+    "phase2": [
+      5.075176,
+      5.061478
+    ],
+    "phase3": []
+  },
+  "train_time_s": 0.4,
+  "wall_clock_total_s": 0.8,
+  "forward_pass_finite": true,
+  "data_source": {
+    "primary": "Pre-extracted 5-channel DELFI features at /Users/hermes/cfdna-fragmentomics-pipeline/data/features (originally fetched from FinaleDB S3 *.frag.tsv.bgz files via the cfdna-fragmentomics-pipeline repo)",
+    "live_fetch_attempted": false,
+    "live_fetch_skip_reason": "S3 multi-part objects were truncated by the local network on 2026-09-21 (HEAD reports 54MB but downloads returned 16-23MB). Deferring live fetch to a future PR with a non-truncating network path.",
+    "finaledb_status_at_run_time": "REST API in degraded state (500 on /api/v1/seqrun); S3 bucket public and serving *.frag.tsv.bgz."
+  },
+  "sample_ids": [
+    "CGPLH333",
+    "CGPLH418",
+    "CGPLH644",
+    "CGPLH194",
+    "C348",
+    "C327",
+    "C354",
+    "C351",
+    "CGPLPA128",
+    "CGST58",
+    "CGPLPA134",
+    "CGPLBR88",
+    "H249",
+    "H220",
+    "H272",
+    "H253"
+  ]
+}
