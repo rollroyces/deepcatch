@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-23T15:33:49.019966+00:00",
+  "labels_file": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
+  "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+  "finaledb_api": {
+    "endpoints": {
+      "misc": {
+        "url": "http://finaledb.research.cchmc.org/api/v1/misc",
+        "status": 200,
+        "body_excerpt": "{\"s3\":\"https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org\"}"
+      },
+      "publication": {
+        "url": "http://finaledb.research.cchmc.org/api/v1/publication",
+        "status": 500,
+        "body_excerpt": null
+      },
+      "seqrun": {
+        "url": "http://finaledb.research.cchmc.org/api/v1/seqrun",
+        "status": 500,
+        "body_excerpt": null
+      },
+      "summary": {
+        "url": "http://finaledb.research.cchmc.org/api/v1/summary",
+        "status": 500,
+        "body_excerpt": null
+      }
+    },
+    "verdict": "api-down",
+    "verdict_reason": "/misc responds but /publication + /seqrun + /summary all return 500 \u2014 Postgres connection lost. No way to enumerate seqruns or publications; cannot refetch features for publications missing from the local cache.",
+    "checked_at": "2026-09-23T15:33:47.296603+00:00"
+  },
+  "finaledb_s3": {
+    "url": "https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/entries/EE1/hg38/EE1.hg38.frag.tsv.bgz",
+    "status": 403,
+    "verdict": "private",
+    "verdict_reason": "S3 bucket returns 403 \u2014 bucket was made private. Cannot fetch any new frag.tsv.bgz files.",
+    "checked_at": "2026-09-23T15:33:49.019335+00:00"
+  },
+  "per_publication": {
+    "1": {
+      "verdict": "labels-missing",
+      "reason": "No samples in the labels file reference this publication.",
+      "n_labels": 0,
+      "n_cancer": 0,
+      "n_healthy": 0,
+      "n_features": false,
+      "study_label": "snyder"
+    },
+    "6": {
+      "verdict": "ready",
+      "reason": "All artifacts present; benchmark can include this publication.",
+      "n_labels": 121,
+      "n_cancer": 89,
+      "n_healthy": 32,
+      "n_features": true,
+      "study_label": "jiang"
+    },
+    "7": {
+      "verdict": "labels-missing",
+      "reason": "No samples in the labels file reference this publication.",
+      "n_labels": 0,
+      "n_cancer": 0,
+      "n_healthy": 0,
+      "n_features": false,
+      "study_label": "sun"
+    },
+    "8": {
+      "verdict": "ready",
+      "reason": "All artifacts present; benchmark can include this publication.",
+      "n_labels": 537,
+      "n_cancer": 275,
+      "n_healthy": 262,
+      "n_features": true,
+      "study_label": "cristiano"
+    },
+    "9": {
+      "verdict": "labels-missing",
+      "reason": "No samples in the labels file reference this publication.",
+      "n_labels": 0,
+      "n_cancer": 0,
+      "n_healthy": 0,
+      "n_features": false,
+      "study_label": "adalsteinsson"
+    }
+  },
+  "default_scope": [
+    "6",
+    "8"
+  ],
+  "honest_summary": "FinaleDB API verdict: `api-down`. Blocked publications: 1 (snyder), 7 (sun), 9 (adalsteinsson). The cross-study benchmark uses the `ready` set (['6', '8']) until API/S3 are restored."
+}

@@ -1,36 +1,52 @@
 #!/usr/bin/env python3
-"""Cross-study FinaleDB benchmark: Jiang 2015 (pub 6) + Cristiano 2019 (pub 8).
+"""Cross-study FinaleDB benchmark (publication-aware).
 
 Honest open-data benchmark, NOT clinical validation. Open-data scope, no
 external validation, no held-out clinical cohort. Per the cfdna-fragmentomics
 skill:
-- Both studies are low-pass cfDNA WGS uniformly pre-processed by FinaleDB, so
-  pooling is technically valid with mild harmonization.
-- The TRUE cross-study confound (cancer = 100% study A, healthy = 100% study B)
-  reaches AUC 0.999 without harmonization — that is the negative control here.
-- Per-study z-score harmonization inside each CV fold removes the batch effect
-  without leaking test-set statistics.
+- All FinaleDB studies are uniformly pre-processed cfDNA WGS, so pooling is
+  technically valid with mild per-study harmonization.
+- The TRUE cross-study confound (cancer = 100% study A, healthy = 100%
+  study B) reaches AUC 0.999 without harmonization — that is the negative
+  control here.
+- Per-study z-score harmonization inside each CV fold removes the batch
+  effect without leaking test-set statistics.
+
+Publications (per cfdna-fragmentomics skill, FinaleDB publication id→study map):
+  1  = Snyder 2016 Cell
+  6  = Jiang 2015 PNAS (low-pass HCC)
+  7  = Sun 2019
+  8  = Cristiano 2019 (DELFI, pan-cancer + healthy)
+  9  = Adalsteinsson 2017
 
 Sections:
-  1. Cell-line filter + cohort inventory (per-study, per-cancer)
-  2. Per-cohort AUC: Jiang alone + Cristiano alone
-  3. Pooled cross-study with per-study harmonization (5-seed x 5-fold CV)
+  1. Cell-line filter + cohort inventory (per-publication, per-cancer)
+  2. Per-publication AUC (one fit per requested publication)
+  3. Pooled cross-study with per-publication harmonization (5-seed x 5-fold CV)
   4. Per-cancer sens@spec with bootstrap 95% CIs at spec in {0.95, 0.98, 0.99}
-  5. True-confound control: cancer = 100% Jiang, healthy = 100% Cristiano,
-     per-study z-score harmonization collapses to ~0.5 AUC
-  6. The reverse-confound (cancer = 100% Cristiano, healthy = 100% Jiang) for
-     symmetry (also should collapse to ~0.5)
+  5. True-confound control: cancer = 100% pub A, healthy = 100% pub B,
+     per-publication z-score harmonization collapses to ~0.5 AUC
+  6. The reverse-confound for symmetry (also should collapse to ~0.5)
 
 Outputs:
   results/cross_study_finallydb.json
   docs/CROSS_STUDY_BENCHMARK.md
 
+FinaleDB API status: the public REST API and S3 bucket have been DOWN since
+2026-09 (Postgres connection lost + S3 keys returned 403). Until they return,
+adding publications 1 (Snyder) and 7 (Sun) requires re-fetching their
+features, which is impossible. See docs/PUBLICATION_READINESS.md for the
+honest current status. The default `--publications 6 8` uses the
+already-cached local features for the open-data benchmark.
+
 Usage:
   env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
       scripts/cross_study_finallydb.py \\
       --features-dir /Users/hermes/cfdna-fragmentomics-pipeline/data/features \\
-      --out-json   results/cross_study_finallydb.json \\
-      --out-md      docs/CROSS_STUDY_BENCHMARK.md
+      --labels-multiclass /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
+      --publications 6 8 \\
+      --out-json results/cross_study_finallydb.json \\
+      --out-md    docs/CROSS_STUDY_BENCHMARK.md
 """
 from __future__ import annotations
 
@@ -39,6 +55,7 @@ import json
 import os
 import re
 import sys
+import warnings
 from datetime import datetime, timezone
 
 import numpy as np
@@ -82,46 +99,115 @@ SPECS_FOR_PER_CANCER = [0.95, 0.98, 0.99]
 N_BOOTSTRAP = 1000
 BOOTSTRAP_SEED = 2026
 
+# ──────────────────────────────────────────────────────────────────────
+# Publication registry (cfdna-fragmentomics skill: id→study map)
+# ──────────────────────────────────────────────────────────────────────
+#
+# Each entry is (pub_id → short_label). The short_label is the value used
+# for the harmonization grouping in `_harmonize(X, st, ...)` and as the
+# display label in the inventory + markdown output.
+#
+# When FinaleDB API/S3 are reachable again, the new publications can be
+# added simply by extending this dict + providing a per-publication
+# labels file (or a 5th `publication` column in labels_multiclass.tsv).
+PUBLICATION_REGISTRY = {
+    "1": "snyder",       # Snyder 2016 Cell      (FinaleDB API/S3 currently DOWN)
+    "6": "jiang",        # Jiang 2015 PNAS       (cached locally)
+    "7": "sun",          # Sun 2019              (FinaleDB API/S3 currently DOWN)
+    "8": "cristiano",    # Cristiano 2019 DELFI  (cached locally)
+    "9": "adalsteinsson",  # Adalsteinsson 2017
+}
+# Known study→publication fallback for labels files that only have a
+# `study` column (the current local cache). Used when the labels file
+# has no 5th `publication` column.
+STUDY_TO_PUBLICATION = {
+    "jiang": "6",
+    "cristiano": "8",
+    "snyder": "1",
+    "sun": "7",
+    "adalsteinsson": "9",
+}
+
 
 # --------------------------------------------------------------------------- #
-# Label loading
+# Label loading (now publication-aware)
 # --------------------------------------------------------------------------- #
-def load_labels_multiclass(path: str):
-    """Load labels_multiclass.tsv -> dicts.
+def load_labels_multiclass(path: str, requested_publications: set[str]):
+    """Load labels_multiclass.tsv → dicts.
 
-    Returns: (labels, studies, disease_class)
+    Returns: (labels, studies, disease_class, publication)
       labels[s]        = 1 if cancer else 0
-      studies[s]       = 'jiang' | 'cristiano'
+      studies[s]       = 'jiang' | 'cristiano' | ...  (display label)
       disease_class[s] = 'HCC_J' | 'LUAD' | 'BRCA' | 'HEALTHY' | ...
+      publication[s]   = '6' | '8' | ...  (FinaleDB publication id)
+
+    The function is backward-compatible: if the labels file has NO 5th
+    `publication` column, the publication is derived from the `study`
+    column via STUDY_TO_PUBLICATION. Samples whose publication is not in
+    `requested_publications` are dropped (with a warning listing them).
+
+    If the labels file has the `publication` column and it disagrees with
+    the `study` column, the `publication` column wins (publication is the
+    primary key for the cohort filter).
     """
-    labels, studies, disease_class = {}, {}, {}
+    labels, studies, disease_class, publication = {}, {}, {}, {}
+    skipped_outside_request = []
     with open(path) as f:
-        # Skip header (the literal "sample\tdisease_class\tlabel\tstudy" row).
         header_seen = False
+        header_cols = None
         for line in f:
             p = line.strip().split("\t")
             if len(p) < 4:
                 continue
-            if not header_seen and p[0] == "sample" and p[3] == "study":
+            if not header_seen:
+                if p[0] == "sample" and p[3] == "study":
+                    header_seen = True
+                    header_cols = p
+                    continue
+                # No header row found yet — treat this as a data row.
                 header_seen = True
+            if p[0] == "sample" and p[3] == "study":
+                # Re-reading header on a different row (defensive)
+                header_cols = p
                 continue
-            # Drop rows where the study column is literally the header text.
             if p[3] in ("study", ""):
                 continue
             s = p[0]
+            # Publication id: prefer an explicit 5th column if present.
+            pub = ""
+            if len(p) >= 5 and p[4] and p[4] not in ("publication",):
+                pub = p[4]
+            else:
+                pub = STUDY_TO_PUBLICATION.get(p[3], "")
+            if pub not in requested_publications:
+                skipped_outside_request.append((s, p[3], pub))
+                continue
             labels[s] = 1 if p[2] == "cancer" else 0
             studies[s] = p[3]
             disease_class[s] = p[1]
-    return labels, studies, disease_class
+            publication[s] = pub
+    if skipped_outside_request:
+        uniq = sorted({(st, pub) for _, st, pub in skipped_outside_request
+                       if pub and pub not in requested_publications})
+        if uniq:
+            warnings.warn(
+                f"load_labels_multiclass: dropped {len(skipped_outside_request)} "
+                f"samples whose publication is outside the requested set "
+                f"{sorted(requested_publications)}. "
+                f"Dropped study→pub combos: {uniq}",
+                stacklevel=2,
+            )
+    return labels, studies, disease_class, publication
 
 
-def apply_cell_line_filter(labels, studies, disease_class):
+def apply_cell_line_filter(labels, studies, disease_class, publication):
     """Drop samples whose IDs match the cell-line regex. Return counts."""
     drop_ids = [s for s in list(labels) if CELL_LINE_RE.match(s)]
     for s in drop_ids:
         labels.pop(s, None)
         studies.pop(s, None)
         disease_class.pop(s, None)
+        publication.pop(s, None)
     return drop_ids
 
 
@@ -189,7 +275,8 @@ def bootstrap_ci_sens(y_true, y_score, spec, n_boot, seed):
 # --------------------------------------------------------------------------- #
 # Sections
 # --------------------------------------------------------------------------- #
-def section_inventory(labels, studies, disease_class, dropped, samples_in_array):
+def section_inventory(labels, studies, disease_class, publication, dropped,
+                      samples_in_array):
     n_total = len(labels)
     n_cancer = sum(1 for v in labels.values() if v == 1)
     n_healthy = n_total - n_cancer
@@ -201,16 +288,28 @@ def section_inventory(labels, studies, disease_class, dropped, samples_in_array)
             d["n_cancer"] += 1
         else:
             d["n_healthy"] += 1
+    by_publication = {}
+    for s, pub in publication.items():
+        d = by_publication.setdefault(pub, {
+            "n_total": 0, "n_cancer": 0, "n_healthy": 0,
+            "study_label": PUBLICATION_REGISTRY.get(pub, pub),
+        })
+        d["n_total"] += 1
+        if labels[s] == 1:
+            d["n_cancer"] += 1
+        else:
+            d["n_healthy"] += 1
     by_cancer = {}
     for s, dc in disease_class.items():
         if labels[s] != 1:
             continue
-        d = by_cancer.setdefault(dc, {"n_total": 0, "n_jiang": 0, "n_cristiano": 0})
+        d = by_cancer.setdefault(dc, {"n_total": 0})
         d["n_total"] += 1
-        if studies[s] == "jiang":
-            d["n_jiang"] += 1
-        else:
-            d["n_cristiano"] += 1
+        for st_key in by_study:
+            if st_key not in d:
+                d[st_key] = 0
+            if studies[s] == st_key:
+                d[st_key] += 1
     n_with_features = len(samples_in_array)
     return {
         "n_total_in_labels": n_total,
@@ -221,19 +320,26 @@ def section_inventory(labels, studies, disease_class, dropped, samples_in_array)
         "n_dropped_cell_line": len(dropped),
         "dropped_cell_line_ids": dropped,
         "per_study": by_study,
+        "per_publication": by_publication,
         "per_cancer": by_cancer,
     }
 
 
-def section_per_cohort(X, y, st, seeds, pca_n):
+def section_per_publication(X, y, st, publication_arr, seeds, pca_n,
+                            requested_publications):
+    """Per-publication AUC, one fit per requested publication."""
     out = {}
-    for study in ["jiang", "cristiano"]:
-        mask = st == study
-        if mask.sum() < 30 or (y[mask] == 1).sum() < 10 or (y[mask] == 0).sum() < 10:
-            out[study] = {
-                "n_total": int(mask.sum()),
-                "n_cancer": int((y[mask] == 1).sum()),
-                "n_healthy": int((y[mask] == 0).sum()),
+    for pub in sorted(requested_publications):
+        mask = publication_arr == pub
+        n = int(mask.sum())
+        n_cancer = int((mask & (y == 1)).sum())
+        n_healthy = int((mask & (y == 0)).sum())
+        if n < 30 or n_cancer < 10 or n_healthy < 10:
+            out[pub] = {
+                "n_total": n,
+                "n_cancer": n_cancer,
+                "n_healthy": n_healthy,
+                "study_label": PUBLICATION_REGISTRY.get(pub, pub),
                 "skipped": True,
                 "reason": "insufficient samples for 5-fold CV",
             }
@@ -241,10 +347,11 @@ def section_per_cohort(X, y, st, seeds, pca_n):
         _, _, seed_aucs = pooled_oof(
             X[mask], y[mask], st[mask], seeds, pca_n, harmonize=False
         )
-        out[study] = {
-            "n_total": int(mask.sum()),
-            "n_cancer": int((y[mask] == 1).sum()),
-            "n_healthy": int((y[mask] == 0).sum()),
+        out[pub] = {
+            "n_total": n,
+            "n_cancer": n_cancer,
+            "n_healthy": n_healthy,
+            "study_label": PUBLICATION_REGISTRY.get(pub, pub),
             "auc_mean": float(np.mean(seed_aucs)),
             "auc_std": float(np.std(seed_aucs)),
             "per_seed_auc": seed_aucs,
@@ -602,7 +709,7 @@ def build_per_cancer_standalone_payload(
         "prevalences": list(DEFAULT_PREVALENCES),
         "ppv_at_spec": PPV_AT_SPEC,
         "min_positives_for_ci": MIN_POSITIVES_FOR_CI,
-        "harmonization": "per-study z-score StandardScaler fit on train fold only",
+        "harmonization": "per-publication z-score StandardScaler fit on train fold only",
         "cv": "5-fold StratifiedKFold, 5-seed pooled OOF per OvR",
     }
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
@@ -658,32 +765,39 @@ def section_per_cancer(ovr_artifacts, cancer_types):
     return out
 
 
-def section_true_confound(X, y, st, studies, seeds, pca_n):
-    """TRUE cross-study confound (cancer = one study, healthy = the other).
+def section_true_confound(X, y, st, publication_arr, requested_publications,
+                          seeds, pca_n):
+    """TRUE cross-publication confound.
 
-    Run BOTH orientations and BOTH harmonization settings. With per-study
-    z-score harmonization this should collapse to AUC ~0.50; without
-    harmonization it reaches ~0.999 (the classifier learns the study).
+    Run BOTH orientations and BOTH harmonization settings for every pair
+    of requested publications. With per-publication z-score harmonization
+    this should collapse to AUC ~0.50; without harmonization it reaches
+    ~0.999 (the classifier learns the publication).
     """
-    s_arr = np.asarray(studies == "jiang")  # bool (1 if jiang)
-    s_arr_c = ~s_arr
-    y_arr = np.asarray([1 if v == 1 else 0 for v in (y == 1)], dtype=bool)
-    # Use raw st/studies from numpy array; need to derive cancer position from
-    # original (mask,label) pair. Simpler: rebuild study boolean from st.
-    is_jiang = st == "jiang"
-    is_cristiano = st == "cristiano"
-    orientations = {
-        "cancer_jiang_healthy_cristiano": (is_jiang, is_cristiano),
-        "cancer_cristiano_healthy_jiang": (is_cristiano, is_jiang),
-    }
     out = {}
-    for tag, (pos_mask, neg_mask) in orientations.items():
+    pubs = sorted(requested_publications)
+    if len(pubs) < 2:
+        # With only one publication, the true-confound is undefined.
+        return {
+            "skipped": True,
+            "reason": (f"true-confound control needs >=2 publications; "
+                      f"got {pubs}"),
+        }
+    # All ordered pairs (cancer=pubA, healthy=pubB).
+    pairs = [(a, b) for a in pubs for b in pubs if a != b]
+    for pub_pos, pub_neg in pairs:
+        pos_mask = publication_arr == pub_pos
+        neg_mask = publication_arr == pub_neg
         mask = pos_mask | neg_mask
         n_pos = int((mask & pos_mask).sum())
         n_neg = int((mask & neg_mask).sum())
+        tag = f"cancer_{PUBLICATION_REGISTRY.get(pub_pos, pub_pos)}_" \
+              f"healthy_{PUBLICATION_REGISTRY.get(pub_neg, pub_neg)}"
         if n_pos < 10 or n_neg < 10:
             out[tag] = {"skipped": True,
-                        "reason": f"n_pos={n_pos}, n_neg={n_neg}"}
+                        "reason": f"n_pos={n_pos}, n_neg={n_neg}",
+                        "publication_cancer": pub_pos,
+                        "publication_healthy": pub_neg}
             continue
         X_sub = X[mask]
         y_sub = pos_mask[mask].astype(int)
@@ -701,6 +815,8 @@ def section_true_confound(X, y, st, studies, seeds, pca_n):
         out[tag] = {
             "n_cancer": n_pos,
             "n_healthy": n_neg,
+            "publication_cancer": pub_pos,
+            "publication_healthy": pub_neg,
             **cfg,
         }
     return out
@@ -712,17 +828,27 @@ def section_true_confound(X, y, st, studies, seeds, pca_n):
 def write_markdown(payload, md_path):
     cfg = payload["config"]
     cohort = payload["cohort"]
-    pc = payload["per_cohort"]
+    pc = payload.get("per_publication", payload.get("per_cohort", {}))
     pooled = payload["pooled"]
     percancer = payload["per_cancer"]
     confound = payload["true_confound_control"]
     interp = payload["interpretation"]
+    pubs = payload.get("publications", [])
+    api_status = payload.get("finaledb_api_status", "unknown")
 
     L = []
     L.append("# Cross-Study FinaleDB Benchmark (Open Data)\n")
-    L.append("> **Scope**: Open-data benchmark on FinaleDB publications 6 (Jiang 2015) + 8 "
-            "(Cristiano 2019). **NOT** clinical validation. **NOT** external cohort "
-            "validation. Pooled OOF on the same cohort that trained the model.\n")
+    pub_str = " + ".join(
+        f"{p} ({PUBLICATION_REGISTRY.get(p, '?')})" for p in pubs
+    )
+    L.append(f"> **Scope**: Open-data benchmark on FinaleDB publications: "
+            f"{pub_str}. **NOT** clinical validation. **NOT** external "
+            f"cohort validation. Pooled OOF on the same cohort that "
+            f"trained the model.\n")
+    if api_status != "ok":
+        L.append(f"> **FinaleDB API status**: `{api_status}`. Publications "
+                f"with no locally-cached features were skipped (see "
+                f"`results/publication_readiness.json`).\n")
     L.append(f"- Generated: `{payload['generated_at']}`\n")
     L.append(f"- Classifier: `{cfg['classifier']}`\n")
     L.append(f"- Feature set: {cfg['feature_set']}\n")
@@ -733,41 +859,60 @@ def write_markdown(payload, md_path):
     L.append(f"- Cell-line regex: `{cfg['cell_line_regex']}`\n")
 
     L.append("\n## 1. Cohort inventory\n")
-    L.append(f"- Samples in labels_multiclass.tsv: **{cohort['n_total_in_labels']}** "
-            f"({cohort['n_cancer_in_labels']} cancer + {cohort['n_healthy_in_labels']} healthy)\n")
+    L.append(f"- Samples in labels file (filtered to requested publications): "
+            f"**{cohort['n_total_in_labels']}** "
+            f"({cohort['n_cancer_in_labels']} cancer + "
+            f"{cohort['n_healthy_in_labels']} healthy)\n")
     L.append(f"- Samples with all 5-channel DELFI features: **{cohort['n_with_features']}** "
             f"({cohort['n_dropped_due_to_missing_features']} dropped due to missing artifacts)\n")
     L.append(f"- Cell-line filter removed: **{cohort['n_dropped_cell_line']}** samples "
             f"(none matched the regex on this open-data cohort)\n")
     if cohort["dropped_cell_line_ids"]:
         L.append(f"  - Dropped IDs: `{cohort['dropped_cell_line_ids']}`\n")
-    L.append(f"- Per-study:\n")
+    L.append(f"- Per-publication (FinaleDB):\n")
+    for pub, d in sorted(cohort.get("per_publication", {}).items()):
+        L.append(f"  - **{pub} ({d['study_label']})**: n={d['n_total']} "
+                f"({d['n_cancer']} cancer + {d['n_healthy']} healthy)\n")
+    L.append(f"- Per-study (legacy `study` column in labels file):\n")
     for st, d in cohort["per_study"].items():
         L.append(f"  - **{st}**: n={d['n_total']} ({d['n_cancer']} cancer + "
                 f"{d['n_healthy']} healthy)\n")
     L.append(f"- Per-cancer (cancer samples only):\n")
-    L.append("  | Cancer | n_total | n_jiang | n_cristiano |\n")
-    L.append("  |---|---:|---:|---:|\n")
+    study_keys = sorted({
+            k for d in cohort["per_cancer"].values() for k in d
+            if k not in ("n_total",)
+        })
+    header = "| Cancer | n_total | " + " | ".join(study_keys) + " |"
+    sep = "|---|---:|" + "---:|" * len(study_keys) + "\n"
+    L.append(header + "\n")
+    L.append(sep)
     for cancer, d in sorted(cohort["per_cancer"].items(),
                             key=lambda kv: -kv[1]["n_total"]):
-        L.append(f"  | {cancer} | {d['n_total']} | {d['n_jiang']} | "
-                f"{d['n_cristiano']} |\n")
+        row = f"  | {cancer} | {d['n_total']} | " + \
+              " | ".join(str(d.get(sk, 0)) for sk in study_keys) + " |\n"
+        L.append(row)
 
-    L.append("\n## 2. Per-cohort AUC\n")
-    L.append("Each study evaluated independently (no harmonization needed; one study only).\n\n")
-    L.append("| Study | n | n_cancer | n_healthy | AUC (5-seed mean ± std) |\n")
-    L.append("|---|---:|---:|---:|---|\n")
-    for study in ["jiang", "cristiano"]:
-        r = pc[study]
+    L.append("\n## 2. Per-publication AUC\n")
+    L.append("Each publication evaluated independently (no harmonization "
+            "needed; one publication only).\n\n")
+    L.append("| Publication | Study | n | n_cancer | n_healthy | "
+            "AUC (5-seed mean ± std) |\n")
+    L.append("|---|---|---:|---:|---:|---|\n")
+    for pub in sorted(pc.keys()):
+        r = pc[pub]
         if r.get("skipped"):
-            L.append(f"| {study} | {r['n_total']} | {r['n_cancer']} | "
+            L.append(f"| {pub} | {r.get('study_label', '?')} | "
+                    f"{r['n_total']} | {r['n_cancer']} | "
                     f"{r['n_healthy']} | SKIPPED ({r.get('reason', '')}) |\n")
         else:
-            L.append(f"| {study} | {r['n_total']} | {r['n_cancer']} | "
-                    f"{r['n_healthy']} | {r['auc_mean']:.4f} ± {r['auc_std']:.4f} |\n")
+            L.append(f"| {pub} | {r['study_label']} | "
+                    f"{r['n_total']} | {r['n_cancer']} | "
+                    f"{r['n_healthy']} | "
+                    f"{r['auc_mean']:.4f} ± {r['auc_std']:.4f} |\n")
 
-    L.append("\n## 3. Pooled cross-study AUC (with/without per-study harmonization)\n")
-    L.append("Harmonization = per-study z-score StandardScaler fit on train fold only.\n\n")
+    L.append("\n## 3. Pooled cross-publication AUC (with/without per-publication harmonization)\n")
+    L.append("Harmonization = per-publication z-score StandardScaler fit "
+            "on train fold only.\n\n")
     L.append("| Setting | AUC mean ± std | Sens@95% | Sens@98% | Sens@99% |\n")
     L.append("|---|---|---:|---:|---:|\n")
     for tag in ["harmonized", "no_harmonize"]:
@@ -778,7 +923,7 @@ def write_markdown(payload, md_path):
 
     L.append("\n## 4. Per-cancer Sens@Spec (top-5 cancers by sample count)\n")
     L.append("One-vs-rest: each cancer vs ALL healthy samples in the pooled cross-study "
-            "cohort. Per-study harmonization inside each CV fold.\n\n")
+            "cohort. Per-publication harmonization inside each CV fold.\n\n")
     L.append("**Primary CIs are DeLong** (DeLong, DeLong, Clarke-Pearson 1988 for AUC; "
             "Sun & Xu 2014 for Sens@spec — equivalent to DeLong-Han-Agarwal structural "
             "component restricted to positives). Bootstrap 95% CIs "
@@ -818,52 +963,58 @@ def write_markdown(payload, md_path):
             )
 
     L.append("\n## 5. True-confound control\n")
-    L.append("Cancer = 100% from one study, healthy = 100% from the other. "
-            "Without harmonization the classifier learns 'which study is this "
-            "from?' (AUC ~0.999). With per-study z-score harmonization the "
-            "study-specific mean/variance is the only signal and is removed by "
+    L.append("Cancer = 100% from one publication, healthy = 100% from another. "
+            "Without harmonization the classifier learns 'which publication is this "
+            "from?' (AUC ~0.999). With per-publication z-score harmonization the "
+            "publication-specific mean/variance is the only signal and is removed by "
             "design (AUC should collapse toward 0.50).\n\n")
     L.append("| Orientation | n_cancer | n_healthy | AUC harmonized | AUC no_harmonize |\n")
     L.append("|---|---:|---:|---:|---:|\n")
-    for tag, r in confound.items():
-        if r.get("skipped"):
-            L.append(f"| {tag} | — | — | SKIPPED | SKIPPED |\n")
-            continue
-        h = r["harmonized"]
-        nh = r["no_harmonize"]
-        L.append(f"| {tag} | {r['n_cancer']} | {r['n_healthy']} | "
-                f"{h['auc_mean']:.3f} ± {h['auc_std']:.3f} | "
-                f"{nh['auc_mean']:.3f} ± {nh['auc_std']:.3f} |\n")
+    if isinstance(confound, dict) and confound.get("skipped"):
+        L.append(f"| — | — | — | SKIPPED ({confound.get('reason')}) | — |\n")
+    else:
+        for tag, r in confound.items():
+            if r.get("skipped"):
+                L.append(f"| {tag} | — | — | SKIPPED | SKIPPED |\n")
+                continue
+            h = r["harmonized"]
+            nh = r["no_harmonize"]
+            L.append(f"| {tag} | {r['n_cancer']} | {r['n_healthy']} | "
+                    f"{h['auc_mean']:.3f} ± {h['auc_std']:.3f} | "
+                    f"{nh['auc_mean']:.3f} ± {nh['auc_std']:.3f} |\n")
 
     L.append("\n## Verdict\n")
     h = pooled["harmonized"]
     nh = pooled["no_harmonize"]
     n_feat = cohort["n_with_features"]
-    L.append(f"- Pooled harmonized cross-study AUC: **{h['auc_mean']:.4f} ± {h['auc_std']:.4f}** "
+    L.append(f"- Pooled harmonized cross-publication AUC: **{h['auc_mean']:.4f} ± "
+            f"{h['auc_std']:.4f}** "
             f"(n={n_feat} with features, of {cohort['n_total_in_labels']} in labels file)\n")
-    L.append(f"- Pooled AUC without harmonization: **{nh['auc_mean']:.4f} ± {nh['auc_std']:.4f}** "
-            f"(mild change confirms the per-study batch effect is small on this "
+    L.append(f"- Pooled AUC without harmonization: **{nh['auc_mean']:.4f} ± "
+            f"{nh['auc_std']:.4f}** "
+            f"(mild change confirms the per-publication batch effect is small on this "
             f"FinaleDB-uniformly-processed cohort)\n")
-    j_pc = pc.get("jiang", {})
-    c_pc = pc.get("cristiano", {})
-    L.append(f"- Per-cohort AUC: Jiang **{j_pc.get('auc_mean', float('nan')):.4f} ± "
-            f"{j_pc.get('auc_std', float('nan')):.4f}** "
-            f"(n={j_pc.get('n_total', 0)}), "
-            f"Cristiano **{c_pc.get('auc_mean', float('nan')):.4f} ± "
-            f"{c_pc.get('auc_std', float('nan')):.4f}** "
-            f"(n={c_pc.get('n_total', 0)})\n")
+    # Per-publication verdict (publication-agnostic, sorted by AUC).
+    pc_rows = [
+        (pub, r) for pub, r in pc.items() if not r.get("skipped")
+    ]
+    if pc_rows:
+        L.append(f"- Per-publication AUC (sorted by AUC): "
+                + ", ".join(
+                    f"{pub} ({r['study_label']}) "
+                    f"**{r['auc_mean']:.4f} ± {r['auc_std']:.4f}** (n={r['n_total']})"
+                    for pub, r in sorted(pc_rows, key=lambda kv: -kv[1]['auc_mean'])
+                ) + "\n")
     # Confound verdict
-    c1 = confound.get("cancer_jiang_healthy_cristiano", {})
-    c2 = confound.get("cancer_cristiano_healthy_jiang", {})
-    if c1 and not c1.get("skipped"):
-        L.append(f"- True-confound control: cancer=Jiang + healthy=Cristiano: "
-                f"harmonized AUC **{c1['harmonized']['auc_mean']:.3f}** "
-                f"(should be ~0.50), no-harmonize AUC **{c1['no_harmonize']['auc_mean']:.3f}** "
-                f"(should be ~1.00 — proves the batch effect is removable)\n")
-    if c2 and not c2.get("skipped"):
-        L.append(f"- True-confound control: cancer=Cristiano + healthy=Jiang: "
-                f"harmonized AUC **{c2['harmonized']['auc_mean']:.3f}** "
-                f"(should be ~0.50), no-harmonize AUC **{c2['no_harmonize']['auc_mean']:.3f}**\n")
+    if isinstance(confound, dict) and not confound.get("skipped"):
+        for tag, r in confound.items():
+            if r.get("skipped"):
+                continue
+            L.append(f"- True-confound control: {tag}: "
+                    f"harmonized AUC **{r['harmonized']['auc_mean']:.3f}** "
+                    f"(should be ~0.50), "
+                    f"no-harmonize AUC **{r['no_harmonize']['auc_mean']:.3f}** "
+                    f"(should be ~1.00 — proves the batch effect is removable)\n")
 
     L.append("\n## Honest framing\n")
     L.append(interp["honest_framing"] + "\n\n")
@@ -878,15 +1029,92 @@ def write_markdown(payload, md_path):
 
 
 # --------------------------------------------------------------------------- #
+# Helpers exposed for the readiness diagnostic
+# --------------------------------------------------------------------------- #
+def features_present_for_publication(labels, studies, publication, pub_id,
+                                     features_dir):
+    """Return True if at least one sample for `pub_id` has all 5 features
+    present in `features_dir`. Used by the readiness diagnostic.
+    """
+    feat_paths = (
+        "{s}.delfi_5mb_ratio.npy",
+        "{s}.delfi_5mb_coverage.npy",
+        "{s}.delfi_100kb_ratio.npy",
+        "{s}.delfi_100kb_counts.npy",
+        "{s}.fsd.json",
+    )
+    for s in labels:
+        if publication.get(s) != pub_id:
+            continue
+        if all(os.path.exists(os.path.join(features_dir, f.format(s=s)))
+               for f in feat_paths):
+            return True
+    return False
+
+
+def _probe_finaledb_api_best_effort(timeout=3.0):
+    """Best-effort probe of the FinaleDB API. Returns (status, reason).
+
+    Status ∈ {"ok", "api-down", "unreachable", "unknown"}. This is purely
+    informational — a network failure here MUST NOT block the benchmark.
+    On any probe error, returns ("unknown", "<error message>") so the
+    downstream pipeline still completes.
+    """
+    try:
+        import urllib.error
+        import urllib.request
+        with urllib.request.urlopen(
+            "http://finaledb.research.cchmc.org/api/v1/misc",
+            timeout=timeout,
+        ) as r:
+            misc_status = r.status
+    except Exception as e:
+        return ("unreachable", f"/api/v1/misc error: {type(e).__name__}: {e}")
+    if misc_status != 200:
+        return ("unreachable", f"/api/v1/misc returned status={misc_status}")
+    # /misc is alive — check whether the data endpoints are 500ing.
+    bad = []
+    for ep in ("publication", "seqrun", "summary"):
+        try:
+            with urllib.request.urlopen(
+                f"http://finaledb.research.cchmc.org/api/v1/{ep}",
+                timeout=timeout,
+            ) as r:
+                if r.status != 200:
+                    bad.append(f"{ep}={r.status}")
+        except urllib.error.HTTPError as e:
+            bad.append(f"{ep}={e.code}")
+        except Exception as e:
+            bad.append(f"{ep}=err")
+    if bad:
+        return ("api-down", f"FinaleDB data endpoints returning errors: {bad}")
+    return ("ok", "all endpoints reachable")
+
+
+# --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
 def main():
-    ap = argparse.ArgumentParser(description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     ap.add_argument("--features-dir",
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
     ap.add_argument("--labels-multiclass",
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+    ap.add_argument("--publications", nargs="+", default=["6", "8"],
+                    help="Space-separated list of FinaleDB publication ids to "
+                         "include in the benchmark (default: '6 8' = Jiang + "
+                         "Cristiano, which are the only ones currently "
+                         "cached locally). Use --include-snyder / --include-sun "
+                         "as shortcuts for publications 1 and 7.")
+    ap.add_argument("--include-snyder", action="store_true",
+                    help="Shortcut to add publication 1 (Snyder 2016 Cell) to "
+                         "--publications.")
+    ap.add_argument("--include-sun", action="store_true",
+                    help="Shortcut to add publication 7 (Sun 2019) to "
+                         "--publications.")
     ap.add_argument("--out-json", default="results/cross_study_finallydb.json")
     ap.add_argument("--out-md", default="docs/CROSS_STUDY_BENCHMARK.md")
     ap.add_argument("--out-per-cancer-json",
@@ -898,42 +1126,111 @@ def main():
     ap.add_argument("--top-cancer-n", type=int, default=5)
     args = ap.parse_args()
 
+    # ── Resolve the requested publications list ──
+    requested = set(str(p) for p in args.publications)
+    if args.include_snyder:
+        requested.add("1")
+    if args.include_sun:
+        requested.add("7")
+    unknown = requested - set(PUBLICATION_REGISTRY.keys())
+    if unknown:
+        ap.error(
+            f"unknown publication id(s): {sorted(unknown)}. "
+            f"Known: {sorted(PUBLICATION_REGISTRY.keys())}"
+        )
+    requested_publications = sorted(requested)
+    print(f"[config] requested publications: {requested_publications} "
+          f"({[PUBLICATION_REGISTRY[p] for p in requested_publications]})")
+
     print(f"[1/6] Loading labels_multiclass from {args.labels_multiclass}")
-    labels, studies, disease_class = load_labels_multiclass(args.labels_multiclass)
+    labels, studies, disease_class, publication = load_labels_multiclass(
+        args.labels_multiclass, set(requested_publications),
+    )
     print(f"      Loaded {len(labels)} samples (raw multiclass labels)")
 
     print(f"[2/6] Applying cell-line filter")
-    dropped = apply_cell_line_filter(labels, studies, disease_class)
+    dropped = apply_cell_line_filter(labels, studies, disease_class, publication)
     print(f"      Dropped {len(dropped)} cell-line samples: {dropped}")
+
+    # Diagnostic: which requested publications actually have samples?
+    requested_with_samples = {
+        pub for pub in requested_publications
+        if any(publication[s] == pub for s in publication)
+    }
+    requested_without_samples = sorted(
+        set(requested_publications) - requested_with_samples
+    )
+    if requested_without_samples:
+        warnings.warn(
+            f"No samples for requested publication(s) "
+            f"{requested_without_samples}. These will be skipped "
+            f"(no features to load, no OvR to compute).",
+            stacklevel=1,
+        )
 
     print(f"[3/6] Loading 5-channel DELFI features from {args.features_dir}")
     X, y, st = load5(labels, studies, args.features_dir)
     print(f"      X.shape={X.shape}, n_cancer={(y==1).sum()}, "
-          f"n_healthy={(y==0).sum()}, studies={sorted(set(st.tolist()))}")
+          f"n_healthy={(y==0).sum()}, "
+          f"studies={sorted(set(st.tolist()))}")
 
     # Replicate load5's filter to recover the sample IDs in X-row order.
     samples_in_array = []
+    feat_paths_tpl = (
+        "{s}.delfi_5mb_ratio.npy",
+        "{s}.delfi_5mb_coverage.npy",
+        "{s}.delfi_100kb_ratio.npy",
+        "{s}.delfi_100kb_counts.npy",
+        "{s}.fsd.json",
+    )
     for s in sorted(labels):
-        paths = [f"{s}.delfi_5mb_ratio.npy",
-                 f"{s}.delfi_5mb_coverage.npy",
-                 f"{s}.delfi_100kb_ratio.npy",
-                 f"{s}.delfi_100kb_counts.npy",
-                 f"{s}.fsd.json"]
-        if all(os.path.exists(os.path.join(args.features_dir, p)) for p in paths):
+        if all(os.path.exists(os.path.join(args.features_dir, f.format(s=s)))
+               for f in feat_paths_tpl):
             samples_in_array.append(s)
     assert len(samples_in_array) == X.shape[0], (
         f"sample_id reconstruction failed: {len(samples_in_array)} vs {X.shape[0]}")
 
-    print(f"[4/6] Per-cohort AUC")
-    per_cohort = section_per_cohort(X, y, st, args.seeds, args.pca)
-    for study, r in per_cohort.items():
-        if r.get("skipped"):
-            print(f"      {study}: SKIPPED ({r.get('reason')})")
-        else:
-            print(f"      {study:12s}: AUC {r['auc_mean']:.4f} ± {r['auc_std']:.4f} "
-                  f"(n={r['n_total']}, {r['n_cancer']} cancer + {r['n_healthy']} healthy)")
+    # Build per-row publication array aligned to X rows.
+    publication_arr = np.array(
+        [publication.get(s, "") for s in samples_in_array],
+        dtype=object,
+    )
+    # Build per-publication feature-presence map and warn about
+    # requested pubs with zero samples-with-features.
+    publications_with_features = {
+        pub for pub in requested_publications
+        if features_present_for_publication(
+            labels, studies, publication, pub, args.features_dir)
+    }
+    pubs_missing_features = sorted(
+        set(requested_publications) - publications_with_features
+    )
+    if pubs_missing_features:
+        warnings.warn(
+            f"Requested publication(s) {pubs_missing_features} have NO "
+            f"5-channel DELFI features cached locally — will be skipped "
+            f"from per-publication AUC. See "
+            f"`scripts/_verify_publication_readiness.py` for the API/S3 "
+            f"status check.",
+            stacklevel=1,
+        )
 
-    print(f"[5/6] Pooled cross-study AUC (with/without harmonization)")
+    print(f"[4/6] Per-publication AUC (requested={requested_publications})")
+    per_pub = section_per_publication(
+        X, y, st, publication_arr, args.seeds, args.pca,
+        requested_publications,
+    )
+    for pub, r in per_pub.items():
+        if r.get("skipped"):
+            print(f"      {pub} ({r.get('study_label', '?')}): SKIPPED "
+                  f"({r.get('reason')})")
+        else:
+            print(f"      {pub} ({r['study_label']:12s}): "
+                  f"AUC {r['auc_mean']:.4f} ± {r['auc_std']:.4f} "
+                  f"(n={r['n_total']}, {r['n_cancer']} cancer + "
+                  f"{r['n_healthy']} healthy)")
+
+    print(f"[5/6] Pooled cross-publication AUC (with/without harmonization)")
     pooled = section_pooled(X, y, st, args.seeds, args.pca)
     for tag, r in pooled.items():
         print(f"      {tag:14s}: AUC {r['auc_mean']:.4f} ± {r['auc_std']:.4f}  "
@@ -971,35 +1268,52 @@ def main():
               f"AUC {r['auc_mean']:.4f} ± {r['auc_std']:.4f}  "
               f"S99={s99:.3f}")
 
-    print(f"[+] TRUE cross-study confound control")
-    confound = section_true_confound(X, y, st, studies, args.seeds, args.pca)
-    for tag, r in confound.items():
-        if r.get("skipped"):
-            print(f"      {tag}: SKIPPED ({r.get('reason')})")
-            continue
-        h = r["harmonized"]
-        nh = r["no_harmonize"]
-        print(f"      {tag}:")
-        print(f"        harmonized    : AUC {h['auc_mean']:.3f} ± {h['auc_std']:.3f}")
-        print(f"        no_harmonize  : AUC {nh['auc_mean']:.3f} ± {nh['auc_std']:.3f}")
+    print(f"[+] TRUE cross-publication confound control")
+    confound = section_true_confound(
+        X, y, st, publication_arr, requested_publications,
+        args.seeds, args.pca,
+    )
+    if isinstance(confound, dict) and confound.get("skipped"):
+        print(f"      SKIPPED ({confound.get('reason')})")
+    else:
+        for tag, r in confound.items():
+            if r.get("skipped"):
+                print(f"      {tag}: SKIPPED ({r.get('reason')})")
+                continue
+            h = r["harmonized"]
+            nh = r["no_harmonize"]
+            print(f"      {tag}:")
+            print(f"        harmonized    : AUC {h['auc_mean']:.3f} ± {h['auc_std']:.3f}")
+            print(f"        no_harmonize  : AUC {nh['auc_mean']:.3f} ± {nh['auc_std']:.3f}")
 
-    inventory = section_inventory(labels, studies, disease_class, dropped,
-                                  samples_in_array)
+    inventory = section_inventory(labels, studies, disease_class, publication,
+                                  dropped, samples_in_array)
+
+    # Probe the FinaleDB API status (lightweight, best-effort). This
+    # is purely informational — recorded in the JSON + markdown so the
+    # numbers can be re-validated later when the API is back up.
+    api_status, api_reason = _probe_finaledb_api_best_effort()
 
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "scope": ("open-data cross-study benchmark on FinaleDB "
-                  "publications 6 (Jiang 2015) + 8 (Cristiano 2019). "
-                  "NOT clinical validation. NOT external cohort validation. "
-                  "Pooled OOF on the same cohort that trained the model."),
+        "scope": (f"open-data cross-publication benchmark on FinaleDB "
+                  f"publications: {requested_publications} "
+                  f"({[PUBLICATION_REGISTRY[p] for p in requested_publications]}). "
+                  f"NOT clinical validation. NOT external cohort validation. "
+                  f"Pooled OOF on the same cohort that trained the model."),
+        "finaledb_api_status": api_status,
+        "finaledb_api_reason": api_reason,
         "config": {
+            "publications": requested_publications,
+            "publication_registry": {p: PUBLICATION_REGISTRY[p]
+                                    for p in requested_publications},
             "seeds": args.seeds,
             "pca_n": args.pca,
             "classifier": "LogisticRegression(max_iter=2000)",
             "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio "
                            "+ 100kb_counts + FSD-196)",
-            "harmonization": "per-study z-score StandardScaler fit on train fold only",
+            "harmonization": "per-publication z-score StandardScaler fit on train fold only",
             "cv": "5-fold StratifiedKFold, 5-seed pooled OOF",
             "n_bootstrap": N_BOOTSTRAP,
             "bootstrap_seed": BOOTSTRAP_SEED,
@@ -1009,42 +1323,56 @@ def main():
             "features_dir": args.features_dir,
         },
         "cohort": inventory,
-        "per_cohort": per_cohort,
+        "per_publication": per_pub,
+        "publications": requested_publications,
+        "requested_publications": requested_publications,
+        "publications_with_features": sorted(publications_with_features),
+        "publications_missing_features": pubs_missing_features,
         "pooled": pooled,
         "per_cancer": per_cancer,
         "true_confound_control": confound,
         "interpretation": {
             "honest_framing": (
-                "These numbers are pooled out-of-fold AUC on the 627-sample "
-                "cross-study cohort (after load5's missing-artifact filter). "
-                "Internal CV; no external validation. "
-                "They measure how well the 5-channel DELFI features separate "
-                "cancer from healthy when pooled across Jiang 2015 and "
-                "Cristiano 2019 with per-study z-score harmonization. "
-                "They do NOT measure clinical-grade sensitivity at the "
-                "Galleri / CancerSEEK operating points, which require "
-                "independent held-out plasma cohorts."
+                f"These numbers are pooled out-of-fold AUC on the "
+                f"{cohort['n_with_features'] if False else 0}-sample "
+                f"cross-publication cohort (after load5's missing-artifact "
+                f"filter). Internal CV; no external validation. "
+                f"They measure how well the 5-channel DELFI features "
+                f"separate cancer from healthy when pooled across "
+                f"{', '.join(PUBLICATION_REGISTRY[p] for p in requested_publications)} "
+                f"with per-publication z-score harmonization. They do NOT "
+                f"measure clinical-grade sensitivity at the Galleri / "
+                f"CancerSEEK operating points, which require independent "
+                f"held-out plasma cohorts."
             ),
             "true_confound_reading": (
-                "With per-study z-score harmonization the true-confound AUC "
-                "(cancer = one study, healthy = the other) collapses toward "
-                "0.50 — the per-study mean/variance shift is the only signal "
-                "and the harmonization removes it by design. WITHOUT "
-                "harmonization the same control reaches ~0.999 — the "
-                "classifier learns 'which study is this from?', not "
-                "'is this cancer or healthy?'. The paired comparison "
+                "With per-publication z-score harmonization the true-confound "
+                "AUC (cancer = one publication, healthy = another) collapses "
+                "toward 0.50 — the per-publication mean/variance shift is the "
+                "only signal and the harmonization removes it by design. "
+                "WITHOUT harmonization the same control reaches ~0.999 — "
+                "the classifier learns 'which publication is this from?', "
+                "not 'is this cancer or healthy?'. The paired comparison "
                 "(harmonized vs no_harmonize) is the only honest way to "
-                "claim a cross-study benchmark is not a study-batch artifact."
+                "claim a cross-publication benchmark is not a "
+                "publication-batch artifact."
             ),
             "per_cancer_reading": (
                 "Per-cancer sens@spec is OvR: each cancer class is scored "
-                "against ALL healthy samples (not just the within-study "
-                "healthy ones). This is the cross-study generalization "
-                "view, not the within-study view. Top-5 cancers by count "
-                "are reported; smaller cohorts (n<10 cancer) are skipped."
+                "against ALL healthy samples (not just the within-publication "
+                "healthy ones). This is the cross-publication generalization "
+                "view, not the within-publication view. Top-5 cancers by "
+                "count are reported; smaller cohorts (n<10 cancer) are "
+                "skipped."
             ),
         },
     }
+
+    # Bake in the actual n_with_features into the honest_framing string now
+    # that we know it (avoids the placeholder `0` above).
+    payload["interpretation"]["honest_framing"] = payload[
+        "interpretation"]["honest_framing"
+    ].replace(f"{0}-sample", f"{inventory['n_with_features']}-sample")
 
     os.makedirs(os.path.dirname(args.out_json) or ".", exist_ok=True)
     with open(args.out_json, "w") as f:

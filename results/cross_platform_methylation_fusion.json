@@ -1,0 +1,101 @@
+{
+  "task": "Cross-platform methylation + fragmentomics fusion methodology demo",
+  "n_samples": 353,
+  "n_pos": 89,
+  "n_neg": 264,
+  "frag_only_synthetic": {
+    "auc": 0.7578311201906707,
+    "sens_at_95": 0.24719101123595505,
+    "sens_at_99": 0.056179775280898875
+  },
+  "meth_only_synthetic": {
+    "auc": 0.9768896833503574
+  },
+  "per_strategy": {
+    "naive_average": {
+      "auc_mean": 0.9646322778345251,
+      "auc_std": 0.0,
+      "per_seed_auc": [
+        0.9646322778345251,
+        0.9646322778345251,
+        0.9646322778345251,
+        0.9646322778345251,
+        0.9646322778345251
+      ],
+      "sens_at_95_mean": 0.7865168539325843,
+      "sens_at_99_mean": 0.44943820224719105
+    },
+    "logit_average": {
+      "auc_mean": 0.9760384746339803,
+      "auc_std": 1.1102230246251565e-16,
+      "per_seed_auc": [
+        0.9760384746339802,
+        0.9760384746339802,
+        0.9760384746339802,
+        0.9760384746339802,
+        0.9760384746339802
+      ],
+      "sens_at_95_mean": 0.842696629213483,
+      "sens_at_99_mean": 0.5955056179775281
+    },
+    "lr_fusion": {
+      "auc_mean": 0.9820480081716036,
+      "auc_std": 0.00022261996647297098,
+      "per_seed_auc": [
+        0.9817841334695266,
+        0.9824225400068096,
+        0.9818692543411645,
+        0.98203949608444,
+        0.9821246169560777
+      ],
+      "sens_at_95_mean": 0.9146067415730336,
+      "sens_at_99_mean": 0.7146067415730337
+    }
+  },
+  "seeds": [
+    42,
+    13,
+    7,
+    99,
+    1234
+  ],
+  "synth_seed": 2026,
+  "provenance": {
+    "task": "Cross-platform fusion methodology demo",
+    "frag_channel": {
+      "source_repo": "deepcatch",
+      "source_json": "/Users/hermes/deepcatch/results/per_cancer_sens_at_spec.json",
+      "cancer_key": "HCC_J",
+      "n_pos": 89,
+      "n_neg": 264,
+      "published_auc_mean": 0.7532345931222335,
+      "published_sens_at_95": 0.38202247191011235,
+      "published_sens_at_99": 0.12359550561797752,
+      "per_sample_scores": "SYNTHESIZED per-sample scores calibrated to the published AUC (mean separation mu = sqrt(2) * Phi^-1(AUC), sigmoid-mapped). Cohort n_pos/n_neg match the published OvR row exactly; realized AUC may differ from target by \u22640.02 due to finite-sample variance."
+    },
+    "meth_channel": {
+      "source_repo": "deepcatch-methylation",
+      "source_json": "/Users/hermes/deepcatch-methylation/results/multi_cancer_baseline.json",
+      "cancer_key": "TCGA-LIHC",
+      "n_samples": 18,
+      "n_tumor": 12,
+      "n_normal": 6,
+      "published_auc_mean": 0.9722222222222223,
+      "published_auc_std": 0.00878410461157887,
+      "per_sample_scores": "SYNTHESIZED per-sample scores calibrated to the published LIHC methylation baseline AUC. The actual LIHC data is TCGA tissue HM450 \u03b2-values (n=18, 12 tumor + 6 normal); this script uses a synthetic per-sample column for the methodology demo because the LIHC cohort and the HCC_J cfDNA cohort are DISJOINT.",
+      "proxy_head_to_head_summary": {
+        "pooled_auc_frag": 0.9739961599465731,
+        "pooled_auc_proxy": 0.7738125052174639,
+        "delta_auc_combined_minus_frag": 0.0006323566240921564,
+        "interpretation": "Sibling repo reports the methylation-proxy lift over fragmentomics alone is +0.0006 AUC pooled (p=0.0002) on the SAME 627-sample cfDNA cohort \u2014 i.e. the proxy is NOT orthogonal to fragmentomics. Cross-platform fusion with TRUE methylation (different chemistry) may give a larger lift; not measured here."
+      }
+    },
+    "honest_caveats": [
+      "NOT a clinical fusion. The fragmentomics channel is from Jiang 2015 cfDNA WGS (HCC plasma, n=89 cancer + 264 healthy); the methylation channel is from TCGA-LIHC tissue HM450 (n=18, 12 tumor + 6 normal). These cohorts do NOT overlap.",
+      "Per-sample scores for BOTH channels are synthesized from the published aggregate metrics (calibrated Gaussian + sigmoid). This demonstrates the FUSION CODE PATH, not a clinical result.",
+      "A true cross-platform fusion would require paired fragmentomics + methylation measurements on the SAME patients. No such public cohort of meaningful size exists as of 2026-Q1.",
+      "The methylation-proxy feature is not true methylation (no bisulfite, no FinaleMe). See deepcatch-methylation/docs/METHYLATION_PROXY_RESULTS.md for the detailed honest caveats.",
+      "The HCC_J per-cancer OvR AUC is 0.753 \u2014 the pooled cross-study AUC is 0.9747 (see RESULTS.md). OvR is per-cancer-vs-all-healthy and is harder than pooled."
+    ]
+  }
+}

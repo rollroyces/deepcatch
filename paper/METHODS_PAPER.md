@@ -93,6 +93,8 @@ The framework is implemented in PyTorch with NumPy / scikit-learn baselines. All
 ## 3. Results
 
 > Source-of-truth: `results/cross_study_finallydb.json` (§3.2), `results/per_cancer_sens_at_spec.json` (§3.3), and `docs/CROSS_STUDY_BENCHMARK.md` (the running benchmark narrative). All pooled numbers are 5-seed × 5-fold StratifiedKFold internal CV (pooled OOF); no external validation, no clinical plasma cohort.
+>
+> Figures: `docs/figures/fig1_pooled_roc.png` (§3.2), `docs/figures/fig2_per_cancer_roc.png` (§3.3), `docs/figures/fig3_calibration.png` (§3.2 sens@spec operating points in ROC space), `docs/figures/fig4_sens_operating_points.png` (§3.3 grouped per-cancer bars). Reproducible via `python scripts/plot_figures.py`; see `docs/figures/README.md`.
 
 ### 3.1 Honest baseline AUC on paired synthetic cohort (20-patient TCGA-LUAD)
 
@@ -121,7 +123,7 @@ The cross-study pool is the union of FinaleDB publication 6 (Jiang 2015 [16], n=
 | **pooled (harmonized)** | 627 | 363 | 264 | **0.9738 ± 0.0018** |
 | **pooled (no_harmonize)** | 627 | 363 | 264 | 0.9650 ± 0.0019 |
 
-At the pooled harmonized operating point: **sens@95%=0.909**, **sens@98%=0.837**, **sens@99%=0.782** (`results/cross_study_finallydb.json:pooled.harmonized`).
+At the pooled harmonized operating point: **sens@95%=0.909**, **sens@98%=0.837**, **sens@99%=0.782** (`results/cross_study_finallydb.json:pooled.harmonized`). See **Figure 1** (`docs/figures/fig1_pooled_roc.png`) for the per-seed AUC distribution + the pooled sens@spec grid (harmonized vs no_harmonize). The same sens@spec points are plotted in ROC space in **Figure 3** (`docs/figures/fig3_calibration.png`) — note that fig 3 is an operating-point summary, not a probability calibration curve; the underlying LR scores are not calibrated.
 
 **True-confound control.** The honest cross-study claim requires that the signal is cancer, not study. The control builds a synthetic two-arm dataset where cancer = 100% Jiang and healthy = 100% Cristiano (and the symmetric orientation), then rerun the same pipeline:
 
@@ -145,6 +147,8 @@ Per-cancer OvR is computed with **per-study z-score harmonization inside each CV
 | PAAD | 60 | 324 | 0.9368 ± 0.0070 | 0.817 | 0.767 | 0.483 (0.333–0.810) |
 | BRCA | 53 | 317 | 0.9763 ± 0.0034 | 0.943 | 0.849 | 0.547 (0.352–0.937) |
 | OV | 28 | 292 | 0.9924 ± 0.0048 | 1.000 | 0.929 | 0.929 (0.758–1.000) |
+
+See **Figure 2** (`docs/figures/fig2_per_cancer_roc.png`) for the per-seed AUC distribution (top-5 cancers) and **Figure 4** (`docs/figures/fig4_sens_operating_points.png`) for the grouped sens@95/98/99 bar chart. Figure 4 sources its values directly from the `sens_at_spec` block of `results/per_cancer_sens_at_spec.json` and is the visual companion to the table above.
 
 **Reading the table.** HCC_J (Jiang 2015 alone, n=89) shows the lowest cross-study AUC (0.725); this is the OvR reading against the cross-study healthy pool (mostly Cristiano healthy), and the wide sens@99 CI [0.000–0.420] flags it as a small-denominator outlier that needs a larger follow-on study. LUAD, BRCA, OV have tight CIs at AUC > 0.97 with sens@99 ≥ 0.55. OV is a high-AUC small-n row (n=28 cancer); the 1.000 sens@95 is consistent with the empirical ceiling on 28 positives and the wide CI [0.758–1.000] at sens@99 says the same. PAAD sens@99 sits at 0.483 with a very wide CI [0.333–0.810] — the n=60 denom is the binding constraint here, not the classifier.
 
@@ -249,6 +253,7 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
   - One-bash driver: `bash paper/REPRODUCE.sh` (or equivalently `bash paper/REPRODUCE.sh --quick` for a reduced run). See `paper/REPRODUCE.md`.
   - Full top-level driver: `RUN_ALL.sh` and the per-script invocations documented in §3.
 - **Companion documents:**
+  - `docs/figures/README.md` — the 4 standard cfDNA validation figures
   - `docs/PRETRAINING.md` — pre-training pipeline
   - `docs/PRETRAIN_BUG.md` — synthetic-bypass bug + regression test
   - `docs/SPARSE_AWARE_ABLATION.md` — honest null/negative ablation

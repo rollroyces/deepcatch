@@ -1,6 +1,6 @@
 # Reproduction report
 
-- Generated: 2026-09-23T08:12:54Z
+- Generated: 2026-09-23T15:34:35Z
 - repo_root: `/Users/hermes/deepcatch`
 - python:    `/Users/hermes/deepcatch/.venv/bin/python` (Python 3.14.4)
 - total wall: 0.0s
@@ -9,13 +9,13 @@
 
 | Step | Description | Wall (s) | Exit | Output |
 |---|---|---:|---|---|
-| 🟡 `cross_study` | cross_study_finallydb.py (FinaleDB Jiang+Cristiano) | 0.0 | DRY | `cross_study.json (MISSING)` |
+| ⏭️ `cross_study` | cross_study_finallydb.py (FinaleDB Jiang+Cristiano) | 0.0 | SKIP | `cross_study.json (MISSING)` |
 | 🟡 `per_cancer` | per_cancer_sens_at_spec.py --synthetic | 0.0 | DRY | `per_cancer.json` |
 | 🟡 `harmonization` | harmonization_check.py | 0.0 | DRY | `harmonization.json` |
-| 🟡 `focal_bce_ablation` | sens_at_spec_ablation.py (CE vs focal-BCE) | 0.0 | DRY | `focal_bce_ablation.json` |
-| 🟡 `sparse_aware_ablation` | sparse_aware_ablation.py (Linear vs SparseAware) | 0.0 | DRY | `sparse_aware_ablation.json` |
-| 🟡 `foundation_smoke` | foundation_real_smoke.py --quick | 0.0 | DRY | `foundation_smoke.json` |
-| 🟡 `pytest_tests` | pytest test/ + src/foundation/test_integration.py | 0.0 | DRY | `pytest_tests.json (MISSING)` |
+| ⏭️ `focal_bce_ablation` | sens_at_spec_ablation.py (CE vs focal-BCE) | 0.0 | SKIP | `focal_bce_ablation.json` |
+| ⏭️ `sparse_aware_ablation` | sparse_aware_ablation.py (Linear vs SparseAware) | 0.0 | SKIP | `sparse_aware_ablation.json` |
+| ⏭️ `foundation_smoke` | foundation_real_smoke.py --quick | 0.0 | SKIP | `foundation_smoke.json` |
+| ⏭️ `pytest_tests` | pytest test/ + src/foundation/test_integration.py | 0.0 | SKIP | `pytest_tests.json (MISSING)` |
 
 ## Per-step logs
 

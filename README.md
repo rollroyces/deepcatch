@@ -1,4 +1,4 @@
-> **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready. Open-data cross-study AUC in [docs/CROSS_STUDY_BENCHMARK.md](docs/CROSS_STUDY_BENCHMARK.md). For methods research only.
+> **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready. Open-data cross-study AUC in [docs/CROSS_STUDY_BENCHMARK.md](docs/CROSS_STUDY_BENCHMARK.md). Publication-by-publication readiness (FinaleDB API/S3 status) in [docs/PUBLICATION_READINESS.md](docs/PUBLICATION_READINESS.md). For methods research only.
 
 ---
 
