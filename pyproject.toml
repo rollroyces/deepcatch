@@ -106,3 +106,6 @@ include-package-data = true
 [tool.pytest.ini_options]
 addopts = "-q --no-header"
 testpaths = ["test"]
+markers = [
+    "slow: marks tests as slow (deselect with -m 'not slow')",
+]

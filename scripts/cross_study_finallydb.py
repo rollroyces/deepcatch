@@ -55,6 +55,20 @@ sys.path.insert(0, os.path.join(PIPELINE, "scripts"))
 from honest_benchmark import load5  # noqa: E402
 from train_classifier import _harmonize  # noqa: E402
 
+# Standalone DeLong-CI helper (clinical-decision schema).
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _REPO_ROOT)
+from src.per_cancer_sens_at_spec import (  # noqa: E402
+    DEFAULT_PREVALENCES,
+    DEFAULT_SPECIFICITIES,
+    MIN_POSITIVES_FOR_CI,
+    PPV_AT_SPEC,
+    build_per_cancer_table,
+    delong_auc_ci,
+    delong_sens_at_spec_ci,
+    ppv_at_prevalence,
+)
+
 # Cell-line filter regex per the cfdna-fragmentomics skill
 CELL_LINE_RE = re.compile(
     r"^(GM\d+|HeLa|HepG2|K562|HL60|Jurkat|Raji|MCF7|U937|THP1|HEK293|"
@@ -257,57 +271,388 @@ def section_pooled(X, y, st, seeds, pca_n):
     return out
 
 
-def section_per_cancer(X, y, st, samples_in_array, disease_class,
-                       seeds, pca_n, cancer_types, harmonize=True):
-    """For each top-N cancer, run OvR (cancer vs ALL healthy) with per-study
-    z-score harmonization inside each CV fold. Report AUC and sens@spec at
-    {0.95, 0.98, 0.99} with bootstrap 95% CIs.
+def _per_cancer_subset(X, y, st, dc_arr, cancer, n_min=10, healthy_min=10):
+    """Return (mask, y_sub, X_sub, st_sub, n_cancer_n, n_healthy_n) for OvR.
 
-    samples_in_array: list of sample IDs in the same order as X rows
-                      (load5 sorts labels.keys()).
+    Returns None when the cancer subset is too small or the healthy set
+    is too small for 5-fold CV.
     """
     healthy_mask = y == 0
-    # Pre-compute per-sample disease class for the loaded order.
+    cancer_mask = (dc_arr == cancer) & (y == 1)
+    n_cancer = int(cancer_mask.sum())
+    if n_cancer < n_min or healthy_mask.sum() < healthy_min:
+        return None
+    mask = cancer_mask | healthy_mask
+    return (
+        mask,
+        cancer_mask[mask].astype(int),
+        X[mask],
+        st[mask],
+        n_cancer,
+        int(healthy_mask.sum()),
+    )
+
+
+def _delong_ci_block(y_true, score):
+    """Compute DeLong CI for AUC + Sens@spec at the canonical specificities.
+
+    Returns a dict with keys:
+      auc        : DeLong point estimate
+      auc_se     : DeLong SE
+      auc_ci     : (ci_lo, ci_hi) tuple
+      sens_at_*  : dict per specificity with DeLong CIs
+    """
+    auc_d = delong_auc_ci(y_true, score)
+    sens_block = {}
+    for spec in DEFAULT_SPECIFICITIES:
+        sens_block[str(spec)] = delong_sens_at_spec_ci(y_true, score, spec)
+    return {
+        "auc": float(auc_d["auc"]),
+        "auc_se": float(auc_d["se"]),
+        "auc_ci": [float(auc_d["ci_lo"]), float(auc_d["ci_hi"])],
+        "sens_at_spec": {k: dict(v) for k, v in sens_block.items()},
+    }
+
+
+def _run_all_cancer_ovr(
+    X, y, st, samples_in_array, disease_class, seeds, pca_n,
+    harmonize=True, min_n_cancer=10,
+):
+    """Run OvR (cancer vs ALL healthy) for every non-HEALTHY cancer.
+
+    Returns:
+        dc_arr     : np.ndarray of per-sample disease class
+        artifacts  : dict {cancer_name: {
+            "y_true", "score", "seed_aucs",
+            "n_cancer", "n_healthy", "skipped", "reason"
+        }}
+    """
     dc_arr = np.array(
         [disease_class.get(s, "") for s in samples_in_array],
         dtype=object,
     )
-    out = {}
+    healthy_mask = y == 0
+    cancer_types = sorted(
+        set(dc_arr[(y == 1) & (dc_arr != "HEALTHY")]) - {""}
+    )
+    artifacts = {}
     for cancer in cancer_types:
-        cancer_mask = (dc_arr == cancer) & (y == 1)
-        n_cancer = int(cancer_mask.sum())
-        if n_cancer < 10 or healthy_mask.sum() < 10:
-            out[cancer] = {"n_cancer": n_cancer, "skipped": True,
-                           "reason": "insufficient samples for 5-fold CV"}
+        sub = _per_cancer_subset(X, y, st, dc_arr, cancer, n_min=min_n_cancer)
+        if sub is None:
+            n_cancer = int(((dc_arr == cancer) & (y == 1)).sum())
+            artifacts[cancer] = {
+                "n_cancer": n_cancer,
+                "n_healthy": int(healthy_mask.sum()),
+                "skipped": True,
+                "reason": "insufficient samples for 5-fold CV",
+            }
             continue
-        mask = cancer_mask | healthy_mask
-        X_sub = X[mask]
-        y_sub = cancer_mask[mask].astype(int)
-        st_sub = st[mask]
+        mask, y_sub, X_sub, st_sub, n_cancer, n_healthy = sub
         y_true, score, seed_aucs = pooled_oof(
             X_sub, y_sub, st_sub, seeds, pca_n, harmonize=harmonize
         )
-        rows = []
-        for spec in SPECS_FOR_PER_CANCER:
-            sens, thr = sens_at_spec(y_true, score, spec)
-            lo, hi = bootstrap_ci_sens(
-                y_true, score, spec, N_BOOTSTRAP,
-                seed=BOOTSTRAP_SEED + int(round(n_cancer)),
-            )
-            rows.append({
-                "specificity": spec,
-                "sensitivity": sens,
-                "ci95_lo": lo,
-                "ci95_hi": hi,
-                "operating_threshold": thr,
-            })
-        out[cancer] = {
+        artifacts[cancer] = {
+            "y_true": y_true,
+            "score": score,
+            "seed_aucs": seed_aucs,
             "n_cancer": n_cancer,
-            "n_healthy": int(healthy_mask.sum()),
-            "auc_mean": float(np.mean(seed_aucs)),
-            "auc_std": float(np.std(seed_aucs)),
-            "per_seed_auc": seed_aucs,
-            "per_specificity": rows,
+            "n_healthy": n_healthy,
+            "skipped": False,
+            "study_sub": st_sub,
+        }
+    return dc_arr, artifacts
+
+
+def _per_cancer_ci_bundle(y_true, score, n_cancer):
+    """Build the per-cancer DeLong + bootstrap CI bundle for one OvR fit.
+
+    Used by both `section_per_cancer` and `build_per_cancer_standalone_payload`.
+    """
+    delong_block = _delong_ci_block(y_true, score)
+    delong_rows = []
+    for spec in DEFAULT_SPECIFICITIES:
+        sb = delong_block["sens_at_spec"][str(spec)]
+        delong_rows.append({
+            "specificity": spec,
+            "sensitivity": sb["sensitivity"],
+            "ci95_lo": sb["ci_lo"],
+            "ci95_hi": sb["ci_hi"],
+            "operating_threshold": sb["threshold"],
+            "ci_unreliable": sb["ci_unreliable"],
+            "n_pos": sb["n_pos"],
+            "n_neg": sb["n_neg"],
+        })
+    delong_auc_dict = {
+        "auc": delong_block["auc"],
+        "se": delong_block["auc_se"],
+        "ci_lo": delong_block["auc_ci"][0],
+        "ci_hi": delong_block["auc_ci"][1],
+    }
+    boot_rows = []
+    for spec in SPECS_FOR_PER_CANCER:
+        sens, thr = sens_at_spec(y_true, score, spec)
+        lo, hi = bootstrap_ci_sens(
+            y_true, score, spec, N_BOOTSTRAP,
+            seed=BOOTSTRAP_SEED + int(round(n_cancer)),
+        )
+        boot_rows.append({
+            "specificity": spec,
+            "sensitivity": sens,
+            "ci95_lo": lo,
+            "ci95_hi": hi,
+            "operating_threshold": thr,
+        })
+    return {
+        "delong_auc": delong_auc_dict,
+        "delong_rows": delong_rows,
+        "boot_rows": boot_rows,
+    }
+
+
+def build_per_cancer_standalone_payload(
+    ovr_artifacts, out_path,
+    pooled_harmonized=None,
+    pooled_n_pos=None,
+    pooled_n_neg=None,
+):
+    """Build the standalone JSON from a pre-computed OvR artifact map.
+
+    `ovr_artifacts` is the per-cancer OvR map returned by
+    `_run_all_cancer_ovr` — skips cancers with `skipped=True`.
+
+    `pooled_harmonized` is an optional dict (the `pooled.harmonized`
+    section of the cross-study JSON). When provided, the POOLED row
+    uses **these** values instead of re-deriving from concatenated
+    per-cancer OvR subsets. The cross-study pooled OOF is computed on
+    ALL cancer vs ALL healthy (each sample gets exactly one score),
+    whereas concatenating per-cancer OvR subsets would inflate n_neg
+    to (n_cancers * n_healthy) and is NOT a valid pooled test.
+
+    `pooled_n_pos` and `pooled_n_neg` are the actual sample counts
+    in the pooled OOF (e.g. 363 cancer + 264 healthy for the
+    harmonized cross-study cohort). When provided, they override
+    any derivation from per-cancer artifacts.
+
+    **Per-cancer iteration (not concatenated) for the same reason:**
+    n_neg=264 (full healthy count) per cancer, not 1848 (7×264).
+
+    Writes the JSON to `out_path` and returns the payload dict.
+    """
+    rows = {}
+    for cancer, art in ovr_artifacts.items():
+        if art.get("skipped"):
+            # Match the canonical cfDNA schema even when skipped (n=0
+            # because we don't have a real OvR subset for this cancer).
+            n_cancer = int(art.get("n_cancer", 0))
+            n_healthy = int(art.get("n_healthy", 0))
+            rows[cancer] = {
+                "cancer": cancer,
+                "n": n_cancer + n_healthy,
+                "n_pos": n_cancer,
+                "n_neg": n_healthy,
+                "auc_mean": None,
+                "auc_ci": [None, None],
+                "auc_se": None,
+                "sens_at_95": None,
+                "sens_at_98": None,
+                "sens_at_99": None,
+                "sens_at_spec": {str(spec): None for spec in DEFAULT_SPECIFICITIES},
+                "ppv_at_prevalence": {f"prev_{p}": None for p in DEFAULT_PREVALENCES},
+                "skipped": True,
+                "skip_reason": art.get("reason", ""),
+            }
+            continue
+
+        y_sub = art["y_true"].astype(np.int64)
+        s_sub = art["score"].astype(np.float64)
+        # Build a 1-of-K label: this cancer vs HEALTHY for everyone else.
+        label_sub = np.array(
+            [cancer if v == 1 else "HEALTHY" for v in y_sub],
+            dtype=object,
+        )
+        study_sub = art.get("study_sub", np.array([""] * len(y_sub), dtype=object))
+        study_sub = study_sub.astype(object)
+
+        per_cancer_rows = build_per_cancer_table(
+            y=y_sub,
+            s=s_sub,
+            cancer_label=label_sub,
+            study_label=study_sub,
+            specificities=DEFAULT_SPECIFICITIES,
+            prevalences=DEFAULT_PREVALENCES,
+            include_pooled=False,
+        )
+        rows[cancer] = per_cancer_rows["per_cancer"][cancer]
+
+    if not rows or all(r.get("skipped") for r in rows.values()):
+        raise RuntimeError(
+            "build_per_cancer_standalone_payload: no cancer passed the "
+            "min-sample floor (n_cancer >= 10 and n_healthy >= 10)."
+        )
+
+    # POOLED row. Prefer the upstream pooled harmonized result (a true
+    # pooled OOF on cancer-vs-healthy, n_neg = real healthy count).
+    # Fallback: re-derive from concatenated OvR subsets (which inflates
+    # n_neg and is marked as fallback in `provenance.fallback_pooled`).
+    fallback_pooled = False
+    if pooled_harmonized:
+        pooled_sens_at_spec = {}
+        for spec in DEFAULT_SPECIFICITIES:
+            pooled_sens_at_spec[str(spec)] = {
+                "sensitivity": pooled_harmonized.get(
+                    f"sens_at_spec_{int(round(spec * 100))}"
+                ),
+                "specificity": spec,
+                "ci_method": "pooled_oof_at_target_spec",
+            }
+        n_pos_pooled = (int(pooled_n_pos) if pooled_n_pos is not None
+                       else sum(int(art.get("n_cancer", 0))
+                                for art in ovr_artifacts.values()
+                                if not art.get("skipped")))
+        # Each OvR artifact's `n_healthy` reports the FULL pooled
+        # healthy count (~264 — every OvR uses the same healthy
+        # controls). Summing across cancers would give 7× the true
+        # value. Prefer `pooled_n_neg` if provided, else take the
+        # max (= the actual pooled healthy count).
+        n_neg_pooled = (int(pooled_n_neg) if pooled_n_neg is not None
+                       else max(
+                           (int(art.get("n_healthy", 0))
+                            for art in ovr_artifacts.values()
+                            if not art.get("skipped")),
+                           default=0,
+                       ))
+        # Note: OvR's "n_healthy" reports the dataset-wide healthy count
+        # (~264 for the cross-study harmonized pooled cohort). The pooled
+        # row's n_pos + n_neg is therefore 2x the actual sample count —
+        # record the actual count from the upstream n_with_features.
+        sens99 = pooled_harmonized.get("sens_at_spec_99", 0.0)
+        pooled_row = {
+            "cancer": "POOLED",
+            "n": n_pos_pooled + n_neg_pooled,
+            "n_pos": n_pos_pooled,
+            "n_neg": n_neg_pooled,
+            "auc_mean": float(pooled_harmonized["auc_mean"]),
+            "auc_ci": [
+                max(0.0, float(pooled_harmonized["auc_mean"])
+                    - 1.96 * float(pooled_harmonized["auc_std"])),
+                min(1.0, float(pooled_harmonized["auc_mean"])
+                    + 1.96 * float(pooled_harmonized["auc_std"])),
+            ],
+            "auc_se": float(pooled_harmonized["auc_std"]),
+            "sens_at_95": pooled_harmonized.get("sens_at_spec_95"),
+            "sens_at_98": pooled_harmonized.get("sens_at_spec_98"),
+            "sens_at_99": sens99,
+            "sens_at_spec": pooled_sens_at_spec,
+            "ppv_at_prevalence": {
+                f"prev_{p}": ppv_at_prevalence(sens99, PPV_AT_SPEC, p)
+                for p in DEFAULT_PREVALENCES
+            },
+            "skipped": False,
+            "source": "upstream_pooled_oof",
+        }
+    else:
+        fallback_pooled = True
+        # Concatenate per-cancer OvR subsets to derive a pooled SENSs.
+        # n_neg is inflated to (n_cancers * n_healthy) — honest caveat
+        # recorded in `provenance.fallback_pooled = True`.
+        pooled_y, pooled_s, pooled_label = [], [], []
+        pooled_study = []
+        for cancer, art in ovr_artifacts.items():
+            if art.get("skipped"):
+                continue
+            y_sub = art["y_true"].astype(np.int64)
+            s_sub = art["score"].astype(np.float64)
+            pooled_y.append(y_sub)
+            pooled_s.append(s_sub)
+            pooled_label.append(np.array(
+                [cancer if v == 1 else "HEALTHY" for v in y_sub],
+                dtype=object,
+            ))
+            pooled_study.append(art.get("study_sub", np.array([""] * len(y_sub), dtype=object)).astype(object))
+        pooled_table = build_per_cancer_table(
+            y=np.concatenate(pooled_y),
+            s=np.concatenate(pooled_s),
+            cancer_label=np.concatenate(pooled_label),
+            study_label=np.concatenate(pooled_study) if pooled_study else None,
+            specificities=DEFAULT_SPECIFICITIES,
+            prevalences=DEFAULT_PREVALENCES,
+            include_pooled=True,
+        )
+        pooled_row = pooled_table.get("pooled", {})
+
+    table = {
+        "per_cancer": rows,
+        "pooled": pooled_row,
+        "config": {
+            "specificities": list(DEFAULT_SPECIFICITIES),
+            "prevalences": list(DEFAULT_PREVALENCES),
+            "ppv_at_spec": PPV_AT_SPEC,
+            "min_positives_for_ci": MIN_POSITIVES_FOR_CI,
+        },
+    }
+    table["provenance"] = {
+        "source": "cross_study_finallydb.py",
+        "n_samples": sum(
+            int(art.get("n_cancer", 0)) + int(art.get("n_healthy", 0))
+            for art in ovr_artifacts.values()
+            if not art.get("skipped")
+        ),
+        "n_cancer_types": len([1 for r in rows.values() if not r.get("skipped")]),
+        "specificities": list(DEFAULT_SPECIFICITIES),
+        "prevalences": list(DEFAULT_PREVALENCES),
+        "ppv_at_spec": PPV_AT_SPEC,
+        "min_positives_for_ci": MIN_POSITIVES_FOR_CI,
+        "harmonization": "per-study z-score StandardScaler fit on train fold only",
+        "cv": "5-fold StratifiedKFold, 5-seed pooled OOF per OvR",
+    }
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(table, f, indent=2)
+    return table
+
+
+def section_per_cancer(ovr_artifacts, cancer_types):
+    """Emit the per-cancer sens@spec dict from a pre-computed OvR artifact
+    map (returned by `_run_all_cancer_ovr`).
+
+    For each cancer in `cancer_types`, computes DeLong 95% CIs (primary;
+    DeLong 1988 for AUC, Sun & Xu 2014 for sens@spec) AND preserves the
+    original bootstrap 95% CIs under `bootstrap_ci` for the audit trail.
+    Cancers with `skipped=True` in the artifacts are passed through as
+    SKIPPED rows.
+    """
+    out = {}
+    for cancer in cancer_types:
+        art = ovr_artifacts.get(cancer)
+        if art is None or art.get("skipped"):
+            reason = art.get("reason") if art else "no OOF artifact"
+            out[cancer] = {
+                "n_cancer": art.get("n_cancer", 0) if art else 0,
+                "skipped": True,
+                "reason": reason,
+            }
+            continue
+        bundle = _per_cancer_ci_bundle(
+            art["y_true"], art["score"], art["n_cancer"]
+        )
+        out[cancer] = {
+            "n_cancer": art["n_cancer"],
+            "n_healthy": art["n_healthy"],
+            "auc_mean": float(np.mean(art["seed_aucs"])),
+            "auc_std": float(np.std(art["seed_aucs"])),
+            "per_seed_auc": art["seed_aucs"],
+            "primary_ci": "delong",
+            "delong_ci": {
+                "auc": bundle["delong_auc"],
+                "per_specificity": bundle["delong_rows"],
+            },
+            "bootstrap_ci": {
+                "n_bootstrap": N_BOOTSTRAP,
+                "seed": BOOTSTRAP_SEED,
+                "method": "percentile",
+                "per_specificity": bundle["boot_rows"],
+            },
+            "per_specificity": bundle["delong_rows"],
             "skipped": False,
         }
     return out
@@ -433,22 +778,44 @@ def write_markdown(payload, md_path):
 
     L.append("\n## 4. Per-cancer Sens@Spec (top-5 cancers by sample count)\n")
     L.append("One-vs-rest: each cancer vs ALL healthy samples in the pooled cross-study "
-            "cohort. Per-study harmonization inside each CV fold. Bootstrap 95% CI "
-            "on sens@spec (n=" f"{cfg['n_bootstrap']} resamples).\n\n")
-    L.append("| Cancer | n_cancer | AUC mean ± std | Sens@95% [95% CI] | "
-            "Sens@98% [95% CI] | Sens@99% [95% CI] |\n")
-    L.append("|---|---:|---:|---|---|---|\n")
+            "cohort. Per-study harmonization inside each CV fold.\n\n")
+    L.append("**Primary CIs are DeLong** (DeLong, DeLong, Clarke-Pearson 1988 for AUC; "
+            "Sun & Xu 2014 for Sens@spec — equivalent to DeLong-Han-Agarwal structural "
+            "component restricted to positives). Bootstrap 95% CIs "
+            f"(n={cfg['n_bootstrap']} percentile resamples) are preserved under "
+            "`bootstrap_ci` in `results/cross_study_finallydb.json` for the audit trail "
+            "(narrower at n>=10; DeLong is the standard cfDNA reference per the "
+            "cfdna-early-detection-validation skill). The standalone clinical-decision "
+            "table — AUC + Sens@spec CIs + PPV@prev at spec=0.99 — is at "
+            "`results/per_cancer_sens_at_spec.json` (schema per "
+            "`src.per_cancer_sens_at_spec.build_per_cancer_table`).\n\n")
+    L.append("**Caveat**: HCC_J is Jiang-only (n=89 cancer + 32 healthy). Its per-cancer "
+            "OvR uses 89 HCC vs ALL healthy controls (264 controls in the OOF subset) "
+            "— the per-cancer denominator is small but the OvR is well-defined. Other "
+            "top-5 cancers are Cristiano-only.\n\n")
+    L.append("| Cancer | n_cancer | n_healthy | AUC mean ± std | AUC DeLong [95% CI] | "
+            "Sens@95% DeLong [95% CI] | Sens@98% DeLong [95% CI] | "
+            "Sens@99% DeLong [95% CI] |\n")
+    L.append("|---|---:|---:|---|---|---|---|---|\n")
     for cancer, r in percancer.items():
         if r.get("skipped"):
-            L.append(f"| {cancer} | {r.get('n_cancer', '?')} | SKIPPED | — | — | — |\n")
-            continue
-        cells = []
-        for spec in SPECS_FOR_PER_CANCER:
-            row = next(x for x in r["per_specificity"] if x["specificity"] == spec)
-            cells.append(f"{row['sensitivity']:.3f} [{row['ci95_lo']:.3f}–{row['ci95_hi']:.3f}]")
-        L.append(f"| {cancer} | {r['n_cancer']} | "
+            L.append(f"| {cancer} | {r.get('n_cancer', '?')} | — | SKIPPED | — | — | — | — |\n")
+        else:
+            d_auc = r["delong_ci"]["auc"]
+            cells = []
+            for spec in SPECS_FOR_PER_CANCER:
+                row = next(x for x in r["delong_ci"]["per_specificity"]
+                           if x["specificity"] == spec)
+                cells.append(
+                    f"{row['sensitivity']:.3f} "
+                    f"[{row['ci95_lo']:.3f}–{row['ci95_hi']:.3f}]"
+                )
+            L.append(
+                f"| {cancer} | {r['n_cancer']} | {r['n_healthy']} | "
                 f"{r['auc_mean']:.4f} ± {r['auc_std']:.4f} | "
-                f"{cells[0]} | {cells[1]} | {cells[2]} |\n")
+                f"{d_auc['auc']:.4f} [{d_auc['ci_lo']:.4f}–{d_auc['ci_hi']:.4f}] | "
+                f"{cells[0]} | {cells[1]} | {cells[2]} |\n"
+            )
 
     L.append("\n## 5. True-confound control\n")
     L.append("Cancer = 100% from one study, healthy = 100% from the other. "
@@ -522,6 +889,10 @@ def main():
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
     ap.add_argument("--out-json", default="results/cross_study_finallydb.json")
     ap.add_argument("--out-md", default="docs/CROSS_STUDY_BENCHMARK.md")
+    ap.add_argument("--out-per-cancer-json",
+                    default="results/per_cancer_sens_at_spec.json",
+                    help="Standalone per-cancer sens@spec JSON (DeLong CIs + "
+                         "PPV@prev). Set to empty string to skip writing it.")
     ap.add_argument("--seeds", type=int, nargs="+", default=DEFAULT_SEEDS)
     ap.add_argument("--pca", type=int, default=DEFAULT_PCA_N)
     ap.add_argument("--top-cancer-n", type=int, default=5)
@@ -575,11 +946,21 @@ def main():
             cancer_counts[dc] = cancer_counts.get(dc, 0) + 1
     top_cancers = [c for c, _ in sorted(cancer_counts.items(),
                                         key=lambda kv: -kv[1])[:args.top_cancer_n]]
-    print(f"[6/6] Per-cancer sens@spec (top-{args.top_cancer_n}: {top_cancers})")
-    per_cancer = section_per_cancer(
+    print(f"[6/6] Per-cancer OvR OOF (running for ALL cancer types, top-"
+          f"{args.top_cancer_n}: {top_cancers})")
+    dc_arr, ovr_artifacts = _run_all_cancer_ovr(
         X, y, st, samples_in_array, disease_class,
-        args.seeds, args.pca, top_cancers,
+        args.seeds, args.pca, harmonize=True,
     )
+    for cancer, art in ovr_artifacts.items():
+        if art.get("skipped"):
+            print(f"    {cancer:8s}: SKIPPED ({art.get('reason')})")
+            continue
+        print(f"    {cancer:8s}: n={art['n_cancer']:3d}  "
+              f"AUC {np.mean(art['seed_aucs']):.4f} ± "
+              f"{np.std(art['seed_aucs']):.4f}")
+
+    per_cancer = section_per_cancer(ovr_artifacts, top_cancers)
     for cancer, r in per_cancer.items():
         if r.get("skipped"):
             print(f"      {cancer:8s}: SKIPPED ({r.get('reason')})")
@@ -669,6 +1050,25 @@ def main():
     with open(args.out_json, "w") as f:
         json.dump(payload, f, indent=2)
     print(f"\nWrote {args.out_json}")
+
+    if args.out_per_cancer_json:
+        print(f"[+] Standalone per-cancer sens@spec JSON: {args.out_per_cancer_json}")
+        # Pass the pooled harmonized result so the POOLED row uses the
+        # upstream true pooled OOF, not a concatenation of per-cancer
+        # OvR subsets (which would inflate n_neg).
+        pooled_h = payload.get("pooled", {}).get("harmonized")
+        cohort = payload.get("cohort", {})
+        standalone = build_per_cancer_standalone_payload(
+            ovr_artifacts, args.out_per_cancer_json,
+            pooled_harmonized=pooled_h,
+            pooled_n_pos=cohort.get("n_cancer_in_labels"),
+            pooled_n_neg=cohort.get("n_healthy_in_labels"),
+        )
+        n_rows = len(standalone["per_cancer"])
+        n_skipped = sum(1 for r in standalone["per_cancer"].values()
+                        if r.get("skipped"))
+        print(f"      wrote {n_rows} per-cancer rows ({n_skipped} SKIPPED) "
+              f"+ 1 POOLED row")
 
     write_markdown(payload, args.out_md)
     return 0
