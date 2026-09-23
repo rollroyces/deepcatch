@@ -52,6 +52,9 @@ db/
 # ── TCGA downloader caches (regenerable API JSONs/CSVs; keep open-access MAFs) ──
 validation/tcga/tcga_cache/*.json
 validation/tcga/tcga_cache/*.csv
+validation/tcga/tcga_cache/*.maf.gz
+validation/tcga/tcga_cache/*.maf.gz.tbi
+validation/tcga/tcga_cache/downloaded_mafs/
 
 # ── Results (keep reports, ignore raw dumps) ────────────────────────────────
 results/*.json

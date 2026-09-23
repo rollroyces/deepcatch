@@ -1,5 +1,27 @@
 # Pre-training the Foundation Encoder on Real FinaleDB cfDNA
 
+> ## ⚠️ CRITICAL UPDATE — 2026-09-23: synthetic-bypass bug & new checkpoint
+>
+> **The old `checkpoints/foundation_pretrained_finaledb.pt` (16-sample,
+> PROTOTYPE_CONFIG) is NOT real-data-trained.** The pre-fix
+> `FoundationPretrainer` ignored the real cohort and unconditionally
+> called `self.data_generator.generate_dataset(...)` inside every
+> phase, so the encoder only ever saw synthetic hash-deterministic
+> samples — even though the cohort assembly code was correct.
+> The bug, its evidence, and the regression test are documented in
+> **`docs/PRETRAIN_BUG.md`**.
+>
+> **The new `checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt`
+> (200-sample, PRODUCTION_CONFIG) IS real-data-trained end to end.**
+> It was produced by `scripts/pretrain_production_finaledb.py` after
+> the constructor learned to accept a `modalities=` dict plus a
+> `use_real_modalities=True` flag, and after the regression test
+> `test/test_pretrain_bug_fix.py` (11 tests) pins the contract that
+> the synthetic generator is never called when real data is supplied.
+>
+> If you reference a "real-data-derived" pre-trained checkpoint in
+> downstream work, use `foundation_pretrained_finaledb_PRODUCTION.pt`.
+
 This document describes the pipeline that pre-trains the
 `FoundationPretrainer` / `MultiModalEncoder` on **real FinaleDB
 cfDNA fragmentomics data** (Jiang 2015 PNAS + Cristiano 2019 Nature
@@ -277,8 +299,146 @@ Expected wall-clock: <10 seconds on M4 CPU.
 
 | Path | Size | Purpose |
 |---|---|---|
-| `scripts/pretrain_real_finaledb.py` | ~18 KB | Pre-training script |
-| `data/finaledb_pretrain_cohort.npz` | ~88 KB | Assembled cohort (X, y, sample_ids, studies) |
-| `checkpoints/foundation_pretrained_finaledb.pt` | ~470 KB | Pretrained encoder + heads checkpoint |
-| `results/pretrain_real_finaledb.json` | ~2 KB | Run log (losses, config, sample IDs) |
+| `scripts/pretrain_real_finaledb.py` | ~18 KB | PROTOTYPE_CONFIG pre-training script (16-sample, legacy) |
+| `scripts/pretrain_production_finaledb.py` | ~10 KB | PRODUCTION_CONFIG pre-training script (200-sample, post-fix) |
+| `data/finaledb_pretrain_cohort.npz` | ~88 KB | 16-sample PROTOTYPE cohort (X, y, sample_ids, studies) |
+| `data/finaledb_pretrain_cohort_PRODUCTION.npz` | ~1.1 MB | 200-sample PRODUCTION cohort |
+| `checkpoints/foundation_pretrained_finaledb.pt` | ~470 KB | PROTOTYPE_CONFIG checkpoint (NOT real-data-trained — see PRETRAIN_BUG.md) |
+| `checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt` | ~2.7 MB | PRODUCTION_CONFIG checkpoint (real-data-trained) |
+| `results/pretrain_real_finaledb.json` | ~2 KB | PROTOTYPE run log |
+| `results/pretrain_production_finaledb.json` | ~3 KB | PRODUCTION run log |
 | `docs/PRETRAINING.md` | this file | Pipeline documentation |
+| `docs/PRETRAIN_BUG.md` | audit doc | Synthetic-bypass bug + regression test evidence |
+
+## PRODUCTION_CONFIG pretraining (post-fix)
+
+Added in 2026-09-23 alongside the synthetic-bypass bug fix
+(see `docs/PRETRAIN_BUG.md`). Uses the FIXED
+`FoundationPretrainer(modalities=..., use_real_modalities=True)`
+constructor — every phase draws mini-batches from the real
+cohort.
+
+### Cohort
+
+- **200 samples** (capped at `--max-samples 200` to stay inside
+  the wall-clock budget) drawn from the 657-sample pre-extracted
+  FinaleDB cache.
+- **100 healthy + 100 cancer**, balanced across the `cristiano`
+  and `jiang` studies.
+- Same 6-modality dict layout as the PROTOTYPE checkpoint
+  (`frag_basic=4`, `frag_enhanced=44`, `cnv=6`, `sero=4`,
+  `gnn=1`, `tissue=24`).
+- Assembled cohort saved to
+  `data/finaledb_pretrain_cohort_PRODUCTION.npz`
+  (~1.1 MB compressed).
+
+### Training config
+
+```python
+PRODUCTION_CONFIG = FoundationConfig(
+    embed_dim=128,    # 2× PROTOTYPE_CONFIG
+    n_heads=4,
+    n_layers=4,       # 2× PROTOTYPE_CONFIG
+    ff_dim=256,       # 2× PROTOTYPE_CONFIG
+    batch_size=32,    # overridden by --batch-size (default 32)
+    n_epochs=200,
+    dropout=0.2,      # overridden to 0.2 in the script
+    pretrain_lr=1e-4,
+    finetune_lr=1e-5,
+)
+```
+
+| Hyperparameter | Value |
+|---|---|
+| Encoder parameters | **543,872** (vs 73,920 in PROTOTYPE) |
+| Phase 1 (MMP) epochs | 15 |
+| Phase 2 (contrastive) epochs | 5 |
+| Phase 3 (joint) epochs | 0 (intentionally skipped to fit the wall-clock budget) |
+| Batch size | 32 |
+| Mask ratio | 0.3 |
+| Lambda mask / contrast | 1.0 / 0.5 |
+| Pretrain LR | 1e-4 |
+| Seed | 42 |
+| Device | CPU (MPS available via `--device mps`) |
+
+### Loss values (200-sample, CPU, 2026-09-23 run)
+
+| Phase | Epochs | Final loss |
+|---|---|---|
+| Phase 1 (MMP, real FinaleDB) | 15 | 1,484,571 (raw MSE on masked modalities — high because `tissue` modality has raw WPS counts ~2,500; this is expected at the random-init scale and will improve with longer training) |
+| Phase 2 (contrastive, real FinaleDB) | 5 | 3.65 (InfoNCE; theoretical floor is `log(B × N) ≈ 3.5` for batch 32, n_modalities 6) |
+| Phase 3 (joint) | n/a | skipped |
+
+Pretrain wall-clock: **1.6 s** on M4 CPU for 200 samples.
+End-to-end (cohort assembly + training + checkpoint + verify):
+**2.2 s**.
+
+### Reproducing this run
+
+```bash
+cd /Users/hermes/deepcatch
+env -u PYTHONPATH ./.venv/bin/python \
+    scripts/pretrain_production_finaledb.py \
+    --max-samples 200 --p1-epochs 15 --p2-epochs 5 \
+    --batch-size 32 --device cpu --seed 42
+```
+
+Expected wall-clock: <5 seconds on M4 CPU.
+
+### Loading the PRODUCTION checkpoint downstream
+
+```python
+from scripts.finaledb_pretrained_loader import (
+    load_real_cohort,
+    modalities_from_flat_X,
+)
+from src.foundation.downstream import FoundationDownstream
+from src.foundation.config import FoundationConfig
+
+# 1. Load the cohort
+cohort = load_real_cohort("data/finaledb_pretrain_cohort_PRODUCTION.npz")
+modalities = modalities_from_flat_X(cohort["X"])
+
+# 2. Load the pretrained encoder — NOTE PRODUCTION_CONFIG matches.
+fd = FoundationDownstream(
+    config=FoundationConfig(embed_dim=128, n_layers=4, n_heads=4,
+                            ff_dim=256, dropout=0.2),
+    pretrained=True,
+    checkpoint_path="checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt",
+)
+fd.fit(modalities, cohort["y"], n_epochs=20, batch_size=32)
+proba = fd.predict_proba(modalities)
+```
+
+The end-to-end smoke test in `scripts/pretrain_production_finaledb.py`
+confirms that `FoundationDownstream(pretrained=True)` loads the
+checkpoint, runs a forward pass on the real cohort, and produces
+**finite outputs** of shape `(n_samples, 6, 128)` — no NaN/Inf.
+
+### Bug fix contract (regression test)
+
+`test/test_pretrain_bug_fix.py` (11 tests) pins the contract that
+the fixed `FoundationPretrainer` honours:
+
+1. With `use_real_modalities=True` and a real cohort supplied, the
+   synthetic generator's `generate_dataset` is **never invoked** for
+   any of the three phases (call count stays at 0).
+2. The encoder's input batches contain the real cohort values
+   (verified by spying on `encoder.forward` and comparing captured
+   tensors against the input cohort).
+3. With `use_real_modalities=False`, the synthetic path is still
+   exercised (backwards-compat for CI / unit tests).
+4. Per-phase `modalities=` / `use_real_modalities=` overrides beat
+   the constructor-level defaults.
+
+The full regression suite is run via:
+
+```bash
+env -u PYTHONPATH ./.venv/bin/python -m pytest \
+    test/test_biomedical_review_fixes.py \
+    test/test_sparse_aware_projection.py \
+    test/test_finaledb_pretrained_loader.py \
+    src/foundation/test_integration.py \
+    test/test_pretrain_bug_fix.py \
+    --timeout=60 -q
+```

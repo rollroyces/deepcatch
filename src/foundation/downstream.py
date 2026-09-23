@@ -171,6 +171,7 @@ class FoundationDownstream:
         loss: str = "ce",
         alpha_pos: float = 20.0,
         gamma: float = 2.0,
+        projection_kinds: Optional[Dict[str, str]] = None,
     ):
         """FoundationDownstream constructor.
 
@@ -181,13 +182,22 @@ class FoundationDownstream:
             preserves all existing benchmark numbers.
             "sens_at_spec" uses focal-modulated BCE with
             ``alpha_pos`` rebalancing for ultra-low VAF cohorts.
-            Multi-class always uses CE.
+            Multi-class always uses CE regardless of this flag.
         alpha_pos : float
             Positive-class weight for focal-BCE. Ignored when
             ``loss="ce"``. Default 20.0 is the documented starting
             point for 0.1% VAF cohorts.
         gamma : float
             Focal modulation exponent. Ignored when ``loss="ce"``.
+        projection_kinds : dict[str, str], optional
+            Per-modality projection routing. Maps modality name to
+            ``"linear"`` (default) or ``"sparse_aware"``. Forwarded
+            directly to :class:`MultiModalEncoder`. Example for the
+            panel-LLR modality (which lives at ``frag_basic[:, 0]`` in
+            this repo's modality schema):
+            ``projection_kinds={"frag_basic": "sparse_aware"}``.
+            ``None`` (default) preserves the pre-existing behavior where
+            every modality gets a plain ``LinearProjection``.
         """
         if loss not in ("ce", "sens_at_spec"):
             raise ValueError(
@@ -205,8 +215,10 @@ class FoundationDownstream:
         self._fitted = False
         self._n_classes = 2
 
-        # Build encoder
-        self.encoder = MultiModalEncoder(self.config)
+        # Build encoder with optional per-modality projection routing.
+        self.encoder = MultiModalEncoder(
+            self.config, projection_kinds=projection_kinds,
+        )
 
         # Load pre-trained weights if available
         if pretrained and checkpoint_path and os.path.exists(checkpoint_path):

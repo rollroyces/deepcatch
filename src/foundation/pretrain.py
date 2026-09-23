@@ -49,8 +49,27 @@ class FoundationPretrainer:
     """
     Self-supervised pre-trainer for the DeepCatch Foundation Model.
 
-    Handles 3-phase training with synthetic data, checkpointing,
-    and progress tracking.
+    Handles 3-phase training with checkpointing and progress tracking.
+
+    IMPORTANT — Real-data vs synthetic (BUG FIX 2026-09-23):
+        Earlier versions of this class instantiated a
+        ``MultiModalDataGenerator`` unconditionally and called
+        ``self.data_generator.generate_dataset(...)`` from every phase,
+        which silently bypassed any real modalities the caller had
+        available. The result: a "pretrained" checkpoint that had
+        never seen real data — only the synthetic generator's output.
+
+        The constructor now accepts a real ``modalities`` dict and a
+        ``use_real_modalities`` flag (default ``True``). When set, the
+        per-phase methods draw mini-batches from the real cohort
+        rather than calling the synthetic generator. Passing
+        ``use_real_modalities=False`` keeps the synthetic path so
+        unit tests / CI without real data still pass.
+
+        Per-phase ``modalities`` / ``use_real_modalities`` arguments
+        override the constructor-level values, so the all-synthetic
+        convenience path used by ``test_integration.py`` is
+        preserved.
 
     Parameters
     ----------
@@ -60,6 +79,16 @@ class FoundationPretrainer:
         Compute device (default from config).
     verbose : bool
         Print progress during training.
+    modalities : dict[str, np.ndarray], optional
+        Real multi-modal cohort keyed by ``MODALITY_NAMES``. Each value
+        must be a 2-D array of shape ``(n_samples, dim_i)``. When
+        provided together with ``use_real_modalities=True`` (default),
+        phases draw mini-batches from this cohort instead of calling
+        ``self.data_generator.generate_dataset``.
+    use_real_modalities : bool, default ``True``
+        Default behaviour for phase methods. If no ``modalities``
+        were passed at construction, this flag is treated as
+        ``False`` (synthetic fallback) so legacy callers don't break.
     """
 
     def __init__(
@@ -67,10 +96,21 @@ class FoundationPretrainer:
         config: Optional[FoundationConfig] = None,
         device: Optional[str] = None,
         verbose: bool = False,
+        modalities: Optional[Dict[str, np.ndarray]] = None,
+        use_real_modalities: bool = True,
     ):
         self.config = config if config is not None else DEFAULT_CONFIG
         self.device = device or self.config.device
         self.verbose = verbose
+
+        # Real-data defaults — constructor-level. Per-phase flags can
+        # override these. We track the user's explicit choice so a
+        # later "wants real but has none" call site can warn them.
+        self._default_modalities = modalities
+        self._user_wants_real = bool(use_real_modalities)
+        self._default_use_real_modalities = bool(
+            use_real_modalities and modalities is not None
+        )
 
         # Init models
         self.encoder = MultiModalEncoder(self.config)
@@ -82,13 +122,73 @@ class FoundationPretrainer:
         self.pretrain_head.to(self.device)
         self.contrastive_head.to(self.device)
 
-        # Data generator
+        # Data generator — kept for the synthetic fallback path only.
         self.data_generator = MultiModalDataGenerator(seed=self.config.seed)
 
         # Training state
         self._is_pretrained = False
         self._pretrain_losses: List[float] = []
         self._phase_completed: List[str] = []
+
+    # ── Real-cohort helper ──────────────────────────────────────────
+
+    def _resolve_modalities(
+        self,
+        n_samples: int,
+        prefix: str,
+        override_modalities: Optional[Dict[str, np.ndarray]],
+        override_use_real: Optional[bool],
+    ) -> Tuple[Dict[str, torch.Tensor], bool]:
+        """Pick the modality source for a phase.
+
+        Returns
+        -------
+        modalities : dict[str, torch.Tensor]
+            Modalities moved onto the configured device.
+        used_real : bool
+            ``True`` if these modalities came from a real cohort
+            (not the synthetic generator). Callers can use this for
+            logging and for the regression test in
+            ``test/test_pretrain_bug_fix.py``.
+        """
+        # The user's explicit intent (either per-call or at construction)
+        # matters here even when the *effective* flag has been normalised
+        # to False because no modalities were supplied. We need to know
+        # whether they THOUGHT they were using real data so we can warn
+        # them if we're silently falling back to synthetic.
+        use_real_intent = (
+            override_use_real
+            if override_use_real is not None
+            else self._user_wants_real
+        )
+        use_real = (
+            override_use_real
+            if override_use_real is not None
+            else self._default_use_real_modalities
+        )
+        mod_dict = override_modalities or self._default_modalities
+
+        # If the caller wanted real data but didn't supply any, fall
+        # back to synthetic — this preserves the pre-fix behaviour for
+        # callers that forgot to pass a cohort. Warn so they don't
+        # silently train on synthetic when they thought they were
+        # training on real.
+        if use_real_intent and mod_dict is None:
+            logger.warning(
+                "use_real_modalities=True but no modalities supplied; "
+                "falling back to synthetic data for this phase."
+            )
+            use_real = False
+
+        if use_real and mod_dict is not None:
+            return self._modalities_to_tensors(mod_dict), True
+
+        # Synthetic fallback.
+        modalities_np, _ = self.data_generator.generate_dataset(
+            n_samples=n_samples,
+            prefix=prefix,
+        )
+        return self._modalities_to_tensors(modalities_np), False
 
     def _generate_mask(self, batch_size: int) -> torch.Tensor:
         """
@@ -138,6 +238,8 @@ class FoundationPretrainer:
         batch_size: Optional[int] = None,
         n_epochs: int = 50,
         lr: Optional[float] = None,
+        modalities: Optional[Dict[str, np.ndarray]] = None,
+        use_real_modalities: Optional[bool] = None,
     ) -> List[float]:
         """
         Phase 1: Masked Modality Prediction.
@@ -148,13 +250,21 @@ class FoundationPretrainer:
         Parameters
         ----------
         n_samples : int
-            Number of synthetic samples to generate for training.
+            Number of samples to draw for training. When
+            ``use_real_modalities=True`` this is silently capped at
+            ``len(modalities)`` because we cannot synthesize new
+            real samples.
         batch_size : int, optional
             Batch size (default from config).
         n_epochs : int
             Number of training epochs.
         lr : float, optional
             Learning rate (default from config).
+        modalities : dict[str, np.ndarray], optional
+            Per-phase override of the constructor-level real cohort.
+        use_real_modalities : bool, optional
+            Per-phase override of the constructor-level flag.
+            ``None`` (default) means "use the constructor default".
 
         Returns
         -------
@@ -164,33 +274,37 @@ class FoundationPretrainer:
         batch_size = batch_size or self.config.batch_size
         lr = lr or self.config.pretrain_lr
 
-        self._log(f"Phase 1: MMP — {n_samples} samples, {n_epochs} epochs")
-
-        # Generate synthetic data
-        modalities_np, _ = self.data_generator.generate_dataset(
+        modalities_t, used_real = self._resolve_modalities(
             n_samples=n_samples,
             prefix="phase1",
+            override_modalities=modalities,
+            override_use_real=use_real_modalities,
         )
-        modalities = self._modalities_to_tensors(modalities_np)
+        effective_n = next(iter(modalities_t.values())).shape[0]
+        source = "real" if used_real else "synthetic"
+        self._log(
+            f"Phase 1: MMP — {effective_n} samples ({source}), "
+            f"{n_epochs} epochs"
+        )
 
         # Optimizer
         params = list(self.encoder.parameters()) + list(self.pretrain_head.parameters())
         optimizer = torch.optim.AdamW(params, lr=lr)
 
         losses = []
-        n_batches = max(1, n_samples // batch_size)
+        n_batches = max(1, effective_n // batch_size)
 
         for epoch in range(n_epochs):
             epoch_loss = 0.0
 
             for batch_idx in range(n_batches):
-                start = (batch_idx * batch_size) % n_samples
-                end = min(start + batch_size, n_samples)
+                start = (batch_idx * batch_size) % effective_n
+                end = min(start + batch_size, effective_n)
                 batch_size_actual = end - start
 
                 # Extract batch
                 batch_modalities = {
-                    k: v[start:end] for k, v in modalities.items()
+                    k: v[start:end] for k, v in modalities_t.items()
                 }
 
                 # Generate mask
@@ -240,6 +354,8 @@ class FoundationPretrainer:
         batch_size: Optional[int] = None,
         n_epochs: int = 50,
         lr: Optional[float] = None,
+        modalities: Optional[Dict[str, np.ndarray]] = None,
+        use_real_modalities: Optional[bool] = None,
     ) -> List[float]:
         """
         Phase 2: Cross-modal contrastive learning.
@@ -250,13 +366,19 @@ class FoundationPretrainer:
         Parameters
         ----------
         n_samples : int
-            Number of synthetic samples.
+            Number of samples to draw for training. When
+            ``use_real_modalities=True`` this is capped at
+            ``len(modalities)``.
         batch_size : int, optional
             Batch size.
         n_epochs : int
             Number of epochs.
         lr : float, optional
             Learning rate.
+        modalities : dict[str, np.ndarray], optional
+            Per-phase override of the constructor-level real cohort.
+        use_real_modalities : bool, optional
+            Per-phase override of the constructor-level flag.
 
         Returns
         -------
@@ -266,29 +388,33 @@ class FoundationPretrainer:
         batch_size = batch_size or self.config.batch_size
         lr = lr or self.config.pretrain_lr
 
-        self._log(f"Phase 2: Contrastive — {n_samples} samples, {n_epochs} epochs")
-
-        # Generate synthetic data
-        modalities_np, _ = self.data_generator.generate_dataset(
+        modalities_t, used_real = self._resolve_modalities(
             n_samples=n_samples,
             prefix="phase2",
+            override_modalities=modalities,
+            override_use_real=use_real_modalities,
         )
-        modalities = self._modalities_to_tensors(modalities_np)
+        effective_n = next(iter(modalities_t.values())).shape[0]
+        source = "real" if used_real else "synthetic"
+        self._log(
+            f"Phase 2: Contrastive — {effective_n} samples ({source}), "
+            f"{n_epochs} epochs"
+        )
 
         # Optimizer
         params = list(self.encoder.parameters()) + list(self.contrastive_head.parameters())
         optimizer = torch.optim.AdamW(params, lr=lr)
 
         losses = []
-        n_batches = max(1, n_samples // batch_size)
+        n_batches = max(1, effective_n // batch_size)
 
         for epoch in range(n_epochs):
             epoch_loss = 0.0
             n_batches_done = 0
 
             for batch_idx in range(n_batches):
-                start = (batch_idx * batch_size) % n_samples
-                end = min(start + batch_size, n_samples)
+                start = (batch_idx * batch_size) % effective_n
+                end = min(start + batch_size, effective_n)
                 batch_size_actual = end - start
 
                 # Need at least 2 samples for contrastive
@@ -296,7 +422,7 @@ class FoundationPretrainer:
                     continue
 
                 batch_modalities = {
-                    k: v[start:end] for k, v in modalities.items()
+                    k: v[start:end] for k, v in modalities_t.items()
                 }
 
                 # Forward: encoder (no mask)
@@ -338,6 +464,8 @@ class FoundationPretrainer:
         batch_size: Optional[int] = None,
         n_epochs: int = 30,
         lr: Optional[float] = None,
+        modalities: Optional[Dict[str, np.ndarray]] = None,
+        use_real_modalities: Optional[bool] = None,
     ) -> List[float]:
         """
         Phase 3: Joint MMP + contrastive training.
@@ -345,10 +473,14 @@ class FoundationPretrainer:
         Parameters
         ----------
         n_samples : int
-            Number of synthetic samples.
+            Number of samples to draw for training.
         batch_size : int, optional
         n_epochs : int
         lr : float, optional
+        modalities : dict[str, np.ndarray], optional
+            Per-phase override of the constructor-level real cohort.
+        use_real_modalities : bool, optional
+            Per-phase override of the constructor-level flag.
 
         Returns
         -------
@@ -358,13 +490,18 @@ class FoundationPretrainer:
         batch_size = batch_size or self.config.batch_size
         lr = lr or (self.config.pretrain_lr * 0.5)
 
-        self._log(f"Phase 3: Joint — {n_samples} samples, {n_epochs} epochs")
-
-        modalities_np, _ = self.data_generator.generate_dataset(
+        modalities_t, used_real = self._resolve_modalities(
             n_samples=n_samples,
             prefix="phase3",
+            override_modalities=modalities,
+            override_use_real=use_real_modalities,
         )
-        modalities = self._modalities_to_tensors(modalities_np)
+        effective_n = next(iter(modalities_t.values())).shape[0]
+        source = "real" if used_real else "synthetic"
+        self._log(
+            f"Phase 3: Joint — {effective_n} samples ({source}), "
+            f"{n_epochs} epochs"
+        )
 
         params = (
             list(self.encoder.parameters())
@@ -374,22 +511,22 @@ class FoundationPretrainer:
         optimizer = torch.optim.AdamW(params, lr=lr)
 
         losses = []
-        n_batches = max(1, n_samples // batch_size)
+        n_batches = max(1, effective_n // batch_size)
 
         for epoch in range(n_epochs):
             epoch_total_loss = 0.0
             n_batches_done = 0
 
             for batch_idx in range(n_batches):
-                start = (batch_idx * batch_size) % n_samples
-                end = min(start + batch_size, n_samples)
+                start = (batch_idx * batch_size) % effective_n
+                end = min(start + batch_size, effective_n)
                 batch_size_actual = end - start
 
                 if batch_size_actual < 2:
                     continue
 
                 batch_modalities = {
-                    k: v[start:end] for k, v in modalities.items()
+                    k: v[start:end] for k, v in modalities_t.items()
                 }
 
                 # Mask for MMP
@@ -451,6 +588,8 @@ class FoundationPretrainer:
         p2_epochs: int = 50,
         p3_epochs: int = 30,
         batch_size: Optional[int] = None,
+        modalities: Optional[Dict[str, np.ndarray]] = None,
+        use_real_modalities: Optional[bool] = None,
     ) -> Dict[str, List[float]]:
         """
         Run all three pre-training phases.
@@ -458,7 +597,8 @@ class FoundationPretrainer:
         Parameters
         ----------
         n_samples : int
-            Synthetic training samples per phase.
+            Samples per phase. When ``use_real_modalities=True`` this
+            is capped at ``len(modalities)``.
         p1_epochs : int
             Phase 1 epochs.
         p2_epochs : int
@@ -466,6 +606,12 @@ class FoundationPretrainer:
         p3_epochs : int
             Phase 3 epochs.
         batch_size : int, optional
+        modalities : dict[str, np.ndarray], optional
+            Per-call override of the real cohort. Defaults to the
+            constructor-level ``modalities``.
+        use_real_modalities : bool, optional
+            Per-call override of the flag. ``None`` (default) means
+            "use the constructor default".
 
         Returns
         -------
@@ -481,13 +627,16 @@ class FoundationPretrainer:
         self._log("=" * 50)
 
         p1_losses = self.pretrain_phase1_mmp(
-            n_samples=n_samples, n_epochs=p1_epochs, batch_size=batch_size
+            n_samples=n_samples, n_epochs=p1_epochs, batch_size=batch_size,
+            modalities=modalities, use_real_modalities=use_real_modalities,
         )
         p2_losses = self.pretrain_phase2_contrastive(
-            n_samples=n_samples, n_epochs=p2_epochs, batch_size=batch_size
+            n_samples=n_samples, n_epochs=p2_epochs, batch_size=batch_size,
+            modalities=modalities, use_real_modalities=use_real_modalities,
         )
         p3_losses = self.pretrain_phase3_joint(
-            n_samples=n_samples, n_epochs=p3_epochs, batch_size=batch_size
+            n_samples=n_samples, n_epochs=p3_epochs, batch_size=batch_size,
+            modalities=modalities, use_real_modalities=use_real_modalities,
         )
 
         return {

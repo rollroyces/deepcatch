@@ -1,0 +1,137 @@
+{
+  "n_seeds": 5,
+  "n_patients": 20,
+  "n_samples_total": 40,
+  "n_cancer": 20,
+  "n_healthy": 20,
+  "tumor_fraction": 0.001,
+  "linear_projection_kinds": null,
+  "sparse_projection_kinds": {
+    "frag_basic": "sparse_aware"
+  },
+  "sparse_modality_opted_in": "frag_basic",
+  "data_source": "real_TCGA_LUAD_panel_+_real_mutation_derived_fragmentomics",
+  "linear_run_path": "/Users/hermes/deepcatch/results/sparse_aware_linear.json",
+  "sparse_run_path": "/Users/hermes/deepcatch/results/sparse_aware_panel.json",
+  "foundation_aucs_linear": [
+    0.5549999999999999,
+    0.535,
+    0.565,
+    0.57,
+    0.5525
+  ],
+  "foundation_aucs_sparse_aware": [
+    0.55,
+    0.52,
+    0.5275000000000001,
+    0.5575,
+    0.5449999999999999
+  ],
+  "foundation_auc_mean_linear": 0.5555,
+  "foundation_auc_mean_sparse_aware": 0.54,
+  "foundation_auc_std_linear": 0.013509256086106262,
+  "foundation_auc_std_sparse_aware": 0.015712256362470648,
+  "foundation_auc_paired_t": {
+    "n": 5,
+    "mean_diff": -0.015499999999999958,
+    "std_diff": 0.01291801068276377,
+    "se_diff": 0.005777110004145652,
+    "t_stat": -2.683002398929078,
+    "df": 4,
+    "p_value": 0.05505657192940938,
+    "ci95_lo": -0.03153982879319936,
+    "ci95_hi": 0.0005398287931994428
+  },
+  "foundation_sens_at_99_linear": [
+    0.05,
+    0.05,
+    0.05,
+    0.2,
+    0.05
+  ],
+  "foundation_sens_at_99_sparse_aware": [
+    0.05,
+    0.05,
+    0.05,
+    0.1,
+    0.05
+  ],
+  "foundation_sens_at_99_mean_linear": 0.08,
+  "foundation_sens_at_99_mean_sparse_aware": 0.06,
+  "foundation_sens_at_99_paired_t": {
+    "n": 5,
+    "mean_diff": -0.02,
+    "std_diff": 0.044721359549995794,
+    "se_diff": 0.02,
+    "t_stat": -1.0,
+    "df": 4,
+    "p_value": 0.373900966300059,
+    "ci95_lo": -0.07552890210395587,
+    "ci95_hi": 0.03552890210395587
+  },
+  "foundation_sens_at_95_linear": [
+    0.2,
+    0.2,
+    0.15,
+    0.2,
+    0.15
+  ],
+  "foundation_sens_at_95_sparse_aware": [
+    0.2,
+    0.15,
+    0.15,
+    0.15,
+    0.1
+  ],
+  "foundation_sens_at_95_mean_linear": 0.18,
+  "foundation_sens_at_95_mean_sparse_aware": 0.15,
+  "foundation_sens_at_95_paired_t": {
+    "n": 5,
+    "mean_diff": -0.030000000000000006,
+    "std_diff": 0.02738612787525831,
+    "se_diff": 0.012247448713915891,
+    "t_stat": -2.4494897427831783,
+    "df": 4,
+    "p_value": 0.07048399691022,
+    "ci95_lo": -0.06400436903291279,
+    "ci95_hi": 0.004004369032912777
+  },
+  "sanity_checks": {
+    "panel_only_aucs": true,
+    "frag_only_aucs": true,
+    "lr_baseline_aucs": true,
+    "lr_baseline_sens_at_99": true,
+    "lr_baseline_sens_at_95": true,
+    "naive_avg_aucs": true,
+    "naive_avg_sens_at_99": true,
+    "naive_avg_sens_at_95": true,
+    "shuffled_lr_baseline_aucs": true,
+    "shuffled_naive_avg_aucs": true
+  },
+  "all_sanity_checks_match": true,
+  "shuffled_foundation_aucs_linear": [
+    0.5974999999999999,
+    0.6075,
+    0.6725,
+    0.6200000000000001,
+    0.5974999999999999
+  ],
+  "shuffled_foundation_aucs_sparse_aware": [
+    0.6499999999999999,
+    0.5725,
+    0.5825,
+    0.6275,
+    0.58
+  ],
+  "shuffled_foundation_aucs_differ_intentionally": true,
+  "verdict_auc": "negative",
+  "verdict_sens_at_99": "null",
+  "verdict_summary": {
+    "auc": "negative (\u0394 -0.0155 AUC, p=0.055)",
+    "sens_at_99": "null (\u0394 -0.020 sens@99, p=0.374)",
+    "smoke_gate_pass_linear": false,
+    "smoke_gate_pass_sparse_aware": false,
+    "all_sanity_checks_match": true
+  },
+  "recommendation": "Do NOT make sparse_aware the default for frag_basic. The 5-seed paired design shows a non-trivial negative lift (sparse_aware hurts AUC by ~1.5pp). The pillar-2 mechanism is correct on synthetic inputs (see test_sparse_aware_projection.py), but the real-data frag_basic[:, 0] signal is NOT sparse at the panel-LLR operating point used here (the synthetic jitter is continuous, not zero-mass), so emitting a missing-token for >50%-zero rows is rarely triggered and is a net loss of expressivity for the per-sample jitter."
+}

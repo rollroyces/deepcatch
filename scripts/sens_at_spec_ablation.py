@@ -171,8 +171,8 @@ def main() -> int:
         ),
         "smoke_gate_pass_ce": ce["gate_pass"],
         "smoke_gate_pass_sens_at_spec": sens["gate_pass"],
-        "signal_to_artifact_ce": ce["signal_to_artifact_ratio"],
-        "signal_to_artifact_sens_at_spec": sens["signal_to_artifact_ratio"],
+        "signal_to_artifact_ce": ce.get("signal_to_artifact_ratio"),
+        "signal_to_artifact_sens_at_spec": sens.get("signal_to_artifact_ratio"),
     }
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)

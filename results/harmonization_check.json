@@ -1,0 +1,224 @@
+{
+  "experiment": "per-cohort batch-effect harmonization check",
+  "fixture": {
+    "n_samples": 160,
+    "n_studies": 4,
+    "patients_per_study": 20,
+    "tumor_fraction": 0.001,
+    "cfdna_depth": 5000,
+    "study_panel_bias": {
+      "study_A": 0.4,
+      "study_B": 0.1,
+      "study_C": -0.1,
+      "study_D": -0.3
+    },
+    "study_frag_bias": {
+      "study_A": 0.2,
+      "study_B": -0.05,
+      "study_C": 0.05,
+      "study_D": -0.15
+    },
+    "study_means_panel": {
+      "study_A": 293.01531959856743,
+      "study_B": 255.27152525544858,
+      "study_C": 246.39781155353867,
+      "study_D": 287.3822909497338
+    },
+    "study_means_frag": {
+      "study_A": 3.4941218786735426,
+      "study_B": 2.8008847956903073,
+      "study_C": 2.8259739365891012,
+      "study_D": 2.841986595597588
+    }
+  },
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1024
+  ],
+  "n_folds": 5,
+  "raw": {
+    "pooled_auc_mean": 0.9992812499999999,
+    "pooled_auc_std": 0.00023696485762659308,
+    "per_study_auc_mean": {
+      "study_A": 1.0,
+      "study_B": 0.999,
+      "study_C": 0.9974999999999999,
+      "study_D": 1.0
+    },
+    "per_study_auc_std": {
+      "study_A": 0.0,
+      "study_B": 0.001369306393762947,
+      "study_C": 0.0,
+      "study_D": 0.0
+    },
+    "per_seed_pooled": [
+      0.9993749999999999,
+      0.9992187499999999,
+      0.9993749999999999,
+      0.99890625,
+      0.99953125
+    ]
+  },
+  "harmonized": {
+    "pooled_auc_mean": 0.9981562500000001,
+    "pooled_auc_std": 0.0009968211192335425,
+    "per_study_auc_mean": {
+      "study_A": 1.0,
+      "study_B": 0.9995,
+      "study_C": 0.9969999999999999,
+      "study_D": 1.0
+    },
+    "per_study_auc_std": {
+      "study_A": 0.0,
+      "study_B": 0.0011180339887499207,
+      "study_C": 0.003259601202601344,
+      "study_D": 0.0
+    },
+    "per_seed_pooled": [
+      0.99890625,
+      0.99828125,
+      0.9965625,
+      0.9979687500000001,
+      0.9990625000000001
+    ]
+  },
+  "delta_pooled_auc": -0.0011249999999998206,
+  "delta_per_study_auc": {
+    "study_A": 0.0,
+    "study_B": 0.000500000000000056,
+    "study_C": -0.000500000000000056,
+    "study_D": 0.0
+  },
+  "verdict": {
+    "label": "NEUTRAL",
+    "explanation": "Per-study z-scoring made essentially no difference on this synthetic fixture. The signal in this controlled fixture is uncorrelated with study, so the linear LR handles it without harmonization. On a real cross-study pool where batches are more confounded, expect a larger effect."
+  },
+  "raw_per_seed": [
+    {
+      "pooled_auc": 0.9993749999999999,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 42,
+      "wall_sec": 0.018
+    },
+    {
+      "pooled_auc": 0.9992187499999999,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 0.9974999999999999,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 123,
+      "wall_sec": 0.012
+    },
+    {
+      "pooled_auc": 0.9993749999999999,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 456,
+      "wall_sec": 0.011
+    },
+    {
+      "pooled_auc": 0.99890625,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 0.9974999999999999,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 789,
+      "wall_sec": 0.011
+    },
+    {
+      "pooled_auc": 0.99953125,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 1024,
+      "wall_sec": 0.012
+    }
+  ],
+  "harmonized_per_seed": [
+    {
+      "pooled_auc": 0.99890625,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 42,
+      "wall_sec": 0.007
+    },
+    {
+      "pooled_auc": 0.99828125,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 0.9974999999999999,
+        "study_C": 0.995,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 123,
+      "wall_sec": 0.006
+    },
+    {
+      "pooled_auc": 0.9965625,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 0.9924999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 456,
+      "wall_sec": 0.006
+    },
+    {
+      "pooled_auc": 0.9979687500000001,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 0.9974999999999999,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 789,
+      "wall_sec": 0.007
+    },
+    {
+      "pooled_auc": 0.9990625000000001,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 1024,
+      "wall_sec": 0.007
+    }
+  ],
+  "generated_at": "2026-09-23T09:39:30"
+}
