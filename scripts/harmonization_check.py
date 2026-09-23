@@ -369,6 +369,7 @@ def run_harmonization_check() -> Dict:
     }
 
     out = {
+        "research_use_only": True,
         "experiment": "per-cohort batch-effect harmonization check",
         "fixture": {
             "n_samples": int(len(y)),

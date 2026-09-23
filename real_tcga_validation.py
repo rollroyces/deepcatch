@@ -1438,6 +1438,7 @@ def main():
 
     # Save results
     output = {
+        "research_use_only": True,
         'metadata': {
             'runner': 'real_tcga_validation.py',
             'date': time.strftime('%Y-%m-%d %H:%M:%S'),

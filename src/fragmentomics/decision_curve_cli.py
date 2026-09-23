@@ -134,6 +134,7 @@ def main() -> int:
 
     thresholds = np.asarray([float(x) for x in args.thresholds.split(",")])
     payload = {
+        "research_use_only": True,
         "metadata": {
             "n_samples": int(X.shape[0]),
             "n_cancer": int((y == 1).sum()),

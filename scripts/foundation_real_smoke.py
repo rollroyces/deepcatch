@@ -940,6 +940,7 @@ def main() -> int:
         )
 
     summary = {
+        "research_use_only": True,
         "n_samples": int(len(per_seed[seeds[0]]["y_true"])),
         "n_cancer": int(per_seed[seeds[0]]["y_true"].sum()),
         "n_healthy": int((per_seed[seeds[0]]["y_true"] == 0).sum()),

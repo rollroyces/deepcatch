@@ -1,0 +1,395 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-23T04:21:47.412205+00:00",
+  "scope": "open-data cross-study benchmark on FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model.",
+  "config": {
+    "seeds": [
+      42,
+      13,
+      7,
+      99,
+      1234
+    ],
+    "pca_n": 200,
+    "classifier": "LogisticRegression(max_iter=2000)",
+    "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)",
+    "harmonization": "per-study z-score StandardScaler fit on train fold only",
+    "cv": "5-fold StratifiedKFold, 5-seed pooled OOF",
+    "n_bootstrap": 1000,
+    "bootstrap_seed": 2026,
+    "specificities_per_cancer": [
+      0.95,
+      0.98,
+      0.99
+    ],
+    "cell_line_regex": "^(GM\\d+|HeLa|HepG2|K562|HL60|Jurkat|Raji|MCF7|U937|THP1|HEK293|HCT116|SW480|A549|GM12878)",
+    "labels_file": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
+    "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+  },
+  "cohort": {
+    "n_total_in_labels": 658,
+    "n_with_features": 627,
+    "n_dropped_due_to_missing_features": 31,
+    "n_cancer_in_labels": 364,
+    "n_healthy_in_labels": 294,
+    "n_dropped_cell_line": 0,
+    "dropped_cell_line_ids": [],
+    "per_study": {
+      "jiang": {
+        "n_total": 121,
+        "n_cancer": 89,
+        "n_healthy": 32
+      },
+      "cristiano": {
+        "n_total": 537,
+        "n_cancer": 275,
+        "n_healthy": 262
+      }
+    },
+    "per_cancer": {
+      "HCC_J": {
+        "n_total": 89,
+        "n_jiang": 89,
+        "n_cristiano": 0
+      },
+      "LUAD": {
+        "n_total": 79,
+        "n_jiang": 0,
+        "n_cristiano": 79
+      },
+      "BRCA": {
+        "n_total": 54,
+        "n_jiang": 0,
+        "n_cristiano": 54
+      },
+      "PAAD": {
+        "n_total": 60,
+        "n_jiang": 0,
+        "n_cristiano": 60
+      },
+      "OV": {
+        "n_total": 28,
+        "n_jiang": 0,
+        "n_cristiano": 28
+      },
+      "CRC": {
+        "n_total": 27,
+        "n_jiang": 0,
+        "n_cristiano": 27
+      },
+      "OTHER_C": {
+        "n_total": 27,
+        "n_jiang": 0,
+        "n_cristiano": 27
+      }
+    }
+  },
+  "per_cohort": {
+    "jiang": {
+      "n_total": 121,
+      "n_cancer": 89,
+      "n_healthy": 32,
+      "auc_mean": 0.9791432584269663,
+      "auc_std": 0.002778982996827126,
+      "per_seed_auc": [
+        0.9799859550561798,
+        0.9736657303370787,
+        0.9810393258426966,
+        0.9799859550561797,
+        0.9810393258426966
+      ],
+      "skipped": false
+    },
+    "cristiano": {
+      "n_total": 506,
+      "n_cancer": 274,
+      "n_healthy": 232,
+      "auc_mean": 0.9692549710546187,
+      "auc_std": 0.00220684704673573,
+      "per_seed_auc": [
+        0.9724861565567582,
+        0.9694028441983389,
+        0.9676724137931035,
+        0.9705669519254971,
+        0.9661464887993958
+      ],
+      "skipped": false
+    }
+  },
+  "pooled": {
+    "harmonized": {
+      "auc_mean": 0.9738479839719509,
+      "auc_std": 0.001778503574454404,
+      "per_seed_auc": [
+        0.9720135236664162,
+        0.9749353034477002,
+        0.9739022455964605,
+        0.9718465648217715,
+        0.9765422823274064
+      ],
+      "sens_at_spec_95": 0.9090909090909091,
+      "sens_at_spec_98": 0.837465564738292,
+      "sens_at_spec_99": 0.7823691460055097
+    },
+    "no_harmonize": {
+      "auc_mean": 0.9649678604224059,
+      "auc_std": 0.0018962121546086505,
+      "per_seed_auc": [
+        0.9666082310710409,
+        0.9658673511979297,
+        0.9613907671758911,
+        0.9662430085983805,
+        0.964729944068787
+      ],
+      "sens_at_spec_95": 0.8842975206611571,
+      "sens_at_spec_98": 0.8181818181818182,
+      "sens_at_spec_99": 0.7741046831955923
+    }
+  },
+  "per_cancer": {
+    "HCC_J": {
+      "n_cancer": 89,
+      "n_healthy": 264,
+      "auc_mean": 0.7248042219952332,
+      "auc_std": 0.018380215861807388,
+      "per_seed_auc": [
+        0.7402536601974804,
+        0.7023748723186927,
+        0.7200374531835206,
+        0.7513619339462034,
+        0.709993190330269
+      ],
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.4157303370786517,
+          "ci95_lo": 0.29585736468500445,
+          "ci95_hi": 0.5301204819277109,
+          "operating_threshold": 0.6891606863658267
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.34831460674157305,
+          "ci95_lo": 0.15586856800957322,
+          "ci95_hi": 0.4623918174665617,
+          "operating_threshold": 0.8227089783694638
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.19101123595505617,
+          "ci95_lo": 0.0,
+          "ci95_hi": 0.42045454545454547,
+          "operating_threshold": 0.9781639999136512
+        }
+      ],
+      "skipped": false
+    },
+    "LUAD": {
+      "n_cancer": 79,
+      "n_healthy": 264,
+      "auc_mean": 0.9812907556578443,
+      "auc_std": 0.0020072683159382287,
+      "per_seed_auc": [
+        0.9836497890295359,
+        0.9808208668968164,
+        0.9819716148830072,
+        0.977704257767549,
+        0.982307249712313
+      ],
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.9113924050632911,
+          "ci95_lo": 0.8297662374020156,
+          "ci95_hi": 0.9733421052631579,
+          "operating_threshold": 0.03664516522050406
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.8607594936708861,
+          "ci95_lo": 0.5712053571428571,
+          "ci95_hi": 0.9428571428571428,
+          "operating_threshold": 0.21194385456261894
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.6582278481012658,
+          "ci95_lo": 0.3918772032902468,
+          "ci95_hi": 0.9166666666666666,
+          "operating_threshold": 0.7805043591743164
+        }
+      ],
+      "skipped": false
+    },
+    "PAAD": {
+      "n_cancer": 60,
+      "n_healthy": 264,
+      "auc_mean": 0.9367929292929291,
+      "auc_std": 0.007019157323619464,
+      "per_seed_auc": [
+        0.928409090909091,
+        0.9288510101010101,
+        0.9386994949494948,
+        0.9423611111111111,
+        0.9456439393939394
+      ],
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.8166666666666667,
+          "ci95_lo": 0.7068965517241379,
+          "ci95_hi": 0.9167008196721311,
+          "operating_threshold": 0.04270579213798378
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.7666666666666667,
+          "ci95_lo": 0.42857142857142855,
+          "ci95_hi": 0.8627866400797607,
+          "operating_threshold": 0.10694658263874621
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.48333333333333334,
+          "ci95_lo": 0.3333333333333333,
+          "ci95_hi": 0.8095238095238095,
+          "operating_threshold": 0.7621442382229742
+        }
+      ],
+      "skipped": false
+    },
+    "BRCA": {
+      "n_cancer": 53,
+      "n_healthy": 264,
+      "auc_mean": 0.9763150371640938,
+      "auc_std": 0.003436363444199345,
+      "per_seed_auc": [
+        0.9801315037164093,
+        0.9758433390508863,
+        0.9758433390508863,
+        0.9704116638078902,
+        0.9793453401943968
+      ],
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.9433962264150944,
+          "ci95_lo": 0.8653846153846154,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.04973720060808096
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.8490566037735849,
+          "ci95_lo": 0.49982394366197186,
+          "ci95_hi": 0.9811408106219427,
+          "operating_threshold": 0.20372269441451732
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.5471698113207547,
+          "ci95_lo": 0.351827485380117,
+          "ci95_hi": 0.9365646258503401,
+          "operating_threshold": 0.8087178519427691
+        }
+      ],
+      "skipped": false
+    },
+    "OV": {
+      "n_cancer": 28,
+      "n_healthy": 264,
+      "auc_mean": 0.9923971861471863,
+      "auc_std": 0.004767128677324,
+      "per_seed_auc": [
+        0.9956709956709957,
+        0.9832251082251083,
+        0.9937770562770563,
+        0.996482683982684,
+        0.9928300865800865
+      ],
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 1.0,
+          "ci95_lo": 0.8947368421052632,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.002148272247725605
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.9285714285714286,
+          "ci95_lo": 0.8213474025974026,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.04438785019337438
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.9285714285714286,
+          "ci95_lo": 0.7584051724137931,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.04438785019337438
+        }
+      ],
+      "skipped": false
+    }
+  },
+  "true_confound_control": {
+    "cancer_jiang_healthy_cristiano": {
+      "n_cancer": 121,
+      "n_healthy": 506,
+      "harmonized": {
+        "auc_mean": 0.48903407049292785,
+        "auc_std": 0.0037666244854579626,
+        "per_seed_auc": [
+          0.4879952961160291,
+          0.4954921111945905,
+          0.49037990396236886,
+          0.4843367196942475,
+          0.48696632149740304
+        ]
+      },
+      "no_harmonize": {
+        "auc_mean": 0.999127821513736,
+        "auc_std": 0.0017035677096624276,
+        "per_seed_auc": [
+          0.9999673341390912,
+          0.995720772220952,
+          0.9999673341390912,
+          1.0,
+          0.9999836670695457
+        ]
+      }
+    },
+    "cancer_cristiano_healthy_jiang": {
+      "n_cancer": 506,
+      "n_healthy": 121,
+      "harmonized": {
+        "auc_mean": 0.49566524025740694,
+        "auc_std": 0.004204181325785843,
+        "per_seed_auc": [
+          0.4939894815927873,
+          0.49080456015418283,
+          0.49960800966909485,
+          0.5016006271845295,
+          0.49232352268644036
+        ]
+      },
+      "no_harmonize": {
+        "auc_mean": 0.9998040048345475,
+        "auc_std": 0.0003430693065852284,
+        "per_seed_auc": [
+          0.9999836670695457,
+          0.9991180217554634,
+          0.9999673341390913,
+          0.9999836670695457,
+          0.9999673341390913
+        ]
+      }
+    }
+  },
+  "interpretation": {
+    "honest_framing": "These numbers are pooled out-of-fold AUC on the 627-sample cross-study cohort (after load5's missing-artifact filter). Internal CV; no external validation. They measure how well the 5-channel DELFI features separate cancer from healthy when pooled across Jiang 2015 and Cristiano 2019 with per-study z-score harmonization. They do NOT measure clinical-grade sensitivity at the Galleri / CancerSEEK operating points, which require independent held-out plasma cohorts.",
+    "true_confound_reading": "With per-study z-score harmonization the true-confound AUC (cancer = one study, healthy = the other) collapses toward 0.50 \u2014 the per-study mean/variance shift is the only signal and the harmonization removes it by design. WITHOUT harmonization the same control reaches ~0.999 \u2014 the classifier learns 'which study is this from?', not 'is this cancer or healthy?'. The paired comparison (harmonized vs no_harmonize) is the only honest way to claim a cross-study benchmark is not a study-batch artifact.",
+    "per_cancer_reading": "Per-cancer sens@spec is OvR: each cancer class is scored against ALL healthy samples (not just the within-study healthy ones). This is the cross-study generalization view, not the within-study view. Top-5 cancers by count are reported; smaller cohorts (n<10 cancer) are skipped."
+  }
+}

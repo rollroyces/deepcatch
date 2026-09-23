@@ -280,6 +280,7 @@ def main():
 
     # Per-subgroup: uniform vs CADD Top-K=500 (within subgroup)
     out = {
+        "research_use_only": True,
         "experiment": "Per-subgroup CADD panel LLR for DeepCatch v2.2",
         "cohort": {"n_patients": len(cohort), "n_mutations": n_muts},
         "cadd_match_rate": n_matched / n_muts,

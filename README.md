@@ -1,3 +1,7 @@
+> **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready. Open-data cross-study AUC in [docs/CROSS_STUDY_BENCHMARK.md](docs/CROSS_STUDY_BENCHMARK.md). For methods research only.
+
+---
+
 # 🧬 DeepCatch v2.2 — Panel-Based Ultra-Sensitive MRD Detection
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -114,7 +118,9 @@ flowchart TB
 
 The repo contains two distinct validation surfaces; reviewers should not conflate them:
 
-### ✅ Validated against real cfDNA / clinical-grade simulation
+### ✅ Validated on open real-data / synthetic-fixture simulation (NOT clinical)
+
+> **All numbers below are open-data cross-study benchmarks — NOT clinical validation.** See [Limitations](#limitations) for the honest scope: n=627 for the cross-study benchmark, n=20 paired for the foundation smoke, no IRB, no prospective collection, no clinical outcomes.
 
 | Component | Validation surface | Reference |
 |---|---|---|
@@ -142,9 +148,18 @@ The `fusion_ablation.py` AUC of **0.9886** (naive average of tumor-naive 5-chann
 
 ### What is NOT in this repo
 
-- **No real plasma cfDNA sample has ever been processed end-to-end through the foundation model.** The pretraining → fine-tuning → evaluation loop uses synthetic features for the multi-modal data generator. The new `foundation-real-smoke` CI job uses **real TCGA-LUAD panel-LLR scores** as one of two channels (the other channel is synthetic because no FinaleDB plasma is paired with the 20 TCGA-LUAD patients). This is the first time the foundation model has been evaluated against a real cfDNA-class signal; it is not yet a clinical validation.
-- **No held-out clinical validation.** All reported AUCs are in-sample 5-fold or pooled OOF on the same cohort the model was trained on.
-- **No clinical-grade operating-point thresholds.** The decision-curve analyzer reports per-specificity operating tables but the recommended threshold τ is calibrated against the training cohort, not a screening cohort with prevalence ~0.4%.
+- **No real plasma cfDNA sample has ever been processed end-to-end through the foundation model.** The pretraining → fine-tuning → evaluation loop uses synthetic features for the multi-modal data generator. The new `foundation-real-smoke` CI job uses **real TCGA-LUAD panel-LLR scores** as one of two channels (the other channel is synthetic because no FinaleDB plasma is paired with the 20 TCGA-LUAD patients). This is the first time the foundation model has been evaluated against a real cfDNA-class signal; **it is NOT a clinical validation and is NOT intended for clinical use.**
+- **No held-out clinical validation. Not clinically validated.** All reported AUCs are in-sample 5-fold or pooled OOF on the same cohort the model was trained on.
+- **No clinical-grade operating-point thresholds.** The decision-curve analyzer reports per-specificity operating tables but the recommended threshold τ is calibrated against the training cohort, not a screening cohort with prevalence ~0.4%. **Not suitable for clinical decision-making.**
+
+### Limitations
+
+- **Cohort sizes are small.** n=627 for the cross-study open-data benchmark (FinaleDB pan-cancer WGS, Jiang 2015 + Cristiano 2019); n=20 paired synthetic for the foundation smoke; n=129 processed frequency vectors for the Jiang open-data motif benchmark. **No IRB approval, no prospective collection, no clinical outcomes.**
+- **Healthy controls are simulated or pooled from open-data TF=0 arms.** The cross-study benchmark's "healthy" controls are FinaleDB samples with tumor fraction 0 (i.e. modeled cancer-at-TF=0 read depth), not real healthy-donor plasma.
+- **No external held-out validation.** Every reported number is in-sample 5-fold or pooled OOF on the same cohort the model was trained on. **Pretraining is on 200 samples from a single open cohort** (`data/finaledb_pretrain_cohort_PRODUCTION.npz`).
+- **Batch effects are not exhaustively characterized.** The harmonization check ([docs/HARMONIZATION.md](docs/HARMONIZATION.md)) is a synthetic fixture with NEUTRAL verdict; on a real multi-study plasma pool, larger batch effects are expected.
+- **Mutation-informed vs tumor-naive pairing is synthetic in the fusion experiment.** The fusion AUC 0.9886 is a what-if pairing of a real fragmentomics channel with a **synthetic** mutation channel calibrated to AUC 0.92 — not a real measurement of both channels on the same plasma.
+- **No FDA pathway, no regulatory submission.** DeepCatch is research-use-only software.
 
 ---
 
@@ -784,9 +799,9 @@ Open an issue first to discuss scope. Target `main` branch. PRs must pass all ex
 
 ---
 
-## Real Plasma Validation (v2.1)
+## Open-Data Plasma Benchmark (v2.1, research-use-only)
 
-Preliminary validation on **129 real plasma samples** from Jiang lab (CUHK), using 4-mer end-motif frequency vectors:
+> **⚠️ Research-use-only benchmark on open data — NOT a clinical validation.** Preliminary evaluation on **129 processed frequency vectors** (not raw BAMs) from Jiang lab (CUHK) under data-use terms, using 4-mer end-motif frequency vectors:
 
 | Metric | Value |
 |---|---|
@@ -989,7 +1004,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/cadd_vs_alphamissense_topk.py \
 | 1e-4 | 50,000× | 1.000 | 1.000 |
 | 1e-5 | any | 1.000 | 1.000 |
 
-The remaining gap to production is **real plasma cfDNA sequencing** — see `docs/PRODUCTION_ROADMAP.md`. The longitudinal CET stage (Stage 2) is intended to extend this below 0.1% ctDNA across serial draws; its honest simulation baseline (after removing ad-hoc bonuses) is AUC 0.49, sens 2.5% @ 97% spec (`results/README.md`) — the longitudinal redesign (hierarchical Bayes across loci) is open work, not a validated result.
+The remaining gap to **a clinical-grade assay** is real plasma cfDNA sequencing — see `docs/PRODUCTION_ROADMAP.md`. **DeepCatch is not, and is not intended to be, a clinical assay.** The longitudinal CET stage (Stage 2) is intended to extend this below 0.1% ctDNA across serial draws; its honest simulation baseline (after removing ad-hoc bonuses) is AUC 0.49, sens 2.5% @ 97% spec (`results/README.md`) — the longitudinal redesign (hierarchical Bayes across loci) is open work, not a validated result.
 
 ---
 
