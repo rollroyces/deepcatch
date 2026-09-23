@@ -5,10 +5,16 @@ Covers:
 - the train-only fit (regression test for the data-leak pitfall the
   cfdna-fragmentomics skill warns about)
 - unseen-study fallback in `apply_per_study_zscore` is identity
-- end-to-end: synthetic multi-cohort fixture produces a non-zero AUC
-  delta when a clear batch effect is injected
+- end-to-end: build_fixture() returns a synthetic multi-cohort fixture
+  where a clear batch effect on the panel-LLR channel drops pooled AUC
+  to chance once per-study z-scoring is applied (the
+  study-as-classifier trap)
+- end-to-end: with and without harmonization the pipeline produces
+  DIFFERENT pooled AUCs (regression test for the wiring of the
+  harmonization code path)
+
+All tests are pure numpy / sklearn — no TCGA MAF cache required.
 """
-import os
 import sys
 from pathlib import Path
 
@@ -19,12 +25,6 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SCRIPTS))
-
-# Skip everything if real MAF cache is missing — we need it for the
-# end-to-end test that calls build_fixture (which uses load_tcga_cohort).
-# The unit tests for the z-score functions don't need any data.
-TCGA_CACHE = ROOT / "validation" / "tcga" / "tcga_cache"
-_HAS_MAF_CACHE = TCGA_CACHE.exists() and any(TCGA_CACHE.glob("*.maf.gz"))
 
 
 # ── 1. z-score fit returns zero mean / unit std on TRAIN data ─────────
@@ -121,10 +121,6 @@ def test_apply_per_study_zscore_unseen_study_falls_back_to_identity():
 
 # ── 4. end-to-end AUC delta with clear batch effect ───────────────────
 
-@pytest.mark.skipif(
-    not _HAS_MAF_CACHE,
-    reason="real TCGA MAF cache missing — fixture build needs it",
-)
 def test_synthetic_fixture_auc_delta_when_batch_effect_is_dominant():
     """If study label perfectly predicts the cancer label, harmonization
     should DRAMATICALLY reduce AUC. This is the study-as-classifier
@@ -201,10 +197,6 @@ def test_synthetic_fixture_auc_delta_when_batch_effect_is_dominant():
     )
 
 
-@pytest.mark.skipif(
-    not _HAS_MAF_CACHE,
-    reason="real TCGA MAF cache missing — fixture build needs it",
-)
 def test_synthetic_fixture_with_and_without_harmonization_produce_different_aucs():
     """The end-to-end test from the task spec: build the real fixture
     via `build_fixture`, run the pipeline with and without

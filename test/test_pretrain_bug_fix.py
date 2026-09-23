@@ -157,8 +157,9 @@ def test_phase3_with_real_modalities_skips_synthetic_generator():
 
 def test_encoder_input_is_real_modalities_when_flag_is_true():
     """Patches encoder.forward to capture the batch it received and
-    asserts the captured batch equals the real cohort (up to
-    slicing / device / dtype)."""
+    asserts the captured batch is the real cohort after per-modality
+    standardization (which the pretrainer applies in every phase —
+    see ``FoundationPretrainer._fit_modality_stats``)."""
     cfg = PROTOTYPE_CONFIG
     real = _make_real_modalities(n_samples=8, seed=4)
     pretrainer = FoundationPretrainer(
@@ -188,16 +189,25 @@ def test_encoder_input_is_real_modalities_when_flag_is_true():
         f"Encoder saw keys {set(captured['batch0'].keys())}, "
         f"expected {set(real.keys())}"
     )
-    for k, expected in real.items():
+    # The pretrainer now standardizes each modality (median / MAD-robust-
+    # std) before the encoder. Reconstruct the expected standardized
+    # first sample from the raw cohort and compare.
+    from src.foundation.pretrain import (
+        _fit_modality_stats, _apply_modality_standardization,
+    )
+    stats = _fit_modality_stats(real)
+    expected_std = _apply_modality_standardization(real, stats)
+    for k, expected in expected_std.items():
         got = captured["batch0"][k].numpy()
         # The encoder receives the cohort on its device. Allow float
-        # comparison tolerance — values are passed through unchanged.
+        # comparison tolerance — values are passed through unchanged
+        # after standardization.
         np.testing.assert_allclose(
             got, expected[0], rtol=1e-5, atol=1e-6,
             err_msg=(
-                f"Modality {k}: encoder input does not match real "
-                "cohort — pretrainer is sampling synthetic data even "
-                "though use_real_modalities=True."
+                f"Modality {k}: encoder input does not match the "
+                "standardized real cohort — pretrainer is sampling "
+                "synthetic data even though use_real_modalities=True."
             ),
         )
 
@@ -301,9 +311,17 @@ def test_per_phase_modalities_override_constructor():
         modalities=real_at_phase,  # per-phase override
     )
 
-    # Verify the encoder saw the per-phase cohort, not the
+    # Verify the encoder saw the per-phase cohort (after the per-modality
+    # standardization the pretrainer runs on every phase), not the
     # constructor-level one.
-    for k, expected in real_at_phase.items():
+    from src.foundation.pretrain import (
+        _fit_modality_stats, _apply_modality_standardization,
+    )
+    expected_stats = _fit_modality_stats(real_at_phase)
+    expected_std = _apply_modality_standardization(
+        real_at_phase, expected_stats,
+    )
+    for k, expected in expected_std.items():
         got = captured["batch0"][k].numpy()
         np.testing.assert_allclose(
             got, expected[0], rtol=1e-5, atol=1e-6,

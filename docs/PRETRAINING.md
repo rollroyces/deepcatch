@@ -21,6 +21,27 @@
 >
 > If you reference a "real-data-derived" pre-trained checkpoint in
 > downstream work, use `foundation_pretrained_finaledb_PRODUCTION.pt`.
+>
+> ### File rename (2026-09-23): pre-bug-fix artifacts now `*SYNTHETIC_v0*`
+>
+> The OLD pretrain artifacts have been renamed in place to make their
+> synthetic-bypass lineage explicit. They are retained on disk as
+> historical / provenance artifacts and remain loadable, but **must
+> never be used as a "real-data-trained" checkpoint**:
+>
+> | Old path | New (renamed) path | Status |
+> |---|---|---|
+> | `scripts/pretrain_real_finaledb.py` | `scripts/pretrain_synthetic_v0.py` | historical, not trained on real data |
+> | `checkpoints/foundation_pretrained_finaledb.pt` | `checkpoints/foundation_pretrained_SYNTHETIC_v0.pt` | historical, not trained on real data |
+> | `data/finaledb_pretrain_cohort.npz` | `data/finaledb_pretrain_cohort_SYNTHETIC_v0.npz` | historical cohort (the assembly code was correct; only the pretrain phases bypassed it) |
+>
+> The new real-data pair (`scripts/pretrain_production_finaledb.py`,
+> `data/finaledb_pretrain_cohort_PRODUCTION.npz`,
+> `checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt`) is
+> the only file pair that should be referenced from downstream
+> "real-data-derived" code paths. `scripts/finaledb_pretrained_loader.py`
+> now documents both pairs and defaults its examples to the
+> PRODUCTION pair.
 
 This document describes the pipeline that pre-trains the
 `FoundationPretrainer` / `MultiModalEncoder` on **real FinaleDB
@@ -31,15 +52,25 @@ DELFI) and saves the resulting checkpoint to a stable path.
 
 ```python
 from src.foundation import FoundationDownstream
+from src.foundation.config import FoundationConfig
 
+# Default: real-data-trained (PRODUCTION) checkpoint.
 fd = FoundationDownstream(
+    config=FoundationConfig(embed_dim=128, n_layers=4, n_heads=4,
+                            ff_dim=256, dropout=0.2),
     pretrained=True,
-    checkpoint_path="checkpoints/foundation_pretrained_finaledb.pt",
+    checkpoint_path="checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt",
 )
-# fd.encoder is loaded with weights derived from 16 real FinaleDB
+# fd.encoder is loaded with weights derived from 200 real FinaleDB
 # cfDNA samples (5-channel DELFI profile). Run fd.fit(...) on your
 # labeled cohort to fine-tune for cancer detection.
 ```
+
+If you need the legacy 16-sample `SYNTHETIC_v0` checkpoint
+(`checkpoints/foundation_pretrained_SYNTHETIC_v0.pt`, **not
+real-data-trained**), pass `config=FoundationConfig(embed_dim=64,
+n_layers=2, n_heads=2, ff_dim=128, dropout=0.2)` to match its
+training-time shape. Do not use it for "real-data-derived" claims.
 
 ## Pipeline
 
@@ -89,9 +120,17 @@ fd = FoundationDownstream(
                                  ▼
                 ┌───────────────────────────────────┐
                 │  checkpoints/                     │
-                │   foundation_pretrained_finaledb.pt │
+                │   foundation_pretrained_SYNTHETIC_v0.pt │
+                │  (historical; phases 1-3         │
+                │   internally generated synthetic  │
+                │   data — see banner above)       │
                 └───────────────────────────────────┘
 ```
+
+> Note: the pipeline diagram above is the pre-bug-fix PROTOTYPE flow
+> whose output is the renamed `SYNTHETIC_v0` checkpoint. The current
+> real-data PRODUCTION flow is described in the "PRODUCTION_CONFIG
+> pretraining (post-fix)" section below.
 
 ## Cohort composition
 
@@ -113,8 +152,10 @@ The full pre-extracted cache contains **657 samples** (262 healthy
 + 275 cancer from Cristiano 2019; 32 healthy + 89 cancer from Jiang
 2015). The 16-sample subset is a deterministic draw from this cache
 (`--seed 42`). The cohort matrix is exported to
-`data/finaledb_pretrain_cohort.npz` for re-loading without re-running
-the assembly.
+`data/finaledb_pretrain_cohort_SYNTHETIC_v0.npz` (renamed from
+`finaledb_pretrain_cohort.npz`) for re-loading without re-running
+the assembly. **The cohort assembly itself was correct; only the
+pretrain phases bypassed it** — see `docs/PRETRAIN_BUG.md`.
 
 ## Training config
 
@@ -153,6 +194,14 @@ meanlen, motifs, wps). To feed it into ``FoundationDownstream`` you
 need to split the flat matrix back into the per-modality dict the
 downstream model expects.
 
+> **Default (real-data):** the example below loads the NEW
+> PRODUCTION cohort + checkpoint. The OLD (SYNTHETIC_v0) pair is
+> still loadable (the layout constants are identical) but the
+> weights are NOT real-data-trained — only use it for audit / the
+> regression test in `test/test_pretrain_bug_fix.py`. See the
+> "OLD (SYNTHETIC_v0) historical" example in the loader docstring
+> for the matching config.
+
 Use ``scripts/finaledb_pretrained_loader.py``:
 
 ```python
@@ -164,8 +213,8 @@ from src.foundation.downstream import FoundationDownstream
 from src.foundation.config import FoundationConfig
 import numpy as np
 
-# 1. Load the pretrained cohort
-cohort = load_real_cohort("data/finaledb_pretrain_cohort.npz")
+# 1. Load the PRODUCTION (real-data) pretrained cohort
+cohort = load_real_cohort("data/finaledb_pretrain_cohort_PRODUCTION.npz")
 # cohort["X"].shape == (n_samples, 2256)
 # cohort["y"].shape == (n_samples,)
 
@@ -179,23 +228,23 @@ modalities = modalities_from_flat_X(cohort["X"])
 # modalities["tissue"].shape == (n, 24)
 
 # 3. Load the pretrained encoder + fine-tune on a downstream task.
-# IMPORTANT: the checkpoint was trained with PROTOTYPE_CONFIG
-# (embed_dim=64). Use a matching config or the load_state_dict call
+# IMPORTANT: the PRODUCTION checkpoint was trained with PRODUCTION_CONFIG
+# (embed_dim=128). Use a matching config or the load_state_dict call
 # fails with shape mismatches.
 fd = FoundationDownstream(
-    config=FoundationConfig(embed_dim=64, n_layers=2, n_heads=2,
-                            ff_dim=128, dropout=0.2),
+    config=FoundationConfig(embed_dim=128, n_layers=4, n_heads=4,
+                            ff_dim=256, dropout=0.2),
     pretrained=True,
-    checkpoint_path="checkpoints/foundation_pretrained_finaledb.pt",
+    checkpoint_path="checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt",
 )
-fd.fit(modalities, cohort["y"], n_epochs=20, batch_size=8)
+fd.fit(modalities, cohort["y"], n_epochs=20, batch_size=32)
 proba = fd.predict_proba(modalities)
 ```
 
 `FoundationDownstream._load_pretrained_encoder` calls
 `torch.load(checkpoint_path, ...)` and runs
 `self.encoder.load_state_dict(checkpoint["encoder_state_dict"])`.
-The verification in `pretrain_real_finaledb.py` confirms that:
+The verification in `pretrain_synthetic_v0.py` confirms that:
 
 1. The checkpoint file is loadable with `torch.load`.
 2. The encoder's `state_dict` keys match the `MultiModalEncoder`'s.
@@ -257,12 +306,15 @@ The pre-extracted cache at
 in the cache was originally derived from a `*.frag.tsv.bgz`
 fetched via `scripts/fetch_finaledb.py` in the companion pipeline
 repo. The `extract_5channel_from_frag()` function in
-`scripts/pretrain_real_finaledb.py` is the inline reference
-implementation (no chromosome-bin assignment, length-summary
-proxy for motifs) that demonstrates the extract step in isolation.
+`scripts/pretrain_synthetic_v0.py` (renamed from
+`scripts/pretrain_real_finaledb.py` after the synthetic-bypass
+bug fix; same code, only the docstring header is updated to flag
+the historical-status) is the inline reference implementation (no
+chromosome-bin assignment, length-summary proxy for motifs) that
+demonstrates the extract step in isolation.
 
 For a future PR with a non-truncating network path, the live fetch
-+ extract + delete pipeline is documented in `scripts/pretrain_real_finaledb.py`
++ extract + delete pipeline is documented in `scripts/pretrain_synthetic_v0.py`
 (see the commented `extract_5channel_from_frag()` function and the
 `stream_download()` 500 MB guard).
 
@@ -286,12 +338,21 @@ from the pre-extracted cache.
 
 ```bash
 cd /Users/hermes/deepcatch
-env -u PYTHONPATH ./.venv/bin/python scripts/pretrain_real_finaledb.py \
+env -u PYTHONPATH ./.venv/bin/python scripts/pretrain_synthetic_v0.py \
     --n-healthy 8 --n-cancer 8 \
     --epochs 5 --batch-size 8 \
     --device cpu --seed 42 \
     --studies cristiano,jiang
 ```
+
+> **Heads-up:** the command above re-runs the historical PROTOTYPE
+> script (`pretrain_synthetic_v0.py`). It will reproduce the
+> SYNTHETIC_v0 cohort + checkpoint pair; the pretrain phases
+> internally generate synthetic data, so even with the same code
+> and seed the resulting checkpoint is **not** trained on real
+> FinaleDB. For real-data pretraining, run
+> `scripts/pretrain_production_finaledb.py` instead (see
+> "PRODUCTION_CONFIG pretraining (post-fix)" below).
 
 Expected wall-clock: <10 seconds on M4 CPU.
 
@@ -299,13 +360,13 @@ Expected wall-clock: <10 seconds on M4 CPU.
 
 | Path | Size | Purpose |
 |---|---|---|
-| `scripts/pretrain_real_finaledb.py` | ~18 KB | PROTOTYPE_CONFIG pre-training script (16-sample, legacy) |
-| `scripts/pretrain_production_finaledb.py` | ~10 KB | PRODUCTION_CONFIG pre-training script (200-sample, post-fix) |
-| `data/finaledb_pretrain_cohort.npz` | ~88 KB | 16-sample PROTOTYPE cohort (X, y, sample_ids, studies) |
+| `scripts/pretrain_synthetic_v0.py` | ~19 KB | HISTORICAL pre-training script (renamed from `pretrain_real_finaledb.py` after the synthetic-bypass fix — phases 1-3 internally generated synthetic data; **not** trained on real FinaleDB) |
+| `scripts/pretrain_production_finaledb.py` | ~10 KB | PRODUCTION_CONFIG pre-training script (200-sample, post-fix; real-data-trained) |
+| `data/finaledb_pretrain_cohort_SYNTHETIC_v0.npz` | ~88 KB | 16-sample PROTOTYPE cohort (renamed from `finaledb_pretrain_cohort.npz`; assembly was correct but pretrain phases bypassed it) |
 | `data/finaledb_pretrain_cohort_PRODUCTION.npz` | ~1.1 MB | 200-sample PRODUCTION cohort |
-| `checkpoints/foundation_pretrained_finaledb.pt` | ~470 KB | PROTOTYPE_CONFIG checkpoint (NOT real-data-trained — see PRETRAIN_BUG.md) |
+| `checkpoints/foundation_pretrained_SYNTHETIC_v0.pt` | ~470 KB | HISTORICAL PROTOTYPE_CONFIG checkpoint (renamed from `foundation_pretrained_finaledb.pt`; **not** real-data-trained — see PRETRAIN_BUG.md) |
 | `checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt` | ~2.7 MB | PRODUCTION_CONFIG checkpoint (real-data-trained) |
-| `results/pretrain_real_finaledb.json` | ~2 KB | PROTOTYPE run log |
+| `results/pretrain_synthetic_v0.json` | ~2 KB | HISTORICAL PROTOTYPE run log (renamed from `pretrain_real_finaledb.json`) |
 | `results/pretrain_production_finaledb.json` | ~3 KB | PRODUCTION run log |
 | `docs/PRETRAINING.md` | this file | Pipeline documentation |
 | `docs/PRETRAIN_BUG.md` | audit doc | Synthetic-bypass bug + regression test evidence |

@@ -4,8 +4,11 @@
     "n_samples": 160,
     "n_studies": 4,
     "patients_per_study": 20,
-    "tumor_fraction": 0.001,
-    "cfdna_depth": 5000,
+    "panel_cancer_mean": 280.0,
+    "panel_noise_std": 80.0,
+    "frag_cancer_mean": 0.5,
+    "frag_noise_std": 0.1,
+    "frag_jitter_std": 0.05,
     "study_panel_bias": {
       "study_A": 0.4,
       "study_B": 0.1,
@@ -19,16 +22,16 @@
       "study_D": -0.15
     },
     "study_means_panel": {
-      "study_A": 293.01531959856743,
-      "study_B": 255.27152525544858,
-      "study_C": 246.39781155353867,
-      "study_D": 287.3822909497338
+      "study_A": 143.461200208421,
+      "study_B": 134.9949192089436,
+      "study_C": 146.42411663326175,
+      "study_D": 142.20066827127374
     },
     "study_means_frag": {
-      "study_A": 3.4941218786735426,
-      "study_B": 2.8008847956903073,
-      "study_C": 2.8259739365891012,
-      "study_D": 2.841986595597588
+      "study_A": 0.4396853338819765,
+      "study_B": 0.20278655041355656,
+      "study_C": 0.3084974041314922,
+      "study_D": 0.085971449285886
     }
   },
   "seeds": [
@@ -40,56 +43,56 @@
   ],
   "n_folds": 5,
   "raw": {
-    "pooled_auc_mean": 0.9992812499999999,
-    "pooled_auc_std": 0.00023696485762659308,
+    "pooled_auc_mean": 0.99678125,
+    "pooled_auc_std": 0.0011723957176439932,
+    "per_study_auc_mean": {
+      "study_A": 0.9964999999999999,
+      "study_B": 1.0,
+      "study_C": 0.992,
+      "study_D": 1.0
+    },
+    "per_study_auc_std": {
+      "study_A": 0.001369306393762886,
+      "study_B": 0.0,
+      "study_C": 0.004808846015417823,
+      "study_D": 0.0
+    },
+    "per_seed_pooled": [
+      0.995,
+      0.99796875,
+      0.99734375,
+      0.99734375,
+      0.99625
+    ]
+  },
+  "harmonized": {
+    "pooled_auc_mean": 1.0,
+    "pooled_auc_std": 0.0,
     "per_study_auc_mean": {
       "study_A": 1.0,
-      "study_B": 0.999,
-      "study_C": 0.9974999999999999,
+      "study_B": 1.0,
+      "study_C": 1.0,
       "study_D": 1.0
     },
     "per_study_auc_std": {
       "study_A": 0.0,
-      "study_B": 0.001369306393762947,
+      "study_B": 0.0,
       "study_C": 0.0,
       "study_D": 0.0
     },
     "per_seed_pooled": [
-      0.9993749999999999,
-      0.9992187499999999,
-      0.9993749999999999,
-      0.99890625,
-      0.99953125
+      1.0,
+      1.0,
+      1.0,
+      1.0,
+      1.0
     ]
   },
-  "harmonized": {
-    "pooled_auc_mean": 0.9981562500000001,
-    "pooled_auc_std": 0.0009968211192335425,
-    "per_study_auc_mean": {
-      "study_A": 1.0,
-      "study_B": 0.9995,
-      "study_C": 0.9969999999999999,
-      "study_D": 1.0
-    },
-    "per_study_auc_std": {
-      "study_A": 0.0,
-      "study_B": 0.0011180339887499207,
-      "study_C": 0.003259601202601344,
-      "study_D": 0.0
-    },
-    "per_seed_pooled": [
-      0.99890625,
-      0.99828125,
-      0.9965625,
-      0.9979687500000001,
-      0.9990625000000001
-    ]
-  },
-  "delta_pooled_auc": -0.0011249999999998206,
+  "delta_pooled_auc": 0.003218750000000048,
   "delta_per_study_auc": {
-    "study_A": 0.0,
-    "study_B": 0.000500000000000056,
-    "study_C": -0.000500000000000056,
+    "study_A": 0.0035000000000000586,
+    "study_B": 0.0,
+    "study_C": 0.008000000000000007,
     "study_D": 0.0
   },
   "verdict": {
@@ -98,117 +101,117 @@
   },
   "raw_per_seed": [
     {
-      "pooled_auc": 0.9993749999999999,
+      "pooled_auc": 0.995,
       "per_study_auc": {
-        "study_A": 1.0,
+        "study_A": 0.995,
         "study_B": 1.0,
-        "study_C": 0.9974999999999999,
+        "study_C": 0.985,
         "study_D": 1.0
       },
       "n_samples": 160,
       "seed": 42,
-      "wall_sec": 0.018
+      "wall_sec": 0.019
     },
     {
-      "pooled_auc": 0.9992187499999999,
+      "pooled_auc": 0.99796875,
       "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 0.9974999999999999,
+        "study_A": 0.9974999999999999,
+        "study_B": 1.0,
         "study_C": 0.9974999999999999,
         "study_D": 1.0
       },
       "n_samples": 160,
       "seed": 123,
-      "wall_sec": 0.012
-    },
-    {
-      "pooled_auc": 0.9993749999999999,
-      "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 1.0,
-        "study_C": 0.9974999999999999,
-        "study_D": 1.0
-      },
-      "n_samples": 160,
-      "seed": 456,
       "wall_sec": 0.011
     },
     {
-      "pooled_auc": 0.99890625,
+      "pooled_auc": 0.99734375,
       "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 0.9974999999999999,
-        "study_C": 0.9974999999999999,
-        "study_D": 1.0
-      },
-      "n_samples": 160,
-      "seed": 789,
-      "wall_sec": 0.011
-    },
-    {
-      "pooled_auc": 0.99953125,
-      "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 1.0,
-        "study_C": 0.9974999999999999,
-        "study_D": 1.0
-      },
-      "n_samples": 160,
-      "seed": 1024,
-      "wall_sec": 0.012
-    }
-  ],
-  "harmonized_per_seed": [
-    {
-      "pooled_auc": 0.99890625,
-      "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 1.0,
-        "study_C": 1.0,
-        "study_D": 1.0
-      },
-      "n_samples": 160,
-      "seed": 42,
-      "wall_sec": 0.007
-    },
-    {
-      "pooled_auc": 0.99828125,
-      "per_study_auc": {
-        "study_A": 1.0,
-        "study_B": 0.9974999999999999,
-        "study_C": 0.995,
-        "study_D": 1.0
-      },
-      "n_samples": 160,
-      "seed": 123,
-      "wall_sec": 0.006
-    },
-    {
-      "pooled_auc": 0.9965625,
-      "per_study_auc": {
-        "study_A": 1.0,
+        "study_A": 0.9974999999999999,
         "study_B": 1.0,
         "study_C": 0.9924999999999999,
         "study_D": 1.0
       },
       "n_samples": 160,
       "seed": 456,
-      "wall_sec": 0.006
+      "wall_sec": 0.011
     },
     {
-      "pooled_auc": 0.9979687500000001,
+      "pooled_auc": 0.99734375,
       "per_study_auc": {
-        "study_A": 1.0,
+        "study_A": 0.9974999999999999,
         "study_B": 1.0,
-        "study_C": 0.9974999999999999,
+        "study_C": 0.995,
         "study_D": 1.0
       },
       "n_samples": 160,
       "seed": 789,
+      "wall_sec": 0.01
+    },
+    {
+      "pooled_auc": 0.99625,
+      "per_study_auc": {
+        "study_A": 0.995,
+        "study_B": 1.0,
+        "study_C": 0.99,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 1024,
+      "wall_sec": 0.01
+    }
+  ],
+  "harmonized_per_seed": [
+    {
+      "pooled_auc": 1.0,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 42,
+      "wall_sec": 0.008
+    },
+    {
+      "pooled_auc": 1.0,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 123,
+      "wall_sec": 0.008
+    },
+    {
+      "pooled_auc": 1.0,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 456,
       "wall_sec": 0.007
     },
     {
-      "pooled_auc": 0.9990625000000001,
+      "pooled_auc": 1.0,
+      "per_study_auc": {
+        "study_A": 1.0,
+        "study_B": 1.0,
+        "study_C": 1.0,
+        "study_D": 1.0
+      },
+      "n_samples": 160,
+      "seed": 789,
+      "wall_sec": 0.006
+    },
+    {
+      "pooled_auc": 1.0,
       "per_study_auc": {
         "study_A": 1.0,
         "study_B": 1.0,
@@ -217,8 +220,8 @@
       },
       "n_samples": 160,
       "seed": 1024,
-      "wall_sec": 0.007
+      "wall_sec": 0.006
     }
   ],
-  "generated_at": "2026-09-23T09:39:30"
+  "generated_at": "2026-09-23T10:24:29"
 }

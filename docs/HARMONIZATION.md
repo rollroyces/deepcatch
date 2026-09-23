@@ -2,8 +2,8 @@
 
 ## Verdict
 
-**`NEUTRAL`** — Δ pooled AUC = `-0.0011`
-`(0.9993 → 0.9982)` over
+**`NEUTRAL`** — Δ pooled AUC = `+0.0032`
+`(0.9968 → 1.0000)` over
 5 seeds × 5-fold stratified CV.
 
 Per-study z-scoring made essentially no difference on this synthetic fixture. The signal in this controlled fixture is uncorrelated with study, so the linear LR handles it without harmonization. On a real cross-study pool where batches are more confounded, expect a larger effect.
@@ -30,10 +30,14 @@ controlled synthetic fixture.
 
 - **4 studies × 20 patients × 2 (cancer/control)
   = 160 samples**
-- Mutations drawn from real TCGA-LUAD MAFs (see
-  `validation/tcga/tcga_cache/`)
-- Each patient produces a paired (TF=0.001, TF=0)
-  sample — the standard MRD-style paired design.
+- **Pure numpy synthesis** (no TCGA MAF cache, no network). Cancer panel-LLR
+  is drawn from `N(panel_cancer_mean=280.00,
+  panel_noise_std=80.00)`, matched controls from
+  `N(0, 80.00)` — the standard MRD-style paired
+  design (cancer at TF=0.001, control at TF=0).
+- The frag channel uses the same paired design with `frag_cancer_mean=
+  0.500` and a per-sample jitter of
+  ±0.050.
 - A **per-study additive bias** is added to BOTH panel and frag channels
   so the studies differ in mean even on the raw data. Cancer/control is
   INDEPENDENT of study (both classes appear in every study), so this is
@@ -44,10 +48,10 @@ controlled synthetic fixture.
 
 | study | mean panel | mean frag |
 |---|---|---|
-| study_A | +293.015 | +3.494 |
-| study_B | +255.272 | +2.801 |
-| study_C | +246.398 | +2.826 |
-| study_D | +287.382 | +2.842 |
+| study_A | +143.461 | +0.440 |
+| study_B | +134.995 | +0.203 |
+| study_C | +146.424 | +0.308 |
+| study_D | +142.201 | +0.086 |
 
 ### Per-study additive bias injected
 
@@ -74,17 +78,17 @@ For each seed in `[42, 123, 456, 789, 1024]`:
 
 | study | raw AUC | harmonized AUC | Δ |
 |---|---|---|---|
-| study_A | 1.0000 ± 0.0000 | 1.0000 ± 0.0000 | +0.0000 |
-| study_B | 0.9990 ± 0.0014 | 0.9995 ± 0.0011 | +0.0005 |
-| study_C | 0.9975 ± 0.0000 | 0.9970 ± 0.0033 | -0.0005 |
+| study_A | 0.9965 ± 0.0014 | 1.0000 ± 0.0000 | +0.0035 |
+| study_B | 1.0000 ± 0.0000 | 1.0000 ± 0.0000 | +0.0000 |
+| study_C | 0.9920 ± 0.0048 | 1.0000 ± 0.0000 | +0.0080 |
 | study_D | 1.0000 ± 0.0000 | 1.0000 ± 0.0000 | +0.0000 |
 
 ## Pooled AUC
 
 | condition | mean ± std (over 5 seeds) | per-seed values |
 |---|---|---|
-| raw | 0.9993 ± 0.0002 | [0.9993749999999999, 0.9992187499999999, 0.9993749999999999, 0.99890625, 0.99953125] |
-| harmonized | 0.9982 ± 0.0010 | [0.99890625, 0.99828125, 0.9965625, 0.9979687500000001, 0.9990625000000001] |
+| raw | 0.9968 ± 0.0012 | [0.995, 0.99796875, 0.99734375, 0.99734375, 0.99625] |
+| harmonized | 1.0000 ± 0.0000 | [1.0, 1.0, 1.0, 1.0, 1.0] |
 
 ## How to reproduce
 
@@ -97,15 +101,12 @@ and per-study AUC) and this file.
 
 ## Limitations
 
-- The fixture is synthetic. The cancer-vs-control signal comes from
-  the cfDNA simulation, but the per-study bias is an injected additive
-  shift, not a real coverage/library-prep confound. A negative result
-  here does NOT prove harmonization is useless in practice — only that
-  the synthetic regime is too easy for LR + small additive bias.
-- The "frag" channel is a per-patient feature proxy (mutation count /
-  200 + jitter), not real cfDNA fragmentomics. This is documented in
-  the script — the goal is to validate the harmonization code path
-  under a controlled multi-cohort setting.
+- The fixture is fully synthetic — pure numpy draws, no real mutations or
+  cfDNA simulation. The per-study bias is an injected additive shift, not
+  a real coverage/library-prep confound. A NEUTRAL verdict here does NOT
+  prove harmonization is useless in practice — only that the synthetic
+  regime is too easy for LR + small additive bias that is uncorrelated
+  with the cancer label.
 - n=160 (80 patients × 2) is small. Per-study n=20 keeps each fold
   small enough that train-only z-score fitting is still well-defined.
 - For the REAL cross-study pooling benchmark, use `scripts/run_cross_study.py`

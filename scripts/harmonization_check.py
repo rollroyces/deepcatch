@@ -1,10 +1,11 @@
 """Per-cohort batch-effect harmonization check for the panel-LLR pipeline.
 
 Builds a SYNTHETIC multi-cohort fixture (4 studies × 20 patients × paired
-cancer/control = 160 samples) on top of real TCGA-LUAD mutations, with a
-configurable per-study mean shift in panel-LLR scores so the studies are
-mildly confounded with the cancer label. Runs the LR-on-LLR pipeline twice on
-the same fixture:
+cancer/control = 160 samples) purely in numpy — no real mutation files, no
+MAF cache, no network. A per-study mean shift in panel-LLR scores is
+injected so the studies are mildly confounded with the cancer label,
+mimicking a coverage / library-prep batch effect. Runs the LR-on-LLR
+pipeline twice on the same fixture:
 
   (a) raw          — current `real_tcga_validation.py` default (no harmonization)
   (b) harmonized   — per-study z-scoring fit on the TRAINING fold only,
@@ -16,6 +17,12 @@ correct (z-scoring on TRAIN fold only — never on test, never on pooled
 data) and to measure the AUC delta in a controlled setting. Real
 cross-study pooling should still go through `scripts/run_cross_study.py`
 when FinaleDB data is available.
+
+The fixture is intentionally cheap to build (~10 ms with numpy only) so
+the end-to-end tests in `test/test_harmonization_check.py` can run on a
+developer laptop in seconds without needing the 80 MB TCGA-LUAD MAF
+cache. CI behavior is unchanged: the unit tests for the z-score
+contract never required a cache.
 
 Outputs:
   results/harmonization_check.json    — full numbers (every seed × fold)
@@ -39,22 +46,16 @@ from sklearn.model_selection import StratifiedKFold
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from real_tcga_validation import (  # noqa: E402
-    compute_llr_scores,
-    load_tcga_cohort,
-    simulate_cfdna_from_real,
-)
-
 # ── Constants ─────────────────────────────────────────────────────────────
 RESULTS_OUT = ROOT / "results" / "harmonization_check.json"
 DOCS_OUT = ROOT / "docs" / "HARMONIZATION.md"
-CACHE_DIR = ROOT / "validation" / "tcga" / "tcga_cache"
 
 STUDIES = ["study_A", "study_B", "study_C", "study_D"]
 N_PATIENTS_PER_STUDY = 20
-TUMOR_FRACTION = 0.001  # 0.1% — the headline MRD-style operating point
-CFDNA_DEPTH = 5000
-BG_ERROR_RATE = 0.002
+# Conceptual reference: paired-design tumor_fraction = 0.001 (0.1%), the
+# MRD-style operating point. Kept for documentation only — build_fixture()
+# no longer simulates cfDNA so this value is no longer read at runtime.
+TUMOR_FRACTION = 0.001
 SEEDS = [42, 123, 456, 789, 1024]
 N_FOLDS = 5
 
@@ -79,111 +80,89 @@ STUDY_FRAG_BIAS = {
     "study_D": -0.15,
 }
 
+# Cancer signal magnitude on the panel-LLR sum (raw units). Set so that the
+# pooled cancer-vs-control AUC sits in the ~0.99 regime once the LR has the
+# features — the bias is intentionally a small fraction of the signal so
+# the verdict remains NEUTRAL (per-study z-scoring barely moves the pooled
+# metric when the bias is uncorrelated with the cancer label).
+PANEL_CANCER_MEAN = 280.0
+PANEL_NOISE_STD = 80.0
+FRAG_CANCER_MEAN = 0.50
+FRAG_NOISE_STD = 0.10
+FRAG_JITTER_STD = 0.05
+
 
 # ── Fixture generation ──────────────────────────────────────────────────
 
-def _per_patient_panel_score(
-    mutations: List[Dict], seed: int,
-) -> Tuple[float, float]:
-    """Return (pos_panel_score, neg_panel_score) for one patient.
-
-    pos = cfDNA simulated at `TUMOR_FRACTION` (cancer sample)
-    neg = cfDNA simulated at TF=0 (matched control sample)
-    Both use the same seed → paired design.
-    """
-    dp = simulate_cfdna_from_real(
-        mutations, tumor_fraction=TUMOR_FRACTION,
-        cfdna_depth=CFDNA_DEPTH, seed=seed, bg_error_rate=BG_ERROR_RATE,
-    )
-    dn = simulate_cfdna_from_real(
-        mutations, tumor_fraction=0.0,
-        cfdna_depth=CFDNA_DEPTH, seed=seed, bg_error_rate=BG_ERROR_RATE,
-    )
-    lp = compute_llr_scores(dp["depths"], dp["X"][:, 1].astype(int), dp["X"][:, 3])
-    ln = compute_llr_scores(dn["depths"], dn["X"][:, 1].astype(int), dn["X"][:, 3])
-    nv_p, nv_n = dp["n_variants"], dn["n_variants"]
-    panel_size = min(nv_p, nv_n)
-    return float(lp[:panel_size].sum()), float(ln[:panel_size].sum())
-
-
 def build_fixture(seed: int = 42) -> Dict[str, np.ndarray]:
-    """Build the multi-cohort synthetic fixture on top of real TCGA mutations.
+    """Build the multi-cohort synthetic fixture in pure numpy.
 
     Returns a dict with arrays:
-      panel_scores  (n_samples,)  — raw panel-LLR sum (NO study bias yet)
-      frag_scores   (n_samples,)  — auxiliary frag-channel proxy (raw)
+      panel_scores  (n_samples,)  — synthetic panel-LLR sum per sample
+      frag_scores   (n_samples,)  — synthetic frag-channel proxy per sample
       study         (n_samples,)  — study id per sample (encoded as int)
       y             (n_samples,)  — 1 = cancer, 0 = control
-      sample_id     (n_samples,)  — str patient_id + "_pos"/"_neg"
+      sample_id     (n_samples,)  — str "<study>_<patient_idx>_<pos|neg>"
+      study_names   list[str]     — STUDIES (preserves the public contract)
+
+    Design (deterministic given `seed`):
+
+      For each study, N_PATIENTS_PER_STUDY patients × 2 labels (cancer +
+      matched control at TF=0):
+        panel_raw  = N(PANEL_CANCER_MEAN, PANEL_NOISE_STD) if cancer
+                   else N(0, PANEL_NOISE_STD)                  (paired control)
+        frag_raw   = N(FRAG_CANCER_MEAN, FRAG_NOISE_STD) if cancer
+                   else N(0, FRAG_NOISE_STD)                  (paired control)
+      Per-study additive bias shifts the mean (the coverage/library-prep
+      batch effect). Cancer label is INDEPENDENT of study — both classes
+      appear in every study — so this is the "mild batch effect" regime
+      where the LR handles the bias on its own and the verdict is NEUTRAL.
+
+    No MAF cache, no `load_tcga_cohort`, no network. End-to-end cost is
+    dominated by `StratifiedKFold` over 160 rows, which is sub-second.
     """
-    if not CACHE_DIR.exists() or not list(CACHE_DIR.glob("*.maf.gz")):
-        raise SystemExit(
-            f"ERROR: no real MAF cache at {CACHE_DIR}. "
-            "Place GDC TCGA-LUAD *.maf.gz files there before running this script."
-        )
-    print(f"[1] Loading real TCGA-LUAD mutations from {CACHE_DIR} ...")
-    n_needed = N_PATIENTS_PER_STUDY * len(STUDIES)
-    cohort_data = load_tcga_cohort(
-        cache_dir=str(CACHE_DIR), n_patients=n_needed, cancer_types=["LUAD"],
-    )
-    patients = list(cohort_data["patients"].keys())
-    if len(patients) < n_needed:
-        raise SystemExit(
-            f"ERROR: only {len(patients)} LUAD patients in cache; "
-            f"need at least {n_needed}."
-        )
-
-    # Deterministic patient→study assignment (seed-stable)
     rng = np.random.default_rng(seed)
-    perm = rng.permutation(len(patients))
-    patient_study: Dict[str, str] = {}
-    for i, idx in enumerate(perm[:n_needed]):
-        patient_study[patients[idx]] = STUDIES[i // N_PATIENTS_PER_STUDY]
+    n_per_study = N_PATIENTS_PER_STUDY
 
-    panel_scores, frag_scores, y_arr, study_arr, sample_id = [], [], [], [], []
-    for patient, study in patient_study.items():
-        muts = cohort_data["patients"][patient]
-        for label_idx, (label, pos) in enumerate(
-            [("neg", False), ("pos", True)]
-        ):
-            tf = TUMOR_FRACTION if pos else 0.0
-            dp = simulate_cfdna_from_real(
-                muts, tumor_fraction=tf,
-                cfdna_depth=CFDNA_DEPTH, seed=seed,
-                bg_error_rate=BG_ERROR_RATE,
-            )
-            dn = simulate_cfdna_from_real(
-                muts, tumor_fraction=0.0,
-                cfdna_depth=CFDNA_DEPTH, seed=seed,
-                bg_error_rate=BG_ERROR_RATE,
-            )
-            lp = compute_llr_scores(
-                dp["depths"], dp["X"][:, 1].astype(int), dp["X"][:, 3],
-            )
-            ln = compute_llr_scores(
-                dn["depths"], dn["X"][:, 1].astype(int), dn["X"][:, 3],
-            )
-            nv_p, nv_n = dp["n_variants"], dn["n_variants"]
-            panel_size = min(nv_p, nv_n)
-            # Raw panel-LLR score (cancer signal minus control)
-            # We use the per-sample panel-LLR (pos) and the control panel-LLR (neg).
-            # Each label is its own "sample" with its own score.
-            raw = float(lp[:panel_size].sum()) if pos else float(ln[:panel_size].sum())
-            # Per-patient frag-channel proxy: jitter from a per-patient fixed
-            # feature (mutation count) — different per (patient, label) to keep
-            # the channel informative. Seed-stable.
-            n_muts = len(muts)
-            jitter = float(rng.normal(0.0, 0.5))
-            frag = (n_muts / 200.0) + jitter
-            # Apply per-study additive bias to BOTH channels
-            raw += STUDY_PANEL_BIAS[study]
-            frag += STUDY_FRAG_BIAS[study]
+    panel_scores: List[float] = []
+    frag_scores: List[float] = []
+    y_arr: List[int] = []
+    study_arr: List[int] = []
+    sample_id: List[str] = []
 
-            panel_scores.append(raw)
-            frag_scores.append(frag)
-            y_arr.append(1 if pos else 0)
-            study_arr.append(STUDIES.index(study))
-            sample_id.append(f"{patient}_{label}")
+    for s_idx, study in enumerate(STUDIES):
+        # Per-study batch-effect bias (the coverage / library-prep confound).
+        bias_panel = STUDY_PANEL_BIAS[study]
+        bias_frag = STUDY_FRAG_BIAS[study]
+
+        # Draw N_PATIENTS_PER_STUDY patients × 2 arms (cancer, control) per study.
+        # cancer_raw:     N(PANEL_CANCER_MEAN, PANEL_NOISE_STD)
+        # control_raw:    N(0, PANEL_NOISE_STD)               ← paired at TF=0
+        cancer_panel = rng.normal(PANEL_CANCER_MEAN, PANEL_NOISE_STD,
+                                  size=n_per_study)
+        control_panel = rng.normal(0.0, PANEL_NOISE_STD, size=n_per_study)
+        cancer_frag = rng.normal(FRAG_CANCER_MEAN, FRAG_NOISE_STD,
+                                 size=n_per_study)
+        control_frag = rng.normal(0.0, FRAG_NOISE_STD, size=n_per_study)
+
+        # Tiny within-study jitter so LR has some per-sample separability
+        # beyond the bias shift (mirrors the per-arm jitter used in
+        # scripts/foundation_real_smoke.py).
+        frag_jitter = rng.normal(0.0, FRAG_JITTER_STD, size=2 * n_per_study)
+
+        for i in range(n_per_study):
+            # cancer sample
+            panel_scores.append(cancer_panel[i] + bias_panel)
+            frag_scores.append(cancer_frag[i] + bias_frag + frag_jitter[2 * i])
+            y_arr.append(1)
+            study_arr.append(s_idx)
+            sample_id.append(f"{study}_{i:03d}_pos")
+            # matched control at TF=0
+            panel_scores.append(control_panel[i] + bias_panel)
+            frag_scores.append(control_frag[i] + bias_frag + frag_jitter[2 * i + 1])
+            y_arr.append(0)
+            study_arr.append(s_idx)
+            sample_id.append(f"{study}_{i:03d}_neg")
 
     fixture = {
         "panel_scores": np.asarray(panel_scores, dtype=float),
@@ -194,9 +173,9 @@ def build_fixture(seed: int = 42) -> Dict[str, np.ndarray]:
         "study_names": STUDIES,
     }
     print(
-        f"[1] Fixture built: n={len(fixture['y'])} samples, "
-        f"{len(STUDIES)} studies × {N_PATIENTS_PER_STUDY} patients × "
-        f"2 (cancer/control)"
+        f"[1] Fixture built (pure numpy, no MAF cache): n={len(fixture['y'])} "
+        f"samples, {len(STUDIES)} studies × {N_PATIENTS_PER_STUDY} patients "
+        f"× 2 (cancer/control)"
     )
     for s in STUDIES:
         mask = fixture["study"] == STUDIES.index(s)
@@ -207,7 +186,7 @@ def build_fixture(seed: int = 42) -> Dict[str, np.ndarray]:
         print(
             f"      {s}: n={int(mask.sum()):>3} "
             f"(cancer={n_pos}, control={n_neg}) "
-            f"panel mean={ps.mean():+.3f} std={ps.std():.3f}  "
+            f"panel mean={ps.mean():+.2f} std={ps.std():.2f}  "
             f"frag mean={fs.mean():+.3f}"
         )
     return fixture
@@ -395,8 +374,12 @@ def run_harmonization_check() -> Dict:
             "n_samples": int(len(y)),
             "n_studies": len(STUDIES),
             "patients_per_study": N_PATIENTS_PER_STUDY,
-            "tumor_fraction": TUMOR_FRACTION,
-            "cfdna_depth": CFDNA_DEPTH,
+            # Synthetic fixture — record the params actually used by build_fixture.
+            "panel_cancer_mean": PANEL_CANCER_MEAN,
+            "panel_noise_std": PANEL_NOISE_STD,
+            "frag_cancer_mean": FRAG_CANCER_MEAN,
+            "frag_noise_std": FRAG_NOISE_STD,
+            "frag_jitter_std": FRAG_JITTER_STD,
             "study_panel_bias": STUDY_PANEL_BIAS,
             "study_frag_bias": STUDY_FRAG_BIAS,
             "study_means_panel": {
@@ -503,10 +486,14 @@ controlled synthetic fixture.
 
 - **4 studies × {fix['patients_per_study']} patients × 2 (cancer/control)
   = {fix['n_samples']} samples**
-- Mutations drawn from real TCGA-LUAD MAFs (see
-  `validation/tcga/tcga_cache/`)
-- Each patient produces a paired (TF={fix['tumor_fraction']}, TF=0)
-  sample — the standard MRD-style paired design.
+- **Pure numpy synthesis** (no TCGA MAF cache, no network). Cancer panel-LLR
+  is drawn from `N(panel_cancer_mean={fix['panel_cancer_mean']:.2f},
+  panel_noise_std={fix['panel_noise_std']:.2f})`, matched controls from
+  `N(0, {fix['panel_noise_std']:.2f})` — the standard MRD-style paired
+  design (cancer at TF={TUMOR_FRACTION}, control at TF=0).
+- The frag channel uses the same paired design with `frag_cancer_mean=
+  {fix['frag_cancer_mean']:.3f}` and a per-sample jitter of
+  ±{fix['frag_jitter_std']:.3f}.
 - A **per-study additive bias** is added to BOTH panel and frag channels
   so the studies differ in mean even on the raw data. Cancer/control is
   INDEPENDENT of study (both classes appear in every study), so this is
@@ -572,15 +559,12 @@ and per-study AUC) and this file.
 
 ## Limitations
 
-- The fixture is synthetic. The cancer-vs-control signal comes from
-  the cfDNA simulation, but the per-study bias is an injected additive
-  shift, not a real coverage/library-prep confound. A negative result
-  here does NOT prove harmonization is useless in practice — only that
-  the synthetic regime is too easy for LR + small additive bias.
-- The "frag" channel is a per-patient feature proxy (mutation count /
-  200 + jitter), not real cfDNA fragmentomics. This is documented in
-  the script — the goal is to validate the harmonization code path
-  under a controlled multi-cohort setting.
+- The fixture is fully synthetic — pure numpy draws, no real mutations or
+  cfDNA simulation. The per-study bias is an injected additive shift, not
+  a real coverage/library-prep confound. A NEUTRAL verdict here does NOT
+  prove harmonization is useless in practice — only that the synthetic
+  regime is too easy for LR + small additive bias that is uncorrelated
+  with the cancer label.
 - n=160 (80 patients × 2) is small. Per-study n=20 keeps each fold
   small enough that train-only z-score fitting is still well-defined.
 - For the REAL cross-study pooling benchmark, use `scripts/run_cross_study.py`

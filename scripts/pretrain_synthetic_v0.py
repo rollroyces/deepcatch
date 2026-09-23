@@ -1,5 +1,36 @@
 #!/usr/bin/env python3
 """
+HISTORICAL ARTIFACT — PRESERVED FOR PROVENANCE ONLY (2026-09-23)
+================================================================
+
+This script is kept as a historical artifact from BEFORE the
+synthetic-bypass bug was discovered and fixed (commit 5f1b24e,
+see ``docs/PRETRAIN_BUG.md``).
+
+It calls pretrain phases that, at the time this script shipped,
+**internally generated synthetic data** via
+``self.data_generator.generate_dataset(...)`` and never saw the
+real FinaleDB cohort despite the cohort assembly being correct.
+The checkpoint ``checkpoints/foundation_pretrained_SYNTHETIC_v0.pt``
+(saved by this script) is therefore **NOT trained on real FinaleDB
+data**, despite the original filename ``foundation_pretrained_finaledb.pt``.
+
+For real-data pretraining, use
+``scripts/pretrain_production_finaledb.py``, which calls the FIXED
+``FoundationPretrainer(modalities=..., use_real_modalities=True)``
+constructor and produces
+``checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt``.
+
+DO NOT load this script's checkpoint in any "real-data-derived"
+downstream path. The file is retained on disk so the lineage is
+auditable, and so that the regression test
+``test/test_pretrain_bug_fix.py`` can pin the synthetic-generator
+contract against a known-bad historical artifact.
+
+================================================================
+Original script header (preserved verbatim below for traceability)
+================================================================
+
 Real-Data Foundation Pre-training on FinaleDB cfDNA Cohort
 ============================================================
 
@@ -26,13 +57,13 @@ produced by the same fetch→extract→delete recipe (see
 Run::
 
     env -u PYTHONPATH ./.venv/bin/python \\
-        scripts/pretrain_real_finaledb.py \\
+        scripts/pretrain_synthetic_v0.py \\
         --n-healthy 8 --n-cancer 8 --epochs 5 --device cpu
 
 The defaults target a 16-sample subset, 5 epochs of phase-1 (MMP)
 training on CPU. Total wall-clock target: <10 minutes.
 """
-from __future__ import annotations
+
 
 import argparse
 import json

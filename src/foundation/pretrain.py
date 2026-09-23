@@ -45,6 +45,76 @@ from .data import MultiModalDataGenerator
 logger = logging.getLogger(__name__)
 
 
+# ── Module-level wrappers for per-modality standardization ────────
+# Exposed so callers (e.g. ``scripts/pretrain_production_finaledb.py``)
+# can fit stats once on the full cohort and re-apply them at inference
+# time without instantiating a full ``FoundationPretrainer``.
+
+
+def _fit_modality_stats(
+    modalities: Dict[str, np.ndarray],
+) -> Dict[str, Tuple[np.ndarray, np.ndarray]]:
+    """Fit per-modality median and MAD/std on the TRAIN fold.
+
+    Per-modality standardization is the standard practice for
+    self-supervised multi-modal pretraining (and what the
+    ``cfdna-early-detection-validation`` skill recommends: "scale
+    features before pretraining"). Without it, modalities with raw
+    count scales (e.g. WPS in the thousands) dominate the MSE
+    reconstruction loss and the encoder never actually converges.
+
+    Parameters
+    ----------
+    modalities : dict[str, (n, dim_i) ndarray]
+        TRAIN-fold modalities. Caller passes only training rows so
+        the stats encode the training distribution, not the test
+        distribution (no leakage).
+
+    Returns
+    -------
+    stats : dict[str, (median, scale)]
+        ``median`` is shape ``(dim_i,)``; ``scale`` is shape
+        ``(dim_i,)``. ``scale`` is the MAD scaled to a robust std
+        (``1.4826 * MAD``) when the MAD is nonzero, falling back
+        to the column std when MAD is zero (constant features).
+    """
+    stats: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
+    for name, arr in modalities.items():
+        if arr.ndim == 1:
+            arr = arr.reshape(-1, 1)
+        median = np.median(arr, axis=0)
+        mad = np.median(np.abs(arr - median), axis=0)
+        # MAD -> robust std (Gaussian-consistent factor 1.4826).
+        scale = 1.4826 * mad
+        # Fallback: if MAD is zero (degenerate / constant feature)
+        # use std so we still divide by a nonzero scale. If both
+        # are zero (truly constant), use 1 to leave the feature
+        # untouched rather than producing NaN.
+        std = arr.std(axis=0)
+        scale = np.where(scale > 0, scale, std)
+        scale = np.where(scale > 0, scale, 1.0)
+        stats[name] = (median.astype(np.float32),
+                       scale.astype(np.float32))
+    return stats
+
+
+def _apply_modality_standardization(
+    modalities: Dict[str, np.ndarray],
+    stats: Dict[str, Tuple[np.ndarray, np.ndarray]],
+) -> Dict[str, np.ndarray]:
+    """Apply a fitted (median, scale) per modality.
+
+    Standardizes to ``(x - median) / scale`` per feature column.
+    Pure-function: returns a new dict with float32 arrays.
+    """
+    standardized: Dict[str, np.ndarray] = {}
+    for name, arr in modalities.items():
+        median, scale = stats[name]
+        # Broadcast over rows: stats are shape (dim_i,)
+        standardized[name] = ((arr - median) / scale).astype(np.float32)
+    return standardized
+
+
 class FoundationPretrainer:
     """
     Self-supervised pre-trainer for the DeepCatch Foundation Model.
@@ -287,6 +357,23 @@ class FoundationPretrainer:
             f"{n_epochs} epochs"
         )
 
+        # Per-modality standardization (median / MAD-robust-std) on the
+        # TRAIN fold. Without this the MSE on modalities with raw count
+        # scales (e.g. WPS in the thousands) dominates the loss and the
+        # encoder never actually converges — see the docstring on
+        # ``_fit_modality_stats``. We always run it: the synthetic
+        # generator's healthy-range scales differ across modalities, so
+        # the same pathology can appear there too.
+        modalities_np = {
+            name: tensor.detach().cpu().numpy()
+            for name, tensor in modalities_t.items()
+        }
+        stats = _fit_modality_stats(modalities_np)
+        modalities_np_std = _apply_modality_standardization(
+            modalities_np, stats,
+        )
+        modalities_t = self._modalities_to_tensors(modalities_np_std)
+
         # Optimizer
         params = list(self.encoder.parameters()) + list(self.pretrain_head.parameters())
         optimizer = torch.optim.AdamW(params, lr=lr)
@@ -401,6 +488,21 @@ class FoundationPretrainer:
             f"{n_epochs} epochs"
         )
 
+        # Per-modality standardization on the TRAIN fold — same rationale
+        # as Phase 1 (see _fit_modality_stats docstring). Putting all
+        # modalities on a comparable scale makes the joint embedding
+        # space treat them symmetrically rather than letting the
+        # largest-scale modality dominate the projection norms.
+        modalities_np = {
+            name: tensor.detach().cpu().numpy()
+            for name, tensor in modalities_t.items()
+        }
+        stats = _fit_modality_stats(modalities_np)
+        modalities_np_std = _apply_modality_standardization(
+            modalities_np, stats,
+        )
+        modalities_t = self._modalities_to_tensors(modalities_np_std)
+
         # Optimizer
         params = list(self.encoder.parameters()) + list(self.contrastive_head.parameters())
         optimizer = torch.optim.AdamW(params, lr=lr)
@@ -502,6 +604,19 @@ class FoundationPretrainer:
             f"Phase 3: Joint — {effective_n} samples ({source}), "
             f"{n_epochs} epochs"
         )
+
+        # Per-modality standardization on the TRAIN fold (see
+        # _fit_modality_stats docstring for the rationale). Same
+        # treatment as Phase 1 / Phase 2.
+        modalities_np = {
+            name: tensor.detach().cpu().numpy()
+            for name, tensor in modalities_t.items()
+        }
+        stats = _fit_modality_stats(modalities_np)
+        modalities_np_std = _apply_modality_standardization(
+            modalities_np, stats,
+        )
+        modalities_t = self._modalities_to_tensors(modalities_np_std)
 
         params = (
             list(self.encoder.parameters())
@@ -656,7 +771,39 @@ class FoundationPretrainer:
         path : str
             Output file path (.pt).
         """
+        self.save_checkpoint_with_stats(path, modality_stats=None)
+
+    def save_checkpoint_with_stats(
+        self,
+        path: str,
+        modality_stats: Optional[Dict[str, Tuple[np.ndarray, np.ndarray]]] = None,
+    ) -> None:
+        """Save pre-training checkpoint + optional standardization stats.
+
+        Parameters
+        ----------
+        path : str
+            Output file path (.pt).
+        modality_stats : dict[str, (median, scale)], optional
+            Per-modality standardization stats. When supplied, the
+            checkpoint also stores ``modality_stats`` so downstream
+            ``FoundationDownstream`` can re-apply the same transform
+            before forward passes — without this the encoder would see
+            raw WPS-scale tissue values at inference time even though
+            it was trained on standardized values.
+        """
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        # Serialize stats with tolist() so torch.save handles JSON-like
+        # native Python lists/ndarrays.
+        serializable_stats = None
+        if modality_stats is not None:
+            serializable_stats = {
+                name: {
+                    "median": np.asarray(med).tolist(),
+                    "scale": np.asarray(sc).tolist(),
+                }
+                for name, (med, sc) in modality_stats.items()
+            }
         checkpoint = {
             "encoder_state_dict": self.encoder.state_dict(),
             "pretrain_head_state_dict": self.pretrain_head.state_dict(),
@@ -665,6 +812,7 @@ class FoundationPretrainer:
             "is_pretrained": self._is_pretrained,
             "phase_completed": self._phase_completed,
             "pretrain_losses": self._pretrain_losses,
+            "modality_stats": serializable_stats,
         }
         torch.save(checkpoint, path)
         self._log(f"Checkpoint saved → {path}")
@@ -694,6 +842,13 @@ class FoundationPretrainer:
         self._is_pretrained = checkpoint.get("is_pretrained", True)
         self._phase_completed = checkpoint.get("phase_completed", [])
         self._pretrain_losses = checkpoint.get("pretrain_losses", [])
+        # Per-modality standardization stats (added in v2). Stored as a
+        # plain-dict serialization; downstream code that wants to apply
+        # the same transform at inference time should read
+        # ``checkpoint["modality_stats"]`` directly rather than from
+        # the pretrainer instance, because the pretrainer's internal
+        # numpy arrays are not preserved across processes.
+        self._loaded_modality_stats = checkpoint.get("modality_stats", None)
 
         self._log(f"Checkpoint loaded ← {path}")
         return True
