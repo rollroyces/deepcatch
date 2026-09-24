@@ -1,6 +1,6 @@
 # Reproduction report
 
-- Generated: 2026-09-23T15:34:35Z
+- Generated: 2026-09-24T15:51:29Z
 - repo_root: `/Users/hermes/deepcatch`
 - python:    `/Users/hermes/deepcatch/.venv/bin/python` (Python 3.14.4)
 - total wall: 0.0s

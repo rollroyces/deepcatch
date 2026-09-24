@@ -262,6 +262,7 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
   - `AUDIT_2_FINDINGS.md` (repo root) — consolidated audit-2 report
   - `docs/CROSS_STUDY_BENCHMARK.md` (forthcoming) — cross-study AUC table
   - `MODEL.md` (forthcoming) — model architecture reference
+  - `docs/COLLABORATOR_DATA_INTERFACE.md` — schema for external collaborators to contribute a plasma cohort (no code required); see also `docs/COLLABORATOR_QUICKSTART.md` for a 1-page recipe.
   - `paper/PAPER.md` (companion benchmark paper) — bioRxiv submission
   - `paper/paper.tex` — LaTeX source of the companion benchmark paper
 

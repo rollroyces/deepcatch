@@ -2,21 +2,21 @@
 
 ---
 
-# 🧬 DeepCatch v2.2 — Panel-Based Ultra-Sensitive MRD Detection
+# 🧬 DeepCatch — Open-Data cfDNA Methods Benchmark (post-v2.2 development)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-[![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-374%2F374%20passing-brightgreen)()
-[![Real-data CI](https://img.shields.io/badge/Real_data_CI-foundation_real_smoke-brightgreen)](results/foundation_real_smoke.json)
+[![Version: post-v2.2 dev](https://img.shields.io/badge/Version-post--v2.2%20dev-blue)]()
+![Tests](https://img.shields.io/badge/Tests-189%20passed%2C%2012%20deselected-blue)()
+[![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last_commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
-[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
 [![Docs Site](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
 
-> **🔥 Seeking expert review — see [REVIEWERS.md](REVIEWERS.md).**
-> Tag v2.2.0: panel-based MRD benchmark, all data open-access.
-> PR open for review: https://github.com/rollroyces/deepcatch/pull/2
+> **Status (2026-09-24):** Post-v2.2.0 development. Latest tag is `v2.2.0` (fb1e523 / 6eada13 / d1ca9df on top).
+> Documentation in [`docs/`](docs/); reproduction guide in [`paper/REPRODUCE.sh`](paper/REPRODUCE.sh).
+> Open-data cross-study AUC on FinaleDB publications 6+8 (n=627) — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
+> FinaleDB API/S3 status tracked in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
 
@@ -25,7 +25,7 @@
 ```mermaid
 graph LR
     subgraph ThreeRepos["3-repo open-source portfolio"]
-        DC["rollroyces/deepcatch<br/>(this repo)<br/>v2.2"]
+        DC["rollroyces/deepcatch<br/>(this repo)<br/>post-v2.2 dev"]
         FP["rollroyces/cfdna-fragmentomics-pipeline<br/>v0.9+<br/>627 cross-study samples"]
         METH["rollroyces/deepcatch-methylation<br/>Phase 0–1<br/>FinaleMe HMM"]
     end
@@ -53,7 +53,14 @@ graph LR
     class BioRxiv out
 ```
 
-> 💚 **Sponsor this work:** See [.github/SPONSORS.md](.github/SPONSORS.md) for tier descriptions ($5/$49/$499 monthly). 100% of funds go to compute and maintenance. [GitHub Sponsors →](https://github.com/sponsors/rollroyces)
+### Recent additions (post-v2.2.0)
+
+- **Open-data cross-study benchmark** on FinaleDB publications 6+8 (n=627, pooled AUC 0.97) — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md)
+- **Per-cancer OvR sens@spec** with DeLong confidence intervals — see [`results/per_cancer_sens_at_spec.json`](results/per_cancer_sens_at_spec.json) and [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md)
+- **Methods paper draft** at [`paper/METHODS_PAPER.md`](paper/METHODS_PAPER.md) — sections 3.1–3.5 grounded in cross-study + per-cancer numbers
+- **One-command reproduction** at [`paper/REPRODUCE.sh`](paper/REPRODUCE.sh) — re-runs every §3 artifact and refreshes the benchmark doc
+- **4 figures** at [`docs/figures/`](docs/figures/) — pooled ROC, per-cancer ROC, calibration, sens@spec operating points
+- **Collaborator data interface** at [`docs/COLLABORATOR_DATA_INTERFACE.md`](docs/COLLABORATOR_DATA_INTERFACE.md) — drop-in local-cohort adapter
 
 v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
 
@@ -630,17 +637,21 @@ python -c "from src.foundation import FoundationConfig; print('OK')"
 | `test/test_foundation_smoke.py` (NEW) | 8 | ✅ All passing |
 | **Combined `test/` + `src/foundation/test_integration.py`** | **146 collected → 143 pass + 2 skip** | ✅ |
 
-The 374/374 badge in the README header counts the union of
-`pytest src/` (228) and `pytest test/ src/foundation/test_integration.py`
-(146, which already includes the 43 `test_integration.py` tests as well
-as the standalone `test/` directory). The math is non-overlapping:
-`src/` discovers test functions defined in any module under the source
-tree (including `src/foundation/test_integration.py`), and `test/
-src/foundation/test_integration.py` redundantly re-collects
-`test_integration.py` plus the standalone `test/` directory. Audited
-2026-09-21 — the 374 number is honest.
-
-The `src/methylation_gnn/test_integration.py` and other optional-deps modules are not in the 146 figure because they fail at import time on a plain numpy/scipy/sklearn install — they run in CI when the `dl-tests` job installs `torch_geometric`. The `test_foundation_smoke.py` tests are slow (~2 min each, they invoke the real smoke script) and are excluded from the default fast test run.
+The 189 passed + 12 deselected badge in the README header reflects the
+**fast-path test gate** used in CI (`pytest ... -m "not slow"` on the
+post-v2.2.0 selected set: biomedical-review fixes, sparse-aware projection,
+FinaleDB pretrained loader, pretrain bug fix, harmonization check, per-cancer
+sens@spec, cross-study per-cancer integration, reproduce, publication
+readiness, plot figures, cross-platform fusion, and `src/foundation/test_integration.py`).
+The 12 deselected tests are slow smoke tests (real-data foundation smoke and
+related jobs) that run only in the dedicated `foundation-real-smoke` CI
+workflow. The full `pytest src/` count is 228 tests across all modules,
+plus the standalone `test/` directory (fusion_ablation, tumor_naive_adapter,
+decision_curve, biomedical-review fixes, foundation smoke, etc.) — those
+continue to be exercised by `bash paper/REPRODUCE.sh`. The earlier
+"374/374" badge was the union of two pytest invocations and double-counted
+the 43 `test_integration.py` tests; the current badge reflects the single
+post-v2.2.0 fast-path command and is honest about deselection.
 
 ---
 
@@ -792,6 +803,10 @@ deepcatch/
 - Type hints on all public APIs
 - NumPy docstring style with Parameters/Returns sections
 - Tests use pytest or unittest; run them before submitting
+
+### Contributing a Cohort
+
+External clinical collaborators (or anyone with a plasma cfDNA cohort) can contribute without writing Python — see [`docs/COLLABORATOR_DATA_INTERFACE.md`](docs/COLLABORATOR_DATA_INTERFACE.md) for the directory layout, manifest schema, and worked example. The conversion is one command (`scripts/adapter_local_cohort.py`), and the resulting cohort joins the existing cross-study benchmark. Quick recipe at [`docs/COLLABORATOR_QUICKSTART.md`](docs/COLLABORATOR_QUICKSTART.md).
 
 ### Pull Requests
 
@@ -1265,3 +1280,7 @@ graph LR
 ```
 
 *Every DeepCatch claim is traceable to computations in `validation/` and `src/`. No numbers are invented. No clinical claims are intended.* 🧬
+
+## Support
+
+DeepCatch is an independent, solo-maintained research project built without institutional support. If the work is useful to your research or pipeline, you can support continued development via [GitHub Sponsors](https://github.com/sponsors/rollroyces). See [`.github/SPONSORS.md`](.github/SPONSORS.md) for tier descriptions. Sponsorship funds compute, data licensing, and maintenance time — it is **not** required to use, reproduce, or extend the code (MIT-licensed).
