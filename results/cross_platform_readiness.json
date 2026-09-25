@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-25T07:56:59.767178+00:00",
+  "provenance": {
+    "finaleme_dir": "/Users/hermes/.hermes/.local/finaleme/output",
+    "finaledb_features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+    "labels_tsv": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
+    "skip_finaleme": false,
+    "skip_fragmentomics": false
+  },
+  "methylation_available": false,
+  "fragmentomics_available": true,
+  "data_source": "fragmentomics_only",
+  "n_overlap_samples": 0,
+  "n_meth_samples": 0,
+  "n_finaledb_samples": 630,
+  "cross_platform_auc": null,
+  "fusion_strategies": {},
+  "refusal_reason": "data_source is 'fragmentomics_only', not 'both'. Cross-platform AUC is NOT printed because at least one channel is missing. Methylation channel is missing \u2014 install FinaleMe JAR + pretrained models + reference files (see docs/CROSS_PLATFORM_FINALEME.md)."
+}
