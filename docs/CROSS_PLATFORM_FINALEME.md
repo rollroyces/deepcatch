@@ -83,22 +83,28 @@ Run the always-safe diagnostic:
 env -u PYTHONPATH ./.venv/bin/python scripts/_cross_platform_readiness_probe.py
 ```
 
-Expected output on this machine **today** (Sept 2026):
+Expected output on this machine **today** (Sept 2026, after the 2026-09-27 install):
 
 ```
-[OK]        Java runtime           openjdk 21.x.x
-[MISSING]   FinaleMe JAR            no JAR under ~/.hermes/.local/finaleme/
-[MISSING]   Pretrained HMM models   ~/.hermes/.local/finaleme/models/ missing
-[MISSING]   Reference files         hg19.2bit, methylation prior bw, CpG motif, mappability BED, chrom sizes
-[MISSING]   FinaleMe output         ~/.hermes/.local/finaleme/output/ missing
-[OK]        FinaleDB features       627 samples × 5 channels
+[OK]        Java runtime           openjdk 21.0.8 LTS (Zulu)
+[OK]        FinaleMe JAR            v0.58 (12 MB; built from Zenodo record 14013719 source)
+[OK]        Pretrained HMM models   healthy + cancer, 74 kB each (Zenodo 14013719)
+[MISSING]   Reference files         hg19.2bit, methylation prior bw, CpG motif, mappability BED, chrom sizes (1.4 GB; UCSC + Zenodo fetches failed)
+[MISSING]   FinaleMe output         no per-sample β-values decoded yet (needs reference files + a BAM/tabix input)
+[OK]        FinaleDB features       630 samples × 5 channels
 
 data_source: fragmentomics_only
 cross-platform AUC will NOT be printed
 ```
 
-This is the honest verdict. Installing the FinaleMe suite (below)
-moves the verdict to `data_source: both`.
+This is the honest verdict. Installing the **reference files** (~1.4 GB)
+moves the verdict to `data_source: both` once at least one sample has
+been decoded via `scripts/finaleme_pipeline.py decode` (which writes
+per-sample `*.decoded.bed.gz` to `~/.hermes/.local/finaleme/output/`).
+The reference download failed on 2026-09-27 (UCSC `hgdownload.soe.ucsc.edu`
+returned a partial/truncated stream and Zenodo record 14013719's larger
+files were not mirrored here); re-attempt from a network that has
+access to both hosts.
 
 ## Prerequisites (~3 hours of one-time setup)
 
