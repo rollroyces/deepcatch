@@ -94,12 +94,21 @@ def find_finaleme_per_sample(
     patterns: Sequence[str] = _FINALEME_PER_SAMPLE_PATTERNS,
 ) -> List[Path]:
     """Return a list of FinaleMe per-sample files matching any pattern.
-    Sorted by name for determinism."""
+    Sorted by name for determinism.
+
+    Files prefixed with ``synth_`` are always excluded — they are
+    synthetic test fixtures produced by the bridge for plumbing
+    verification, NOT real FinaleMe decoded output. Including them
+    would silently inflate the methylation channel to ``data_source='both'``.
+    """
     if not finaleme_dir.is_dir():
         return []
     found: List[Path] = []
     for pat in patterns:
-        found.extend(finaleme_dir.glob(pat))
+        for p in finaleme_dir.glob(pat):
+            if p.name.startswith("synth_"):
+                continue
+            found.append(p)
     return sorted(set(found))
 
 

@@ -331,6 +331,7 @@ def build_readiness_payload(
         methylation_available = (
             methyl_payload.get("data_source") in ("methylation_only", "both")
             and methyl_payload.get("runnable", False)
+            and not methyl_payload.get("is_synthetic_fixture", False)  # NEVER treat synthetic as real
         )
     else:
         methyl_payload = {
@@ -352,6 +353,10 @@ def build_readiness_payload(
     payload["fragmentomics_available"] = frag_available
 
     # ───────── data_source verdict ─────────
+    # `methylation_available` is False when the bridge payload is a synthetic fixture
+    # (methyl_payload['is_synthetic_fixture'] == True). That means we will NOT classify
+    # the methylation channel as "real" even if the bridge emitted data_source='both'.
+    # The synthetic-fx branch is only useful for verifying the bridge plumbing works.
     if methylation_available and frag_available:
         data_source = "both"
     elif methylation_available:

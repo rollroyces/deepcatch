@@ -551,3 +551,24 @@ def test_not_run_payload_schema_contract(tmp_path):
     assert payload["data_source"] == "no_data"
     assert payload["runnable"] is False
     assert payload["n_samples_in"] == 0
+
+
+def test_bridge_excludes_synth_prefixed_files(tmp_path):
+    """Regression: bridge must NEVER treat ``synth_*.tsv`` files as real FinaleMe output.
+    These are test fixtures produced to verify plumbing; including them would silently
+    inflate ``data_source='both'`` and report a fake cross-platform number.
+    """
+    from finaleme_to_deepcatch_bridge import find_finaleme_per_sample
+
+    meth_dir = tmp_path / "finaleme"
+    meth_dir.mkdir()
+    # Create one synthetic and one real-looking file
+    (meth_dir / "synth_BetaValues.tsv").write_text("chr\tstart\tend\tsample_id\tbeta\n")
+    (meth_dir / "BetaValues.tsv").write_text("chr\tstart\tend\tsample_id\tbeta\n")
+
+    found = find_finaleme_per_sample(meth_dir)
+    names = [p.name for p in found]
+    assert "BetaValues.tsv" in names, f"real file should be picked up; got {names}"
+    assert "synth_BetaValues.tsv" not in names, (
+        f"synth_* files must be excluded to prevent fabricated cross-platform AUC; got {names}"
+    )
