@@ -1,5 +1,5 @@
 > **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready.
-> Headline: open-data cross-study AUC **0.97 ± 0.001** on FinaleDB publications 6+8 (n=627), with true-confound control collapsing to ~0.50 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
+> Headline: open-data cross-study AUC **0.967 ± 0.004** on FinaleDB publications 6+8 (n=627) with default GC correction (legacy baseline 0.9747 is inflated by ~0.008 of GC-axis proxy detection; both numbers reported in the table below). True-confound control collapses to ~0.50 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
 > Publication-by-publication readiness (FinaleDB API/S3 status) in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
 > For **methods research only** — not a clinical assay, not for patient use.
 
@@ -9,7 +9,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-189%20passed%2C%2012%20deselected-blue)()
+![Tests](https://img.shields.io/badge/Tests-238%20passed%2C%2015%20deselected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -18,7 +18,7 @@
 
 ---
 
-## Demo (3 videos)
+## Demo (3 real browser recordings)
 
 Three real GUI demos recorded with browser automation — every frame is a real screenshot taken with `browser_exec` (real Chromium driving the actual public sites, the actual JupyterLab instance, and the actual FastAPI server). No terminal playback needed, no JS dependencies, no fabricated slides. The notebook demo renders the committed `docs/figures/` plots inline; the webapp demo shows the live FastAPI Swagger UI for `POST /predict` and the JSON it returned.
 
@@ -76,7 +76,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 | **Baseline** (5-channel, no GC, no motifs) | 0.9747 ± 0.0012 | 0.793 | legacy number; GC-noise-inflated |
 | **+ GC / mappability correction** (`--gc-correction`, default) | **0.9670 ± 0.0035** | 0.755 | honest baseline; removes known batch proxy |
 | **+ 4-mer end motifs** (`--include-motifs`) | **0.9768 ± 0.0024** | — | informative when present, slightly above baseline |
-| **Shuffled-label null control** (3-seed) | **0.5125 ± 0.0118** | 0.014 | batch-and-fold-identity null floor (<0.55 = pass) |
+| **Shuffled-label null control** | **0.4657** | 0.0 | batch-and-fold-identity null floor (<0.55 = pass) — varies across seeds (0.46–0.51 across 5 runs; all pass) |
 | **True-confound control** (cancer=A, healthy=B, harmonized) | **0.499** | — | collapses to chance — signal IS cancer-vs-healthy |
 | **True-confound, no harmonization** | 0.999 | — | batch-effect ceiling (negative control) |
 
