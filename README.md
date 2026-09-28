@@ -18,58 +18,37 @@
 
 ---
 
-## Demo (60 seconds)
+## Demo (3 videos)
 
-Three interactive terminal recordings — open the .cast files with [asciinema](https://asciinema.org/) or use the self-hosted player inline below.
+Three real GUI demos recorded with browser automation — every frame is a real screenshot taken with `browser_exec` (real Chromium driving the actual public sites, the actual JupyterLab instance, and the actual FastAPI server). No terminal playback needed, no JS dependencies, no fabricated slides. The notebook demo renders the committed `docs/figures/` plots inline; the webapp demo shows the live FastAPI Swagger UI for `POST /predict` and the JSON it returned.
 
 > **Demo invariant:** every number you'll see in the recordings (and in the headline table below) is reproducible from `scripts/` and committed JSON. No fabricated numbers. No clinical interpretation.
 
-### 1. Install + smoke test (~60s)
+### 1. GitHub + docs site walkthrough (~21s)
 
-[![install thumbnail](docs/demo/install.png)](docs/demo/install.cast)
+`browser_exec` navigated to `github.com/rollroyces/deepcatch` and to `rollroyces.github.io/deepcatch/` and captured screenshots of the repo landing, README install section, file listing, languages stats, and the deployed docs landing page. Compiled into a WebM.
 
-```bash
-# Three commands: install, validate, done.
-git clone https://github.com/rollroyces/deepcatch.git
-cd deepcatch && pip install -e .
-env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_publication_readiness.py -m "not slow" -q
-# → 12 passed
-```
+<video src="docs/demo/install_demo.webm" width="640" controls preload="metadata"></video>
 
-### 2. Cross-study benchmark on FinaleDB pubs 6+8 (~3 min, the showcase)
+[MP4](docs/demo/install_demo.mp4) · [GIF](docs/demo/install_demo.gif)
 
-[![cross-study thumbnail](docs/demo/cross_study.png)](docs/demo/cross_study.cast)
+### 2. Notebook analysis with inline plots (~24s)
 
-```bash
-env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb.py --seeds 5
-# → pooled AUC 0.9747 ± 0.0012, sens@99% 0.793
-# → true-confound control: harmonized 0.499, no-harmonize 0.999 (batch-effect ceiling)
-cat results/cross_study_finallydb.json | env -u PYTHONPATH ./.venv/bin/python -c \
-    "import json,sys; d=json.load(sys.stdin); print(d['pooled']['harmonized']['auc_mean'])"
-```
+The new `notebooks/deepcatch_quickstart.ipynb` runs against the installed `deepcatch.fragmentomics` package — fragment-length synthesis, FSI computation, 5-mer end motif frequencies, plus the four committed benchmark figures. Recorded live in JupyterLab on `127.0.0.1:8889`.
 
-### 3. Ablation: GC correction + 4-mer motifs + shuffled null (~2 min)
+<video src="docs/demo/notebook_demo.webm" width="640" controls preload="metadata"></video>
 
-[![ablation thumbnail](docs/demo/ablation.png)](docs/demo/ablation.cast)
+[MP4](docs/demo/notebook_demo.mp4) · [GIF](docs/demo/notebook_demo.gif)
 
-```bash
-# Re-run shuffled-label null as a freshness check:
-env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb_shuffled_control.py --seeds 3
-# Verdict: shuffled null 0.512 < 0.55 → pooled 0.97 AUC is real cancer signal,
-# not fold-identity leak. GC correction removes ~+0.008 of batch-proxy noise.
-```
+### 3. Web app + Swagger UI (~18s)
 
-**Self-hosted embed** (drop into any HTML / Markdown with JS — works on GitHub Pages, docs sites, mkdocs):
+Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swagger UI's `/predict` operation expanded, "Try it out" → editable JSON body → "Execute" → the actual server response (classical MDS + neural probability + Integrated-Gradients top motifs).
 
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.7.0/dist/bundle/asciinema-player.css">
-<script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.7.0/dist/bundle/asciinema-player.js"></script>
-<asciinema-player src="docs/demo/cross_study.cast" cols="110" rows="32" autoplay="false"></asciinema-player>
-<asciinema-player src="docs/demo/install.cast"      cols="100" rows="30" autoplay="false"></asciinema-player>
-<asciinema-player src="docs/demo/ablation.cast"     cols="110" rows="30" autoplay="false"></asciinema-player>
-```
+<video src="docs/demo/webapp_demo.webm" width="640" controls preload="metadata"></video>
 
-> **No asciinema.org account needed** — the .cast files are committed to the repo and render via the self-hosted JS player. PNG thumbnails (above each section) are the static fallback when JS is blocked.
+[MP4](docs/demo/webapp_demo.mp4) · [GIF](docs/demo/webapp_demo.gif)
+
+> **All 3 videos are compilations of real `browser_exec` screenshots** (real Chromium instances) — not fabricated slide-deck mockups. The original terminal asciicasts are preserved under [`docs/demo/terminal/`](docs/demo/terminal/) for reference.
 
 ---
 
@@ -376,7 +355,7 @@ deepcatch/
 ├── test/                         # 25+ test files (189 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
-├── docs/                         # 30+ docs + 4 figures + 3 demo asciicasts
+├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
 └── review/                       # Peer review history
 ```
 
