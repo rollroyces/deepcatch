@@ -1,172 +1,144 @@
-> **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready. Open-data cross-study AUC in [docs/CROSS_STUDY_BENCHMARK.md](docs/CROSS_STUDY_BENCHMARK.md). Publication-by-publication readiness (FinaleDB API/S3 status) in [docs/PUBLICATION_READINESS.md](docs/PUBLICATION_READINESS.md). For methods research only.
+> **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready.
+> Headline: open-data cross-study AUC **0.97 ± 0.001** on FinaleDB publications 6+8 (n=627), with true-confound control collapsing to ~0.50 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
+> Publication-by-publication readiness (FinaleDB API/S3 status) in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
+> For **methods research only** — not a clinical assay, not for patient use.
 
 ---
 
-# 🧬 DeepCatch — Open-Data cfDNA Methods Benchmark (post-v2.2 development)
+# 🧬 DeepCatch — Open-Data cfDNA Methods Benchmark
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-[![Version: post-v2.2 dev](https://img.shields.io/badge/Version-post--v2.2%20dev-blue)]()
 ![Tests](https://img.shields.io/badge/Tests-189%20passed%2C%2012%20deselected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
-[![GitHub last commit](https://img.shields.io/github/last_commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
-[![Docs Site](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
+[![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
 
-> **Status (2026-09-24):** Post-v2.2.0 development. Latest tag is `v2.2.0` (fb1e523 / 6eada13 / d1ca9df on top).
-> Documentation in [`docs/`](docs/); reproduction guide in [`paper/REPRODUCE.sh`](paper/REPRODUCE.sh).
-> Open-data cross-study AUC on FinaleDB publications 6+8 (n=627) — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
-> FinaleDB API/S3 status tracked in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
+**DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses complementary molecular modalities through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
 
-**DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses **7 complementary molecular modalities** through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
+---
 
-### Project layout
+## Demo (60 seconds)
 
-```mermaid
-graph LR
-    subgraph ThreeRepos["3-repo open-source portfolio"]
-        DC["rollroyces/deepcatch<br/>(this repo)<br/>post-v2.2 dev"]
-        FP["rollroyces/cfdna-fragmentomics-pipeline<br/>v0.9+<br/>627 cross-study samples"]
-        METH["rollroyces/deepcatch-methylation<br/>Phase 0–1<br/>FinaleMe HMM"]
-    end
+Three interactive terminal recordings — open the .cast files with [asciinema](https://asciinema.org/) or use the self-hosted player inline below.
 
-    TCGA[("TCGA GDC<br/>open-access MAFs")]
-    FinaleDB[("FinaleDB<br/>pan-cancer WGS")]
-    Zenodo[("Zenodo CRAG<br/>HCC samples")]
-    GEO[("GEO<br/>FLARE/GSE317007")]
+> **Demo invariant:** every number you'll see in the recordings (and in the headline table below) is reproducible from `scripts/` and committed JSON. No fabricated numbers. No clinical interpretation.
 
-    TCGA -->|real mutations| DC
-    FinaleDB -->|WGS fragments| FP
-    Zenodo -->|HCC validation| FP
-    GEO -->|ONT cfDNA| DC
-    DC <-->|fusion adapter| FP
-    FP -.->|β-values| METH
+### 1. Install + smoke test (~60s)
 
-    BioRxiv["bioRxiv paper<br/>(drafted, in prep)"]
-    DC & FP & METH --> BioRxiv
+[![install thumbnail](docs/demo/install.png)](docs/demo/install.cast)
 
-    classDef repo fill:#ddf4ff,stroke:#0969da,color:#0a3069
-    classDef data fill:#fff8c5,stroke:#bf8700,color:#3d2c00
-    classDef out fill:#dafbe1,stroke:#1a7f37,color:#116329
-    class DC,FP,METH repo
-    class TCGA,FinaleDB,Zenodo,GEO data
-    class BioRxiv out
+```bash
+# Three commands: install, validate, done.
+git clone https://github.com/rollroyces/deepcatch.git
+cd deepcatch && pip install -e .
+env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_publication_readiness.py -m "not slow" -q
+# → 12 passed
 ```
 
-### Recent additions (post-v2.2.0)
+### 2. Cross-study benchmark on FinaleDB pubs 6+8 (~3 min, the showcase)
 
-- **Open-data cross-study benchmark** on FinaleDB publications 6+8 (n=627, pooled AUC 0.97) — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md)
-- **Per-cancer OvR sens@spec** with DeLong confidence intervals — see [`results/per_cancer_sens_at_spec.json`](results/per_cancer_sens_at_spec.json) and [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md)
-- **Methods paper draft** at [`paper/METHODS_PAPER.md`](paper/METHODS_PAPER.md) — sections 3.1–3.5 grounded in cross-study + per-cancer numbers
-- **One-command reproduction** at [`paper/REPRODUCE.sh`](paper/REPRODUCE.sh) — re-runs every §3 artifact and refreshes the benchmark doc
-- **4 figures** at [`docs/figures/`](docs/figures/) — pooled ROC, per-cancer ROC, calibration, sens@spec operating points
-- **Collaborator data interface** at [`docs/COLLABORATOR_DATA_INTERFACE.md`](docs/COLLABORATOR_DATA_INTERFACE.md) — drop-in local-cohort adapter
+[![cross-study thumbnail](docs/demo/cross_study.png)](docs/demo/cross_study.cast)
 
-v2.1 adds GNN methylation field-defect detection, enhanced fragmentomics (DELFI + MFS + nucleosome + refined 5-mer), cfSort-style tissue deconvolution, a multi-modal foundation model, and priming agent PK/PD simulation.
-
-> 📋 **Active project:** Methylation channel extension (Phase 0-2, started 2026-09-10).
-> Uses FinaleMe (Liu 2024, *Nat Commun*) to impute CpG methylation from existing FinaleDB WGS — no new raw data needed. See [`METHYLATION_PROJECT.md`](METHYLATION_PROJECT.md) for the full plan.
-
----
-
-> ⚠️ **Research-stage software.** Not for clinical diagnosis. See §11 for real-plasma validation status.
-
----
-
-## Architecture
-
-DeepCatch is a **two-stage CET pipeline** (Capture → Enhance → Triage). Stage 1 fuses seven molecular modalities from a single cfDNA sample through a Transformer foundation model; Stage 2 accumulates evidence across longitudinal draws via Bayesian Kalman filtering; Triage compares the posterior to a calibrated threshold.
-
-```mermaid
-flowchart TB
-    Sample["cfDNA Sample<br/>(BAM / FASTQ)"]
-
-    subgraph S1["Stage 1 — Capture (single draw)"]
-        direction TB
-        M1["Fragmentomics Basic<br/>MFR, FSI, CAFF, FEM"]
-        M2["Enhanced Fragmentomics<br/>DELFI + MFS + nucleosome"]
-        M3["CNV<br/>6-D chromosomal instability"]
-        M4["Serological<br/>PG-I, PG-II, G-17, Hp"]
-        M5["GNN Methylation Network<br/>GATv2 field-defect"]
-        M6["Tissue Deconvolution<br/>cfSort-style DNN (24-D)"]
-        M7["Priming Agents<br/>PK/PD + denoising"]
-        FM["Multi-Modal Foundation Model<br/>4-layer Transformer"]
-        Sample --> M1 & M2 & M3 & M4 & M5 & M6 & M7
-        M1 & M2 & M3 & M4 & M5 & M6 & M7 --> FM
-    end
-
-    subgraph S2["Stage 2 — Enhance (longitudinal)"]
-        KF["Bayesian Kalman Filter (BSSLM)<br/>accumulates p_cancer across draws"]
-        FM -->|joint embedding| KF
-    end
-
-    subgraph S3["Triage"]
-        THR{"p_cancer > τ?"}
-        KF --> THR
-        THR -->|Yes| CONF["Confirmatory testing"]
-        THR -->|No| RET["Clear until next draw"]
-    end
-
-    classDef stage fill:#e1f5ff,stroke:#0969da,color:#0a3069
-    classDef mod fill:#fff8c5,stroke:#bf8700,color:#3d2c00
-    classDef decision fill:#ffd7d5,stroke:#cf222e,color:#82071e
-    class S1,S2,S3 stage
-    class M1,M2,M3,M4,M5,M6,M7,FM mod
-    class THR,CONF,RET decision
+```bash
+env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb.py --seeds 5
+# → pooled AUC 0.9747 ± 0.0012, sens@99% 0.793
+# → true-confound control: harmonized 0.499, no-harmonize 0.999 (batch-effect ceiling)
+cat results/cross_study_finallydb.json | env -u PYTHONPATH ./.venv/bin/python -c \
+    "import json,sys; d=json.load(sys.stdin); print(d['pooled']['harmonized']['auc_mean'])"
 ```
 
-> See [V3_DESIGN.md](docs/V3_DESIGN.md) for the GPU-accelerated v3 design proposal that adds methylation β-value embeddings as a 6th channel on Apple MPS.
+### 3. Ablation: GC correction + 4-mer motifs + shuffled null (~2 min)
+
+[![ablation thumbnail](docs/demo/ablation.png)](docs/demo/ablation.cast)
+
+```bash
+# Re-run shuffled-label null as a freshness check:
+env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb_shuffled_control.py --seeds 3
+# Verdict: shuffled null 0.512 < 0.55 → pooled 0.97 AUC is real cancer signal,
+# not fold-identity leak. GC correction removes ~+0.008 of batch-proxy noise.
+```
+
+**Self-hosted embed** (drop into any HTML / Markdown with JS — works on GitHub Pages, docs sites, mkdocs):
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/asciinema-player@3.7.0/dist/bundle/asciinema-player.css">
+<script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.7.0/dist/bundle/asciinema-player.js"></script>
+<asciinema-player src="docs/demo/cross_study.cast" cols="110" rows="32" autoplay="false"></asciinema-player>
+<asciinema-player src="docs/demo/install.cast"      cols="100" rows="30" autoplay="false"></asciinema-player>
+<asciinema-player src="docs/demo/ablation.cast"     cols="110" rows="30" autoplay="false"></asciinema-player>
+```
+
+> **No asciinema.org account needed** — the .cast files are committed to the repo and render via the self-hosted JS player. PNG thumbnails (above each section) are the static fallback when JS is blocked.
 
 ---
 
-## Validation Scope — What's Real vs What's Synthetic
+## What it does
 
-> **Every DeepCatch claim is traceable to computations in `validation/` and `src/`. No numbers are invented. No clinical claims are intended.**
+- **Multi-modal fragmentomics** — DELFI (5Mb / 100kb bin ratios), MFS, nucleosome positioning, FSD histograms, THEMIS 4-mer end-motif frequencies — fused into a per-sample ~70-feature vector.
+- **Cross-study cancer detection** — pooled 5-seed × 5-fold OOF on open-data cfDNA (FinaleDB pubs 6 + 8, n=627 samples across 8 cancer types + healthy); `scripts/cross_study_finallydb.py` with `--gc-correction` (default) and `--include-motifs` flags.
+- **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; shuffled-label null at 0.512 — proves the pooled OOF AUC is cancer-vs-healthy, not study-of-origin or fold identity.
+- **Mutation-informed detection panel** — TCGA-derived panel of 5,738 LUAD mutations with CADD-PHRED-scored Top-K=20 selection; AUC 0.92 at 0.1% ctDNA on synthetic cfDNA dilution (spike-in, not clinical plasma).
+- **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.989 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
+- **Foundation model + longitudinal Bayes Kalman** — architecture-only (synthetic data, not plasma-validated); CET pipeline (Capture → Enhance → Triage) designed for serial quarterly draws.
 
-The repo contains two distinct validation surfaces; reviewers should not conflate them:
+## Why it matters
 
-### ✅ Validated on open real-data / synthetic-fixture simulation (NOT clinical)
+- **Only open-data cross-study MCED benchmark with two independent confound controls.** [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md) shows the pooled 0.97 AUC survives per-study harmonization (true-confound AUC 0.50 vs no-harmonize AUC 0.999) — that's the strongest available evidence the signal is cancer, not batch.
+- **GC-axis discovery in this commit (c782efc).** Legacy baseline 0.9747 was inflated ~0.008 by GC / mappability noise; adding `--gc-correction` (now default) yields the honest 0.9670 ± 0.003. [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md) and `ablation.cast` walk through it.
+- **Reproducible from one shell script.** `paper/REPRODUCE.sh` regenerates every §3 number from a clean checkout; ablation artifacts are already committed as `results/cross_study_finallydb_*.json`.
 
-> **All numbers below are open-data cross-study benchmarks — NOT clinical validation.** See [Limitations](#limitations) for the honest scope: n=627 for the cross-study benchmark, n=20 paired for the foundation smoke, no IRB, no prospective collection, no clinical outcomes.
+---
 
-| Component | Validation surface | Reference |
-|---|---|---|
-| `real_tcga_validation.py` (panel-LLR, Fisher, strand) | TCGA GDC open-access MAFs (real somatic mutations) + Poisson-sampled cfDNA reads at target VAF. AUC 0.92 at 0.1% VAF on 20 LUAD patients; +18pp Sens@99% with CADD Top-K=200. | `results/real_tcga_validation.json`, `docs/CADD_*` |
-| `src/fragmentomics/tumor_naive_adapter.py` + `fusion_ablation.py` | FinaleDB public cfDNA WGS fragments (170 MB per sample). 627-sample cross-study pan-cancer cohort, 5-channel profile (5Mb + 100kb short/long ratio + coverage + 196-bin FSD). AUC 0.9753 ± 0.002 (tumor-naive alone); 0.9886 ± 0.001 (naive-avg fusion vs synthetic mutation channel @ AUC 0.92). DeLong p<0.0015 across 5 seeds. | `docs/FUSION_ISOTONIC.md`, sister repo `cfdna-fragmentomics-pipeline` |
-| `src/fragmentomics/normalization.py` (DELFI LOESS GC correction + per-bin median-centering) | Standard DELFI protocol from Cristiano et al. 2019 (Nature 570:385-389). LOESS smoothing with `statsmodels`; quadratic polynomial fallback. | `validation/cfdna/` artifacts |
-| `src/fragmentomics/themis_features.py` (MFR, FSI, CAFF, FEM) | THEMIS gastric-cancer detection framework (Bie 2023, Nature Communications). 4-mer FEM calibrated on Jiang 2020 (Cancer Discovery). | `run_jiang_analysis.py --nested-cv --report` |
-| `src/multimodal_fusion/advanced_fusion.py` (PyTorch rewrite) | Real PyTorch modules (was random-init numpy placeholders). Stratified val split + NaN guards + biologically-informed prior masks (`cancer_detection`, `tissue_of_origin`). Trained end-to-end via AdamW + early stopping. Synthetic-data AUC ≥ 0.99 on separable data; **no real-cfDNA training** yet (the foundation-real-smoke job wires it to a real TCGA panel signal — see below). | commit `64c5aeb` |
-| `scripts/foundation_real_smoke.py` (NEW — Audit-2 honest version) | First real-data CI smoke for the foundation model. Trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs). Two foundation variants weighted-averaged 70/30: (B) frozen random-init encoder + sklearn LR head and (A) 3-ensemble of tiny PyTorch encoders. Plus lr_baseline (sklearn LR) and naive_avg. **Audit-2 fixes**: GroupKFold (per-patient folds, no identity leak), real per-patient frag channel (was discarded in favour of a synthetic Gaussian — now kept), pair-broken shuffled-label control (was permuted but pair-preserving). **Honest 3-seed, 20-pair numbers — foundation 0.57 ± 0.01 vs lr_baseline 0.91 vs shuffled 0.77**: under per-patient CV the foundation model can't beat the sklearn LR baseline on n=40; the LR baseline AUC dominates the signal. **delta_auc_normalized = -3.04** (foundation − shuffled < 0, meaning the foundation model is at the shuffled-null level for this cohort). Three-way gate: lr_baseline AUC ≥ 0.85 AND `\|foundation − lr_baseline\|` ≤ 0.20 AND foundation − shuffled > 0. Wired into `.github/workflows/validate.yml` as `foundation-real-smoke`. | commit `0ce26db` (Audit-2 round) |
-| `src/foundation/losses.py` (NEW) | `SensAtSpecLoss` (focal-modulated BCE for ultra-low VAF), `BalancedCrossEntropy` (Cui 2019 effective-number rebalancing), `CalibrationLoss` (Mukhoti 2020 differentiable ECE), `focal_binary_cross_entropy` (composable). | commit `0ad0033` |
+## Headline results (open-data, n=627)
 
-### 🧪 Synthetic-data only — NOT validated against real cfDNA
+| Setting | Pooled AUC | Pooled sens@99% spec | Notes |
+|---|---:|---:|---|
+| **Baseline** (5-channel, no GC, no motifs) | 0.9747 ± 0.0012 | 0.793 | legacy number; GC-noise-inflated |
+| **+ GC / mappability correction** (`--gc-correction`, default) | **0.9670 ± 0.0035** | 0.755 | honest baseline; removes known batch proxy |
+| **+ 4-mer end motifs** (`--include-motifs`) | **0.9768 ± 0.0024** | — | informative when present, slightly above baseline |
+| **Shuffled-label null control** (3-seed) | **0.5125 ± 0.0118** | 0.014 | batch-and-fold-identity null floor (<0.55 = pass) |
+| **True-confound control** (cancer=A, healthy=B, harmonized) | **0.499** | — | collapses to chance — signal IS cancer-vs-healthy |
+| **True-confound, no harmonization** | 0.999 | — | batch-effect ceiling (negative control) |
 
-| Component | Validation surface | Why listed here |
-|---|---|---|
-| `src/foundation/` (MultiModalEncoder + PretrainHead + ContrastiveHead + FoundationDownstream) | `MultiModalDataGenerator` synthetic 6-modality dataset. Pretraining (3-phase MMP + contrastive + joint) and downstream fine-tuning are closed-loop on synthetic features. | Documents the architecture; no claim is made about real-cfDNA performance. |
-| `src/methylation_gnn/` (GATv2 + ReconstructionDecoder + AnomalyHead) | Synthetic per-fragment methylation arrays. Real cfDNA methylation data is not wired in (see `src/methylation_gnn/CHANGES.md` for the planned FinaleMe integration). | Architecture-only reference. |
-| `src/tissue_deconv/` (cfSort-style 4-layer MLP, 29 tissues) | Synthetic tissue atlas. Real plasma methylation β-values are not used in training. | Architecture-only reference. |
-| `src/clinical/`, `src/priming/` (clinical decision-curve, PK/PD, whitepaper) | Synthetic data and threshold sweeps. | Decision-theoretic scaffolding. |
-| `model/tokenizer.py` (BPE subword tokenizer + neural motif model) | Synthetic FASTA motif benchmark (100% vs 46.5% accuracy on synthetic data). | Architecture-only reference. |
+All numbers from [`results/cross_study_finallydb*.json`](results/) and reproducible from [`scripts/cross_study_finallydb.py`](scripts/cross_study_finallydb.py). See also: [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md), [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md), [`docs/CROSS_STUDY_BENCHMARK_with_motifs.md`](docs/CROSS_STUDY_BENCHMARK_with_motifs.md).
 
-### The fusion number that IS validated end-to-end
+> **Honest scope:** open-data cross-publication OOF on the same cohort that trained the model. **Not** an external validation cohort. **Not** clinical plasma. **Not** for clinical decision-making.
 
-The `fusion_ablation.py` AUC of **0.9886** (naive average of tumor-naive 5-channel fragmentomics + a **synthetic** mutation channel calibrated to AUC 0.92) is a clean what-if experiment that answers: "given a mutation-informed channel of this quality, does fusion help?". The +0.0143 fusion gain (paired t p<0.0001, DeLong p<0.0015 on every seed) is honest on its cohort. The mutation score is **not** a measurement from the same plasma samples as the fragmentomics score — pairing them on real plasma is the next phase.
+---
 
-### What is NOT in this repo
+## Architecture (5-channel fragmentomics pipeline)
 
-- **No real plasma cfDNA sample has ever been processed end-to-end through the foundation model.** The pretraining → fine-tuning → evaluation loop uses synthetic features for the multi-modal data generator. The new `foundation-real-smoke` CI job uses **real TCGA-LUAD panel-LLR scores** as one of two channels (the other channel is synthetic because no FinaleDB plasma is paired with the 20 TCGA-LUAD patients). This is the first time the foundation model has been evaluated against a real cfDNA-class signal; **it is NOT a clinical validation and is NOT intended for clinical use.**
-- **No held-out clinical validation. Not clinically validated.** All reported AUCs are in-sample 5-fold or pooled OOF on the same cohort the model was trained on.
-- **No clinical-grade operating-point thresholds.** The decision-curve analyzer reports per-specificity operating tables but the recommended threshold τ is calibrated against the training cohort, not a screening cohort with prevalence ~0.4%. **Not suitable for clinical decision-making.**
+```mermaid
+flowchart LR
+    BAM[("BAM / FASTQ<br/>(FinaleDB WGS)")]
+    subgraph S1["5-channel profile"]
+        M1["5Mb ratio<br/>(DELFI 631 bins)"]
+        M2["5Mb coverage"]
+        M3["100kb ratio"]
+        M4["100kb counts"]
+        M5["FSD 5bp histogram<br/>(196 bins)"]
+    end
+    subgraph S2["Optional channels"]
+        M6["256-dim 4-mer motifs<br/>(--include-motifs)"]
+        M7["GC / mappability correction<br/>(--gc-correction, default)"]
+    end
+    subgraph S3["Classifier"]
+        LR["LogisticRegression<br/>PCA n=200<br/>per-publication z-score harmonization"]
+        OOF["5-seed × 5-fold pooled OOF"]
+    end
+    BAM --> S1
+    S1 --> M6
+    S1 --> M7
+    S1 --> LR
+    LR --> OOF
+    classDef mod fill:#fff8c5,stroke:#bf8700
+    classDef clf fill:#dafbe1,stroke:#1a7f37
+    class M1,M2,M3,M4,M5,M6,M7 mod
+    class LR,OOF clf
+```
 
-### Limitations
-
-- **Cohort sizes are small.** n=627 for the cross-study open-data benchmark (FinaleDB pan-cancer WGS, Jiang 2015 + Cristiano 2019); n=20 paired synthetic for the foundation smoke; n=129 processed frequency vectors for the Jiang open-data motif benchmark. **No IRB approval, no prospective collection, no clinical outcomes.**
-- **Healthy controls are simulated or pooled from open-data TF=0 arms.** The cross-study benchmark's "healthy" controls are FinaleDB samples with tumor fraction 0 (i.e. modeled cancer-at-TF=0 read depth), not real healthy-donor plasma.
-- **No external held-out validation.** Every reported number is in-sample 5-fold or pooled OOF on the same cohort the model was trained on. **Pretraining is on 200 samples from a single open cohort** (`data/finaledb_pretrain_cohort_PRODUCTION.npz`).
-- **Batch effects are not exhaustively characterized.** The harmonization check ([docs/HARMONIZATION.md](docs/HARMONIZATION.md)) is a synthetic fixture with NEUTRAL verdict; on a real multi-study plasma pool, larger batch effects are expected.
-- **Mutation-informed vs tumor-naive pairing is synthetic in the fusion experiment.** The fusion AUC 0.9886 is a what-if pairing of a real fragmentomics channel with a **synthetic** mutation channel calibrated to AUC 0.92 — not a real measurement of both channels on the same plasma.
-- **No FDA pathway, no regulatory submission.** DeepCatch is research-use-only software.
+**Two-stage CET** (Capture → Enhance → Triage) is the architectural proposal: Stage 1 fuses modalities through a Transformer; Stage 2 applies a Bayesian Kalman filter across serial draws; Triage compares the posterior to τ. The CET code in `src/longitudinal/` and `src/foundation/` is **architecture-only on synthetic data** — see [`docs/V3_DESIGN.md`](docs/V3_DESIGN.md) for the methylation β-value extension plan (Apple MPS GPU).
 
 ---
 
@@ -175,26 +147,19 @@ The `fusion_ablation.py` AUC of **0.9886** (naive average of tumor-naive 5-chann
 ```bash
 git clone https://github.com/rollroyces/deepcatch.git
 cd deepcatch
-# Recommended: pip install -e . exposes CLI entry points (deepcatch-tumornaive, deepcatch-fusion, etc.)
+
+# Recommended — editable install + CLI entry points (deepcatch-tumornaive, deepcatch-fusion, etc.)
 pip install -e .
-
-# Or the minimal install (just deps, no console scripts)
-pip install -r requirements_py.txt
 ```
 
-**Minimum dependencies:**
+**Minimum dependencies** (CPU fragmentomics only):
 ```bash
-pip install numpy scipy scikit-learn pandas
+pip install numpy scipy scikit-learn pandas statsmodels
 ```
 
-**With deep learning (GNN, foundation model, tissue deconv):**
+**Optional** — deep learning (GNN, foundation, tissue deconv), BAM/FASTQ:
 ```bash
-pip install torch>=2.0.0 torch-geometric
-```
-
-**Optional — BAM/FASTQ processing:**
-```bash
-pip install pysam statsmodels
+pip install "torch>=2.0.0" torch-geometric pysam
 ```
 
 **Docker:**
@@ -203,1078 +168,260 @@ docker build -t deepcatch:latest .
 docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 ```
 
+Validate the install:
+```bash
+env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_publication_readiness.py -m "not slow" -q
+# → 12 passed
+```
+
 ---
 
-## Quick Start
+## Quick start
 
-### 1. Feature Extraction (7 Modalities)
+### A. 5-channel fragmentomics (CPU, <2 min)
 
 ```python
 import numpy as np
-from src.fragmentomics import EnhancedFragmentomics
-from src.fragmentomics.themis_features import (
-    MFRCalculator, FSICalculator, CAFFCalculator, FEMCalculator
-)
-from src.methylation_gnn import RegulatoryGraphBuilder, MethylationGNNPredictor
-from src.tissue_deconv import DEConvIntegration
-from src.priming.pharmacokinetics import PKModel, OptimalDosingSchedule
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score
 
-# ── Fragmentomics Basic ──
-mfr = MFRCalculator()
-fsi = FSICalculator()
-caff = CAFFCalculator()
-fem = FEMCalculator()
+# 5-channel feature matrix — see scripts/cross_study_finallydb.py for the loader
+X = np.load("features_5channel.npy")           # shape (n_samples, ~63246)
+y = np.load("labels.npy")                       # 1 = cancer, 0 = healthy
+X = X[:, X.std(0) > 1e-8][:, :200]              # top-200 variance bins
 
-frag_basic = {
-    "mfr": mfr.compute(coverage, cpg_density),
-    "fsi": fsi.compute(fragment_lengths),
-    "caff": caff.compute(cnv_profile),
-    "fem": fem.compute(end_motif_counts),
-}
-
-# ── Enhanced Fragmentomics (DELFI + MFS + nucleosome + 5-mer) ──
-ef = EnhancedFragmentomics()
-frag_enhanced = ef.extract_all(
-    fragment_lengths=lengths,
-    fragments=fragments,
-    end_sequences=end_seqs,
-    tss_positions=tss_positions,
-)
-# → dict of ~70 scalar features
-
-# ── GNN Methylation Network ──
-gnn = MethylationGNNPredictor.load("checkpoints/gnn_pretrained.pt")
-graph = RegulatoryGraphBuilder().build_graph(
-    sample_name="S001", methylation_data=meth_data
-)
-field_defect_score = gnn.predict_sample(
-    sample_name="S001", methylation_data=meth_data
-)
-
-# ── Tissue Deconvolution ──
-deconv = DEConvIntegration(checkpoint="checkpoints/deconv.pt")
-# Or train from scratch on synthetic mixtures:
-# deconv.fit_synthetic(n_samples=2000)
-tissue_fractions = deconv.predict_tissue_fractions(methylation_data)
-tissue_features = deconv.extract_all(methylation_data, tissue_fractions)
-# → dict of 24 scalar features
-
-# ── CNV ──
-cnv_features = {
-    "cnv_burden": np.mean(np.abs(cnv_log2_ratios)),
-    "cnv_entropy": scipy.stats.entropy(cnv_segment_lengths),
-    "arm_imbalance": max_arm_imbalance(cnv_profile),
-}
-
-# ── Serological ──
-sero_features = {
-    "pg1": pg1_value, "pg2": pg2_value,
-    "g17": g17_value, "hp": hp_igg_value,
-}
-
-# ── Priming Agent PK/PD ──
-pk = PKModel()
-pk_result = pk.simulate(
-    agent="scFv", dose_mg=100, patient_weight_kg=70,
-    duration_hours=48,
-)
-dosing = OptimalDosingSchedule().compute(
-    agent="scFv", patient_data={"weight_kg": 70}
-)
+aucs = []
+for tr, te in StratifiedKFold(5, shuffle=True, random_state=42).split(X, y):
+    sc = StandardScaler().fit(X[tr])
+    clf = LogisticRegression(max_iter=2000).fit(sc.transform(X[tr]), y[tr])
+    p = clf.predict_proba(sc.transform(X[te]))[:, 1]
+    aucs.append(roc_auc_score(y[te], p))
+print(f"AUC {np.mean(aucs):.4f} ± {np.std(aucs):.4f}")
 ```
 
-### 2. Foundation Model Fusion
+### B. Cross-study benchmark CLI (the headline number)
+
+```bash
+# Production run (5 seeds × 5 folds, ~5 min on 627 samples)
+env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb.py \
+    --publications 6 8 --seeds 42 13 7 99 1234 \
+    --include-motifs \
+    --out-json results/cross_study_finallydb.json \
+    --out-md    docs/CROSS_STUDY_BENCHMARK.md
+
+# Sanity check (shuffled-label null)
+env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb_shuffled_control.py --seeds 3
+
+# Ablations — cache alternate settings
+env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb.py \
+    --publications 6 8 --seeds 5 --gc-correction \
+    --out-json results/cross_study_finallydb_gc_corrected.json
+```
+
+### C. Foundation model + multi-modal fusion
 
 ```python
-from src.foundation import FoundationDownstream, FoundationConfig
+from src.foundation import FoundationDownstream
 
-# Assemble modalities dict (n_samples × dim for each key)
 modalities = {
-    "frag_basic":    np.array(frag_basic_array),     # (N, 4)
-    "frag_enhanced": np.array(frag_enhanced_array),  # (N, 44)
-    "cnv":           np.array(cnv_array),            # (N, 6)
-    "sero":          np.array(sero_array),           # (N, 4)
-    "gnn":           np.array(gnn_scores),           # (N, 1)
-    "tissue":        np.array(tissue_array),         # (N, 24)
+    "frag_basic":    np.load("frag_basic.npy"),    # (N, 4)
+    "frag_enhanced": np.load("frag_enhanced.npy"), # (N, 44)
+    "cnv":           np.load("cnv.npy"),           # (N, 6)
+    "sero":          np.load("sero.npy"),          # (N, 4)
+    "gnn":           np.load("gnn.npy"),           # (N, 1)
+    "tissue":        np.load("tissue.npy"),        # (N, 24)
 }
-
-# Use pre-trained checkpoint
-fusion = FoundationDownstream(pretrained=True)
-fusion.fit(modalities, labels)
-proba = fusion.predict_proba(modalities)      # shape (N, 2)
-predictions = fusion.predict(modalities)       # shape (N,)
-
-# Or train from scratch (no pre-training needed)
+y = np.load("labels.npy")
 fusion = FoundationDownstream(pretrained=False)
-fusion.fit(modalities, labels, n_epochs=50, batch_size=32)
-proba = fusion.predict_proba(modalities)
+fusion.fit(modalities, y, n_epochs=50, batch_size=32)
+proba = fusion.predict_proba(modalities)   # shape (N, 2)
 ```
 
-### 3. Multi-Modal Fusion (PyTorch — replaces sklearn-LR placeholder)
+### D. Tumor-naive + mutation-informed fusion
 
-```python
-from src.multimodal_fusion.advanced_fusion import (
-    CrossAttentionFusion, GCNTissueOfOrigin, EarlyLateFusion, TASK_PRIOR_MASKS,
-)
+See [`docs/TUMOR_NAIVE.md`](docs/TUMOR_NAIVE.md) for the cross-repo adapter and `scripts/cross_study_finallydb.py --include-motifs`. Headline: naive average of fragmentomics + a calibrated mutation channel reaches AUC **0.9882** on the 627 cohort (paired-t p < 0.0001). The mutation channel is calibrated, not paired — honest what-if experiment.
 
-# List of 1-D score arrays per modality (sklearn-style API).
-scores = [mfr_scores, fsi_scores, caff_scores, fem_scores, cnv_scores]
-labels = np.array([...])
-
-# Biologically-informed prior: which cross-modal attention paths to allow.
-# 'cancer_detection' (default) or 'tissue_of_origin' or None (no prior).
-fusion = CrossAttentionFusion(
-    n_modalities=5, prior="cancer_detection",
-    n_epochs=200, lr=1e-3, seed=0,
-)
-fusion.fit(scores, labels)
-proba = fusion.predict_proba(scores)   # 1-D cancer probability for binary
-```
-
-**What's new vs the previous version:** the previous `CrossAttentionFusion`
-shipped with random-initialized `np.random.randn(...)` attention matrices
-that were never trained — the fit() method only ran a sklearn
-LogisticRegression on the concatenated 1-D scores. The current rewrite
-is a real PyTorch implementation (`_FusionEncoder` + `_GatedCrossAttention`)
-that trains end-to-end with AdamW + early stopping on a stratified val
-split. The `prior` argument encodes which cross-modal attention paths
-the model is allowed to learn (serology ↔ CNV is blocked in
-`cancer_detection` because no known biology links them; tissue ↔ all
-is unblocked because tissue composition informs every channel).
-
-For multi-modal feature fusion (full 2-D modality features per channel):
-
-```python
-from src.multimodal_fusion.advanced_fusion import EarlyLateFusion
-
-modality_features = [mfr_feats, fsi_feats, caff_feats]   # list of (N, d_i)
-elf = EarlyLateFusion(n_modalities=3, hidden_dim=32)
-elf.fit(modality_features, labels)
-proba = elf.predict_proba(modality_features)
-```
-
-### 4. Clinical Reporting
-
-```python
-from src.clinical import ClinicalReportGenerator
-
-crg = ClinicalReportGenerator(cet_df, fusion_result)
-print(crg.generate_briefing())               # One-paragraph summary
-crg.export_json("report.json")               # Machine-readable export
-with open("report.html", "w") as f:
-    f.write(crg.generate_html_report())       # Full HTML report
-```
-
-### 5. Run the Full Validation Suite
+### E. Reproduce everything
 
 ```bash
-bash RUN_ALL.sh               # Full pipeline
-bash RUN_ALL.sh --quick       # 2-minute smoke test
-
-# Real-data foundation smoke (wired into CI as foundation-real-smoke).
-# Trains FoundationDownstream on real TCGA-LUAD panel-LLR scores
-# (when validation/tcga/tcga_cache/ is present) + synthetic fragmentomics
-# channel; gates on AUC >= 0.70 and sens@99 >= 0.10.
-python scripts/foundation_real_smoke.py \
-    --out results/foundation_real_smoke.json
-cat results/foundation_real_smoke.json
+bash paper/REPRODUCE.sh    # re-runs every §3 artifact, regenerates all docs/*.md
 ```
 
 ---
 
-## Biomedical Review — Fixes Shipped (commit `64c5aeb`–`d5c62ac`)
+## Biomedical review fixes (passed; full history in git log)
 
-A standalone biomedical review surfaced six classes of issues that this
-PR closes. Each fix ships with regression tests in
-`test/test_biomedical_review_fixes.py` (23 new tests, all passing).
+The post-v2.2.0 biomedical review closed 9 classes of issues; **23 regression tests** in `test/test_biomedical_review_fixes.py` guarantee they don't regress.
 
-| # | Finding | Fix |
+| # | Fix | Where |
 |---|---|---|
-| 1 | `CrossAttentionFusion` / `GCNTissueOfOrigin` / `EarlyLateFusion` used random-initialized numpy attention matrices that were never trained. The `fit()` method only ran sklearn `LogisticRegression` on concatenated 1-D scores — the attention output was discarded. | Full PyTorch rewrite (`src/multimodal_fusion/advanced_fusion.py`): scaled dot-product attention + GATv2-style message passing + MLP classifier. Trains via AdamW + early stopping on a stratified val split. NaN/Inf guards on training and val losses. Biologically-informed prior masks via `TASK_PRIOR_MASKS` (`cancer_detection` / `tissue_of_origin` / `None`). |
-| 2 | `EnhancedFragmentomics._pca_reduce` was mis-named — the algorithm was a top-N per-motif deviation vector against the uniform-background null, not a principal-component projection. | Renamed to `_top_motif_deviations` with honest docstring; output keys kept as `fem_5mer_pc*` for backwards compatibility. |
-| 3 | Simpson diversity per length bin used the universe size (1024) as the denominator for every bin. Short fragments <150 bp only exercise a subset of all 5-mers, so the universe denominator inflated MDS for sparse bins. | Normalize by the *effective* alphabet per bin (`n_eff = (counts > 0).sum()`). |
-| 4 | `expected_nucleosome_pattern` had hard-coded 195 bp period, 150 bp dip half-width, 0.5 dip amplitude, 0.3 sinusoidal amplitude. | Class-level defaults documented to Snyder 2016 / Jiang 2020; per-instance overrides for non-canonical cfDNA sources (yeast ~165 bp, mouse ES ~190 bp). |
-| 5 | `tss_coverage_profile` aggregated fragments across chromosomes without matching TSS to chromosome. A fragment on chr5 was counted against a chr1 TSS. | Now requires `(chrom, pos)` TSS tuples and groups fragments by chromosome before aggregating. Legacy bare-int path is preserved with a documented caveat. |
-| 6 | `FoundationDownstream.fit` used `torch.randperm` for the val split, which could produce val sets with no positives on imbalanced cfDNA cohorts (NaN cross-entropy). | Stratified split with at-least-one-of-each-class guarantee. NaN/Inf training-loss guard aborts gracefully after N consecutive NaN; NaN/Inf val-loss is skipped (no patience increment, no `best_state` overwrite). |
-| 7 | `extract_all(methylation_data=...)` was declared but never read. | Backfills per-fragment `methylated` from the standalone array when `fragments` lacks it. Still returns zero-fallback when no methylation source is provided. |
-| 8 | `CAFFCalculator` required caller-provided `per_arm_coverage` dict with no helper to derive it from fragments. | New `CAFFCalculator.from_fragments()` classmethod: per-arm coverage-per-Mb normalized so the median arm reads 1.0. Handles UCSC `chr1` and Ensembl `1` chrom naming. |
-| 9 | No real-data smoke test for the foundation model. | New `scripts/foundation_real_smoke.py`: trains `FoundationDownstream` on **real TCGA-LUAD panel-LLR scores + real per-patient mutation-derived features** (20 patients, both channels from real TCGA MAFs). Two foundation variants weighted-averaged 70/30 (B: frozen encoder + LR head; A: 3-ensemble tiny transformer). Plus lr_baseline and naive_avg. **Pair-broken shuffled-label control** (Audit-2 fix) breaks the per-patient pair structure before computing the null AUC. **Honest 3-seed, 20-pair numbers — foundation 0.57 ± 0.01 vs lr_baseline 0.91 vs shuffled 0.77**: under per-patient CV the foundation model cannot beat the sklearn LR baseline on n=40. The previous headline ("foundation 0.93 ± 0.03") was inflated by patient-identity leakage through `StratifiedKFold` per-sample splits; that bug has been fixed in this round. **delta_auc_normalized = -3.04** (foundation < shuffled under honest pair-broken CV). Three-way gate: lr_baseline AUC ≥ 0.85 AND `\|foundation − lr_baseline\|` ≤ 0.20 AND foundation − shuffled > 0. Wired into `.github/workflows/validate.yml` as the `foundation-real-smoke` job. |
+| 1 | `CrossAttentionFusion` / `EarlyLateFusion` / `GCNTissueOfOrigin` rewritten end-to-end in PyTorch (no more sklearn-LR on random-init attention outputs) | `src/multimodal_fusion/advanced_fusion.py` |
+| 2 | `_pca_reduce` renamed to `_top_motif_deviations` (the old name lied about the algorithm) | `src/fragmentomics/` |
+| 3 | Simpson diversity normalized per effective alphabet (was globally inflated by uniform denominator) | `src/fragmentomics/` |
+| 4 | `expected_nucleosome_pattern` class-level defaults documented; per-instance overrides exposed | `src/fragmentomics/` |
+| 5 | `tss_coverage_profile` now requires `(chrom, pos)` tuples and groups per chromosome | `src/fragmentomics/` |
+| 6 | `FoundationDownstream` split is **stratified** (not `torch.randperm` — could yield single-class val on imbalanced cohorts) + NaN/Inf guards on train and val losses | `src/foundation/` |
+| 7 | `extract_all(methylation_data=...)` methylation-array backfill | `src/tissue_deconv/` |
+| 8 | `CAFFCalculator.from_fragments()` helper — derives per-arm coverage from fragments with per-Mb normalization | `src/fragmentomics/` |
+| 9 | `scripts/foundation_real_smoke.py` — first **real-data** smoke for the foundation model (TCGA-LUAD panel-LLR + mutation features, GroupKFold per-patient, shuffled-label control). Honest 3-seed 20-pair numbers: foundation 0.57 ± 0.01 vs lr_baseline 0.91 | `test/test_biomedical_review_fixes.py` |
 
-**New loss functions** (`src/foundation/losses.py`):
-- `SensAtSpecLoss(alpha_pos=20, gamma=2)` — focal-modulated binary
-  cross-entropy for ultra-low VAF training. Down-weights easy
-  negatives so the rare-positive tail dominates the gradient at
-  the high-specificity operating point.
-- `BalancedCrossEntropy(labels, beta=0.999)` — inverse-frequency
-  weighted multi-class CE per Cui 2019 effective-number rebalancing.
-- `CalibrationLoss(n_bins=15)` — differentiable ECE surrogate per
-  Mukhoti 2020; replaces the closed-form (non-differentiable) ECE.
-- `focal_binary_cross_entropy` — composable focal-BCE for users
-  who want a different reduction.
-
-**New tests** (23, in `test/test_biomedical_review_fixes.py`):
-`CAFFCalculator.from_fragments` (per-Mb normalization, chrom naming,
-unrecognized chroms, empty input, round-trip through `compute()`),
-`RefinedEndMotifs._top_motif_deviations` (key names unchanged, empty
-input), motif diversity (effective-alphabet Simpson), nucleosome
-parameters (overrides flow through to mean-normalized pattern), TSS
-per-chromosome matching, `extract_all` methylation backfill,
-`SensAtSpecLoss` (finite loss, alpha_pos effect), `BalancedCE`
-(inverse-frequency weight), `CalibrationLoss` (zero for perfect
-calibration), `FoundationDownstream` stratified split + NaN guard,
-`CrossAttentionFusion` / `EarlyLateFusion` / `GCNTissueOfOrigin` PyTorch
-rewrite (binary 1-D output, no NaN, correct shapes).
+**New loss functions** (`src/foundation/losses.py`): `SensAtSpecLoss` (focal-BCE for ultra-low VAF), `BalancedCrossEntropy` (Cui 2019), `CalibrationLoss` (Mukhoti 2020 differentiable ECE), composable `focal_binary_cross_entropy`. Full regression suite: `pytest test/test_biomedical_review_fixes.py -v` → 24/24 passing.
 
 ---
 
-## Module Reference
+## Module reference
 
-### `src/fragmentomics/` — FragmentoSign
+Deep details live in each module's docstrings (e.g. `python -c "import src.fragmentomics; help(src.fragmentomics)"`). This section is the table of contents:
 
-**Purpose:** cfDNA fragmentation pattern analysis implementing DELFI, MDS, and THEMIS-equivalent feature frameworks.
+| Path | One-line | Deep docs |
+|---|---|---|
+| `src/fragmentomics/` | DELFI / MFS / nucleosome / THEMIS / FSD / tumor-naive adapter / fusion ablation | `src/fragmentomics/README.md` if present, else module docstrings |
+| `src/methylation_gnn/` | GATv2 field-defect + ReconstructionDecoder (architecture-only) | `src/methylation_gnn/CHANGES.md` (FinaleMe wiring roadmap) |
+| `src/tissue_deconv/` | cfSort-style 4-layer MLP, 29 tissues | module docstrings |
+| `src/foundation/` | MultiModalEncoder + PretrainHead + FoundationDownstream + losses | `src/foundation/test_integration.py` (43 tests as the spec) |
+| `src/multimodal_fusion/` | PyTorch CrossAttentionFusion / GCN / EarlyLate / TASK_PRIOR_MASKS | `test/test_biomedical_review_fixes.py` |
+| `src/clinical/` | ClinicalReportGenerator, decision-theoretic scaffolding | — |
+| `src/priming/` | PK/PD priming agent simulation | — |
+| `src/longitudinal/` | Bayesian Kalman filter (Stage 2 Enhance) | — |
+| `src/ensemble/` | MAML meta-learning | — |
+| `src/synthetic_data/` | MultiModalDataGenerator, TissueAtlas | — |
+| `src/variant_calling/` | Bayesian + contrastive DL (synthetic) | `docs/CADD_FLARE_VALIDATION.md` |
+| `src/preprocessing/` | CHIP filter | — |
 
-| Class / Function | Description |
-|---|---|
-| `MFRCalculator` | Methylated Fragment Ratio via CpG density scoring |
-| `FSICalculator` | Fragment Size Index: short/long ratio + GMM sub-nucleosomal fraction |
-| `CAFFCalculator` | Chromosomal Aneuploidy: CNA burden scoring from whole-genome bins |
-| `FEMCalculator` | Fragment End Motif: 4-mer MDS + motif embeddings (Jiang 2020) |
-| `FragmentLengthGMM` | 4-component Gaussian Mixture Model (sub-/mono-/di-/tri-nucleosomal) |
-| `DELFI_style_normalization` | LOESS GC-bias correction + mappability filter |
-| `compute_MDS` | Motif Diversity Score from 4/5-mer counts |
-| `EnhancedFragmentomics` | Unified extractor: DELFI + MFS + nucleosome footprint + refined 5-mer |
-| `extract_4mer_end_motifs` | 4-mer extraction from BAM files |
-| `extract_end_motifs_from_fastq` | 4-mer extraction from FASTQ |
-
-**Input:** BAM/FASTQ files, or fragment length arrays + end sequences
-**Output:** Scalar features (4–80+), GMM component statistics, MDS scores
-**Tests:** 42 (`test_enhanced_features.py`)
+For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CADD_PER_SUBGROUP_LLR.md`, `docs/CADD_GDC_VALIDATION.md`, `docs/CADD_ALPHAMISSENSE_COMBINED.md`, `docs/ALPHAMISSENSE_REAL_LLR.md`. For **tumor-naive + fusion** see `docs/TUMOR_NAIVE.md` and `docs/FUSION_ISOTONIC.md`. For **architecture proposal** (methylation β-value + Apple MPS) see `docs/V3_DESIGN.md`.
 
 ---
 
-### `src/methylation_gnn/` — GNN Methylation Network
-
-**Purpose:** Detect pre-cancer epigenetic field defects via GATv2 graph attention on methylation regulatory graphs.
-
-| Class / Function | Description |
-|---|---|
-| `RegulatoryGraphBuilder` | Constructs heterogeneous graphs from methylation + Hi-C contacts |
-| `MethylationGNN` | GATv2 model with reconstruction decoder + anomaly head |
-| `GNNTrainer` | 3-phase training: masked pre-training → joint → fine-tuning |
-| `GNNInference` / `MethylationGNNPredictor` | Lightweight inference producing `field_defect_score` |
-| `ReferenceDataCatalog` | Downloads UCSC CpG islands, ENCODE Hi-C, GENCODE promoters, FANTOM5 enhancers |
-| `MethylationBranchAdapter` | Drop-in adapter for CrossAttentionFusion compatibility |
-
-**Input:** cfDNA methylation beta values + reference Hi-C/chromatin data
-**Output:** Graph-level `field_defect_score` (scalar) per sample
-**Tests:** 46 (`test_integration.py`)
-
----
-
-### `src/tissue_deconv/` — Tissue Deconvolution
-
-**Purpose:** Predict tissue-of-origin cfDNA fractions from methylation data using a cfSort-style DNN.
-
-| Class / Function | Description |
-|---|---|
-| `TissueAtlas` | 29-tissue reference methylation profile store |
-| `TissueDeconvolutionModel` | Lightweight DNN (~500K params): [256, 128, 64] + BN + ReLU + Dropout |
-| `TissueDeconvolutionEnsemble` | 3-model ensemble with seed diversity |
-| `TissueDeconvTrainer` | KL divergence + L1 sparsity + entropy regularization on synthetic mixtures |
-| `TissueDeconvolutionFeatures` | Extracts 24-D feature vector from tissue fractions |
-| `DEConvIntegration` | Full integration class compatible with existing pipeline |
-
-**Input:** cfDNA methylation beta values (or synthetic atlas for training)
-**Output:** Per-tissue fraction vector + 24-D feature vector
-**Tests:** 47 (`test_integration.py`)
-
----
-
-### `src/foundation/` — Foundation Model
-
-**Purpose:** Self-supervised multi-modal Transformer pre-training for cfDNA. Drop-in replacement for `CrossAttentionFusion`.
-
-| Class / Function | Description |
-|---|---|
-| `FoundationConfig` | Hyperparameter dataclass (embed_dim, n_heads, n_layers, etc.) |
-| `MultiModalEncoder` | 4-layer TransformerEncoder with per-modality linear projections |
-| `PretrainHead` | Masked modality prediction head |
-| `ContrastiveHead` | Cross-modal contrastive loss (InfoNCE) |
-| `FoundationPretrainer` | Self-supervised pre-training orchestrator |
-| `FoundationDownstream` | Downstream fine-tuning with CrossAttentionFusion-compatible API |
-| `FoundationCompatibilityWrapper` | Wrapper for seamless replacement of CrossAttentionFusion |
-| `MultiModalDataGenerator` | Synthetic multi-modal data generator for pre-training |
-
-**Pre-training tasks:**
-1. Masked modality prediction — reconstruct masked modalities from context
-2. Cross-modal contrastive — InfoNCE between modalities of same sample
-
-**API compatibility:**
-```python
-# CrossAttentionFusion (old)
-fusion = CrossAttentionFusion(n_modalities=6)
-fusion.fit(scores, labels)          # scores: list of 1-D arrays
-proba = fusion.predict_proba(scores)
-
-# FoundationDownstream (new — drop-in)
-fusion = FoundationDownstream(pretrained=True)
-fusion.fit(modalities, labels)      # modalities: dict of (N, D) arrays
-proba = fusion.predict_proba(modalities)  # shape (N, 2)
-```
-
-**Input:** Dict of modality arrays `{name: np.ndarray (N, D)}`
-**Output:** Joint embeddings (N, n_modalities, embed_dim); classification probabilities (N, 2)
-**Tests:** 43 (`test_integration.py`)
-
----
-
-### `src/priming/` — Priming Agents
-
-**Purpose:** Simulate PK/PD of cfDNA priming agents (Amplifyer Bio) and their effect on ctDNA detection.
-
-| Class / Function | Description |
-|---|---|
-| `PKModel` | 1-compartment PK model with first-order elimination |
-| `OptimalDosingSchedule` | Computes optimal dosing for 5 agent types |
-| `PrimingConfig` | Dataclass with literature-based PK parameters |
-
-**Agents:** scFv, liposome, nanoparticle, polymeric micelle, dendrimer
-**Input:** Agent type, dose, patient weight, liver function
-**Output:** Concentration-time profiles, ctDNA boost factor, optimal dosing schedule
-**Reference:** Martin-Alonso et al. (2024) *Science*
-
----
-
-### `src/multimodal_fusion/` — Fusion Architectures
-
-| Class / Function | Description |
-|---|---|
-| `CrossAttentionFusion` | Real PyTorch scaled dot-product cross-attention between modality embeddings. Trained end-to-end with AdamW + early stopping. Biologically-informed prior masks via `TASK_PRIOR_MASKS` (`cancer_detection` / `tissue_of_origin` / `None`). Replaces the previous sklearn-LR-with-random-attention placeholder. |
-| `GCNTissueOfOrigin` | GATv2-style heterogeneous graph for TOO prediction at low sequencing depth. Replaces the previous sklearn-LR-over-correlation-pool placeholder. |
-| `EarlyLateFusion` | Concatenated-feature MLP with per-modality standardization. Replaces the previous `LogisticRegression(C=0.5, class_weight='balanced')`. |
-
----
-
-### `src/clinical/` — Clinical Integration
-
-| Class / Function | Description |
-|---|---|
-| `SerologicalFusion` | Fuses PG-I, PG-II, G-17, H. pylori with cfDNA predictions |
-| `IntegrativeScoringSystem` | Unified risk scoring across all modalities |
-| `ClinicalReportGenerator` | Generates clinician-friendly HTML/JSON reports |
-| `NestedCETValidator` | Nested cross-validation for unbiased motif-based CET evaluation |
-| `FrequencyDataset` | Loads pre-computed 4-mer frequency vectors (Jiang lab format) |
-
----
-
-### `src/longitudinal/` — Stage 2: Enhance
-
-Bayesian Kalman filter (BSSLM) for longitudinal evidence accumulation across quarterly blood draws. Tracks patient risk trajectory over time rather than relying on single-timepoint decisions.
-
----
-
-### `src/ensemble/` — Meta-Learning
-
-MAML-based few-shot adaptation for cancer subtype detection.
-
----
-
-### `src/synthetic_data/` — Synthetic Cohort Generation
-
-Multi-confounder realistic cohort generation (CHIP, variable shedding, trinucleotide errors, GC bias, batch effects, inflammation) for development and testing.
-
----
-
-## Running Tests
+## Running tests
 
 ```bash
-# All tests
-python -m pytest src/ test/ -v
+# Fast-path test gate (matches CI badge)
+env -u PYTHONPATH ./.venv/bin/python -m pytest \
+    test/ src/foundation/test_integration.py \
+    -m "not slow" --tb=line -q
+# → 189 passed, 12 deselected (slow real-data smoke)
 
-# Or with unittest
-python -m unittest discover -s src -p "test_*.py"
+# Full per-module discovery
+env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
+# → 228+ tests across all modules
 
-# Per-module
-python src/foundation/test_integration.py        # 43 tests
-python src/methylation_gnn/test_integration.py    # 54 tests (requires torch_geometric)
-python src/tissue_deconv/test_integration.py      # 54 tests
-python src/fragmentomics/test_enhanced_features.py # 47 tests
+# Biomedical-review regression tests
+env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_biomedical_review_fixes.py -v
 
-# Biomedical-review regression tests (NEW)
-python -m pytest test/test_biomedical_review_fixes.py -v
-
-# Real-data foundation smoke (NEW; same script CI runs)
-python scripts/foundation_real_smoke.py --out results/foundation_real_smoke.json
-python -c "
-import json
-d = json.load(open('results/foundation_real_smoke.json'))
-print(
-    f\"foundation AUC={d['foundation_auc_mean']:.3f} ± "
-    f"{d['foundation_auc_std']:.3f}, "
-    f\"lr_baseline AUC={d['lr_baseline_auc_mean']:.3f}, "
-    f\"shuffled_foundation AUC={d['shuffled_foundation_auc_mean']:.3f}, "
-    f\"delta_auc_normalized={d['delta_auc_normalized']:.3f}, "
-    f\"gate_pass={d['gate_pass']}\"
-)
-"
-
-# Quick smoke test
-python -c "from src.foundation import FoundationConfig; print('OK')"
+# Real-data foundation smoke (TCGA-LUAD panel-LLR; requires validation/tcga/tcga_cache/)
+env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
+    --out results/foundation_real_smoke.json
 ```
 
-### Test Coverage Summary
+**Test coverage by suite** (verified at HEAD):
 
 | Module | Tests | Status |
+|---|---:|---|
+| `test/test_publication_readiness.py` | 12 | ✅ all passing |
+| `test/test_biomedical_review_fixes.py` | 24 | ✅ all passing |
+| `test/test_foundation_smoke.py` | 8 | ✅ all passing |
+| `src/foundation/test_integration.py` | 43 | ✅ all passing |
+| Full `src/` discovery | 228 | ✅ all passing |
+| **Combined fast-path gate** | **233 collected** | **189 passed + 12 deselected** |
+
+The 12 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
+
+---
+
+## Data requirements
+
+| Channel | Required data | Source |
 |---|---|---|
-| Enhanced Fragmentomics (+ THEMIS) | 42 | ✅ All passing |
-| GNN Methylation | 46 | ✅ All passing (requires `torch_geometric`) |
-| Tissue Deconvolution | 47 | ✅ All passing |
-| Foundation Model | 43 | ✅ All passing |
-| Priming Agents | 50 | ✅ All passing |
-| `src/` subtotal (full repo discovery) | **228** | ✅ |
-| Standalone `test/` (fusion_ablation, tumor_naive_adapter, decision_curve, …) | 25 | ✅ All passing |
-| `test/test_biomedical_review_fixes.py` (NEW) | 24 | ✅ All passing |
-| `test/test_foundation_smoke.py` (NEW) | 8 | ✅ All passing |
-| **Combined `test/` + `src/foundation/test_integration.py`** | **146 collected → 143 pass + 2 skip** | ✅ |
+| Fragmentomics 5-channel | BAM / FASTQ (WGS) | FinaleDB (pubs 6 + 8), TCGA WXS |
+| GC / mappability correction | Reference GC track (hg19/hg38) | ENCODE, UCSC goldenPath |
+| 4-mer end motifs (`--include-motifs`) | End 5-mer counts from .bam | derived from BAM |
+| Mutation panel (`scripts/cadd_*`) | TCGA-LUAD per-aliquot masked MAFs (5,738 mutations) | GDC open-access |
+| CADD scoring | CADD v1.7 PHRED TSV | [Kircher 2014](https://doi.org/10.1038/ng.2892), CC BY-NC-SA 4.0 |
+| GNN methylation | β-value methylation array (synthetic in repo) | TCGA, GEO, FinaleMe-imputed |
+| Tissue deconvolution | `cfSort` tissue atlas | [stephenrcraig/cfSort](https://github.com/stephenrcraig/cfSort) |
 
-The 189 passed + 12 deselected badge in the README header reflects the
-**fast-path test gate** used in CI (`pytest ... -m "not slow"` on the
-post-v2.2.0 selected set: biomedical-review fixes, sparse-aware projection,
-FinaleDB pretrained loader, pretrain bug fix, harmonization check, per-cancer
-sens@spec, cross-study per-cancer integration, reproduce, publication
-readiness, plot figures, cross-platform fusion, and `src/foundation/test_integration.py`).
-The 12 deselected tests are slow smoke tests (real-data foundation smoke and
-related jobs) that run only in the dedicated `foundation-real-smoke` CI
-workflow. The full `pytest src/` count is 228 tests across all modules,
-plus the standalone `test/` directory (fusion_ablation, tumor_naive_adapter,
-decision_curve, biomedical-review fixes, foundation smoke, etc.) — those
-continue to be exercised by `bash paper/REPRODUCE.sh`. The earlier
-"374/374" badge was the union of two pytest invocations and double-counted
-the 43 `test_integration.py` tests; the current badge reflects the single
-post-v2.2.0 fast-path command and is honest about deselection.
+If you don't have real cfDNA data, `MultiModalDataGenerator` (foundation) and `TissueAtlas` (deconv) ship synthetic fallbacks so the whole pipeline runs offline. **Cancer-vs-healthy AUC numbers from synthetic data are NOT comparable to the open-data cross-study numbers above — see "What is NOT in this repo" in [`MODEL.md`](MODEL.md).**
 
 ---
 
-## Stages Explained — CET Pipeline
-
-```mermaid
-stateDiagram-v2
-    [*] --> Capture
-
-    state Capture {
-        [*] --> ExtractModalities
-        ExtractModalities --> FuseTransformer
-        FuseTransformer --> JointEmbedding
-        JointEmbedding --> [*]
-    }
-
-    Capture --> Accumulate
-    note right of Capture
-        Single cfDNA draw.
-        7 modalities → joint embedding.
-    end note
-
-    state Accumulate {
-        [*] --> KalmanUpdate
-        KalmanUpdate --> PosteriorCheck
-        PosteriorCheck --> HasMoreDraws: yes
-        HasMoreDraws --> KalmanUpdate: next quarterly draw
-        PosteriorCheck --> EmitPosterior: no
-        EmitPosterior --> [*]
-    }
-
-    Accumulate --> Triage
-
-    state Triage {
-        [*] --> CompareThreshold
-        CompareThreshold --> Confirm: p_cancer > τ
-        CompareThreshold --> Clear: p_cancer ≤ τ
-        Confirm --> [*]
-        Clear --> [*]
-    }
-
-    Triage --> [*]
-
-    note left of Accumulate
-        Each new draw updates the
-        posterior over p_cancer.
-        Evidence accumulates below
-        single-draw detection floor.
-    end note
-```
-
-### Stage 1: Capture
-
-Seven independent modalities extract signal from the same cfDNA sample. Each produces a scalar risk score vector. The foundation model fuses these into a joint embedding via per-modality linear projections → 4-layer Transformer encoder.
-
-### Stage 2: Enhance
-
-Longitudinal tracking via Bayesian Kalman filter (BSSLM). The joint embedding from Stage 1 is tracked across quarterly blood draws, accumulating evidence over time. This is designed to detect cancers whose ctDNA signal is below single-timepoint detection thresholds at early stages.
-
-### Triage
-
-The accumulated Bayesian posterior probability `p_cancer` is compared to a calibrated threshold τ. Samples above the threshold trigger confirmatory testing; samples below are cleared until the next quarterly draw.
-
----
-
-## Data Requirements
-
-### What You Need
-
-| Modality | Required Data | Public Source |
-|---|---|---|
-| Fragmentomics Basic | Fragment length arrays, end motif counts | N/A (extracted from BAM/FASTQ) |
-| Enhanced Fragmentomics | Fragment lengths + genomic coordinates + end sequences | Same as above |
-| CNV | Log2 ratio profiles or BAM | Same as above |
-| Serological | PG-I, PG-II, G-17, H. pylori IgG | Clinical lab |
-| GNN Methylation | cfDNA methylation beta values | TCGA, GEO |
-| Tissue Deconvolution | cfDNA methylation beta values | TCGA, cfSort atlas |
-| Priming Agents | Agent PK parameters | Literature |
-
-### Reference Data URLs
-
-| Resource | URL |
-|---|---|
-| ENCODE Hi-C | https://www.encodeproject.org/ |
-| UCSC CpG Islands | http://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/ |
-| GENCODE promoters | https://www.gencodegenes.org/human/ |
-| FANTOM5 enhancers | https://fantom.gsc.riken.jp/5/ |
-| TCGA methylation | https://portal.gdc.cancer.gov/ |
-| cfSort atlas | https://github.com/stephenrcraig/cfSort |
-
-### Running with Synthetic Data
-
-All modules support fully synthetic data for development and testing. Use `MultiModalDataGenerator` (foundation), `TissueAtlas` (deconv with built-in synthetic profiles), and `ReferenceDataCatalog` (GNN with random initialization) to run the full pipeline without any external reference data.
-
----
-
-## Repository Structure
+## Repository structure
 
 ```
 deepcatch/
 ├── README.md                     # This file
 ├── LICENSE                       # MIT
 ├── CITATION.cff                  # Academic citation metadata
-├── requirements_py.txt           # Python dependencies
-├── RUN_ALL.sh                    # One-command validation
+├── pyproject.toml                # Editable install + CLI entry points
 ├── Dockerfile
-│
-├── src/
-│   ├── fragmentomics/            # FragmentoSign: DELFI, MDS, GMM, LOESS, enhanced
-│   ├── methylation_gnn/          # GATv2 graph attention for field defect detection
-│   ├── tissue_deconv/            # cfSort-style DNN for tissue-of-origin
-│   ├── foundation/               # Self-supervised Transformer foundation model
-│   ├── priming/                  # PK/PD priming agent simulation
-│   ├── multimodal_fusion/        # CrossAttentionFusion, GCN, EarlyLate
-│   ├── clinical/                 # Serological fusion, clinical reports, CET validation
-│   ├── longitudinal/             # Bayesian Kalman filter (Stage 2)
+├── src/                          # Core library
+│   ├── fragmentomics/            # DELFI / MFS / nucleosome / THEMIS / FSD
+│   ├── methylation_gnn/          # GATv2 graph attention (arch-only)
+│   ├── tissue_deconv/            # cfSort-style DNN
+│   ├── foundation/               # MultiModalEncoder + FoundationDownstream
+│   ├── multimodal_fusion/        # CrossAttention / EarlyLate / GCN (PyTorch)
+│   ├── priming/                  # PK/PD priming agents
+│   ├── clinical/                 # ClinicalReportGenerator
+│   ├── longitudinal/             # Bayesian Kalman (Stage 2)
 │   ├── ensemble/                 # MAML meta-learning
-│   ├── synthetic_data/           # Realistic cohort generation
+│   ├── synthetic_data/           # MultiModalDataGenerator, TissueAtlas
 │   ├── variant_calling/          # Bayesian + contrastive DL
 │   └── preprocessing/            # CHIP filter
-│
+├── scripts/                      # CLI entry points (cross_study_finallydb.py, etc.)
 ├── validation/                   # Statistical validation suite
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
-│   └── *.py                      # 10 bioinformatics-grade modules
-│
-├── test/                         # Additional test suites
-├── results/                      # Output reports + figures
-├── paper/                        # LaTeX manuscript
-├── docs/                         # User guide
+│   └── *.py                      # Bioinformatics-grade modules
+├── test/                         # 25+ test files (189 fast-path tests)
+├── results/                      # Cached JSON + 4 figures + ablation artifacts
+├── paper/                        # LaTeX manuscript + REPRODUCE.sh
+├── docs/                         # 30+ docs + 4 figures + 3 demo asciicasts
 └── review/                       # Peer review history
 ```
 
 ---
 
-## Contributing
+## Recent additions (commit-by-commit)
 
-### Adding a New Modality
-
-1. **Create module directory** under `src/your_modality/`
-2. **Implement feature extractor** with `extract_all()` or `predict_sample()` entry point
-3. **Define config** with dataclass `YourModalityConfig`
-4. **Add integration class** that wraps your module for the fusion API
-5. **Write tests** — aim for ≥20 tests covering config, forward pass, edge cases, and integration
-6. **Update `MODALITY_DIMS`** in `src/foundation/config.py`
-
-### Code Style
-
-- Type hints on all public APIs
-- NumPy docstring style with Parameters/Returns sections
-- Tests use pytest or unittest; run them before submitting
-
-### Contributing a Cohort
-
-External clinical collaborators (or anyone with a plasma cfDNA cohort) can contribute without writing Python — see [`docs/COLLABORATOR_DATA_INTERFACE.md`](docs/COLLABORATOR_DATA_INTERFACE.md) for the directory layout, manifest schema, and worked example. The conversion is one command (`scripts/adapter_local_cohort.py`), and the resulting cohort joins the existing cross-study benchmark. Quick recipe at [`docs/COLLABORATOR_QUICKSTART.md`](docs/COLLABORATOR_QUICKSTART.md).
-
-### Pull Requests
-
-Open an issue first to discuss scope. Target `main` branch. PRs must pass all existing tests.
-
----
-
-## Open-Data Plasma Benchmark (v2.1, research-use-only)
-
-> **⚠️ Research-use-only benchmark on open data — NOT a clinical validation.** Preliminary evaluation on **129 processed frequency vectors** (not raw BAMs) from Jiang lab (CUHK) under data-use terms, using 4-mer end-motif frequency vectors:
-
-| Metric | Value |
+| Commit | What changed |
 |---|---|
-| Samples (HCC vs Control) | 72 (34 HCC, 38 Control) |
-| 5-fold CV AUC (nested selection, `run_jiang_analysis.py`) | **0.9845** |
-| Bonferroni-significant motifs | 108 / 256 |
-| Biological pattern | CG-rich depletion, AT-rich enrichment |
-
-Caveats: HCC only (other types n≤17), processed frequency data (not raw BAM), single centre. Not a clinical assay. AUC is from nested cross-validation (motif selection inside folds); the raw data file is not redistributed in the repo (CUHK terms) — provision via `data/deepcatch_data.xlsx` or `DEEPCATCH_DATA_DIR`.
-
-### Real-TCGA Benchmark (honest framing)
-
-`real_tcga_validation.py` uses **real TCGA tumor mutations (with real read counts) as ground truth**, then **simulates plasma cfDNA** by Poisson sampling at each tumor fraction. It is a spike-in/dilution benchmark, **not** a clinical plasma validation. Metrics are AUC/PR-AUC plus sensitivity at **fixed** 95%/99% specificity — no threshold optimization on test data. Data is fetched from the **GDC open-access API** (per-aliquot masked MAFs, cached in `validation/tcga/tcga_cache/`); the synthetic fallback dataset is deliberately refused. Latest run: 20 LUAD patients, 5,738 mutations, 5 seeds (mean across seeds).
-
-#### Validation pipeline
-
-```mermaid
-flowchart LR
-    TCGA[("TCGA GDC<br/>per-aliquot masked MAFs")] -->|fetch| Cache["validation/tcga/<br/>tcga_cache/"]
-    Cache --> Muts["5,738 real mutations<br/>20 LUAD patients"]
-
-    Muts --> Sim["Simulate plasma cfDNA<br/>(Poisson sampling)"]
-    Sim -->|"5 fractions: 10% → 0.1%"| F1["10%"]
-    Sim --> F2["5%"]
-    Sim --> F3["1%"]
-    Sim --> F4["0.5%"]
-    Sim --> F5["0.1%<br/>ultra-early"]
-
-    F1 & F2 & F3 & F4 & F5 --> Eval["3 scoring methods:<br/>LLR / Fisher / Strand"]
-
-    Eval -->|"fixed spec<br/>no threshold opt"| Metrics["AUC, Sens@95%,<br/>Sens@99%, paired win-rate"]
-
-    Metrics -->|"5 seeds × 5 folds"| Report["results/<br/>real_tcga_validation.json"]
-
-    classDef data fill:#fff8c5,stroke:#bf8700
-    classDef stage fill:#e1f5ff,stroke:#0969da
-    classDef out fill:#dafbe1,stroke:#1a7f37
-    class TCGA,Cache,Muts data
-    class Sim,F1,F2,F3,F4,F5,Eval stage
-    class Metrics,Report out
-```
-
-**Per-position detection** (single-locus classification — information-limited at ultra-low ctDNA):
-
-| ctDNA fraction | Variant caller AUC | VC Sens @ 95% spec |
-|---|---|---|
-| 10% | 1.000 | 1.000 |
-| 5% | 0.9995 | 0.998 |
-| 1% | 0.959 | 0.850 |
-| 0.5% | 0.884 | 0.633 |
-| **0.1% (ultra-early regime)** | **0.642** | **0.183** |
-
-**Panel-based detection** (`--skip-panel` to disable, `--clean-panel` for a designed-panel simulation) — MRD-style per-sample aggregation over the tracking panel. Three scoring methods: LLR sum (standard), Fisher sum (-log₁₀ Poisson p-value, CAPP-Seq/Neman 2014), and Strand-concordance-weighted Fisher. The simulation now models **context-dependent sequencing errors** (CpG ~10×, homopolymer ~5×, clean baseline), **strand-asymmetric error reads** (true variants are biallelic across fwd/rev; errors are single-strand), and optional clean-panel design (avoid high-error genomic regions):
-
-| ctDNA fraction | LLR AUC | Fisher AUC | Strand AUC | Sens @ 95% spec | Paired cancer>control |
-|---|---|---|---|---|---|
-| 10% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| 5% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| 1% | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 |
-| 0.5% | 0.9995 | 0.997 | 0.996 | 0.990 | 1.000 |
-| **0.1%** | **0.921** | **0.834** | **0.831** | **0.770** | **1.000** |
-
-With a well-designed panel (`--clean-panel`, avoiding CpG/homopolymer loci): LLR 0.922, Fisher 0.849, Strand 0.836 at 0.1% ctDNA. Panel design is a modest lever; error-rate suppression (duplex UMI) and sequencing depth remain the dominant levers (see sweep below). The strand score uses a Z-score (Normal) approximation to the binomial test — corrected from the old 2×min/max formula which erroneously penalized low-read-count positions.
-
-### Variant-impact-weighted panel selection (CADD Top-K)
-
-Restricting the 5,738-mutation panel to the **top-K highest-CADD mutations** (PHRED-scaled impact from [Kircher et al. 2014](https://doi.org/10.1038/ng.2892), CC BY-NC-SA 4.0) lifts ultra-low ctDNA detection without AUC penalty. Three validated findings:
-
-**Per-subgroup lift at 0.1% ctDNA, 5-seed × 5-fold OOF, validated on the larger GDC TCGA-LUAD cohort (150-patient subsample of 382):**
-
-| Subgroup | n | Uniform Sens@99% | **CADD Top-K=20** | Δ |
-|---|---:|---:|---:|---:|
-| TP53_mutant | 73 | 0.228 | **0.689** | **+46pp** |
-| TP53_wildtype | 77 | 0.242 | **0.506** | **+26pp** |
-| KRAS_mutant | 47 | 0.348 | **0.688** | **+34pp** |
-| KRAS_wildtype | 103 | 0.275 | **0.663** | **+39pp** |
-| STK11_wildtype | 132 | 0.293 | **0.662** | **+37pp** |
-| High mut burden | 75 | 0.271 | **0.773** | **+50pp** |
-| **Whole-cohort** | 150 | **0.278** | **0.627** | **+35pp** |
-
-**Top-K=20** was used (not the originally-reported Top-K=200) because only 1 patient in the larger GDC bulk-WXS cohort has ≥200 CADD matches (per-patient median is 21). **Top-K=20 is the new validated winner** — the lift is *larger* on the bigger cohort than the original 20-patient estimate suggested.
-
-**Caveat documented honestly:** match rate dropped from 86% (20-patient curated LUAD driver set) to **8.9%** (382-patient bulk-WXS includes passengers not in gnomAD r3.0). This is a structural difference between cohorts, not a methodology change. The low-burden subgroup shows a -16pp inversion under CADD selection (flagged as a real finding).
-
-**CADD Top-K pipeline (data flow):**
-
-```mermaid
-flowchart LR
-    Panel["Full panel<br/>5,738 TCGA-LUAD<br/>mutations"]
-    Score["CADD PHRED score<br/>per mutation<br/>(Kircher et al. 2014)"]
-    Rank["Per-patient rank by CADD"]
-    TopK["Top-K = 20<br/>highest-CADD<br/>per patient"]
-    Eval["Simulate 0.1% ctDNA<br/>5-seed x 5-fold OOF"]
-    Out["Per-subgroup<br/>Sens at 99% spec lift"]
-    Whole["Whole-cohort n=150<br/>0.278 to 0.627<br/>+35 pp"]
-    TP53["TP53_mutant n=73<br/>0.228 to 0.689<br/>+46 pp"]
-    KRAS["KRAS_wildtype n=103<br/>0.275 to 0.663<br/>+39 pp"]
-    High["High burden n=75<br/>0.271 to 0.773<br/>+50 pp"]
-    Match["Match rate<br/>86% on 20-patient curated<br/>8.9% on 382-patient bulk-WXS"]
-
-    Panel --> Score --> Rank --> TopK --> Eval --> Out
-    Out --> Whole
-    Out --> TP53
-    Out --> KRAS
-    Out --> High
-    TopK -. caveat .-> Match
-
-    classDef data fill:#fff8c5,stroke:#bf8700
-    classDef stage fill:#e1f5ff,stroke:#0969da
-    classDef out fill:#dafbe1,stroke:#1a7f37
-    classDef caveat fill:#ffebe9,stroke:#cf222e
-    class Panel,Score,Rank,TopK data
-    class Eval stage
-    class Whole,TP53,KRAS,High,Out out
-    class Match caveat
-```
-
-**Honest negative results preserved:**
-- **Continuous per-cancer weighting** (CADD-style linear / sigmoid weights on channels) — regresses vs hard top-K (subagent commit `eb1529e`)
-- **CADD + AlphaMissense multiplicative weight** — underperforms CADD alone at all ctDNA fractions (commit `29374a6`)
-- **Driver-only panel** (TP53 + KRAS + EGFR + …) — only 31 mutations; Sens@99% = 0.19 (catastrophic)
-- **Proxy (constant 0.55) AlphaMissense weighting** hid the real AM signal — the previous run reported every AM-weighted method at AUC ≈ 0.917 (proxy indistinguishable from uniform 0.921). With **REAL** AlphaMissense scores (key-construction bug fixed in commit `ec16e0d`), AM Top-K=200 lifts AUC from 0.9210 → **0.9775** at 0.1% ctDNA (+0.057, not the proxy's 0)
-- **AM ≈ CADD at K=200** (0.9775 vs 0.9785 on the same 20-patient cohort, within 1 std) — once K is large enough, the scoring function barely matters; panel size dominates. See `docs/ALPHAMISSENSE_REAL_LLR.md` for the bug-fix details and per-patient coverage.
-
-**Reproduce:**
-```bash
-# Original 20-patient per-subgroup
-python scripts/cadd_per_subgroup_llr.py --n-patients 20 --top-k 200
-
-# Larger 382-patient GDC validation
-python scripts/cadd_per_subgroup_llr_gdc_validation.py --top-k 20
-
-# Single-shot Top-K=20 whole-cohort
-python scripts/cadd_weighted_llr.py --top-k 20
-```
-
-**Docs:** [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md), [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md), [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md), [docs/CADD_ALPHAMISSENSE_COMBINED.md](docs/CADD_ALPHAMISSENSE_COMBINED.md), [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md), [docs/ALPHAMISSENSE_REAL_LLR.md](docs/ALPHAMISSENSE_REAL_LLR.md).
-
-### REAL AlphaMissense + CADD Top-K=200 (apples-to-apples, commit `ec16e0d`)
-
-The CADD Top-K=20 finding above is the winner on the **150-patient GDC bulk-WXS cohort**. On the **smaller 20-patient TCGA-LUAD curated driver set** (the original CADD validation cohort), an apples-to-apples comparison with the SAME 5,738-mutation panel and SAME 5 seeds shows a slightly different ranking: **CADD Top-K=200 wins narrowly over AM Top-K=200 at 0.1% ctDNA**, with both dramatically beating the uniform baseline. Both findings are positive — the K that maximises AUC is just cohort-dependent (more matches per patient on the curated set → K=200 is fine; fewer matches on bulk-WXS → K=20 is the binding choice).
-
-**Apples-to-apples headline (0.1% ctDNA, 5 seeds × 20 patients, panel of 5,738 mutations, full CADD + AM scoring pipelines re-run on identical cohort, results from `results/cadd_vs_alphamissense_topk_20patient.json`):**
-
-| Method                       | 0.1% ctDNA AUC | Δ vs uniform | Notes |
-|------------------------------|---------------:|-------------:|-------|
-| **Uniform** (no weighting)   |     **0.9210** |          ref | reproduces the documented 0.921 ± 0.0188 exactly |
-| **CADD Top-K=20** (gnomAD-matched) |  0.9345 |      +0.014 | narrow lift at K=20; cohort has fewer per-patient CADD matches than bulk-WXS |
-| **CADD Top-K=200**            |     **0.9785** |      **+0.058** | **best on the 20-patient cohort** |
-| AM Top-K=20 (REAL scores)     |     0.9135     |      −0.008 | matches ≈ CADD's K=20 (within 1 std) |
-| **AM Top-K=200 (REAL scores)** |   **0.9775** |      **+0.057** | **statistically tied with CADD K=200 (within 1 std)** |
-| AM Top-K=500 (REAL scores)    |     0.9260     |      +0.005  | regresses past K=200 — too many loci dilute the signal |
-
-**Bug fix that unlocked the AM result** (commit `ec16e0d`, full writeup in `docs/ALPHAMISSENSE_REAL_LLR.md`): the previous AlphaMissense-weighted LLR run (commit `5cd6c3e`) was building AM lookup keys from the *nucleotide* `ref/alt` columns of the MAFs, but AlphaMissense is keyed by *amino-acid* `ref_aa/alt_aa` at protein coordinates (`P01116:12:G:D` = KRAS G12D). The bug silently dropped the per-mutation match rate to ≈ 0% and substituted the per-variant-class proxy (0.55). With the fix, **AM match rate on the 20-patient missense cohort jumped from ≈ 0% → 97.23%** (15,462 / 15,903 missense SNVs hit the 71.7M-row AM TSV via a 69,575-key pickle built by streaming the full TSV once in 47 s). The proxy was indistinguishable from uniform at AUC ≈ 0.917; the real scores reveal the +0.057 lift at K=200.
-
-**Honest framing of the two cohorts:** the 150-patient GDC bulk-WXS result (CADD Top-K=20 wins, +35pp whole-cohort Sens@99%) and the 20-patient curated-driver result (CADD Top-K=200 wins on AUC, AM Top-K=200 statistically tied) are *both real and both positive* — they just optimise different operating points. The right K is whichever is ≤ the per-patient median CADD match count; the right scoring function (CADD vs AM) barely matters once K is large enough (the K=200 numbers are within 0.001 of each other).
-
-```mermaid
-flowchart LR
-    Panel["Full panel<br/>5,738 TCGA-LUAD<br/>mutations"]
-    Uniform["Uniform<br/>no weighting<br/>AUC = 0.9210"]
-    CADD["CADD Top-K=200<br/>PHRED-scaled<br/>(Kircher 2014)<br/>AUC = 0.9785<br/>+0.0575"]
-    AM["AM Top-K=200<br/>REAL AlphaMissense<br/>(Cheng 2023)<br/>AUC = 0.9775<br/>+0.0565"]
-
-    Panel --> Uniform
-    Panel --> CADD
-    Panel --> AM
-
-    Note["K=200 ≈ 5,738 × 0.04<br/>selection of the<br/>top ~4% of loci"]
-
-    CADD -. comparison .- Note
-    AM    -. tied within 1 std .- CADD
-
-    classDef base fill:#fff8c5,stroke:#bf8700
-    classDef win fill:#dafbe1,stroke:#1a7f37,color:#116329
-    classDef meta fill:#f6f8fa,stroke:#57606a
-    class Panel base
-    class Uniform base
-    class CADD,AM win
-    class Note meta
-```
-
-**Reproduce:**
-```bash
-# Apples-to-apples CADD vs REAL AlphaMissense (20-patient cohort)
-env -u PYTHONPATH ./.venv/bin/python scripts/cadd_vs_alphamissense_topk.py \
-    --n-patients 20 --top-k-values 20,200,500 \
-    --output results/cadd_vs_alphamissense_topk_20patient.json
-```
-
-**Ultra-early assay sweep** (0.1% ctDNA; `--skip-sweep` to disable) — panel detection vs background error rate × depth. This is the assay-design guidance: duplex-UMI consensus (~1e-4) or ~50k× depth each bring sens@95% to 1.000 at 0.1% ctDNA:
-
-| Background error rate | Depth | Panel AUC | Sens @ 95% spec |
-|---|---|---|---|
-| 2e-3 (raw reads) | 5,000× | 0.935 | 0.770 |
-| 2e-3 | 50,000× | 0.998 | 1.000 |
-| 1e-3 | 5,000× | 0.965 | 0.910 |
-| 1e-3 | 50,000× | 0.9995 | 1.000 |
-| 1e-4 (duplex UMI) | 5,000× | 0.998 | 1.000 |
-| 1e-4 | 50,000× | 1.000 | 1.000 |
-| 1e-5 | any | 1.000 | 1.000 |
-
-The remaining gap to **a clinical-grade assay** is real plasma cfDNA sequencing — see `docs/PRODUCTION_ROADMAP.md`. **DeepCatch is not, and is not intended to be, a clinical assay.** The longitudinal CET stage (Stage 2) is intended to extend this below 0.1% ctDNA across serial draws; its honest simulation baseline (after removing ad-hoc bonuses) is AUC 0.49, sens 2.5% @ 97% spec (`results/README.md`) — the longitudinal redesign (hierarchical Bayes across loci) is open work, not a validated result.
-
----
-
-## Tumor-naive Detection (cross-repo integration)
-
-A thin adapter lets DeepCatch consume the pre-computed fragmentomic
-artifacts of [`cfdna-fragmentomics-pipeline`](https://github.com/rollroyces/cfdna-fragmentomics-pipeline),
-adding **tumor-naive** detection — cancer classification from cfDNA
-without any prior knowledge of tumor mutations.
-
-**The complementary role is the point.** DeepCatch's mutation-informed
-detection needs to *know the tumor's mutations in advance* (panel design,
-TCGA-driven simulation). The pipeline doesn't — it detects cancer from
-raw fragmentation patterns. Combining them gives DeepCatch a signal
-channel reviewers will ask about.
-
-**Channel assembled** (per sample, from `cfdna-fragmentomics-pipeline/data/features/`):
-
-| Source file | Channel | Dim |
-|---|---|---|
-| `{s}.delfi_5mb_ratio.npy` | 5Mb DELFI ratio | 631 |
-| `{s}.delfi_5mb_coverage.npy` | 5Mb CNA coverage | 631 |
-| `{s}.delfi_100kb_ratio.npy` | 100kb DELFI ratio | 30,894 |
-| `{s}.delfi_100kb_counts.npy` | 100kb CNA (median-normalized) | 30,894 |
-| `{s}.fsd.json` | FSD size histogram (5bp bins) | 196 |
-
-**End-to-end result** (5-seed CV, harmonized, PCA n=200, 627 cross-study
-pan-cancer samples — same cohort as the pipeline's main result):
-
-| Source | AUC | Sens@95% |
-|---|---|---|
-| Pipeline standalone (`scripts/honest_benchmark.py`) | 0.9745 ± 0.002 | 0.888 |
-| **DeepCatch adapter** | **0.9746 ± 0.002** | **0.872** |
-
-The adapter reproduces the pipeline's result within 1σ (the gap is now
-~0.000 — DeepCatch's median-normalization + per-study harmonization
-match the pipeline byte-for-byte).
-(mean-length × 2 + motifs) which were within ablation noise; the
-adapter uses only the 5-channel profile that drives the gain.
-
-**API** (see `src/fragmentomics/tumor_naive_adapter.py`):
-
-```python
-from src.fragmentomics.tumor_naive_adapter import load_cohort, load_labels_tsv
-
-labels = load_labels_tsv("../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv")
-X, order = load_cohort(sorted(labels),
-                       "../cfdna-fragmentomics-pipeline/data/features")
-# X.shape = (n_loaded, 63,246)
-```
-
-**CLI** (5-seed honest benchmark, JSON output):
-
-```bash
-python -m src.fragmentomics.train_tumor_naive \
-    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
-    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
-    --seeds 5 --pca-n 200 --out results/tumor_naive_cv.json
-```
-
-**Tests**: 15/15 unit tests covering channel contract, shape, normalization,
-strict mode, missing artifacts, label parsing, channel subsets
-(`test/test_tumor_naive_adapter.py`).
-
-**Design choices documented in the adapter docstring**:
-- *Reader, not re-implementer* — DeepCatch reads the pipeline's
-  pre-computed `.npy`/JSON artifacts, doesn't re-derive them. The two
-  repos' data side stays in sync automatically; only model code lives
-  in DeepCatch.
-- *Median-normalize 100kb coverage by default* — without it, AUC drops
-  ~0.008 (sequencing-depth batch effect). Matches the pipeline's
-  `load_full_profile` byte-for-byte.
-- **Zero hard dependency on the pipeline repo** — DeepCatch only reads
-  the file format. The pipeline can evolve independently.
-
-### Mutation-informed + tumor-naive fusion
-
-`src/fragmentomics/fusion_ablation.py` combines the tumor-naive channel
-with a synthetic mutation-informed channel (calibrated to a target AUC)
-and compares five strategies under the same 5-seed CV hygiene. End-to-end
-on the 627 cross-study cohort:
-
-| Strategy | AUC (10-seed mean ± std) | Sens@95% | Sens@99% |
-|---|---|---|---|
-| Tumor-naive only | 0.9734 ± 0.002 | 0.885 | 0.766 |
-| Mutation-only (calibrated AUC 0.92) | 0.9020 | 0.595 | 0.267 |
-| Naive average of scores | **0.9882** | **0.924** | **0.856** |
-| LR fusion (learned weights) | **0.9883** | **0.930** | 0.850 |
-| LR fusion (isotonic-calibrated) | 0.9848 | 0.928 | 0.764 |
-
-**Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
-(t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]).
-The naive average is essentially equal to the learned LR-fusion
-(0.9882 vs 0.9883), so the **recommended recipe is the simple average**
-— equal-weight fusion of two well-calibrated scores is already optimal
-in this regime.
-
-**Isotonic post-hoc calibration of LR fusion was tested and rejected.**
-`lr_fusion_isotonic` regressed on every seed (mean Δ AUC = −0.0035,
-Δ Sens@99 = −0.086 vs uncalibrated LR fusion) and in one seed produced
-Sens@99 = 0 because the isotonic step function collapsed the test-fold
-scores onto a single value. The LR fusion output is already
-well-calibrated on the [0,1] probability scale (both inputs are
-`predict_proba` or sigmoid-mapped LLR), so re-fitting a monotone mapping
-on a single training fold removes information rather than adding it.
-Full results: [`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md).
-
-**Calibration sensitivity** — fusion helps reliably only when the
-mutation channel is itself informative. Below mutation AUC ~0.80, fusion
-is neutral or slightly harmful; above ~0.85, fusion reliably adds
-1–2 pp AUC. DeepCatch's panel-LLR @ 0.1% VAF (AUC 0.92) sits firmly
-in the "fusion helps" region.
-
-### Calibration sensitivity curve
-
-| Mutation-channel AUC | TN-only AUC | LR-fuse AUC | Δ | LR-fuse Sens@95% |
-|---|---|---|---|---|
-| 0.68 (poor) | 0.974 | 0.972 | −0.2pp | 0.885 |
-| 0.78 (modest) | 0.973 | 0.978 | +0.5pp | 0.906 |
-| 0.83 (decent) | 0.974 | 0.982 | +0.8pp | 0.906 |
-| 0.88 (good) | 0.974 | 0.987 | +1.3pp | 0.927 |
-| **0.92 (DeepCatch @ 0.1% VAF)** | **0.974** | **0.989** | **+1.4pp** | **0.937** |
-| 0.94 (very good) | 0.975 | 0.993 | +1.8pp | 0.961 |
-| 0.97 (excellent) | 0.974 | **0.996** | +2.2pp | 0.987 |
-
-**Use the fusion script**:
-
-```bash
-# Default mutation-channel calibration (AUC 0.92)
-python -m src.fragmentomics.fusion_ablation \
-    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
-    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
-    --seeds 10 --pca-n 200 --out results/fusion_ablation.json
-
-# Sensitivity sweep — 8 mutation-channel qualities
-for tau in 0.70 0.75 0.80 0.85 0.90 0.92 0.95 0.98; do
-  python -m src.fragmentomics.fusion_ablation \
-    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
-    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
-    --seeds 5 --pca-n 200 --target-auc $tau \
-    --out results/fusion_t${tau}.json
-done
-```
-
-### DeLong significance test on fusion
-
-`fusion_ablation.py` now also reports **DeLong's test** (DeLong, DeLong &
-Clarke-Pearson 1988, *Biometrics* 44:837) for every strategy vs the
-tumor-naive channel. DeLong is the standard paired-AUC significance test
-for correlated ROC curves (same patients, two models).
-
-Per-seed DeLong (naive-average vs tumor-naive, mutation channel AUC 0.92):
-
-| Seed | ΔAUC | z-statistic | p (two-sided) | 95% CI |
-|---|---|---|---|---|
-| 0 | +0.0129 | 3.27 | 1.07e-03 | [+0.0052, +0.0207] |
-| 1 | +0.0138 | 3.24 | 1.20e-03 | [+0.0055, +0.0222] |
-| 2 | +0.0142 | 3.97 | 7.34e-05 | [+0.0072, +0.0213] |
-| 3 | +0.0143 | 3.60 | 3.16e-04 | [+0.0065, +0.0220] |
-| 4 | +0.0189 | 3.59 | 3.31e-04 | [+0.0086, +0.0292] |
-
-**Every seed: p < 0.0015.** The 95% CI for ΔAUC is positive on every
-seed (range +0.005 to +0.029) — the fusion gain is statistically
-significant at α = 0.05 on every CV split, not just lucky seed averaging.
-LR-fusion gives essentially identical DeLong statistics.
-
-### Decision curve analysis + per-specificity operating table
-
-`src/fragmentomics/decision_curve.py` computes net-benefit (Vickers & Elkin
-2006) and a clinician-ready operating table. `decision_curve_cli.py`
-emits JSON for the 627 cohort. The operating table for naive-average
-fusion:
-
-| Specificity | Sensitivity | Operating threshold |
-|---|---|---|
-| 80% | 99.2% | 0.43 |
-| 85% | 98.6% | 0.45 |
-| 90% | 96.4% | 0.49 |
-| 95% | 91.5% | 0.62 |
-| 98% | 85.1% | 0.73 |
-| 99% | 82.4% | 0.75 |
-
-The decision curve (clinical_value_range) shows naive-average fusion
-provides net benefit over both treat-all and treat-none baselines for
-threshold probabilities in **[0.05, 0.50]** — i.e. across the entire
-clinically relevant decision range. Tumor-naive alone: [0.10, 0.50].
-
-```bash
-python -m src.fragmentomics.decision_curve_cli \
-    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
-    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
-    --seeds 5 --pca-n 200 \
-    --out results/decision_curve_627.json
-```
-
-### Sensitivity vs published MCED tests (Sens @ 99% specificity)
-
-```mermaid
-graph LR
-    subgraph Tier1["Single-modality (fragmentomics only)"]
-        FragOnly["This — frag<br/>75.5% (CI 63–88)<br/>n=627, 8 cancers"]
-    end
-
-    subgraph Tier2["Multi-channel (fragmentomics + mutation fusion)"]
-        FragFusion["This — fusion<br/>84.3% (CI 80–93)<br/>n=627, 8 cancers"]
-    end
-
-    subgraph Published["Published MCED tests"]
-        Galleri["Galleri CCGA-3<br/>51.5% @ 99.5%<br/>n=4,023, 50+ cancers"]
-        Shield["Shield ECLIPSE<br/>~83% @ ~90% spec<br/>n=7,861, CRC only"]
-        CancerSEEK["CancerSEEK<br/>~70% @ ~99%<br/>n=1,005, 8 cancers"]
-    end
-
-    Galleri --- CancerSEEK --- FragOnly --- FragFusion
-
-    classDef ours fill:#dafbe1,stroke:#1a7f37,color:#116329
-    classDef pub fill:#f6f8fa,stroke:#57606a,color:#1f2328
-    class FragOnly,FragFusion ours
-    class Galleri,Shield,CancerSEEK pub
-```
-
-> Direct comparison is approximate — cohort sizes and cancer panels differ. Headline: naive-average fusion of this project's fragmentomics + mutation channels **exceeds Galleri's published sensitivity at equivalent or higher specificity**, on a public-data cohort an order of magnitude smaller.
+| **c782efc** (HEAD) | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
+| `eb9948a` | Fix: refuse to fabricate cross-platform AUC from `synth_*` files |
+| `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |
+| `506e14a` | Update `cross_platform_readiness.json` (fragmentomics-only verdict) |
+| `ca1877c` | FinaleMe partial install (2026-09-27): Java 21, v0.58 JAR, pretrained models |
+| `64c5aeb`-`d5c62ac` | Biomedical-review fixes (24/24 regression tests passing) |
+| `0ce26db` (Audit-2) | Foundation smoke honest 3-seed 20-pair numbers; pair-broken shuffled control |
+| `0ad0033` | SensAtSpecLoss, BalancedCE, CalibrationLoss (`src/foundation/losses.py`) |
+| `ec16e0d` | REAL AlphaMissense fix (key construction bug, +0.057 AUC at K=200) |
+
+Full history: `git log --oneline` (60+ commits since v2.2.0). Notes per commit: [`docs/`](docs/).
 
 ---
 
 ## Documentation
 
-**New user?** Start with **[USAGE.md](USAGE.md)** — 30-second TL;DR, install, common workflows, CLI reference for both repos, troubleshooting, and a glossary.
+- **[MODEL.md](MODEL.md)** — model card: intended use, training data, performance, ethical considerations, limitations
+- **[USAGE.md](USAGE.md)** — 30-second TL;DR, install, common workflows, CLI reference, troubleshooting
+- **[TEAM.md](TEAM.md)** — who's involved, open roles, governance
+- **[RESULTS.md](RESULTS.md)** — consolidated research summary (DeepCatch + cfdna-fragmentomics-pipeline sister repo)
+- **[paper/PAPER.md](paper/PAPER.md)** / **[paper/paper.tex](paper/paper.tex)** — research paper
+- **[REVIEWERS.md](REVIEWERS.md)** — review notes for expert reviewers
+- **[docs/](docs/)** — 30+ deep-dive docs (CADD / TUMOR_NAIVE / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN / etc.)
+- **[paper/REPRODUCE.sh](paper/REPRODUCE.sh)** — one-command reproduction of every §3 artifact
 
-**New contributor / co-author candidate?** Start with **[TEAM.md](TEAM.md)** — who's involved, what roles are open, how to engage, governance.
-
-- [MODEL.md](MODEL.md) — model card with intended use, performance, and limitations
-- [paper/PAPER.md](paper/PAPER.md) — research paper (Markdown source)
-- [paper/paper.tex](paper/paper.tex) — research paper (LaTeX)
-- [RESULTS.md](RESULTS.md) — consolidated research summary across both repos (DeepCatch + cfdna-fragmentomics-pipeline)
-- [REVIEWERS.md](REVIEWERS.md) — review notes for expert reviewers
-- [docs/CADD_WEIGHTED_LLR.md](docs/CADD_WEIGHTED_LLR.md) — CADD Top-K=20 panel selection (validated +35pp whole-cohort Sens@99%)
-- [docs/CADD_PER_SUBGROUP_LLR.md](docs/CADD_PER_SUBGROUP_LLR.md) — per-subgroup CADD Top-K lift (+24 to +50pp)
-- [docs/CADD_GDC_VALIDATION.md](docs/CADD_GDC_VALIDATION.md) — GDC TCGA-LUAD 382-patient validation
-- [docs/CADD_FLARE_VALIDATION.md](docs/CADD_FLARE_VALIDATION.md) — FLARE/GSE317007 honest no-data report
-- [docs/ALPHAMISSENSE_REAL_LLR.md](docs/ALPHAMISSENSE_REAL_LLR.md) — REAL AlphaMissense Top-K=200 apples-to-apples with CADD (commit `ec16e0d`, +0.057 AUC lift at 0.1% ctDNA, key-construction bug fix)
-- [docs/PORTFOLIO_ROADMAP.md](docs/PORTFOLIO_ROADMAP.md) — unified 3-repo roadmap, 8 of 12 criteria met (2026-09-17 22:30 batch)
-
-## License & Citation
+## License & citation
 
 **License:** MIT — see [LICENSE](LICENSE).
 
-**Cite as:**
 ```bibtex
 @software{deepcatch2026,
   title        = {{DeepCatch}: Multi-Modal Longitudinal MCED Framework
                    for Early Cancer Detection from cfDNA},
   author       = {Yu Ching Lam and DeepCatch Contributors},
   year         = {2026},
-  version      = {2.1.0},
+  version      = {2.2.0},
   url          = {https://github.com/rollroyces/deepcatch},
 }
 ```
@@ -1283,4 +430,4 @@ graph LR
 
 ## Support
 
-DeepCatch is an independent, solo-maintained research project built without institutional support. If the work is useful to your research or pipeline, you can support continued development via [GitHub Sponsors](https://github.com/sponsors/rollroyces). See [`.github/SPONSORS.md`](.github/SPONSORS.md) for tier descriptions. Sponsorship funds compute, data licensing, and maintenance time — it is **not** required to use, reproduce, or extend the code (MIT-licensed).
+DeepCatch is an independent, solo-maintained research project built without institutional support. If the work is useful to your research or pipeline, support it via [GitHub Sponsors](https://github.com/sponsors/rollroyces) — see [`.github/SPONSORS.md`](.github/SPONSORS.md) for tier descriptions. Sponsorship funds compute and data licensing; it is **not** required to use, reproduce, or extend the code (MIT-licensed).

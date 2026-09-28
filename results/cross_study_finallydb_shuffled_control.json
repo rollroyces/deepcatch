@@ -1,30 +1,22 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-28T02:07:48.795196+00:00",
+  "generated_at": "2026-09-28T12:41:29.575557+00:00",
   "seeds": [
-    42,
-    13,
-    7,
-    99,
-    1234
+    2
   ],
-  "pooled_auc_mean": 0.5124718256949662,
-  "pooled_auc_std": 0.01177251913904554,
-  "pooled_sens_at_95": 0.06060606060606061,
-  "pooled_sens_at_99": 0.013774104683195593,
+  "pooled_auc_mean": 0.4657108272810752,
+  "pooled_auc_std": 0.0,
+  "pooled_sens_at_95": 0.05509641873278237,
+  "pooled_sens_at_99": 0.01652892561983471,
   "control_passed": true,
   "shuffled_control": {
-    "shuffled_pooled_auc_mean": 0.5124718256949662,
-    "shuffled_pooled_auc_std": 0.01177251913904554,
+    "shuffled_pooled_auc_mean": 0.4657108272810752,
+    "shuffled_pooled_auc_std": 0.0,
     "shuffled_pooled_per_seed_auc": [
-      0.49754779196927956,
-      0.5156889139327155,
-      0.5299012855831038,
-      0.501252191334836,
-      0.517968945654896
+      0.4657108272810752
     ],
-    "shuffled_pooled_sens_at_95": 0.06060606060606061,
-    "shuffled_pooled_sens_at_99": 0.013774104683195593,
+    "shuffled_pooled_sens_at_95": 0.05509641873278237,
+    "shuffled_pooled_sens_at_99": 0.01652892561983471,
     "control_passed": true,
     "perm_seed": 20260924,
     "n_cancer": 363,
