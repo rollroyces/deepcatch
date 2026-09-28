@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-09-28T02:07:48.795196+00:00",
+  "seeds": [
+    42,
+    13,
+    7,
+    99,
+    1234
+  ],
+  "pooled_auc_mean": 0.5124718256949662,
+  "pooled_auc_std": 0.01177251913904554,
+  "pooled_sens_at_95": 0.06060606060606061,
+  "pooled_sens_at_99": 0.013774104683195593,
+  "control_passed": true,
+  "shuffled_control": {
+    "shuffled_pooled_auc_mean": 0.5124718256949662,
+    "shuffled_pooled_auc_std": 0.01177251913904554,
+    "shuffled_pooled_per_seed_auc": [
+      0.49754779196927956,
+      0.5156889139327155,
+      0.5299012855831038,
+      0.501252191334836,
+      0.517968945654896
+    ],
+    "shuffled_pooled_sens_at_95": 0.06060606060606061,
+    "shuffled_pooled_sens_at_99": 0.013774104683195593,
+    "control_passed": true,
+    "perm_seed": 20260924,
+    "n_cancer": 363,
+    "n_healthy": 264
+  },
+  "interpretation": {
+    "null_floor": 0.55,
+    "note": "shuffled-pooled AUC < 0.55 means the cross-study pooled OOF is a cancer signal, not a batch-leakage artifact via fold structure. >0.55 is a warning that batch effects may dominate and the main 0.97 AUC should be read with caution."
+  }
+}

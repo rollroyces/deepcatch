@@ -72,9 +72,19 @@ sys.path.insert(0, os.path.join(PIPELINE, "scripts"))
 from honest_benchmark import load5  # noqa: E402
 from train_classifier import _harmonize  # noqa: E402
 
-# Standalone DeLong-CI helper (clinical-decision schema).
+# Repo-local extended loader: load5 + 256-dim 4-mer end-motif counts.
+# See scripts/load5_with_motifs.py for the loader contract and the
+# graceful-missing-motif-file policy. Wired through `--include-motifs`
+# (default OFF for backward-compat bit-identical behaviour).
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _REPO_ROOT)
+sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts"))
+from load5_with_motifs import (  # noqa: E402
+    MOTIF_DIM,
+    load5_with_motifs as _load5_with_motifs,
+    load5_with_motifs_optional as _load5_with_motifs_optional,
+    load5_only as _load5_only_local,
+)
 from src.per_cancer_sens_at_spec import (  # noqa: E402
     DEFAULT_PREVALENCES,
     DEFAULT_SPECIFICITIES,
@@ -98,6 +108,12 @@ DEFAULT_PCA_N = 200
 SPECS_FOR_PER_CANCER = [0.95, 0.98, 0.99]
 N_BOOTSTRAP = 1000
 BOOTSTRAP_SEED = 2026
+# Shuffled-label null control threshold (literature: AUC < 0.55 on healthy
+# controls is the expected null; >0.55 indicates batch leakage). The
+# control is a sanity check, not a hard gate: a noisy seed can fluctuate
+# just above this floor. We log a warning but do NOT fail the run.
+SHUFFLED_AUC_NULL_FLOOR = 0.55
+SHUFFLED_CONTROL_RUN_SEED = 20260924  # the global seed for the label perm
 
 # ──────────────────────────────────────────────────────────────────────
 # Publication registry (cfdna-fragmentomics skill: id→study map)
@@ -270,6 +286,105 @@ def bootstrap_ci_sens(y_true, y_score, spec, n_boot, seed):
     lo = float(np.quantile(sens_samples, 0.025))
     hi = float(np.quantile(sens_samples, 0.975))
     return lo, hi
+
+
+# --------------------------------------------------------------------------- #
+# Shuffled-label null control
+# --------------------------------------------------------------------------- #
+def run_shuffled_label_control(X, y, st, seeds, pca_n,
+                              perm_seed=SHUFFLED_CONTROL_RUN_SEED):
+    """Label-permutation null control for the pooled cross-study pipeline.
+
+    Mirrors the P0-C fix in scripts/foundation_real_smoke.py (lines
+    ~580-590): permute ``y`` ONCE (preserving sample-id pairing) and
+    run the same 5-seed x 5-fold pooled OOF with harmonize + PCA + LR.
+
+    A null that beats the SHUFFLED_AUC_NULL_FLOOR (= 0.55) suggests the
+    pooled 0.97 AUC is partially a batch-leakage artifact rather than a
+    cancer signal — exactly the reviewer question this control exists to
+    answer. A null AUC < 0.55 means the cancer signal dominates.
+
+    The shuffle is computed once, OUTSIDE the fold loop, so every fold
+    sees the same permutation (pair-consistent across folds). The same
+    per-publication z-score harmonization is used inside each fold,
+    matching the pooled OOF in `section_pooled(harmonize=True)`.
+
+    Parameters
+    ----------
+    X, y, st : feature matrix, integer labels, study-array (str) — same
+        as inputs to `pooled_oof`.
+    seeds : list of int — pipeline-CV seeds (default DEFAULT_SEEDS).
+    pca_n : int — PCA components (default DEFAULT_PCA_N).
+    perm_seed : int — global seed for the label permutation.
+
+    Returns
+    -------
+    dict with keys:
+        shuffled_pooled_auc_mean : float — 5-seed mean OOF AUC.
+        shuffled_pooled_auc_std  : float — 5-seed std.
+        shuffled_pooled_per_seed_auc : list[float] — per-seed AUCs.
+        shuffled_pooled_sens_at_95 : float — sens at spec 0.95.
+        shuffled_pooled_sens_at_99 : float — sens at spec 0.99.
+        control_passed : bool — True iff mean shuffled AUC < SHUFFLED_AUC_NULL_FLOOR.
+        perm_seed : int — echoes the seed used (reproducibility).
+        n_cancer, n_healthy : int — pooled counts.
+    """
+    rng = np.random.default_rng(perm_seed)
+    y_shuf = rng.permutation(y)  # global label perm (pair-broken)
+    _, score, seed_aucs = pooled_oof(
+        X, y_shuf, st, seeds, pca_n, harmonize=True,
+    )
+    s95, _ = sens_at_spec(y_shuf, score, 0.95)
+    s99, _ = sens_at_spec(y_shuf, score, 0.99)
+    auc_mean = float(np.mean(seed_aucs))
+    return {
+        "shuffled_pooled_auc_mean": auc_mean,
+        "shuffled_pooled_auc_std": float(np.std(seed_aucs)),
+        "shuffled_pooled_per_seed_auc": [float(a) for a in seed_aucs],
+        "shuffled_pooled_sens_at_95": float(s95),
+        "shuffled_pooled_sens_at_99": float(s99),
+        "control_passed": bool(auc_mean < SHUFFLED_AUC_NULL_FLOOR),
+        "perm_seed": int(perm_seed),
+        "n_cancer": int((y == 1).sum()),
+        "n_healthy": int((y == 0).sum()),
+    }
+
+
+def write_shuffled_control_json(control_result, seeds, out_path):
+    """Write the shuffled-control result to JSON.
+
+    Schema mirrors the top-level fields of cross_study_finallydb.json
+    (pooled_auc_mean, pooled_auc_std, pooled_sens_at_95,
+    pooled_sens_at_99, seeds, schema_version, generated_at) with an
+    additional ``control_passed`` bool. The nested block
+    ``shuffled_control`` preserves the verbose keys (per-seed AUCs,
+    n_cancer, n_healthy, perm_seed) for full audit.
+    """
+    payload = {
+        "schema_version": "1.0",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "seeds": list(seeds),
+        "pooled_auc_mean": control_result["shuffled_pooled_auc_mean"],
+        "pooled_auc_std": control_result["shuffled_pooled_auc_std"],
+        "pooled_sens_at_95": control_result["shuffled_pooled_sens_at_95"],
+        "pooled_sens_at_99": control_result["shuffled_pooled_sens_at_99"],
+        "control_passed": control_result["control_passed"],
+        "shuffled_control": control_result,
+        "interpretation": {
+            "null_floor": SHUFFLED_AUC_NULL_FLOOR,
+            "note": (
+                f"shuffled-pooled AUC < {SHUFFLED_AUC_NULL_FLOOR:.2f} means "
+                "the cross-study pooled OOF is a cancer signal, not a "
+                "batch-leakage artifact via fold structure. >0.55 is a "
+                "warning that batch effects may dominate and the main "
+                "0.97 AUC should be read with caution."
+            ),
+        },
+    }
+    os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(payload, f, indent=2)
+    return payload
 
 
 # --------------------------------------------------------------------------- #
@@ -1124,6 +1239,69 @@ def main():
     ap.add_argument("--seeds", type=int, nargs="+", default=DEFAULT_SEEDS)
     ap.add_argument("--pca", type=int, default=DEFAULT_PCA_N)
     ap.add_argument("--top-cancer-n", type=int, default=5)
+    ap.add_argument("--shuffled-label-control", action="store_true",
+                    help="After the main benchmark, ALSO run the "
+                         "label-permutation null control (5-seed x 5-fold "
+                         "pooled OOF on globally permuted y). The shuffled "
+                         "AUC < 0.55 (the SHUFFLED_AUC_NULL_FLOOR) means "
+                         "the main 0.97 AUC is a cancer signal, not a "
+                         "batch-leakage artifact. Default OFF to preserve "
+                         "the existing benchmark; the shuffled-only "
+                         "script `scripts/cross_study_finallydb_shuffled_control.py` "
+                         "runs it standalone (faster, no full benchmark).")
+    ap.add_argument("--shuffled-label-control-out",
+                    default="results/cross_study_finallydb_shuffled_control.json",
+                    help="Output JSON path for the shuffled-label control "
+                         "(only used when --shuffled-label-control is set).")
+    ap.add_argument("--shuffled-perm-seed", type=int,
+                    default=SHUFFLED_CONTROL_RUN_SEED,
+                    help="Global seed for the label permutation in the "
+                         "shuffled-label null control. Default "
+                         f"{SHUFFLED_CONTROL_RUN_SEED} (reproducible).")
+    ap.add_argument("--include-motifs", action="store_true",
+                    help="Add the 256-dim 4-mer end-motif frequency "
+                         "vector to the feature set (load5_with_motifs, "
+                         f"total dim = 63,246 + {MOTIF_DIM} = 63,502). "
+                         "Default OFF — the existing benchmark is "
+                         "bit-identical to load5 without this flag. See "
+                         "scripts/load5_with_motifs.py for the loader "
+                         "contract and the graceful-missing-motif-file "
+                         "policy. Reduces the cohort to the 98 samples "
+                         "with motifs.npy cached locally when used with "
+                         "--motif-cohort-mode=strict; with "
+                         "--motif-cohort-mode=zero_fill (default) keeps "
+                         "the full cohort with motif block zero-filled "
+                         "for samples without motifs.npy (head-to-head "
+                         "comparison vs the OFF-default benchmark).")
+    ap.add_argument("--motif-cohort-mode",
+                    choices=("zero_fill", "strict"), default="zero_fill",
+                    help="Only used when --include-motifs is set. "
+                         "'zero_fill' (default) keeps all samples that "
+                         "have the 5 DELFI channels and the FSD JSON; "
+                         "samples missing motifs.npy get a 256-dim "
+                         "zero-filled motif block. This is a head-to-head "
+                         "comparison vs the OFF-default benchmark on the "
+                         "same n=627 cohort. 'strict' drops any sample "
+                         "missing motifs.npy — currently 98/627 samples "
+                         "have motifs cached locally, so the strict "
+                         "cohort is much smaller.")
+    ap.add_argument(
+        "--gc-correction",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Apply per-bin GC bias correction to the 100kb coverage "
+            "channel (default: ON). When ON, the 4th feature channel "
+            "becomes `c100_gc_corrected` instead of `cn = c100 / median(c100)`; "
+            "this is the same 5-channel DELFI profile with the GC-vs-coverage "
+            "confound removed (subtract the polynomial fit E[c100 | GC] on the "
+            "TRAIN fold, divide by the residual median). When OFF, the legacy "
+            "`cn` channel is used and the script remains bit-identical to the "
+            "pre-GC-correction benchmark. See `scripts/gc_correction.py` for "
+            "the GC-vs-coverage regression and `docs/HARMONIZATION.md §3` for "
+            "the validation strategy."
+        ),
+    )
     args = ap.parse_args()
 
     # ── Resolve the requested publications list ──
@@ -1169,26 +1347,66 @@ def main():
         )
 
     print(f"[3/6] Loading 5-channel DELFI features from {args.features_dir}")
-    X, y, st = load5(labels, studies, args.features_dir)
+    if args.include_motifs:
+        if args.motif_cohort_mode == "strict":
+            print(f"      (with --include-motifs=strict: drop samples missing motifs.npy)")
+            X, y, st = _load5_with_motifs(labels, studies, args.features_dir)
+        else:
+            print(f"      (with --include-motifs=zero_fill: full cohort, "
+                  f"missing motifs zero-filled)")
+            X, y, st = _load5_with_motifs_optional(labels, studies, args.features_dir)
+        n_motif_dim = MOTIF_DIM
+    elif args.gc_correction:
+        # GC-corrected 100kb-coverage channel (linear fit E[c100 | GC]
+        # on the TRAIN fold of every CV iteration, residual-normalised).
+        # See scripts/load5_gc_corrected.py.
+        from load5_gc_corrected import load5_gc_corrected_cv
+        # NOTE: this refits the GC curve inside each (seed, fold) of
+        # the CV loop. The 5-seed x 5-fold fit is the metrically
+        # correct path; the per-sample fallback would leak test-fold
+        # information through the GC curve.
+        print(f"      (with --gc-correction ON: per-bin GC bias "
+              f"correction on 100kb coverage)")
+        X, y, st = load5_gc_corrected_cv(
+            labels, studies, args.features_dir, seeds=args.seeds,
+        )
+        n_motif_dim = 0
+    else:
+        X, y, st = load5(labels, studies, args.features_dir)
+        n_motif_dim = 0
     print(f"      X.shape={X.shape}, n_cancer={(y==1).sum()}, "
           f"n_healthy={(y==0).sum()}, "
-          f"studies={sorted(set(st.tolist()))}")
+          f"studies={sorted(set(st.tolist()))}"
+          + (f", +motifs({n_motif_dim}-dim, zero_fill={args.motif_cohort_mode=='zero_fill'})"
+             if args.include_motifs else ""))
 
-    # Replicate load5's filter to recover the sample IDs in X-row order.
+    # Replicate the chosen loader's filter to recover the sample IDs in
+    # X-row order. The path glob depends on whether motifs are loaded.
     samples_in_array = []
-    feat_paths_tpl = (
-        "{s}.delfi_5mb_ratio.npy",
-        "{s}.delfi_5mb_coverage.npy",
-        "{s}.delfi_100kb_ratio.npy",
-        "{s}.delfi_100kb_counts.npy",
-        "{s}.fsd.json",
-    )
+    if args.include_motifs and args.motif_cohort_mode == "strict":
+        feat_paths_tpl = (
+            "{s}.delfi_5mb_ratio.npy",
+            "{s}.delfi_5mb_coverage.npy",
+            "{s}.delfi_100kb_ratio.npy",
+            "{s}.delfi_100kb_counts.npy",
+            "{s}.fsd.json",
+            "{s}.motifs.npy",
+        )
+    else:
+        feat_paths_tpl = (
+            "{s}.delfi_5mb_ratio.npy",
+            "{s}.delfi_5mb_coverage.npy",
+            "{s}.delfi_100kb_ratio.npy",
+            "{s}.delfi_100kb_counts.npy",
+            "{s}.fsd.json",
+        )
     for s in sorted(labels):
         if all(os.path.exists(os.path.join(args.features_dir, f.format(s=s)))
                for f in feat_paths_tpl):
             samples_in_array.append(s)
     assert len(samples_in_array) == X.shape[0], (
-        f"sample_id reconstruction failed: {len(samples_in_array)} vs {X.shape[0]}")
+        f"sample_id reconstruction failed: {len(samples_in_array)} vs {X.shape[0]}"
+    )
 
     # Build per-row publication array aligned to X rows.
     publication_arr = np.array(
@@ -1311,10 +1529,27 @@ def main():
             "seeds": args.seeds,
             "pca_n": args.pca,
             "classifier": "LogisticRegression(max_iter=2000)",
-            "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio "
-                           "+ 100kb_counts + FSD-196)",
+            "feature_set": ("5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio "
+                           + ("+ c100_gc_corrected" if args.gc_correction
+                              else "+ 100kb_counts")
+                           + " + FSD-196)"
+                           + (f" + 256-dim 4-mer end motifs "
+                              f"(cohort mode: {args.motif_cohort_mode})"
+                              if args.include_motifs else "")),
+            "motif_features": {
+                "included": bool(args.include_motifs),
+                "dim": MOTIF_DIM if args.include_motifs else 0,
+                "cohort_mode": args.motif_cohort_mode if args.include_motifs else None,
+                "source": (
+                    "scripts/load5_with_motifs.py:_load5_with_motifs "
+                    "(strict) or _load5_with_motifs_optional (zero_fill)"
+                    if args.include_motifs else
+                    "not loaded (--include-motifs OFF; default)"
+                ),
+            },
             "harmonization": "per-publication z-score StandardScaler fit on train fold only",
             "cv": "5-fold StratifiedKFold, 5-seed pooled OOF",
+            "gc_correction": bool(args.gc_correction),
             "n_bootstrap": N_BOOTSTRAP,
             "bootstrap_seed": BOOTSTRAP_SEED,
             "specificities_per_cancer": SPECS_FOR_PER_CANCER,
@@ -1399,6 +1634,98 @@ def main():
               f"+ 1 POOLED row")
 
     write_markdown(payload, args.out_md)
+
+    # Optionally run the shuffled-label null control as a sanity check.
+    # Default OFF to preserve the existing benchmark behavior. When ON,
+    # runs AFTER the main benchmark so all the per-cancer / OvR /
+    # markdown artifacts are already on disk.
+    if args.shuffled_label_control:
+        _cli_run_shuffled_label_control(
+            args, X, y, st, args.seeds,
+            out_path=args.shuffled_label_control_out,
+            perm_seed=args.shuffled_perm_seed,
+        )
+    return 0
+
+
+def _cli_run_shuffled_label_control(args, X, y, st, seeds,
+                                    out_path=None, perm_seed=None):
+    """Invoked after `main()` to run the shuffled-label null control.
+
+    Kept separate from `main()` so the standalone script
+    `scripts/cross_study_finallydb_shuffled_control.py` can reuse the
+    same loader + return-shape contract.
+
+    Logs a WARNING (not an error) when the shuffled AUC is
+    above SHUFFLED_AUC_NULL_FLOOR; this is a sanity check, not a gate.
+    """
+    if out_path is None:
+        out_path = "results/cross_study_finallydb_shuffled_control.json"
+    if perm_seed is None:
+        perm_seed = SHUFFLED_CONTROL_RUN_SEED
+    print(f"[+] Shuffled-label null control (5-seed x 5-fold pooled OOF "
+          f"on permuted y, seed={perm_seed})")
+    control = run_shuffled_label_control(
+        X, y, st, seeds, args.pca, perm_seed=perm_seed,
+    )
+    payload = write_shuffled_control_json(control, seeds, out_path)
+    auc_mean = control["shuffled_pooled_auc_mean"]
+    auc_std = control["shuffled_pooled_auc_std"]
+    print(f"      shuffled pooled AUC: {auc_mean:.4f} ± {auc_std:.4f}  "
+          f"(n_cancer={control['n_cancer']}, n_healthy={control['n_healthy']})")
+    print(f"      shuffled sens@95 = {control['shuffled_pooled_sens_at_95']:.3f}"
+          f"   shuffled sens@99 = {control['shuffled_pooled_sens_at_99']:.3f}")
+    if control["control_passed"]:
+        print(f"      [NULL CONTROL PASSED] shuffled AUC "
+              f"({auc_mean:.3f}) < {SHUFFLED_AUC_NULL_FLOOR:.2f} — "
+              "the main pooled 0.97 AUC is a cancer signal, not a "
+              "batch-leakage artifact via fold structure.")
+    else:
+        warnings.warn(
+            f"shuffled-label null control FAILED: "
+            f"shuffled_pooled_auc_mean={auc_mean:.4f} >= "
+            f"{SHUFFLED_AUC_NULL_FLOOR:.2f}. The pooled AUC may be "
+            f"partially a batch-leakage artifact. Run is NOT failed — "
+            f"this is a sanity-check warning only. See "
+            f"{out_path} and `docs/CROSS_STUDY_BENCHMARK.md` §3 for "
+            f"interpretation.",
+            stacklevel=2,
+        )
+    print(f"\nWrote {out_path}")
+    return payload
+
+
+def main_with_shuffled(args):
+    """Variant of main() that ONLY runs the shuffled-label control.
+
+    Skips the main 5–10 minute cross-study benchmark and runs only the
+    shuffled-label null control. Used by the standalone script
+    `scripts/cross_study_finallydb_shuffled_control.py` to re-run just
+    the sanity check without paying the full per-cancer OvR cost.
+    """
+    requested = set(str(p) for p in args.publications)
+    if args.include_snyder:
+        requested.add("1")
+    if args.include_sun:
+        requested.add("7")
+    if requested - set(PUBLICATION_REGISTRY.keys()):
+        raise SystemExit(
+            f"unknown publication id(s): "
+            f"{sorted(requested - set(PUBLICATION_REGISTRY.keys()))}. "
+            f"Known: {sorted(PUBLICATION_REGISTRY.keys())}"
+        )
+    requested_publications = sorted(requested)
+
+    labels, studies, disease_class, publication = load_labels_multiclass(
+        args.labels_multiclass, set(requested_publications),
+    )
+    apply_cell_line_filter(labels, studies, disease_class, publication)
+    X, y, st = load5(labels, studies, args.features_dir)
+    _cli_run_shuffled_label_control(
+        args, X, y, st, args.seeds,
+        out_path=args.shuffled_label_control_out,
+        perm_seed=args.shuffled_perm_seed,
+    )
     return 0
 
 

@@ -430,3 +430,211 @@ def test_end_to_end_script_writes_both_outputs(tmp_path):
     assert pc["per_cancer"], "standalone per_cancer is empty"
     assert pc.get("pooled") is not None, "standalone JSON missing POOLED row"
     assert pc["provenance"]["source"] == "cross_study_finallydb.py"
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Shuffled-label null control tests
+#
+# Mirrors the foundation_real_smoke.py P0-C fix (lines ~580-590): the
+# pooled cross-study AUC of 0.97 is robust only if a shuffled-label
+# control collapses to ~0.5. These tests verify:
+#   1. shuffled_label_control_emits_null_auc — synthetic cohort, shuffled
+#      labels → pooled AUC < 0.55
+#   2. shuffled_label_control_does_not_modify_main_json — running the
+#      control on synthetic data leaves cross_study_finallydb.json
+#      untouched
+#   3. shuffled_label_control_schema_contract — JSON has all required
+#      fields (pooled_auc_mean, pooled_auc_std, pooled_sens_at_95,
+#      pooled_sens_at_99, seeds, schema_version, generated_at,
+#      control_passed)
+# ──────────────────────────────────────────────────────────────────────
+def _synthetic_pooled_array(n_cancer=200, n_healthy=200, n_features=20,
+                            seed=0):
+    """Build a synthetic pooled (X, y, st) for shuffled-control tests.
+
+    Two fake "studies" so `_harmonize` has at least two groups to z-score
+    against (the real pooled control uses two FinaleDB publications).
+    Features are pure noise — the pooled AUC must be ≈ 0.5 by
+    construction. Using n_cancer=n_healthy=200 (rather than e.g. 80)
+    keeps the per-seed variance tight enough that the 5-fold OOF
+    reliably collapses to < 0.55 even on a small handful of seeds,
+    which is what the null-control floor assumes.
+    """
+    rng = np.random.default_rng(seed)
+    n = n_cancer + n_healthy
+    # Noise-only features → classifier can't separate by construction.
+    X = rng.normal(0.0, 1.0, (n, n_features)).astype(np.float64)
+    y = np.array([1] * n_cancer + [0] * n_healthy, dtype=int)
+    # Equal-share "studies" so `_harmonize` has at least two groups to
+    # z-score against (the real pooled control has jiang + cristiano).
+    st = np.array(["A"] * (n // 2) + ["B"] * (n - n // 2), dtype=object)
+    return X, y, st
+
+
+@pytest.mark.slow
+def test_shuffled_label_control_emits_null_auc():
+    """On a synthetic null cohort, the shuffled-label control must emit
+    a pooled AUC near 0.5 (well below the 0.55 null-control floor).
+
+    Marked `@pytest.mark.slow` because the helper runs the same 5-seed
+    x 5-fold pooled OOF as the real benchmark — even on a small
+    synthetic cohort this takes ~30 seconds end-to-end. The per-call
+    time is the cost of the SHA256 check + 5-seed CV; the synthetic
+    data has 160 samples x 50 features which the pipeline processes
+    quickly relative to the real 627 x 63,246 cached cohort.
+    """
+    from scripts.cross_study_finallydb import (
+        SHUFFLED_AUC_NULL_FLOOR,
+        run_shuffled_label_control,
+    )
+
+    X, y, st = _synthetic_pooled_array(n_cancer=200, n_healthy=200,
+                                       n_features=20, seed=0)
+    # 2 seeds to keep the synthetic-test runtime tight; the real
+    # benchmark uses 5 DEFAULT_SEEDS.
+    result = run_shuffled_label_control(
+        X, y, st, seeds=[42, 13], pca_n=10, perm_seed=20260924,
+    )
+
+    # Synthetic noise-only features → shuffled control must collapse.
+    assert result["shuffled_pooled_auc_mean"] < SHUFFLED_AUC_NULL_FLOOR, (
+        f"shuffled-pooled AUC {result['shuffled_pooled_auc_mean']:.3f} "
+        f"is NOT below the {SHUFFLED_AUC_NULL_FLOOR:.2f} null floor — "
+        f"the label-permutation control failed to collapse on synthetic "
+        f"noise features."
+    )
+    # control_passed must agree.
+    assert result["control_passed"] is True
+    # Aux fields are populated.
+    assert result["n_cancer"] == 200
+    assert result["n_healthy"] == 200
+    assert result["perm_seed"] == 20260924
+    assert isinstance(result["shuffled_pooled_per_seed_auc"], list)
+    assert len(result["shuffled_pooled_per_seed_auc"]) == 2
+
+
+@pytest.mark.slow
+def test_shuffled_label_control_does_not_modify_main_json(tmp_path):
+    """Running `write_shuffled_control_json` on synthetic data must NOT
+    touch the production `results/cross_study_finallydb.json` file.
+
+    The main cross-study JSON is the canonical audit artifact for §3.2
+    of the methods paper. The shuffled control is a SEPARATE run with
+    its own JSON (results/cross_study_finallydb_shuffled_control.json);
+    the main benchmark output must remain byte-identical.
+
+    Marked `@pytest.mark.slow` because the helper runs the same CV
+    machinery the real benchmark uses.
+    """
+    import hashlib
+    from scripts.cross_study_finallydb import (
+        run_shuffled_label_control,
+        write_shuffled_control_json,
+    )
+
+    main_json = _REPO_ROOT / "results" / "cross_study_finallydb.json"
+    if not main_json.exists():
+        pytest.skip("production cross_study_finallydb.json not present "
+                    "(run on a machine with the cached JSON at HEAD)")
+
+    pre_sha = hashlib.sha256(main_json.read_bytes()).hexdigest()
+
+    X, y, st = _synthetic_pooled_array(n_cancer=120, n_healthy=120,
+                                       n_features=20, seed=1)
+    result = run_shuffled_label_control(
+        X, y, st, seeds=[42], pca_n=10, perm_seed=20260924,
+    )
+    out_path = tmp_path / "shuffled.json"
+    payload = write_shuffled_control_json(result, seeds=[42],
+                                          out_path=str(out_path))
+    assert out_path.exists()
+    assert payload["control_passed"] is True
+
+    # Main JSON SHA256 must be byte-identical before and after.
+    post_sha = hashlib.sha256(main_json.read_bytes()).hexdigest()
+    assert pre_sha == post_sha, (
+        f"running `write_shuffled_control_json` modified "
+        f"results/cross_study_finallydb.json "
+        f"(pre={pre_sha[:12]}, post={post_sha[:12]}) — this would "
+        f"break the §3.2 audit trail in paper/METHODS_PAPER.md."
+    )
+
+
+def test_shuffled_label_control_schema_contract(tmp_path):
+    """The shuffled-control JSON has the documented schema:
+
+      Top-level:  schema_version, generated_at, seeds,
+                  pooled_auc_mean, pooled_auc_std,
+                  pooled_sens_at_95, pooled_sens_at_99,
+                  control_passed: bool.
+
+      Nested:     shuffled_control (the verbose run_shuffled_label_control
+                  result dict).
+    """
+    from scripts.cross_study_finallydb import (
+        SHUFFLED_AUC_NULL_FLOOR,
+        run_shuffled_label_control,
+        write_shuffled_control_json,
+    )
+
+    X, y, st = _synthetic_pooled_array(n_cancer=40, n_healthy=40,
+                                       n_features=20, seed=2)
+    # No CV — just exercise the writer.
+    out_path = tmp_path / "shuffled.json"
+    payload = write_shuffled_control_json(
+        {
+            "shuffled_pooled_auc_mean": 0.51,
+            "shuffled_pooled_auc_std": 0.01,
+            "shuffled_pooled_per_seed_auc": [0.50, 0.51, 0.52, 0.51, 0.50],
+            "shuffled_pooled_sens_at_95": 0.05,
+            "shuffled_pooled_sens_at_99": 0.02,
+            "control_passed": 0.51 < SHUFFLED_AUC_NULL_FLOOR,
+            "perm_seed": 20260924,
+            "n_cancer": 40,
+            "n_healthy": 40,
+        },
+        seeds=[42, 13, 7, 99, 1234],
+        out_path=str(out_path),
+    )
+
+    # Top-level field schema.
+    required = {
+        "schema_version", "generated_at", "seeds",
+        "pooled_auc_mean", "pooled_auc_std",
+        "pooled_sens_at_95", "pooled_sens_at_99",
+        "control_passed",
+        "shuffled_control",
+        "interpretation",
+    }
+    assert required.issubset(set(payload.keys())), (
+        f"shuffled JSON top-level keys missing: "
+        f"{required - set(payload.keys())}"
+    )
+
+    # Field types.
+    assert isinstance(payload["seeds"], list) and len(payload["seeds"]) == 5
+    assert isinstance(payload["pooled_auc_mean"], float)
+    assert isinstance(payload["pooled_auc_std"], float)
+    assert isinstance(payload["control_passed"], bool)
+    assert payload["schema_version"] == "1.0"
+    # The verbose nested block has all run_shuffled_label_control's keys.
+    nested_required = {
+        "shuffled_pooled_auc_mean", "shuffled_pooled_auc_std",
+        "shuffled_pooled_per_seed_auc",
+        "shuffled_pooled_sens_at_95", "shuffled_pooled_sens_at_99",
+        "control_passed", "perm_seed", "n_cancer", "n_healthy",
+    }
+    assert nested_required.issubset(set(payload["shuffled_control"].keys()))
+
+    # Same contract end-to-end on the real helper output.
+    X2, y2, st2 = _synthetic_pooled_array(n_cancer=40, n_healthy=40,
+                                          n_features=20, seed=3)
+    result = run_shuffled_label_control(
+        X2, y2, st2, seeds=[42, 13], pca_n=10, perm_seed=20260924,
+    )
+    out_path2 = tmp_path / "shuffled_e2e.json"
+    payload2 = write_shuffled_control_json(result, seeds=[42, 13],
+                                           out_path=str(out_path2))
+    assert required.issubset(set(payload2.keys()))
+    assert payload2["pooled_auc_mean"] == result["shuffled_pooled_auc_mean"]
+    assert payload2["pooled_sens_at_95"] == result["shuffled_pooled_sens_at_95"]

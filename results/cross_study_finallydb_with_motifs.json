@@ -1,0 +1,834 @@
+{
+  "schema_version": "1.1",
+  "generated_at": "2026-09-28T02:15:15.350469+00:00",
+  "scope": "open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model.",
+  "finaledb_api_status": "api-down",
+  "finaledb_api_reason": "FinaleDB data endpoints returning errors: ['publication=500', 'seqrun=500', 'summary=500']",
+  "config": {
+    "publications": [
+      "6",
+      "8"
+    ],
+    "publication_registry": {
+      "6": "jiang",
+      "8": "cristiano"
+    },
+    "seeds": [
+      42,
+      13,
+      7,
+      99,
+      1234
+    ],
+    "pca_n": 200,
+    "classifier": "LogisticRegression(max_iter=2000)",
+    "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196) + 256-dim 4-mer end motifs (cohort mode: zero_fill)",
+    "motif_features": {
+      "included": true,
+      "dim": 256,
+      "cohort_mode": "zero_fill",
+      "source": "scripts/load5_with_motifs.py:_load5_with_motifs (strict) or _load5_with_motifs_optional (zero_fill)"
+    },
+    "harmonization": "per-publication z-score StandardScaler fit on train fold only",
+    "cv": "5-fold StratifiedKFold, 5-seed pooled OOF",
+    "n_bootstrap": 1000,
+    "bootstrap_seed": 2026,
+    "specificities_per_cancer": [
+      0.95,
+      0.98,
+      0.99
+    ],
+    "cell_line_regex": "^(GM\\d+|HeLa|HepG2|K562|HL60|Jurkat|Raji|MCF7|U937|THP1|HEK293|HCT116|SW480|A549|GM12878)",
+    "labels_file": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
+    "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+  },
+  "cohort": {
+    "n_total_in_labels": 658,
+    "n_with_features": 627,
+    "n_dropped_due_to_missing_features": 31,
+    "n_cancer_in_labels": 364,
+    "n_healthy_in_labels": 294,
+    "n_dropped_cell_line": 0,
+    "dropped_cell_line_ids": [],
+    "per_study": {
+      "jiang": {
+        "n_total": 121,
+        "n_cancer": 89,
+        "n_healthy": 32
+      },
+      "cristiano": {
+        "n_total": 537,
+        "n_cancer": 275,
+        "n_healthy": 262
+      }
+    },
+    "per_publication": {
+      "6": {
+        "n_total": 121,
+        "n_cancer": 89,
+        "n_healthy": 32,
+        "study_label": "jiang"
+      },
+      "8": {
+        "n_total": 537,
+        "n_cancer": 275,
+        "n_healthy": 262,
+        "study_label": "cristiano"
+      }
+    },
+    "per_cancer": {
+      "HCC_J": {
+        "n_total": 89,
+        "jiang": 89,
+        "cristiano": 0
+      },
+      "LUAD": {
+        "n_total": 79,
+        "jiang": 0,
+        "cristiano": 79
+      },
+      "BRCA": {
+        "n_total": 54,
+        "jiang": 0,
+        "cristiano": 54
+      },
+      "PAAD": {
+        "n_total": 60,
+        "jiang": 0,
+        "cristiano": 60
+      },
+      "OV": {
+        "n_total": 28,
+        "jiang": 0,
+        "cristiano": 28
+      },
+      "CRC": {
+        "n_total": 27,
+        "jiang": 0,
+        "cristiano": 27
+      },
+      "OTHER_C": {
+        "n_total": 27,
+        "jiang": 0,
+        "cristiano": 27
+      }
+    }
+  },
+  "per_publication": {
+    "6": {
+      "n_total": 121,
+      "n_cancer": 89,
+      "n_healthy": 32,
+      "study_label": "jiang",
+      "auc_mean": 0.9844803370786517,
+      "auc_std": 0.002003559356416715,
+      "per_seed_auc": [
+        0.9859550561797753,
+        0.980688202247191,
+        0.9841994382022472,
+        0.9859550561797752,
+        0.9856039325842696
+      ],
+      "skipped": false
+    },
+    "8": {
+      "n_total": 506,
+      "n_cancer": 274,
+      "n_healthy": 232,
+      "study_label": "cristiano",
+      "auc_mean": 0.9719512962496853,
+      "auc_std": 0.00247501096722286,
+      "per_seed_auc": [
+        0.9681286181726656,
+        0.9739963503649635,
+        0.9732412534608608,
+        0.9744368235590234,
+        0.9699534356909137
+      ],
+      "skipped": false
+    }
+  },
+  "publications": [
+    "6",
+    "8"
+  ],
+  "requested_publications": [
+    "6",
+    "8"
+  ],
+  "publications_with_features": [
+    "6",
+    "8"
+  ],
+  "publications_missing_features": [],
+  "pooled": {
+    "harmonized": {
+      "auc_mean": 0.9767948075799315,
+      "auc_std": 0.002443595413732754,
+      "per_seed_auc": [
+        0.9747057350363135,
+        0.9780657817847901,
+        0.9794118874697387,
+        0.973119626012188,
+        0.9786710075966274
+      ],
+      "sens_at_spec_95": 0.9118457300275482,
+      "sens_at_spec_98": 0.8319559228650137,
+      "sens_at_spec_99": 0.7768595041322314
+    },
+    "no_harmonize": {
+      "auc_mean": 0.9757471408297853,
+      "auc_std": 0.001830661096764222,
+      "per_seed_auc": [
+        0.9738605058852993,
+        0.97702228900576,
+        0.9734952834126388,
+        0.976083145504633,
+        0.978274480340596
+      ],
+      "sens_at_spec_95": 0.9228650137741047,
+      "sens_at_spec_98": 0.8705234159779615,
+      "sens_at_spec_99": 0.7713498622589532
+    }
+  },
+  "per_cancer": {
+    "HCC_J": {
+      "n_cancer": 89,
+      "n_healthy": 264,
+      "auc_mean": 0.753111167858359,
+      "auc_std": 0.015762539961297128,
+      "per_seed_auc": [
+        0.7638321416411303,
+        0.7366147429349679,
+        0.7643428668709568,
+        0.7692798774259448,
+        0.7314862104187948
+      ],
+      "primary_ci": "delong",
+      "delong_ci": {
+        "auc": {
+          "auc": 0.7728123935989104,
+          "se": 0.03385517276764144,
+          "ci_lo": 0.706457474283952,
+          "ci_hi": 0.8391673129138688
+        },
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.47191011235955055,
+            "ci95_lo": 0.36827124266058586,
+            "ci95_hi": 0.5755489820585152,
+            "operating_threshold": 0.7921420223774109,
+            "ci_unreliable": false,
+            "n_pos": 89,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.3258426966292135,
+            "ci95_lo": 0.22899338769377478,
+            "ci95_hi": 0.42269200556465225,
+            "operating_threshold": 0.9692341820770872,
+            "ci_unreliable": false,
+            "n_pos": 89,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.23595505617977527,
+            "ci95_lo": 0.14868389191704073,
+            "ci95_hi": 0.3232262204425098,
+            "operating_threshold": 0.9930024030062992,
+            "ci_unreliable": false,
+            "n_pos": 89,
+            "n_neg": 264
+          }
+        ]
+      },
+      "bootstrap_ci": {
+        "n_bootstrap": 1000,
+        "seed": 2026,
+        "method": "percentile",
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.47191011235955055,
+            "ci95_lo": 0.2978234910985671,
+            "ci95_hi": 0.580016129032258,
+            "operating_threshold": 0.7921420223774109
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.3258426966292135,
+            "ci95_lo": 0.1891816816816817,
+            "ci95_hi": 0.4555797101449275,
+            "operating_threshold": 0.9692341820770872
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.23595505617977527,
+            "ci95_lo": 0.08044827586206897,
+            "ci95_hi": 0.3830002149151085,
+            "operating_threshold": 0.9930024030062992
+          }
+        ]
+      },
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.47191011235955055,
+          "ci95_lo": 0.36827124266058586,
+          "ci95_hi": 0.5755489820585152,
+          "operating_threshold": 0.7921420223774109,
+          "ci_unreliable": false,
+          "n_pos": 89,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.3258426966292135,
+          "ci95_lo": 0.22899338769377478,
+          "ci95_hi": 0.42269200556465225,
+          "operating_threshold": 0.9692341820770872,
+          "ci_unreliable": false,
+          "n_pos": 89,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.23595505617977527,
+          "ci95_lo": 0.14868389191704073,
+          "ci95_hi": 0.3232262204425098,
+          "operating_threshold": 0.9930024030062992,
+          "ci_unreliable": false,
+          "n_pos": 89,
+          "n_neg": 264
+        }
+      ],
+      "skipped": false
+    },
+    "LUAD": {
+      "n_cancer": 79,
+      "n_healthy": 264,
+      "auc_mean": 0.9815784426543921,
+      "auc_std": 0.0019425441784654282,
+      "per_seed_auc": [
+        0.9837936325278097,
+        0.9817318757192175,
+        0.9825949367088608,
+        0.9779919447640966,
+        0.9817798235519755
+      ],
+      "primary_ci": "delong",
+      "delong_ci": {
+        "auc": {
+          "auc": 0.9838895281933258,
+          "se": 0.005665718731593098,
+          "ci_lo": 0.9727849235328694,
+          "ci_hi": 0.9949941328537821
+        },
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.9240506329113924,
+            "ci95_lo": 0.8643604959073321,
+            "ci95_hi": 0.9837407699154528,
+            "operating_threshold": 0.03696858279569363,
+            "ci_unreliable": false,
+            "n_pos": 79,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8481012658227848,
+            "ci95_lo": 0.7680776887642161,
+            "ci95_hi": 0.9281248428813534,
+            "operating_threshold": 0.2305193689601103,
+            "ci_unreliable": false,
+            "n_pos": 79,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.6075949367088608,
+            "ci95_lo": 0.4996529458008045,
+            "ci95_hi": 0.7155369276169171,
+            "operating_threshold": 0.8269196727058139,
+            "ci_unreliable": false,
+            "n_pos": 79,
+            "n_neg": 264
+          }
+        ]
+      },
+      "bootstrap_ci": {
+        "n_bootstrap": 1000,
+        "seed": 2026,
+        "method": "percentile",
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.9240506329113924,
+            "ci95_lo": 0.8297662374020156,
+            "ci95_hi": 0.9861158675799088,
+            "operating_threshold": 0.03696858279569363
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8481012658227848,
+            "ci95_lo": 0.5428151260504201,
+            "ci95_hi": 0.9428571428571428,
+            "operating_threshold": 0.2305193689601103
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.6075949367088608,
+            "ci95_lo": 0.43529411764705883,
+            "ci95_hi": 0.9048402255639098,
+            "operating_threshold": 0.8269196727058139
+          }
+        ]
+      },
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.9240506329113924,
+          "ci95_lo": 0.8643604959073321,
+          "ci95_hi": 0.9837407699154528,
+          "operating_threshold": 0.03696858279569363,
+          "ci_unreliable": false,
+          "n_pos": 79,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.8481012658227848,
+          "ci95_lo": 0.7680776887642161,
+          "ci95_hi": 0.9281248428813534,
+          "operating_threshold": 0.2305193689601103,
+          "ci_unreliable": false,
+          "n_pos": 79,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.6075949367088608,
+          "ci95_lo": 0.4996529458008045,
+          "ci95_hi": 0.7155369276169171,
+          "operating_threshold": 0.8269196727058139,
+          "ci_unreliable": false,
+          "n_pos": 79,
+          "n_neg": 264
+        }
+      ],
+      "skipped": false
+    },
+    "PAAD": {
+      "n_cancer": 60,
+      "n_healthy": 264,
+      "auc_mean": 0.9525631313131313,
+      "auc_std": 0.004807208031302464,
+      "per_seed_auc": [
+        0.947159090909091,
+        0.946590909090909,
+        0.955050505050505,
+        0.955429292929293,
+        0.9585858585858587
+      ],
+      "primary_ci": "delong",
+      "delong_ci": {
+        "auc": {
+          "auc": 0.9520833333333333,
+          "se": 0.017824569249683096,
+          "ci_lo": 0.9171478195640143,
+          "ci_hi": 0.9870188471026523
+        },
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.8833333333333333,
+            "ci95_lo": 0.8005682502086139,
+            "ci95_hi": 0.9660984164580527,
+            "operating_threshold": 0.027933313169822328,
+            "ci_unreliable": false,
+            "n_pos": 60,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8166666666666667,
+            "ci95_lo": 0.7175901450662039,
+            "ci95_hi": 0.9157431882671294,
+            "operating_threshold": 0.10642364006793552,
+            "ci_unreliable": false,
+            "n_pos": 60,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.65,
+            "ci95_lo": 0.528759051893611,
+            "ci95_hi": 0.771240948106389,
+            "operating_threshold": 0.3231856245683096,
+            "ci_unreliable": false,
+            "n_pos": 60,
+            "n_neg": 264
+          }
+        ]
+      },
+      "bootstrap_ci": {
+        "n_bootstrap": 1000,
+        "seed": 2026,
+        "method": "percentile",
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.8833333333333333,
+            "ci95_lo": 0.7884615384615384,
+            "ci95_hi": 0.9643013784461153,
+            "operating_threshold": 0.027933313169822328
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8166666666666667,
+            "ci95_lo": 0.6153508771929825,
+            "ci95_hi": 0.9230769230769231,
+            "operating_threshold": 0.10642364006793552
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.65,
+            "ci95_lo": 0.3888157894736842,
+            "ci95_hi": 0.8846311475409836,
+            "operating_threshold": 0.3231856245683096
+          }
+        ]
+      },
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.8833333333333333,
+          "ci95_lo": 0.8005682502086139,
+          "ci95_hi": 0.9660984164580527,
+          "operating_threshold": 0.027933313169822328,
+          "ci_unreliable": false,
+          "n_pos": 60,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.8166666666666667,
+          "ci95_lo": 0.7175901450662039,
+          "ci95_hi": 0.9157431882671294,
+          "operating_threshold": 0.10642364006793552,
+          "ci_unreliable": false,
+          "n_pos": 60,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.65,
+          "ci95_lo": 0.528759051893611,
+          "ci95_hi": 0.771240948106389,
+          "operating_threshold": 0.3231856245683096,
+          "ci_unreliable": false,
+          "n_pos": 60,
+          "n_neg": 264
+        }
+      ],
+      "skipped": false
+    },
+    "BRCA": {
+      "n_cancer": 53,
+      "n_healthy": 264,
+      "auc_mean": 0.9761292166952543,
+      "auc_std": 0.004041151253675397,
+      "per_seed_auc": [
+        0.9769868496283591,
+        0.9759862778730704,
+        0.9752001143510577,
+        0.9699113779302458,
+        0.9825614636935391
+      ],
+      "primary_ci": "delong",
+      "delong_ci": {
+        "auc": {
+          "auc": 0.9777015437392796,
+          "se": 0.010007972536015153,
+          "ci_lo": 0.958086278010424,
+          "ci_hi": 0.9973168094681353
+        },
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.9433962264150944,
+            "ci95_lo": 0.8785282215021203,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.05081726149325263,
+            "ci_unreliable": false,
+            "n_pos": 53,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8301886792452831,
+            "ci95_lo": 0.7276233578472878,
+            "ci95_hi": 0.9327540006432783,
+            "operating_threshold": 0.14923690730265501,
+            "ci_unreliable": false,
+            "n_pos": 53,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.5471698113207547,
+            "ci95_lo": 0.4129502437259947,
+            "ci95_hi": 0.6813893789155148,
+            "operating_threshold": 0.8144495397631607,
+            "ci_unreliable": false,
+            "n_pos": 53,
+            "n_neg": 264
+          }
+        ]
+      },
+      "bootstrap_ci": {
+        "n_bootstrap": 1000,
+        "seed": 2026,
+        "method": "percentile",
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 0.9433962264150944,
+            "ci95_lo": 0.8653846153846154,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.05081726149325263
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.8301886792452831,
+            "ci95_lo": 0.49150143907898947,
+            "ci95_hi": 0.9811408106219427,
+            "operating_threshold": 0.14923690730265501
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.5471698113207547,
+            "ci95_lo": 0.3333333333333333,
+            "ci95_hi": 0.9273051948051948,
+            "operating_threshold": 0.8144495397631607
+          }
+        ]
+      },
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 0.9433962264150944,
+          "ci95_lo": 0.8785282215021203,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.05081726149325263,
+          "ci_unreliable": false,
+          "n_pos": 53,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.8301886792452831,
+          "ci95_lo": 0.7276233578472878,
+          "ci95_hi": 0.9327540006432783,
+          "operating_threshold": 0.14923690730265501,
+          "ci_unreliable": false,
+          "n_pos": 53,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.5471698113207547,
+          "ci95_lo": 0.4129502437259947,
+          "ci95_hi": 0.6813893789155148,
+          "operating_threshold": 0.8144495397631607,
+          "ci_unreliable": false,
+          "n_pos": 53,
+          "n_neg": 264
+        }
+      ],
+      "skipped": false
+    },
+    "OV": {
+      "n_cancer": 28,
+      "n_healthy": 264,
+      "auc_mean": 0.9920725108225108,
+      "auc_std": 0.004024570054969738,
+      "per_seed_auc": [
+        0.9968885281385282,
+        0.9893127705627706,
+        0.9913419913419913,
+        0.9963474025974026,
+        0.9864718614718615
+      ],
+      "primary_ci": "delong",
+      "delong_ci": {
+        "auc": {
+          "auc": 0.9966179653679654,
+          "se": 0.0022607706457829268,
+          "ci_lo": 0.9921869363249255,
+          "ci_hi": 1.0
+        },
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 1.0,
+            "ci95_lo": 0.9650006431332133,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.00202656941896637,
+            "ci_unreliable": false,
+            "n_pos": 28,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.9285714285714286,
+            "ci95_lo": 0.8270889395314684,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.03851927763937028,
+            "ci_unreliable": false,
+            "n_pos": 28,
+            "n_neg": 264
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.9285714285714286,
+            "ci95_lo": 0.8270889395314684,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.03851927763937028,
+            "ci_unreliable": false,
+            "n_pos": 28,
+            "n_neg": 264
+          }
+        ]
+      },
+      "bootstrap_ci": {
+        "n_bootstrap": 1000,
+        "seed": 2026,
+        "method": "percentile",
+        "per_specificity": [
+          {
+            "specificity": 0.95,
+            "sensitivity": 1.0,
+            "ci95_lo": 0.8823529411764706,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.00202656941896637
+          },
+          {
+            "specificity": 0.98,
+            "sensitivity": 0.9285714285714286,
+            "ci95_lo": 0.8147569444444444,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.03851927763937028
+          },
+          {
+            "specificity": 0.99,
+            "sensitivity": 0.9285714285714286,
+            "ci95_lo": 0.75,
+            "ci95_hi": 1.0,
+            "operating_threshold": 0.03851927763937028
+          }
+        ]
+      },
+      "per_specificity": [
+        {
+          "specificity": 0.95,
+          "sensitivity": 1.0,
+          "ci95_lo": 0.9650006431332133,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.00202656941896637,
+          "ci_unreliable": false,
+          "n_pos": 28,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.98,
+          "sensitivity": 0.9285714285714286,
+          "ci95_lo": 0.8270889395314684,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.03851927763937028,
+          "ci_unreliable": false,
+          "n_pos": 28,
+          "n_neg": 264
+        },
+        {
+          "specificity": 0.99,
+          "sensitivity": 0.9285714285714286,
+          "ci95_lo": 0.8270889395314684,
+          "ci95_hi": 1.0,
+          "operating_threshold": 0.03851927763937028,
+          "ci_unreliable": false,
+          "n_pos": 28,
+          "n_neg": 264
+        }
+      ],
+      "skipped": false
+    }
+  },
+  "true_confound_control": {
+    "cancer_jiang_healthy_cristiano": {
+      "n_cancer": 121,
+      "n_healthy": 506,
+      "publication_cancer": "6",
+      "publication_healthy": "8",
+      "harmonized": {
+        "auc_mean": 0.49615849475712925,
+        "auc_std": 0.008460246086051244,
+        "per_seed_auc": [
+          0.49325449972234015,
+          0.5121680331885147,
+          0.4913925456505406,
+          0.4962107601345834,
+          0.4877666350896678
+        ]
+      },
+      "no_harmonize": {
+        "auc_mean": 0.9999934668278183,
+        "auc_std": 1.3066344363510396e-05,
+        "per_seed_auc": [
+          1.0,
+          0.9999673341390912,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    "cancer_cristiano_healthy_jiang": {
+      "n_cancer": 506,
+      "n_healthy": 121,
+      "publication_cancer": "8",
+      "publication_healthy": "6",
+      "harmonized": {
+        "auc_mean": 0.4891255349034723,
+        "auc_std": 0.0038547293767225116,
+        "per_seed_auc": [
+          0.49247051906052985,
+          0.48606801032241204,
+          0.4871623166628556,
+          0.485039035703786,
+          0.49488779276777833
+        ]
+      },
+      "no_harmonize": {
+        "auc_mean": 0.9999510012086368,
+        "auc_std": 9.799758272626135e-05,
+        "per_seed_auc": [
+          1.0,
+          0.9997550060431843,
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "interpretation": {
+    "honest_framing": "These numbers are pooled out-of-fold AUC on the 627-sample cross-publication cohort (after load5's missing-artifact filter). Internal CV; no external validation. They measure how well the 5-channel DELFI features separate cancer from healthy when pooled across jiang, cristiano with per-publication z-score harmonization. They do NOT measure clinical-grade sensitivity at the Galleri / CancerSEEK operating points, which require independent held-out plasma cohorts.",
+    "true_confound_reading": "With per-publication z-score harmonization the true-confound AUC (cancer = one publication, healthy = another) collapses toward 0.50 \u2014 the per-publication mean/variance shift is the only signal and the harmonization removes it by design. WITHOUT harmonization the same control reaches ~0.999 \u2014 the classifier learns 'which publication is this from?', not 'is this cancer or healthy?'. The paired comparison (harmonized vs no_harmonize) is the only honest way to claim a cross-publication benchmark is not a publication-batch artifact.",
+    "per_cancer_reading": "Per-cancer sens@spec is OvR: each cancer class is scored against ALL healthy samples (not just the within-publication healthy ones). This is the cross-publication generalization view, not the within-publication view. Top-5 cancers by count are reported; smaller cohorts (n<10 cancer) are skipped."
+  }
+}
