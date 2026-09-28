@@ -28,25 +28,25 @@ Three real GUI demos recorded with browser automation — every frame is a real 
 
 `browser_exec` navigated to `github.com/rollroyces/deepcatch` and to `rollroyces.github.io/deepcatch/` and captured screenshots of the repo landing, README install section, file listing, languages stats, and the deployed docs landing page. Compiled into a WebM.
 
-<video src="docs/demo/install_demo.webm" width="640" controls preload="metadata"></video>
+[![Watch the GitHub + docs walkthrough (~21s)](docs/demo/install_demo_thumb.png)](docs/demo/install_demo.webm)
 
-[MP4](docs/demo/install_demo.mp4) · [GIF](docs/demo/install_demo.gif)
+[▶ WebM](docs/demo/install_demo.webm) · [MP4](docs/demo/install_demo.mp4) · [GIF](docs/demo/install_demo.gif)
 
 ### 2. Notebook analysis with inline plots (~24s)
 
 The new `notebooks/deepcatch_quickstart.ipynb` runs against the installed `deepcatch.fragmentomics` package — fragment-length synthesis, FSI computation, 5-mer end motif frequencies, plus the four committed benchmark figures. Recorded live in JupyterLab on `127.0.0.1:8889`.
 
-<video src="docs/demo/notebook_demo.webm" width="640" controls preload="metadata"></video>
+[![Watch the Jupyter notebook walkthrough (~24s)](docs/demo/notebook_demo_thumb.png)](docs/demo/notebook_demo.webm)
 
-[MP4](docs/demo/notebook_demo.mp4) · [GIF](docs/demo/notebook_demo.gif)
+[▶ WebM](docs/demo/notebook_demo.webm) · [MP4](docs/demo/notebook_demo.mp4) · [GIF](docs/demo/notebook_demo.gif)
 
 ### 3. Web app + Swagger UI (~18s)
 
 Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swagger UI's `/predict` operation expanded, "Try it out" → editable JSON body → "Execute" → the actual server response (classical MDS + neural probability + Integrated-Gradients top motifs).
 
-<video src="docs/demo/webapp_demo.webm" width="640" controls preload="metadata"></video>
+[![Watch the FastAPI Swagger UI walkthrough (~18s)](docs/demo/webapp_demo_thumb.png)](docs/demo/webapp_demo.webm)
 
-[MP4](docs/demo/webapp_demo.mp4) · [GIF](docs/demo/webapp_demo.gif)
+[▶ WebM](docs/demo/webapp_demo.webm) · [MP4](docs/demo/webapp_demo.mp4) · [GIF](docs/demo/webapp_demo.gif)
 
 > **All 3 videos are compilations of real `browser_exec` screenshots** (real Chromium instances) — not fabricated slide-deck mockups. The original terminal asciicasts are preserved under [`docs/demo/terminal/`](docs/demo/terminal/) for reference.
 
