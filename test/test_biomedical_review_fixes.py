@@ -634,12 +634,12 @@ def test_shuffled_label_control_random_label_is_zero():
 def test_real_tcga_validation_shuffled_flag_parsed():
     """--shuffled-label-control flag must parse and be discoverable."""
     import subprocess
+    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     # Run with --help to confirm the flag is documented and argparse accepts it.
     result = subprocess.run(
-        ["env", "-u", "PYTHONPATH",
-         "/Users/hermes/deepcatch/.venv/bin/python",
-         "/Users/hermes/deepcatch/real_tcga_validation.py", "--help"],
-        capture_output=True, text=True, cwd="/Users/hermes/deepcatch", timeout=30
+        [sys.executable,
+         os.path.join(repo_root, "real_tcga_validation.py"), "--help"],
+        capture_output=True, text=True, cwd=repo_root, timeout=30,
     )
     assert "--shuffled-label-control" in result.stdout, (
         "shuffled-label-control flag should appear in --help output"

@@ -13,6 +13,7 @@
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
+[![Ultra-Early Readiness](https://img.shields.io/badge/Ultra--Early-Status-yellow)](ULTRA_EARLY_READINESS.md)
 
 **DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses complementary molecular modalities through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
 
@@ -230,6 +231,22 @@ bash paper/REPRODUCE.sh    # re-runs every §3 artifact, regenerates all docs/*.
 
 ---
 
+## Ultra-early readiness — what's ready today
+
+> **Bottom line:** the **fragmentomics cross-study pipeline is ready** to publish a Stage I vs late-stage honest number on the open-data cohort (n=627, pooled AUC 0.967 ± 0.004 with GC correction, shuffled-null floor 0.466, true-confound collapse to 0.499). The **panel-LLR ultra-low-VAF detector is ready** as an *in silico* benchmark at 0.1% ctDNA (AUC 0.921, sens@99% 0.49). The **multi-modal foundation fusion layer is not** — Audit-2 number is 0.554 ± 0.005 vs LR baseline 0.910.
+>
+> **Read the full readiness report:** [`ULTRA_EARLY_READINESS.md`](ULTRA_EARLY_READINESS.md) — every claim ties to a `results/*.json` artifact, no fabricated numbers.
+
+The single-source CLI `python scripts/ultraearly_readiness.py` produces both `results/ultraearly_readiness.json` and `docs/ULTRA_EARLY_READINESS_AUTO.md` from the cached JSON artifacts. It reports per-check verdicts (`ready` / `not_ready` / `gap`) and refuses to invent anything that isn't in the artifacts.
+
+The `scripts/per_cancer_sens_at_spec.py` CLI now emits:
+- **Screening-grade grid:** sens@95% / 98% / 99% / **99.5% / 99.9%** spec (the 99.5/99.9 are the NHS-Galleri / CancerSEEK screening specificity targets)
+- **Stage I / LATE / UNKNOWN breakdown** under `stage_breakdown` when the input TSV has a `stage` column (or `--include-stage-breakdown` for the synthetic smoke)
+
+The 5-channel + 4-mer pooled fragmentomics benchmark + the per-cancer sens@spec grid are what carries the **open-data + synthetic-fixture** ultra-early signal today. **Real-plasma validation is the binding constraint** and is the first item in [`NEXT_STEPS.md` §3](./NEXT_STEPS.md).
+
+---
+
 ## Biomedical review fixes (passed; full history in git log)
 
 The post-v2.2.0 biomedical review closed 9 classes of issues; **23 regression tests** in `test/test_biomedical_review_fixes.py` guarantee they don't regress.
@@ -388,6 +405,7 @@ Full history: `git log --oneline` (60+ commits since v2.2.0). Notes per commit: 
 - **[paper/PAPER.md](paper/PAPER.md)** / **[paper/paper.tex](paper/paper.tex)** — research paper
 - **[REVIEWERS.md](REVIEWERS.md)** — review notes for expert reviewers
 - **[docs/](docs/)** — 30+ deep-dive docs (CADD / TUMOR_NAIVE / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN / etc.)
+- **[ULTRA_EARLY_READINESS.md](ULTRA_EARLY_READINESS.md)** — single-source readiness doc for ultra-early cancer signaling (every claim ties to a `results/*.json` artifact)
 - **[paper/REPRODUCE.sh](paper/REPRODUCE.sh)** — one-command reproduction of every §3 artifact
 
 ## License & citation

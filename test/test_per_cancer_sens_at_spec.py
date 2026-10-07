@@ -500,3 +500,186 @@ def test_json_safe_replaces_nan_and_inf_with_none():
     assert safe["f"]["g"] is None
     # Round-trips through json.dumps without raising.
     json.dumps(safe)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Screening-grade specificities (0.995, 0.999) — added in the
+# ultra-early-readiness work
+# ──────────────────────────────────────────────────────────────────────
+
+def test_screening_grade_specificities_appear_in_table():
+    """The default grid now includes 0.995 and 0.999 (screening-grade)."""
+    from src.per_cancer_sens_at_spec import SCREENING_SPECIFICITIES
+    assert 0.995 in SCREENING_SPECIFICITIES
+    assert 0.999 in SCREENING_SPECIFICITIES
+
+    rng = np.random.default_rng(42)
+    y = np.array([0] * 100 + [1] * 100)
+    s = np.concatenate([
+        rng.normal(0.30, 0.10, 100),
+        rng.normal(0.70, 0.12, 100),
+    ])
+    cancer_label = np.array(["HEALTHY"] * 100 + ["LUAD"] * 100)
+    table = build_per_cancer_table(
+        y, s, cancer_label,
+        specificities=(0.95, 0.98, 0.99, 0.995, 0.999),
+    )
+    pooled = table["pooled"]
+    # Every specificity operating point populated
+    assert pooled["sens_at_95"] is not None
+    assert pooled["sens_at_98"] is not None
+    assert pooled["sens_at_99"] is not None
+    assert pooled["sens_at_995"] is not None
+    assert pooled["sens_at_999"] is not None
+    # Sens at higher spec must be ≤ sens at lower spec (monotone).
+    sens_grid = [
+        pooled["sens_at_95"],
+        pooled["sens_at_98"],
+        pooled["sens_at_99"],
+        pooled["sens_at_995"],
+        pooled["sens_at_999"],
+    ]
+    for lo, hi in zip(sens_grid, sens_grid[1:]):
+        assert lo >= hi - 1e-9, (
+            f"sens@spec should be monotone non-increasing in spec; "
+            f"got {lo} @ < spec, then {hi} @ >= spec."
+        )
+
+
+def test_spec_field_name_roundtrip_for_2_and_3_dp_specificities():
+    """`_spec_field_name` correctly distinguishes 0.95 (sens_at_95) from
+    0.995 (sens_at_995)."""
+    from src.per_cancer_sens_at_spec import _spec_field_name
+    assert _spec_field_name(0.95) == "sens_at_95"
+    assert _spec_field_name(0.98) == "sens_at_98"
+    assert _spec_field_name(0.99) == "sens_at_99"
+    assert _spec_field_name(0.995) == "sens_at_995"
+    assert _spec_field_name(0.999) == "sens_at_999"
+
+
+def test_stage_breakdown_table_returns_three_buckets():
+    """`build_stage_breakdown_table` returns I / LATE / UNKNOWN rows."""
+    from src.per_cancer_sens_at_spec import build_stage_breakdown_table
+
+    rng = np.random.default_rng(7)
+    n_h, n_c = 50, 30
+    y = np.array([0] * n_h + [1] * n_c)
+    s = np.concatenate([
+        rng.normal(0.30, 0.10, n_h),
+        rng.normal(0.70, 0.12, n_c),
+    ])
+    # 10 Stage I, 20 Stage II cancer samples; healthy = UNKNOWN.
+    cancer_stages = (["I"] * 10) + (["II"] * 20)
+    stages = np.array(["UNKNOWN"] * n_h + cancer_stages, dtype=object)
+    tbl = build_stage_breakdown_table(y, s, stages)
+
+    assert tbl["n_stage_I"] == 10
+    assert tbl["n_stage_late"] == 20
+    # n_stage_unknown counts UNKNOWN *cancer* samples only — the healthy
+    # pool is reused from `y == 0` and is NOT counted as stage-unknown.
+    assert tbl["n_stage_unknown"] == 0
+    assert tbl["per_stage"]["I"]["n_pos"] == 10
+    assert tbl["per_stage"]["LATE"]["n_pos"] == 20
+    # Healthy pool re-used for every bucket
+    assert tbl["per_stage"]["I"]["n_neg"] == n_h
+    assert tbl["per_stage"]["LATE"]["n_neg"] == n_h
+
+
+def test_stage_coercion_classifies_canonical_stage_tokens():
+    """`_coerce_stage` maps I / IA / IB / 1 / T1 → STAGE_I, the rest → LATE."""
+    from src.per_cancer_sens_at_spec import _coerce_stage
+    raw = np.array(["I", "IA", "IB", "1", "T1", "II", "III", "IV", "2", "3",
+                    "NA", "", "?", "unknown"], dtype=object)
+    coerced = _coerce_stage(raw)
+    assert coerced[0] == "I"
+    assert coerced[1] == "I"
+    assert coerced[2] == "I"
+    assert coerced[3] == "I"
+    assert coerced[4] == "I"
+    assert coerced[6] == "LATE"
+    assert coerced[7] == "LATE"
+    assert coerced[10] == "UNKNOWN"
+    assert coerced[11] == "UNKNOWN"
+    assert coerced[13] == "UNKNOWN"
+
+
+def test_cli_synthetic_with_stage_breakdown_runs(tmp_path):
+    """End-to-end: --synthetic --include-stage-breakdown emits a stage_breakdown block."""
+    out = tmp_path / "stage.json"
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "per_cancer_sens_at_spec.py"),
+         "--synthetic", "--n", "200", "--seed", "42",
+         "--include-stage-breakdown",
+         "--out", str(out)],
+        capture_output=True, text=True, timeout=60,
+    )
+    assert r.returncode == 0, f"CLI failed: {r.stderr}"
+    data = json.loads(out.read_text())
+    assert "stage_breakdown" in data
+    sb = data["stage_breakdown"]
+    assert sb["n_stage_I"] > 0
+    assert sb["n_stage_late"] > 0
+    # AUC must be computed for the Stage I bucket.
+    assert sb["per_stage"]["I"]["auc_mean"] > 0.5
+    assert sb["per_stage"]["LATE"]["auc_mean"] > 0.5
+
+
+def test_cli_includes_screening_specificities_by_default(tmp_path):
+    """By default the CLI emits sens_at_995 + sens_at_999 columns."""
+    out = tmp_path / "screening.json"
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "per_cancer_sens_at_spec.py"),
+         "--synthetic", "--n", "200", "--seed", "42",
+         "--out", str(out)],
+        capture_output=True, text=True, timeout=60,
+    )
+    assert r.returncode == 0
+    data = json.loads(out.read_text())
+    pooled = data["pooled"]
+    assert pooled.get("sens_at_995") is not None
+    assert pooled.get("sens_at_999") is not None
+
+
+def test_cli_explicit_specificities_grid_overrides_default(tmp_path):
+    """--specificities flag overrides the default grid."""
+    out = tmp_path / "custom.json"
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "per_cancer_sens_at_spec.py"),
+         "--synthetic", "--n", "200", "--seed", "42",
+         "--specificities", "0.95", "0.99",
+         "--out", str(out)],
+        capture_output=True, text=True, timeout=60,
+    )
+    assert r.returncode == 0
+    data = json.loads(out.read_text())
+    pooled = data["pooled"]
+    assert pooled.get("sens_at_98") is None  # not in the custom grid
+    assert pooled.get("sens_at_995") is None
+    assert pooled.get("sens_at_99") is not None
+    assert pooled.get("sens_at_95") is not None
+    # Provenance records the operative specificities
+    assert data["provenance"]["specificities"] == [0.95, 0.99]
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Ultra-early readiness CLI smoke
+# ──────────────────────────────────────────────────────────────────────
+
+def test_ultraearly_readiness_cli_writes_json_and_md(tmp_path):
+    """The new ultra-early-readiness CLI produces a JSON + MD without crashing."""
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness.py"),
+         "--out-json", str(tmp_path / "r.json"),
+         "--out-md", str(tmp_path / "r.md")],
+        capture_output=True, text=True, timeout=120,
+    )
+    assert r.returncode == 0, f"ultra-early-readiness failed: {r.stderr}"
+    data = json.loads((tmp_path / "r.json").read_text())
+    assert "summary_counts" in data
+    assert "checks" in data
+    assert any(c["name"] == "cross_study_pooled_auc_gc_corrected"
+               for c in data["checks"])
+    assert any(c["name"] == "stage_breakdown_capability"
+               for c in data["checks"])
+    # The MD should at least mention the headline status.
+    assert (tmp_path / "r.md").read_text().count("#") >= 5

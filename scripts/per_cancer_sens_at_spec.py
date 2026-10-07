@@ -45,8 +45,38 @@ from src.per_cancer_sens_at_spec import (  # noqa: E402
     DEFAULT_SPECIFICITIES,
     PPV_AT_SPEC,
     MIN_POSITIVES_FOR_CI,
+    SCREENING_SPECIFICITIES,
+    _spec_field_name,
     build_per_cancer_table,
 )
+
+
+def _spec_col_header(spec: float) -> str:
+    """Compact console header for a specificity column. Uses 5 chars.
+
+    Examples: 0.95 → ``s 95``, 0.99 → ``s 99``, 0.995 → ``s99.5``,
+    0.999 → ``s99.9``.
+    """
+    if abs(spec - round(spec, 2)) < 1e-9:
+        return f"s{int(round(spec * 100)):>4}"
+    return f"@{int(round(spec * 1000)):>4}"
+
+
+def _format_sens_cell(v) -> str:
+    """Format a sensitivity value as a 5-char cell.
+
+    ``None`` / NaN → ``"  NA "``. Finite float → ``"<v>"`` right-aligned.
+    """
+    if v is None:
+        return "  NA "
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return "  NA "
+    import math
+    if math.isnan(f) or math.isinf(f):
+        return "  NA "
+    return f"{f:5.3f}"
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -109,14 +139,18 @@ def build_synthetic_fixture(
 REQUIRED_TSV_COLUMNS = ("sample_id", "score", "y", "cancer_label")
 
 
-def load_scores_tsv(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def load_scores_tsv(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, Optional[np.ndarray]]:
     """Load a scores TSV with required columns.
 
-    Expected columns: sample_id, score, y, cancer_label [, study].
+    Expected columns: sample_id, score, y, cancer_label [, study, stage].
 
     Returns
     -------
-    (y, score, cancer_label, study_label_or_None)
+    (y, score, cancer_label, study_label_or_None, stage_label_or_None)
+        ``stage_label_or_None`` is a per-sample stage string (e.g.
+        ``"I"``, ``"II"``, ``"III"``, ``"IV"``, ``"NA"``) used by the
+        stage-aware breakdown. ``None`` when the TSV has no ``stage``
+        column.
     """
     import csv
 
@@ -144,7 +178,11 @@ def load_scores_tsv(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.n
         np.array([r["study"] for r in rows], dtype=object)
         if "study" in cols else None
     )
-    return y, scores, cancer_label, study_label
+    stage_label = (
+        np.array([r["stage"] for r in rows], dtype=object)
+        if "stage" in cols else None
+    )
+    return y, scores, cancer_label, study_label, stage_label
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -159,7 +197,7 @@ def main() -> int:
     ap.add_argument(
         "--scores-tsv",
         default=None,
-        help="TSV with columns: sample_id, score, y, cancer_label [, study]. "
+        help="TSV with columns: sample_id, score, y, cancer_label [, study, stage]. "
              "Mutually exclusive with --synthetic.",
     )
     ap.add_argument(
@@ -203,6 +241,28 @@ def main() -> int:
         action="store_true",
         help="Omit the POOLED row from the output table.",
     )
+    ap.add_argument(
+        "--specificities",
+        type=float,
+        nargs="+",
+        default=list(DEFAULT_SPECIFICITIES) + list(SCREENING_SPECIFICITIES),
+        help=(
+            "Operating-point specificities for the sens@spec grid. "
+            "Default: %(default)s. Pass --specificities 0.95 0.99 0.995 "
+            "to use a custom grid (e.g. for screening-grade analyses)."
+        ),
+    )
+    ap.add_argument(
+        "--include-stage-breakdown",
+        action="store_true",
+        help=(
+            "When the input TSV has a ``stage`` column (or when "
+            "--synthetic includes stages), also emit a stage-aware "
+            "breakdown (Stage I / LATE / UNKNOWN) under "
+            "``stage_breakdown``. Useful for ultra-early readiness "
+            "audits where Stage I detection is the headline."
+        ),
+    )
     args = ap.parse_args()
 
     if (args.scores_tsv is None) ^ args.synthetic:
@@ -210,6 +270,7 @@ def main() -> int:
             "Exactly one of --scores-tsv or --synthetic is required."
         )
 
+    stage_label = None
     if args.synthetic:
         y, scores, cancer_label, study_label = build_synthetic_fixture(
             n=args.n,
@@ -217,9 +278,32 @@ def main() -> int:
             n_cancer_types=args.n_cancer_types,
             per_cancer_positives=args.per_cancer_positives,
         )
+        if args.include_stage_breakdown:
+            # Deterministic synthetic stage assignment: every other
+            # cancer sample is Stage I (so the synthetic fixture
+            # exercises both Stage I and LATE buckets). Healthy
+            # samples are STAGE_UNKNOWN — they are not consumed by
+            # the stage breakdown.
+            n_healthy = int((y == 0).sum())
+            cancer_stages = []
+            for _ in range(args.n_cancer_types):
+                interleave = (["I", "LATE"] * ((args.per_cancer_positives + 1) // 2)
+                              )[:args.per_cancer_positives]
+                cancer_stages.extend(interleave)
+            stage_label = np.array(
+                ["UNKNOWN"] * n_healthy + cancer_stages,
+                dtype=object,
+            )
         default_out = _REPO_ROOT / "results" / "per_cancer_sens_at_spec_synth.json"
     else:
-        y, scores, cancer_label, study_label = load_scores_tsv(args.scores_tsv)
+        y, scores, cancer_label, study_label, stage_label = load_scores_tsv(
+            args.scores_tsv
+        )
+        if args.include_stage_breakdown and stage_label is None:
+            raise ValueError(
+                "--include-stage-breakdown requires the input TSV to "
+                "have a 'stage' column (e.g. 'I', 'II', 'NA')."
+            )
         default_out = _REPO_ROOT / "results" / "per_cancer_sens_at_spec.json"
 
     out_path = Path(args.out) if args.out else default_out
@@ -230,7 +314,7 @@ def main() -> int:
         s=scores,
         cancer_label=cancer_label,
         study_label=study_label,
-        specificities=DEFAULT_SPECIFICITIES,
+        specificities=args.specificities,
         prevalences=DEFAULT_PREVALENCES,
         include_pooled=not args.no_pooled,
     )
@@ -242,11 +326,18 @@ def main() -> int:
         ),
         "n_samples": int(len(y)),
         "n_cancer_types": int(len({c for c in cancer_label if c != "HEALTHY"})),
-        "specificities": list(DEFAULT_SPECIFICITIES),
+        "specificities": list(args.specificities),
         "prevalences": list(DEFAULT_PREVALENCES),
         "ppv_at_spec": PPV_AT_SPEC,
         "min_positives_for_ci": MIN_POSITIVES_FOR_CI,
     }
+    if args.include_stage_breakdown and stage_label is not None:
+        from src.per_cancer_sens_at_spec import build_stage_breakdown_table
+        table["stage_breakdown"] = build_stage_breakdown_table(
+            y=y, s=scores, stage_label=stage_label,
+            specificities=args.specificities,
+            prevalences=DEFAULT_PREVALENCES,
+        )
 
     with open(out_path, "w") as f:
         json.dump(table, f, indent=2)
@@ -255,9 +346,10 @@ def main() -> int:
     # without opening the JSON.
     print(f"Wrote {out_path} ({len(table['per_cancer'])} cancer rows + "
           f"{'pooled' if table['pooled'] else 'no pooled'})")
+    specs = list(args.specificities)
+    spec_cols = " ".join(_spec_col_header(s) for s in specs)
     header = f"{'cancer':<8} {'n':>5} {'n_pos':>6} {'auc':>7} " \
-             f"{'auc_ci_lo':>10} {'auc_ci_hi':>10} " \
-             f"{'s95':>6} {'s98':>6} {'s99':>6}"
+             f"{'auc_ci_lo':>10} {'auc_ci_hi':>10} " + spec_cols
     print(header)
     print("-" * len(header))
     for name in sorted(table["per_cancer"]):
@@ -265,17 +357,27 @@ def main() -> int:
         if r["skipped"]:
             print(f"{name:<8} {r['n']:>5} {r['n_pos']:>6}   SKIP ({r['skip_reason'][:30]})")
             continue
+        sens_vals = []
+        for s in specs:
+            key = _spec_field_name(s)
+            v = r.get(key)
+            sens_vals.append(_format_sens_cell(v))
         print(
             f"{name:<8} {r['n']:>5} {r['n_pos']:>6} "
             f"{r['auc_mean']:>7.3f} {r['auc_ci'][0]:>10.3f} {r['auc_ci'][1]:>10.3f} "
-            f"{r['sens_at_95']:>6.3f} {r['sens_at_98']:>6.3f} {r['sens_at_99']:>6.3f}"
+            + " ".join(sens_vals)
         )
     if table["pooled"] and not table["pooled"]["skipped"]:
         r = table["pooled"]
+        sens_vals = []
+        for s in specs:
+            key = _spec_field_name(s)
+            v = r.get(key)
+            sens_vals.append(_format_sens_cell(v))
         print(
             f"{'POOLED':<8} {r['n']:>5} {r['n_pos']:>6} "
             f"{r['auc_mean']:>7.3f} {r['auc_ci'][0]:>10.3f} {r['auc_ci'][1]:>10.3f} "
-            f"{r['sens_at_95']:>6.3f} {r['sens_at_98']:>6.3f} {r['sens_at_99']:>6.3f}"
+            + " ".join(sens_vals)
         )
         # PPV @ spec=0.99 across the prevalence grid.
         print("\nPPV @ spec=0.99 across prevalences:")
@@ -285,6 +387,37 @@ def main() -> int:
             f"{r['ppv_at_prevalence'][f'prev_{p}']:>7.4f}"
             for p in prevs
         ))
+    if "stage_breakdown" in table:
+        sb = table["stage_breakdown"]
+        print(
+            f"\nStage breakdown (n_cancer_pos={sb['n_cancer_pos']}, "
+            f"Stage I={sb['n_stage_I']}, LATE={sb['n_stage_late']}, "
+            f"UNKNOWN={sb['n_stage_unknown']}):"
+        )
+        sens_cols = " ".join(_spec_col_header(s) for s in specs)
+        stage_header = f"{'stage':<8} {'n':>5} {'n_pos':>6} {'auc':>7} " + sens_cols
+        print(stage_header)
+        print("-" * len(stage_header))
+        for stage_name in ("I", "LATE", "UNKNOWN"):
+            r = sb["per_stage"].get(stage_name)
+            if r is None:
+                continue
+            if r.get("skipped"):
+                print(
+                    f"{stage_name:<8} {r.get('n', 0):>5} "
+                    f"{r.get('n_pos', 0):>6}   SKIP "
+                    f"({r.get('skip_reason', '')[:30]})"
+                )
+                continue
+            sens_vals = []
+            for s in specs:
+                key = _spec_field_name(s)
+                v = r.get(key)
+                sens_vals.append(_format_sens_cell(v))
+            print(
+                f"{stage_name:<8} {r['n']:>5} {r['n_pos']:>6} "
+                f"{r['auc_mean']:>7.3f} " + " ".join(sens_vals)
+            )
     return 0
 
 
