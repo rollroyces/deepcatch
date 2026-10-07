@@ -86,6 +86,7 @@ for s in "${SEEDS[@]}"; do SEED_ARGS+=(--seeds "$s"); done
     --out-md      docs/CROSS_STUDY_BENCHMARK.md \
     --out-per-cancer-json results/per_cancer_sens_at_spec.json \
     --top-cancer-n 5 \
+    --include-screening \
     "${SEED_ARGS[@]}"
 
 echo
@@ -149,3 +150,12 @@ echo "  results/per_cancer_sens_at_spec.json   (§3.3 source of truth)"
 echo "  docs/CROSS_STUDY_BENCHMARK.md          (companion narrative)"
 echo "  paper/METHODS_PAPER.md §3              (the paper)"
 echo "================================================================"
+
+# Re-emit the ultra-early readiness verdict from the freshly refreshed
+# JSON artifacts so docs/ULTRA_EARLY_READINESS_AUTO.md is always in
+# lock-step with results/*.json. This is offline (no model weights, no
+# network) and reads only cached JSON.
+echo
+echo "[REPRODUCE] Refreshing ultra-early readiness artifacts"
+"${PYTHON}" scripts/ultraearly_readiness.py || \
+    echo "[REPRODUCE] !! ultra-early readiness CLI failed (non-fatal)"
