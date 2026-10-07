@@ -168,6 +168,34 @@ The detailed 12-month execution plan is in [`docs/PRODUCTION_ROADMAP.md` §7](./
 
 ---
 
+## 5. Per-cancer-type applicability — what's covered and what's a gap
+
+The 5-channel fragmentomics + per-cancer sens@spec pipeline is **cancer-agnostic** (the same code applies to any plasma WGS cfDNA cohort) — but the open-data cohort in this repo only validates the following cancer types:
+
+| Cancer type | Open-data coverage | Notes |
+|---|---|---|
+| HCC (hepatocellular carcinoma) | ✅ Jiang 2015 PNAS cohort (89 cancer + 32 healthy) | Nested-CV re-estimate pending Prof. Jiang's Table S1 file |
+| LUAD (lung adenocarcinoma) | ✅ Cristiano 2019 DELFI + FinaleDB pub 6 | TCGA-LUAD panel-LLR (5,738 mutations) for tumor-informed MRD |
+| BRCA | ✅ | |
+| CRC | ✅ | |
+| OV | ✅ | |
+| PAAD | ✅ | |
+| OTHER_C (other cancer) | ✅ | heterogeneous lump; not a single biology |
+
+### Notable gap: **small cell lung cancer (SCLC) is NOT in the cohort**
+
+DeepCatch's pooled 0.967 AUC and per-cancer sens@spec numbers do **not** cover SCLC. Reasons + impact:
+
+- **Biologically distinct**: SCLC has different driver mutations (TP53 / RB1 / NOTCH), higher ctDNA shedding at diagnosis (high VAF, easier late-stage), and different fragmentomics signatures (shorter fragments, distinct chromatin) than NSCLC/LUAD. A pooled "lung cancer" AUC that mixes SCLC + NSCLC would be misleading.
+- **High clinical value of ultra-early detection**: SCLC 5-yr survival jumps from <5% (Stage IV) to ~40% (Stage I) — the largest absolute swing of any cancer. LDCT-only screening at ~95% specificity is too low for population SCLC screening.
+- **Panel-LLR does not transfer**: the 5,738-mutation TCGA-LUAD panel is NSCLC-specific. SCLC needs its own tumor-informed panel designed from SCLC WES/WXS data.
+- **What would help**: adding an SCLC plasma cfDNA WGS cohort (the public landscape is thin — PRECISION trial data and a few EGA studies are the realistic targets) and re-running the cross-study benchmark. The screening-grade sens@99.5%/99.9% grid is exactly the right operating-point range for SCLC population screening — the methodology is ready, the cohort is missing.
+- **SCLC cfDNA WGS access** is one of the legitimate additions to the EGA/dbGaP data-access application in `data/EGA_DBGAP_DATA_ACCESS_TEMPLATE.md` for any future round.
+
+Until an SCLC cohort is added, **do not cite DeepCatch's headline numbers for SCLC**.
+
+---
+
 ## 5. Honest limitations (do not claim beyond them)
 
 1. **Open-data scope, not clinical plasma.** The 0.967 pooled AUC is on FinaleDB pre-processed cfDNA features, not on raw plasma reads from a clinical lab. Every clinical number degrades from simulation.
