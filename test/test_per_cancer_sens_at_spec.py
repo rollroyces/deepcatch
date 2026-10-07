@@ -699,3 +699,29 @@ def test_cross_study_script_has_include_screening_flag():
     # when --include-screening is OFF (backward-compat).
     assert "DEFAULT_SPEC_GRID" in src
     assert "SCREENING_SPECIFICITIES" in src
+
+
+def test_ultraearly_readiness_gate_passes_on_current_artifacts():
+    """The CI gate script (scripts/ultraearly_readiness_gate.py) exits 0
+    when the readiness JSON has no gaps (the current artifact state).
+    """
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness_gate.py")],
+        capture_output=True, text=True, timeout=30,
+    )
+    assert r.returncode == 0, f"gate failed unexpectedly: {r.stderr}"
+    assert "Ultra-early readiness gate passed" in r.stdout
+
+
+def test_ultraearly_readiness_gate_fails_when_json_is_missing(tmp_path):
+    """When the readiness JSON doesn't exist (or its path is unreadable),
+    the gate must exit non-zero. This catches the case where
+    ``scripts/ultraearly_readiness.py`` was deleted from the workflow.
+    """
+    env = {**os.environ, "READINESS_JSON": str(tmp_path / "missing.json")}
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness_gate.py")],
+        capture_output=True, text=True, env=env, timeout=30,
+    )
+    assert r.returncode != 0, "gate should fail when JSON is missing"
+    assert "readiness JSON missing" in r.stderr

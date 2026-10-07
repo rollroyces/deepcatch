@@ -100,6 +100,37 @@ jobs:
       - name: Run adapter AUC gate
         run: python3 scripts/adapter_auc_gate.py
 
+  # ── Ultra-early readiness verdict ──────────────────────────────────────
+  # Runs `scripts/ultraearly_readiness.py` against the cached
+  # results/*.json artifacts in the repo (no FinaleDB / EGA / sibling
+  # pipeline required). Fails the build when a previously-"ready"
+  # check regresses to "gap"/"not_ready" — i.e. when someone deletes
+  # or invalidates a results JSON artifact. Uploads the verdict JSON
+  # + Markdown so a reviewer can inspect the per-check state at PR time.
+  ultra-early-readiness:
+    name: Ultra-early readiness verdict
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -q numpy scipy scikit-learn pandas
+      - name: Run readiness CLI
+        run: |
+          set -e
+          python3 scripts/ultraearly_readiness.py \
+            --out-json results/ultraearly_readiness.json \
+            --out-md    docs/ULTRA_EARLY_READINESS_AUTO.md
+      - name: Gate — fail if a previously-ready check regressed to gap
+        run: python3 scripts/ultraearly_readiness_gate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ultra-early-readiness
+          path: |
+            results/ultraearly_readiness.json
+            docs/ULTRA_EARLY_READINESS_AUTO.md
+
   # ── DeepCatch simulation smoke test (kept from previous CI) ───────────
   # NOTE: this is a code-path smoke test on synthetic data, NOT a real-data
   # performance test. Renamed accordingly.
