@@ -683,3 +683,19 @@ def test_ultraearly_readiness_cli_writes_json_and_md(tmp_path):
                for c in data["checks"])
     # The MD should at least mention the headline status.
     assert (tmp_path / "r.md").read_text().count("#") >= 5
+
+
+def test_cross_study_script_has_include_screening_flag():
+    """The cross_study_finallydb.py CLI accepts --include-screening
+    (verified by source inspection — running --help requires the sibling
+    cfDNA pipeline repo, which is not always present in CI).
+    """
+    src = (_REPO_ROOT / "scripts" / "cross_study_finallydb.py").read_text()
+    assert "--include-screening" in src
+    assert "SCREENING_SPEC_GRID" in src
+    # Both legacy and screening grids are listed in the doc string.
+    assert "{0.995, 0.999}" in src
+    # The grid-construction logic falls back to DEFAULT_SPEC_GRID
+    # when --include-screening is OFF (backward-compat).
+    assert "DEFAULT_SPEC_GRID" in src
+    assert "SCREENING_SPECIFICITIES" in src

@@ -47,6 +47,12 @@ Usage:
       --publications 6 8 \\
       --out-json results/cross_study_finallydb.json \\
       --out-md    docs/CROSS_STUDY_BENCHMARK.md
+
+For the ULTRA-EARLY headline (screening-grade sens@99.5%/99.9% spec +
+Stage I vs late-stage breakdown), pass `--include-screening` to extend
+the per-cancer sens@spec grid. See ULTRA_EARLY_READINESS.md §1.2 for
+the rationale and `docs/ULTRA_EARLY_READINESS_AUTO.md` for the
+machine-generated readiness verdict.
 """
 from __future__ import annotations
 
@@ -90,6 +96,7 @@ from src.per_cancer_sens_at_spec import (  # noqa: E402
     DEFAULT_SPECIFICITIES,
     MIN_POSITIVES_FOR_CI,
     PPV_AT_SPEC,
+    SCREENING_SPECIFICITIES,
     build_per_cancer_table,
     delong_auc_ci,
     delong_sens_at_spec_ci,
@@ -106,6 +113,13 @@ CELL_LINE_RE = re.compile(
 DEFAULT_SEEDS = [42, 13, 7, 99, 1234]
 DEFAULT_PCA_N = 200
 SPECS_FOR_PER_CANCER = [0.95, 0.98, 0.99]
+# Default specificity grid for the per-cancer sens@spec breakdown.
+# Backward-compatible: was [0.95, 0.98, 0.99] until the screening-grade
+# (NHS-Galleri / CancerSEEK 99.5%/99.9% spec) grid was added.
+DEFAULT_SPEC_GRID: tuple[float, ...] = tuple(DEFAULT_SPECIFICITIES)
+SCREENING_SPEC_GRID: tuple[float, ...] = (
+    tuple(DEFAULT_SPECIFICITIES) + tuple(SCREENING_SPECIFICITIES),
+)
 N_BOOTSTRAP = 1000
 BOOTSTRAP_SEED = 2026
 # Shuffled-label null control threshold (literature: AUC < 0.55 on healthy
@@ -700,7 +714,7 @@ def build_per_cancer_standalone_payload(
             s=s_sub,
             cancer_label=label_sub,
             study_label=study_sub,
-            specificities=DEFAULT_SPECIFICITIES,
+            specificities=specificities_grid,
             prevalences=DEFAULT_PREVALENCES,
             include_pooled=False,
         )
@@ -796,7 +810,7 @@ def build_per_cancer_standalone_payload(
             s=np.concatenate(pooled_s),
             cancer_label=np.concatenate(pooled_label),
             study_label=np.concatenate(pooled_study) if pooled_study else None,
-            specificities=DEFAULT_SPECIFICITIES,
+            specificities=specificities_grid,
             prevalences=DEFAULT_PREVALENCES,
             include_pooled=True,
         )
@@ -1302,6 +1316,19 @@ def main():
             "the validation strategy."
         ),
     )
+    ap.add_argument(
+        "--include-screening",
+        action="store_true",
+        help=(
+            "Extend the per-cancer sens@spec grid with the screening-grade "
+            "operating points {0.995, 0.999} (the NHS-Galleri / CancerSEEK "
+            "screening specificity targets). Default OFF — when OFF, only "
+            "{0.95, 0.98, 0.99} are computed, which keeps the cached JSON "
+            "backward-compatible. When ON, the JSON contains sens_at_995 and "
+            "sens_at_999 fields on every per-cancer row. See "
+            "ULTRA_EARLY_READINESS.md §1.2."
+        ),
+    )
     args = ap.parse_args()
 
     # ── Resolve the requested publications list ──
@@ -1319,6 +1346,20 @@ def main():
     requested_publications = sorted(requested)
     print(f"[config] requested publications: {requested_publications} "
           f"({[PUBLICATION_REGISTRY[p] for p in requested_publications]})")
+
+    # Operative per-cancer sens@spec grid. Default: backward-compatible
+    # {0.95, 0.98, 0.99}; extended with screening-grade when
+    # --include-screening is set. The extension appends {0.995, 0.999}
+    # to the grid — it never replaces the legacy points, so cached
+    # artifact diffs only add fields, never remove them.
+    specificities_grid = (
+        SCREENING_SPEC_GRID if args.include_screening else DEFAULT_SPEC_GRID
+    )
+    print(
+        f"[config] sens@spec grid: "
+        f"{list(specificities_grid)} "
+        f"({'screening-grade ON' if args.include_screening else 'screening-grade OFF (legacy)'})"
+    )
 
     print(f"[1/6] Loading labels_multiclass from {args.labels_multiclass}")
     labels, studies, disease_class, publication = load_labels_multiclass(
