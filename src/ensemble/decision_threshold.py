@@ -1,40 +1,60 @@
-"""Stub for `decision_threshold` (replaces broken symlink).
+"""Real implementation for decision_threshold.py.
 
-Original repository layout used symlinks from `src/ensemble/`
-into per-agent development directories under `src/agent6-ensemble/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent6-ensemble/decision_threshold.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent6 (ensemble) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent6-ensemble/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class DecisionThresholdPlaceholder:
-    """Placeholder class — original implementation was in `src/agent6-ensemble/`."""
+"""Operating-point selection for binary classifiers.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "decision_threshold is a placeholder stub. The original implementation "
-            "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+The deepcatch pipeline needs a single threshold per cancer type that
+satisfies a fixed-specificity gate (no threshold optimization on the eval
+cohort — see ULTRA_EARLY_READINESS.md and PIPELINE_AUDIT.md for the
+fixed-specificity contract).
+"""
+from dataclasses import dataclass
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "decision_threshold is a placeholder stub. The original implementation "
-        "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+import numpy as np
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["DecisionThresholdPlaceholder"]
+@dataclass
+class OperatingPoint:
+    threshold: float
+    specificity: float
+    sensitivity: float
+
+
+def threshold_at_specificity(scores_neg: np.ndarray,
+                             target_specificity: float = 0.99) -> float:
+    """Pick the cutoff ``t`` such that ~``target_specificity`` of negative
+    cohort scores fall below ``t``.
+    """
+    if not 0.0 < target_specificity < 1.0:
+        raise ValueError("target_specificity must be in (0, 1)")
+    return float(np.quantile(scores_neg, target_specificity))
+
+
+def sweep_specificities(scores_pos: np.ndarray, scores_neg: np.ndarray,
+                        specificities: np.ndarray | None = None
+                        ) -> list[OperatingPoint]:
+    """Return per-specificity operating points for plotting."""
+    if specificities is None:
+        specificities = np.linspace(0.80, 0.999, 30)
+    out = []
+    for sp in specificities:
+        t = threshold_at_specificity(scores_neg, float(sp))
+        sens = float((scores_pos >= t).mean())
+        out.append(OperatingPoint(threshold=t, specificity=float(sp), sensitivity=sens))
+    return out
+
+
+__all__ = ["OperatingPoint", "threshold_at_specificity", "sweep_specificities"]

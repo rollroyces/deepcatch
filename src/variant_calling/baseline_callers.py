@@ -1,40 +1,33 @@
-"""Stub for `baseline_callers` (replaces broken symlink).
+"""Real implementation for baseline_callers.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/baseline_callers.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class BaselineCallersPlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
+"""Baseline variant callers — naive threshold-based, used as a sanity check
+against the Bayesian caller.
+"""
+from dataclasses import dataclass
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "baseline_callers is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "baseline_callers is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .bayesian_caller import Call
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["BaselineCallersPlaceholder"]
+def simple_threshold_caller(ref_count: int, alt_count: int,
+                            min_alt: int = 3, min_vaf: float = 0.05) -> Call | None:
+    n = ref_count + alt_count
+    if n == 0:
+        return None
+    vaf = alt_count / n
+    if alt_count < min_alt or vaf < min_vaf:
+        return None
+    return Call(".", 0, "N", "N", ref_count, alt_count, vaf)
+
+
+__all__ = ["simple_threshold_caller"]

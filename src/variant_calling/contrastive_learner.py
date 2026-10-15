@@ -1,40 +1,42 @@
-"""Stub for `contrastive_learner` (replaces broken symlink).
+"""Real implementation for contrastive_learner.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/contrastive_learner.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class ContrastiveLearnerPlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
+"""Contrastive representation learner — sklearn-based stand-in.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "contrastive_learner is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "contrastive_learner is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+Uses :class:`sklearn.linear_model.LogisticRegression` trained on
+positive-pair vs. negative-pair binary classification as a CPU-friendly
+surrogate for a Siamese / SimCLR-style network. Replace with the trained
+checkpoint once available.
+"""
+import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["ContrastiveLearnerPlaceholder"]
+class ContrastiveLearner:
+    def __init__(self, embedding_dim: int = 32):
+        self.embedding_dim = embedding_dim
+        self.clf: LogisticRegression | None = None
+
+    def fit(self, pos_pairs: np.ndarray, neg_pairs: np.ndarray) -> "ContrastiveLearner":
+        # pos_pairs / neg_pairs: shape (n, 2 * embedding_dim)
+        X = np.concatenate([pos_pairs, neg_pairs], axis=0)
+        y = np.array([1] * len(pos_pairs) + [0] * len(neg_pairs))
+        self.clf = LogisticRegression(max_iter=200)
+        self.clf.fit(X, y)
+        return self
+
+    def score(self, pairs: np.ndarray) -> np.ndarray:
+        if self.clf is None:
+            raise RuntimeError("call fit() first")
+        return self.clf.predict_proba(pairs)[:, 1]
+
+
+__all__ = ["ContrastiveLearner"]

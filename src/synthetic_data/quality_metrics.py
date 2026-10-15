@@ -1,40 +1,50 @@
-"""Stub for `quality_metrics` (replaces broken symlink).
+"""Real implementation for quality_metrics.py.
 
-Original repository layout used symlinks from `src/synthetic_data/`
-into per-agent development directories under `src/agent5-synthetic-data/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent5-synthetic-data/quality_metrics.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent5 (synthetic data) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent5-synthetic-data/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class QualityMetricsPlaceholder:
-    """Placeholder class — original implementation was in `src/agent5-synthetic-data/`."""
+"""Quality metrics for synthetic cfDNA cohorts.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "quality_metrics is a placeholder stub. The original implementation "
-            "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Used by the smoke validation pipeline (PHASE0_PLAN.md) to confirm the
+synthetic generator matches empirical cfDNA fragment-size moments before
+training downstream classifiers.
+"""
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "quality_metrics is a placeholder stub. The original implementation "
-        "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .cfDNA_constants import PRIMARY_PEAK_BP, PRIMARY_PEAK_STD_BP
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["QualityMetricsPlaceholder"]
+def fragment_size_moments(sizes: np.ndarray) -> dict[str, float]:
+    mean = float(sizes.mean())
+    std = float(sizes.std())
+    skew = float(((sizes - mean) ** 3).mean() / (std ** 3 + 1e-12))
+    return {
+        "mean_bp": mean,
+        "std_bp": std,
+        "skewness": skew,
+        "delta_mean_from_167": mean - PRIMARY_PEAK_BP,
+    }
+
+
+def fft_periodicity_score(sizes: np.ndarray, target_period_bp: int = 10) -> float:
+    """Peak FFT magnitude at 1/``target_period_bp`` Hz relative to mean."""
+    counts, _ = np.histogram(sizes, bins=range(50, 500))
+    yf = np.abs(np.fft.rfft(counts - counts.mean()))
+    freqs = np.fft.rfftfreq(len(counts), 1.0)
+    target_hz = 1.0 / target_period_bp
+    idx = int(np.argmin(np.abs(freqs - target_hz)))
+    return float(yf[idx] / (yf.mean() + 1e-12))
+
+
+__all__ = ["fragment_size_moments", "fft_periodicity_score"]

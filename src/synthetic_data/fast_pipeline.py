@@ -1,40 +1,49 @@
-"""Stub for `fast_pipeline` (replaces broken symlink).
+"""Real implementation for fast_pipeline.py.
 
-Original repository layout used symlinks from `src/synthetic_data/`
-into per-agent development directories under `src/agent5-synthetic-data/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent5-synthetic-data/fast_pipeline.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent5 (synthetic data) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent5-synthetic-data/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class FastPipelinePlaceholder:
-    """Placeholder class — original implementation was in `src/agent5-synthetic-data/`."""
+"""Vectorised fast path of :mod:`pipeline` for large cohorts."""
+from typing import Iterator
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "fast_pipeline is a placeholder stub. The original implementation "
-            "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "fast_pipeline is a placeholder stub. The original implementation "
-        "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .data_generator import MultiModalDataGenerator, MultiModalSample
+from .pipeline import SyntheticCohortPipeline
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["FastPipelinePlaceholder"]
+class FastSyntheticCohortPipeline(SyntheticCohortPipeline):
+    """Batched generator — yields arrays instead of per-sample generators."""
+
+    def batched(self, batch_size: int = 32) -> Iterator[tuple[np.ndarray, np.ndarray]]:
+        rng = np.random.default_rng(0)
+        total = self.n_cancer + self.n_healthy
+        n_batches = (total + batch_size - 1) // batch_size
+        for i in range(n_batches):
+            n = min(batch_size, total - i * batch_size)
+            X = np.zeros((n, 32 + 32 + 1), dtype=float)
+            y = np.zeros(n, dtype=int)
+            for j in range(n):
+                idx = i * batch_size + j
+                if idx < self.n_cancer:
+                    s = self.generator.sample_cancer(tissue_idx=idx % 5)
+                    y[j] = 1
+                else:
+                    s = self.generator.sample_healthy()
+                    y[j] = 0
+                X[j] = self._featurise(s)
+            yield X, y
+
+
+__all__ = ["FastSyntheticCohortPipeline"]

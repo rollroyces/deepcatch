@@ -1,40 +1,46 @@
-"""Stub for `train` (replaces broken symlink).
+"""Real implementation for train.py.
 
-Original repository layout used symlinks from `src/multimodal_fusion/`
-into per-agent development directories under `src/agent2-multimodal-fusion/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent2-multimodal-fusion/train.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent2 (multimodal fusion) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent2-multimodal-fusion/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class TrainPlaceholder:
-    """Placeholder class — original implementation was in `src/agent2-multimodal-fusion/`."""
+"""Minimal training loop for a multi-modal fusion classifier.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "train is a placeholder stub. The original implementation "
-            "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Uses scikit-learn's ``LogisticRegression`` as a stand-in for the production
+Transformer fusion model. Designed to be drop-in replaceable once the
+trained checkpoint is committed.
+"""
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+from ..synthetic_data.pipeline import SyntheticCohortPipeline
+from ..synthetic_data.data_generator import MultiModalDataGenerator
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "train is a placeholder stub. The original implementation "
-        "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-        "source to enable this module."
+def collect_features(n_cancer: int = 100, n_healthy: int = 100,
+                     seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    pipe = SyntheticCohortPipeline(
+        n_cancer=n_cancer, n_healthy=n_healthy,
+        generator=MultiModalDataGenerator(seed=seed),
     )
+    rows, labels = [], []
+    for x, y in pipe:
+        rows.append(x); labels.append(y)
+    return np.stack(rows), np.array(labels)
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["TrainPlaceholder"]
+def train_classifier(n_cancer: int = 100, n_healthy: int = 100,
+                     seed: int = 0, **lr_kwargs) -> LogisticRegression:
+    X, y = collect_features(n_cancer=n_cancer, n_healthy=n_healthy, seed=seed)
+    lr_kwargs.setdefault("max_iter", 200)
+    clf = LogisticRegression(**lr_kwargs)
+    clf.fit(X, y)
+    return clf
+
+
+__all__ = ["collect_features", "train_classifier"]

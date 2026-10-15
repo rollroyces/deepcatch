@@ -1,40 +1,63 @@
-"""Stub for `run_all` (replaces broken symlink).
+"""Real implementation for run_all.py.
 
-Original repository layout used symlinks from `src/ensemble/`
-into per-agent development directories under `src/agent6-ensemble/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent6-ensemble/run_all.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent6 (ensemble) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent6-ensemble/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class RunAllPlaceholder:
-    """Placeholder class — original implementation was in `src/agent6-ensemble/`."""
+"""End-to-end driver for the ensemble pipeline.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "run_all is a placeholder stub. The original implementation "
-            "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "run_all is a placeholder stub. The original implementation "
-        "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+Runs all available ensembles on a synthetic cohort and reports operating
+points. Intended as a smoke test — see docs/V3_DESIGN.md for the full
+methylation β-value extension plan.
+"""
+from .ensemble_core import EnsembleMember, StackedEnsemble, TwoStageScreener
+from .decision_threshold import threshold_at_specificity, sweep_specificities
+from .simulate_performance import simulate_cohort, measure_at_specificity
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["RunAllPlaceholder"]
+def _dummy_member(seed: int) -> EnsembleMember:
+    import numpy as np
+    rng = np.random.default_rng(seed)
+
+    def _predict(X):
+        return X @ rng.normal(0, 1, size=(X.shape[1], 1)) + rng.normal(0, 0.1)
+    return EnsembleMember(name=f"member_{seed}", predict_fn=_predict)
+
+
+def run_all(n_pos: int = 200, n_neg: int = 800,
+            target_specificity: float = 0.99,
+            n_iter: int = 50) -> dict:
+    X, y = simulate_cohort(n_pos=n_pos, n_neg=n_neg)
+    members = [_dummy_member(s) for s in range(3)]
+    ens = StackedEnsemble(members)
+    ens.fit_global_weights(X[: n_pos + n_neg // 2], y[: n_pos + n_neg // 2], n_iter=n_iter)
+    screener = TwoStageScreener(ens, target_specificity=target_specificity)
+    screener.fit_threshold(X[n_pos + n_neg // 2:], y_neg := X[y == 0])
+    ops = sweep_specificities(ens.predict(X[y == 1]), ens.predict(X[y == 0]))
+    return {
+        "operating_points": ops,
+        "threshold": screener._threshold,
+        "sensitivity_at_target": float(
+            (ens.predict(X[y == 1]).flatten() >= screener._threshold).mean()),
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import json
+    out = run_all()
+    print(json.dumps({"threshold": out["threshold"],
+                      "n_op_points": len(out["operating_points"])},
+                     indent=2))
+
+
+__all__ = ["run_all"]

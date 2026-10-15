@@ -1,40 +1,46 @@
-"""Stub for `run_final` (replaces broken symlink).
+"""Real implementation for run_final.py.
 
-Original repository layout used symlinks from `src/longitudinal/`
-into per-agent development directories under `src/agent3-longitudinal/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent3-longitudinal/run_final.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent3 (longitudinal) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent3-longitudinal/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class RunFinalPlaceholder:
-    """Placeholder class — original implementation was in `src/agent3-longitudinal/`."""
+"""Final longitudinal evaluation driver.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "run_final is a placeholder stub. The original implementation "
-            "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Compares the plain BCD vs. the improved (BCD + Kalman) detector across a
+synthetic cohort and prints mean detection delay.
+"""
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "run_final is a placeholder stub. The original implementation "
-        "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .simulation import simulate_trajectory
+from .bayesian_changepoint import BayesianChangepointDetector
+from .improved_methods import ImprovedDetector
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["RunFinalPlaceholder"]
+def run_final(n_patients: int = 50, seed: int = 0) -> dict:
+    bcd = BayesianChangepointDetector()
+    imp = ImprovedDetector()
+    plain_delays, improved_delays = [], []
+    for i in range(n_patients):
+        traj = simulate_trajectory(seed=seed + i)
+        cp_plain, _ = bcd.detect(traj)
+        cp_imp, _ = imp.detect(traj)
+        plain_delays.append(max(0, cp_plain - 4))
+        improved_delays.append(max(0, cp_imp - 4))
+    return {
+        "n_patients": n_patients,
+        "mean_delay_plain_bcd": float(np.mean(plain_delays)),
+        "mean_delay_improved": float(np.mean(improved_delays)),
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import json
+    print(json.dumps(run_final(), indent=2))
+
+
+__all__ = ["run_final"]

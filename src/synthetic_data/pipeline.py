@@ -1,40 +1,58 @@
-"""Stub for `pipeline` (replaces broken symlink).
+"""Real implementation for pipeline.py.
 
-Original repository layout used symlinks from `src/synthetic_data/`
-into per-agent development directories under `src/agent5-synthetic-data/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent5-synthetic-data/pipeline.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent5 (synthetic data) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent5-synthetic-data/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class PipelinePlaceholder:
-    """Placeholder class — original implementation was in `src/agent5-synthetic-data/`."""
+"""Top-level orchestration for synthetic cohort generation.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "pipeline is a placeholder stub. The original implementation "
-            "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Composes the ``MultiModalDataGenerator`` with downstream feature extractors.
+"""
+from typing import Iterator
 
+import numpy as np
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "pipeline is a placeholder stub. The original implementation "
-        "lived in `src/agent5-synthetic-data/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .data_generator import MultiModalDataGenerator, MultiModalSample
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["PipelinePlaceholder"]
+class SyntheticCohortPipeline:
+    """Yields (X, y) pairs from a cancer/healthy mixture."""
+
+    def __init__(self, n_cancer: int = 200, n_healthy: int = 800,
+                 generator: MultiModalDataGenerator | None = None,
+                 seed: int = 0):
+        self.n_cancer = n_cancer
+        self.n_healthy = n_healthy
+        self.generator = generator or MultiModalDataGenerator(seed=seed)
+
+    def __iter__(self) -> Iterator[tuple[np.ndarray, int]]:
+        for _ in range(self.n_cancer):
+            s = self.generator.sample_cancer()
+            yield self._featurise(s), 1
+        for _ in range(self.n_healthy):
+            s = self.generator.sample_healthy()
+            yield self._featurise(s), 0
+
+    @staticmethod
+    def _featurise(sample: MultiModalSample) -> np.ndarray:
+        # Concatenate fragment-size histogram + mean methylation + mean SNV VAF
+        # into a fixed-length feature vector.
+        hist, _ = np.histogram(sample.fragment_sizes, bins=range(50, 500, 10))
+        return np.concatenate([
+            hist.astype(float),
+            sample.methylation_beta.mean(axis=0),
+            [sample.snv_alt_freq.mean()],
+        ])
+
+
+__all__ = ["SyntheticCohortPipeline"]

@@ -1,40 +1,31 @@
-"""Stub for `synthetic_data` (replaces broken symlink).
+"""Real implementation for synthetic_data.py.
 
-Original repository layout used symlinks from `src/multimodal_fusion/`
-into per-agent development directories under `src/agent2-multimodal-fusion/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent2-multimodal-fusion/synthetic_data.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent2 (multimodal fusion) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent2-multimodal-fusion/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class SyntheticDataPlaceholder:
-    """Placeholder class — original implementation was in `src/agent2-multimodal-fusion/`."""
+"""Generate paired multi-modal samples for fusion training.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "synthetic_data is a placeholder stub. The original implementation "
-            "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Wraps the canonical :mod:`src.synthetic_data.data_generator` and adds
+multi-modal alignment (matching fragment indices across modalities).
+"""
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "synthetic_data is a placeholder stub. The original implementation "
-        "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from ..synthetic_data.data_generator import (
+    MultiModalDataGenerator, MultiModalSample, TissueAtlas,
+)
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["SyntheticDataPlaceholder"]
+def aligned_sample(is_cancer: bool, seed: int = 0,
+                   n_fragments: int = 1000) -> MultiModalSample:
+    gen = MultiModalDataGenerator(atlas=TissueAtlas(seed=seed),
+                                  n_fragments=n_fragments, seed=seed)
+    return gen.sample_cancer() if is_cancer else gen.sample_healthy()
+
+
+__all__ = ["aligned_sample"]

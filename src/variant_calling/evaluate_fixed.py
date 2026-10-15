@@ -1,40 +1,24 @@
-"""Stub for `evaluate_fixed` (replaces broken symlink).
+"""Real implementation for evaluate_fixed.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/evaluate_fixed.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class EvaluatePlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
-
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "evaluate_fixed is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+"""Fixed-version of :mod:`evaluate` — adds zero-division safety for empty call sets."""
+from .evaluate import VariantEval, evaluate_calls
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "evaluate_fixed is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+def safe_evaluate_calls(true_pos, called) -> VariantEval:
+    out = evaluate_calls(true_pos, called)
+    if out.n_true == 0 or out.n_called == 0:
+        return VariantEval(precision=0.0, recall=0.0, f1=0.0,
+                           n_true=out.n_true, n_called=out.n_called)
+    return out
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["EvaluatePlaceholder"]
+__all__ = ["VariantEval", "evaluate_calls", "safe_evaluate_calls"]

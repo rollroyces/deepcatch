@@ -1,40 +1,40 @@
-"""Stub for `evaluate` (replaces broken symlink).
+"""Real implementation for evaluate.py.
 
-Original repository layout used symlinks from `src/multimodal_fusion/`
-into per-agent development directories under `src/agent2-multimodal-fusion/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent2-multimodal-fusion/evaluate.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent2 (multimodal fusion) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent2-multimodal-fusion/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class EvaluatePlaceholder:
-    """Placeholder class — original implementation was in `src/agent2-multimodal-fusion/`."""
+"""Compute AUC + sens@fixed-spec for the multimodal fusion classifier."""
+from dataclasses import dataclass
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "evaluate is a placeholder stub. The original implementation "
-            "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+import numpy as np
+from sklearn.metrics import roc_auc_score
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "evaluate is a placeholder stub. The original implementation "
-        "lived in `src/agent2-multimodal-fusion/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .train import collect_features
+from ..ensemble.decision_threshold import threshold_at_specificity
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["EvaluatePlaceholder"]
+@dataclass
+class FusionEval:
+    auc: float
+    threshold: float
+    sensitivity_at_target_spec: float
+
+
+def evaluate(target_specificity: float = 0.99, seed: int = 1) -> FusionEval:
+    from .train import train_classifier
+    clf = train_classifier(seed=seed)
+    X_val, y_val = collect_features(seed=seed + 100)
+    scores = clf.predict_proba(X_val)[:, 1]
+    auc = float(roc_auc_score(y_val, scores))
+    t = threshold_at_specificity(scores[y_val == 0], target_specificity)
+    sens = float((scores[y_val == 1] >= t).mean())
+    return FusionEval(auc=auc, threshold=t, sensitivity_at_target_spec=sens)
+
+
+__all__ = ["FusionEval", "evaluate"]

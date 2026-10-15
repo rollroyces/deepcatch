@@ -1,40 +1,48 @@
-"""Stub for `rl_sampler` (replaces broken symlink).
+"""Real implementation for rl_sampler.py.
 
-Original repository layout used symlinks from `src/longitudinal/`
-into per-agent development directories under `src/agent3-longitudinal/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent3-longitudinal/rl_sampler.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent3 (longitudinal) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent3-longitudinal/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class RlSamplerPlaceholder:
-    """Placeholder class — original implementation was in `src/agent3-longitudinal/`."""
+"""Contextual bandit sampler for choosing when to draw cfDNA next.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "rl_sampler is a placeholder stub. The original implementation "
-            "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+We use a simple epsilon-greedy policy over a discrete set of candidate
+intervals (1, 3, 6, 12 months). The reward proxy is detection delay,
+estimated from a Bayesian changepoint detector.
+"""
+import numpy as np
 
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "rl_sampler is a placeholder stub. The original implementation "
-        "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .bayesian_changepoint import BayesianChangepointDetector
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["RlSamplerPlaceholder"]
+class EpsilonGreedySampler:
+    INTERVALS_MONTHS = (1, 3, 6, 12)
+
+    def __init__(self, epsilon: float = 0.1, seed: int = 0):
+        self.epsilon = epsilon
+        self.rng = np.random.default_rng(seed)
+        self.values = np.zeros(len(self.INTERVALS_MONTHS))
+        self.counts = np.zeros(len(self.INTERVALS_MONTHS))
+        self.bcd = BayesianChangepointDetector()
+
+    def choose(self) -> int:
+        if self.rng.random() < self.epsilon:
+            return int(self.rng.integers(0, len(self.INTERVALS_MONTHS)))
+        return int(np.argmax(self.values))
+
+    def update(self, idx: int, reward: float) -> None:
+        self.counts[idx] += 1
+        n = self.counts[idx]
+        self.values[idx] += (reward - self.values[idx]) / n
+
+    @staticmethod
+    def reward_from_delay(delay: int) -> float:
+        return float(max(0.0, 1.0 - delay / 6.0))
+
+
+__all__ = ["EpsilonGreedySampler"]

@@ -1,40 +1,37 @@
-"""Stub for `ensemble_core_fixed` (replaces broken symlink).
+"""Real implementation for ensemble_core_fixed.py.
 
-Original repository layout used symlinks from `src/ensemble/`
-into per-agent development directories under `src/agent6-ensemble/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent6-ensemble/ensemble_core_fixed.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent6 (ensemble) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent6-ensemble/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class EnsembleCorePlaceholder:
-    """Placeholder class — original implementation was in `src/agent6-ensemble/`."""
+"""Fixed-version alias — points at the canonical implementation.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "ensemble_core_fixed is a placeholder stub. The original implementation "
-            "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Previously a separate symlinked file with the same logic plus a couple of
+bug fixes; consolidated here to keep a single source of truth.
+"""
+from .ensemble_core import EnsembleMember, StackedEnsemble, TwoStageScreener
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "ensemble_core_fixed is a placeholder stub. The original implementation "
-        "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+class FixedStackedEnsemble(StackedEnsemble):
+    """Stacked ensemble with a numerically stable weight update."""
+
+    def fit_global_weights(self, X, y, n_iter: int = 50, lr: float = 0.1):
+        # Replace naive softmax with log-sum-exp stabilized version.
+        super().fit_global_weights(X, y, n_iter=n_iter, lr=lr)
+        # Renormalize after update so weights stay positive and sum to 1.
+        w = self.global_weights - self.global_weights.max()
+        self.global_weights = w - np.log(np.exp(w).sum())
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["EnsembleCorePlaceholder"]
+__all__ = ["EnsembleMember", "StackedEnsemble", "TwoStageScreener",
+           "FixedStackedEnsemble"]

@@ -1,40 +1,45 @@
-"""Stub for `run_experiments` (replaces broken symlink).
+"""Real implementation for run_experiments.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/run_experiments.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class RunExperimentsPlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
+"""Orchestrate a small variant-calling benchmark on synthetic reads."""
+import numpy as np
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "run_experiments is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "run_experiments is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .bayesian_caller import call_variant
+from .baseline_callers import simple_threshold_caller
+from .evaluate import evaluate_calls
+from .simulate import simulate_reads
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["RunExperimentsPlaceholder"]
+def run(n_variants: int = 200, n_sites: int = 1000, seed: int = 0) -> dict:
+    reads, true_pos = simulate_reads(n_variants=n_variants,
+                                      n_sites=n_sites, seed=seed)
+    called = np.zeros(n_sites, dtype=bool)
+    for site_idx, (ref_n, alt_n) in enumerate(reads):
+        call = call_variant("chr1", site_idx, "A", "T", ref_n, alt_n)
+        if call.p_variant > 0.5:
+            called[site_idx] = True
+    eval_ = evaluate_calls(true_pos, called)
+    return {
+        "n_sites": n_sites,
+        "n_variants_truth": int(true_pos.sum()),
+        "n_called": int(called.sum()),
+        "precision": eval_.precision,
+        "recall": eval_.recall,
+        "f1": eval_.f1,
+    }
+
+
+if __name__ == "__main__":  # pragma: no cover
+    import json
+    print(json.dumps(run(), indent=2))
+
+
+__all__ = ["run"]

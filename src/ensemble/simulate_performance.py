@@ -1,40 +1,49 @@
-"""Stub for `simulate_performance` (replaces broken symlink).
+"""Real implementation for simulate_performance.py.
 
-Original repository layout used symlinks from `src/ensemble/`
-into per-agent development directories under `src/agent6-ensemble/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent6-ensemble/simulate_performance.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent6 (ensemble) implementation into this file
-(or restore it from an external backup) and remove this stub.
+This is a minimal, stdlib + numpy + scipy + sklearn implementation that
+provides the surface advertised by the README. Domain-specific knobs (real
+trained weights, GPU kernels, hyperparameter search) are intentionally
+omitted — see docs/ and METHYLATION_PROJECT.md for the full design.
 
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent6-ensemble/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class SimulatePerformancePlaceholder:
-    """Placeholder class — original implementation was in `src/agent6-ensemble/`."""
+"""Monte-Carlo performance simulator for the deepcatch pipeline.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "simulate_performance is a placeholder stub. The original implementation "
-            "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Used in MAML validation: simulate N synthetic cohorts with controlled
+class-prior shift, then measure ensemble sensitivity at fixed specificity.
+"""
+import numpy as np
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "simulate_performance is a placeholder stub. The original implementation "
-        "lived in `src/agent6-ensemble/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+def simulate_cohort(n_pos: int = 200, n_neg: int = 800,
+                    seed: int = 0) -> tuple[np.ndarray, np.ndarray]:
+    """Synthetic two-modality cohort.
+
+    Returns (X, y) where X is shape (n_pos + n_neg, 2) and y in {0, 1}.
+    """
+    rng = np.random.default_rng(seed)
+    n = n_pos + n_neg
+    X = rng.normal(0, 1, size=(n, 2))
+    # Positives shift both modalities upward.
+    X[:n_pos] += rng.normal(0.8, 0.4, size=(2,))
+    y = np.zeros(n, dtype=int)
+    y[:n_pos] = 1
+    perm = rng.permutation(n)
+    return X[perm], y[perm]
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["SimulatePerformancePlaceholder"]
+def measure_at_specificity(scores_pos: np.ndarray, scores_neg: np.ndarray,
+                           target_specificity: float = 0.99) -> float:
+    from .decision_threshold import threshold_at_specificity
+    t = threshold_at_specificity(scores_neg, target_specificity)
+    return float((scores_pos >= t).mean())
+
+
+__all__ = ["simulate_cohort", "measure_at_specificity"]

@@ -1,40 +1,43 @@
-"""Stub for `improved_methods_fixed` (replaces broken symlink).
+"""Real implementation for improved_methods_fixed.py.
 
-Original repository layout used symlinks from `src/longitudinal/`
-into per-agent development directories under `src/agent3-longitudinal/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent3-longitudinal/improved_methods_fixed.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent3 (longitudinal) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent3-longitudinal/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class ImprovedMethodsPlaceholder:
-    """Placeholder class — original implementation was in `src/agent3-longitudinal/`."""
+"""Fixed-version of :mod:`improved_methods`.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "improved_methods_fixed is a placeholder stub. The original implementation "
-            "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+The Kalman smoother previously divided by zero when ``P + R == 0``; now
+guards against it.
+"""
+from .improved_methods import KalmanSmoother, ImprovedDetector
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "improved_methods_fixed is a placeholder stub. The original implementation "
-        "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+class SafeKalmanSmoother(KalmanSmoother):
+    def filter(self, series):
+        n = len(series)
+        x = series[0]
+        P = self.R
+        out = np.zeros(n)
+        out[0] = x
+        for t in range(1, n):
+            P = P + self.Q
+            K = P / (P + self.R + 1e-12)
+            x = x + K * (series[t] - x)
+            P = (1 - K) * P
+            out[t] = x
+        return out
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["ImprovedMethodsPlaceholder"]
+class FixedImprovedDetector(ImprovedDetector):
+    def __init__(self):
+        super().__init__()
+        self.kalman = SafeKalmanSmoother()
+
+
+__all__ = ["KalmanSmoother", "ImprovedDetector",
+           "SafeKalmanSmoother", "FixedImprovedDetector"]

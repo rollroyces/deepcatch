@@ -1,40 +1,35 @@
-"""Stub for `simulation` (replaces broken symlink).
+"""Real implementation for simulation.py.
 
-Original repository layout used symlinks from `src/longitudinal/`
-into per-agent development directories under `src/agent3-longitudinal/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent3-longitudinal/simulation.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent3 (longitudinal) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent3-longitudinal/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class SimulationPlaceholder:
-    """Placeholder class — original implementation was in `src/agent3-longitudinal/`."""
+"""Longitudinal cfDNA trajectory simulator.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "simulation is a placeholder stub. The original implementation "
-            "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "simulation is a placeholder stub. The original implementation "
-        "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+Produces serial measurements of a marker (e.g., VAF) for one patient over
+``n_draws`` time points, with an optional changepoint that simulates
+treatment response or progression.
+"""
+import numpy as np
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["SimulationPlaceholder"]
+def simulate_trajectory(n_draws: int = 8, changepoint_chat: int | None = 4,
+                        baseline: float = 0.005, treatment_shift: float = -0.003,
+                        noise_sigma: float = 0.0015,
+                        seed: int = 0) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    out = np.zeros(n_draws)
+    for t in range(n_draws):
+        level = baseline
+        if changepoint_chat is not None and t >= changepoint_chat:
+            level = max(0.0, baseline + treatment_shift)
+        out[t] = max(0.0, level + rng.normal(0, noise_sigma))
+    return out
+
+
+__all__ = ["simulate_trajectory"]

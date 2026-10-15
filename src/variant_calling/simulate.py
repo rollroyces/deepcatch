@@ -1,40 +1,40 @@
-"""Stub for `simulate` (replaces broken symlink).
+"""Real implementation for simulate.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/simulate.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class SimulatePlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
+"""Simulate read counts at a set of candidate variant sites.
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "simulate is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "simulate is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+Returns a tuple ``(reads, true_pos)`` where ``reads`` is a list of
+``(ref_count, alt_count)`` per site and ``true_pos`` is a boolean mask
+indicating which sites are true variants.
+"""
+import numpy as np
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["SimulatePlaceholder"]
+def simulate_reads(n_variants: int = 100, n_sites: int = 1000,
+                   coverage: int = 30, seed: int = 0) -> tuple[list, np.ndarray]:
+    rng = np.random.default_rng(seed)
+    variant_sites = rng.choice(n_sites, size=min(n_variants, n_sites), replace=False)
+    true_pos = np.zeros(n_sites, dtype=bool)
+    true_pos[variant_sites] = True
+    reads = []
+    for i in range(n_sites):
+        if true_pos[i]:
+            alt_frac = rng.uniform(0.05, 0.5)
+        else:
+            alt_frac = 0.0
+        n = rng.poisson(coverage)
+        alt = rng.binomial(n, alt_frac)
+        ref = max(0, n - alt)
+        reads.append((int(ref), int(alt)))
+    return reads, true_pos
+
+
+__all__ = ["simulate_reads"]

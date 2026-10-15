@@ -1,40 +1,47 @@
-"""Stub for `bayesian_caller_fixed` (replaces broken symlink).
+"""Real implementation for bayesian_caller_fixed.py.
 
-Original repository layout used symlinks from `src/variant_calling/`
-into per-agent development directories under `src/agent1-variant-calling/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent1-variant-calling/bayesian_caller_fixed.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent1 (variant calling) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent1-variant-calling/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class BayesianCallerPlaceholder:
-    """Placeholder class — original implementation was in `src/agent1-variant-calling/`."""
+"""Fixed-version of :mod:`bayesian_caller` — uses Beta-binomial with a
+slightly informative prior and numerical log-sum-exp normalisation.
+"""
+import numpy as np
+from scipy.special import betaln
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "bayesian_caller_fixed is a placeholder stub. The original implementation "
-            "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-            "source to enable this module."
-        )
-
-
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "bayesian_caller_fixed is a placeholder stub. The original implementation "
-        "lived in `src/agent1-variant-calling/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+from .bayesian_caller import Call
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["BayesianCallerPlaceholder"]
+def posterior_variant_fixed(ref_count: int, alt_count: int,
+                            prior: float = 0.01) -> float:
+    n = ref_count + alt_count
+    if n == 0:
+        return 0.0
+    a_alt, b_alt = 0.5, 50.0
+    a_ref, b_ref = 50.0, 0.5
+    log_post_alt = (np.log(prior)
+                    + betaln(ref_count + a_alt, alt_count + b_alt)
+                    - betaln(a_alt, b_alt))
+    log_post_ref = (np.log(1 - prior)
+                    + betaln(ref_count + a_ref, alt_count + b_ref)
+                    - betaln(a_ref, b_ref))
+    m = max(log_post_alt, log_post_ref)
+    pa = np.exp(log_post_alt - m)
+    pr = np.exp(log_post_ref - m)
+    return float(pa / (pa + pr))
+
+
+def call_variant_fixed(chrom: str, pos: int, ref: str, alt: str,
+                        ref_count: int, alt_count: int,
+                        threshold: float = 0.5) -> Call:
+    p = posterior_variant_fixed(ref_count, alt_count)
+    return Call(chrom, pos, ref, alt, ref_count, alt_count, p)
+
+
+__all__ = ["Call", "posterior_variant_fixed", "call_variant_fixed"]

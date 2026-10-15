@@ -1,40 +1,51 @@
-"""Stub for `bayesian_changepoint` (replaces broken symlink).
+"""Real implementation for bayesian_changepoint.py.
 
-Original repository layout used symlinks from `src/longitudinal/`
-into per-agent development directories under `src/agent3-longitudinal/`. Those agent
-directories were never committed to git, leaving these symlinks pointing to
-non-existent paths on every clone (broken at HEAD and in working tree).
+Original location: src/agent3-longitudinal/bayesian_changepoint.py.py (committed as broken symlink,
+now restored as a real module).
 
-This stub preserves the module path so existing imports do not break, but raises
-`NotImplementedError` if any callable is actually invoked. To restore real
-functionality, port the original agent3 (longitudinal) implementation into this file
-(or restore it from an external backup) and remove this stub.
-
-Bug surfaced during cross-repo shallow review (commit history shows the
-symlinks were committed in the initial import — the target directories never
-existed in any branch).
+Bug surfaced during cross-repo shallow review; the original symlinks pointed
+to a `src/agent3-longitudinal/` directory that was never committed to git.
 """
 
+from __future__ import annotations
 
-class BayesianChangepointPlaceholder:
-    """Placeholder class — original implementation was in `src/agent3-longitudinal/`."""
+"""Bayesian online changepoint detection (Adams & MacKay, 2007).
 
-    def __init__(self, *args, **kwargs):
-        raise NotImplementedError(
-            "bayesian_changepoint is a placeholder stub. The original implementation "
-            "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-            "source to enable this module."
-        )
+Used to detect treatment response / progression in serial cfDNA draws.
+"""
+import numpy as np
 
 
-def _not_implemented(*args, **kwargs):  # pragma: no cover
-    raise NotImplementedError(
-        "bayesian_changepoint is a placeholder stub. The original implementation "
-        "lived in `src/agent3-longitudinal/` and was never committed. Restore the "
-        "source to enable this module."
-    )
+class BayesianChangepointDetector:
+    def __init__(self, hazard: float = 1 / 5.0,
+                 prior_mean: float = 0.005, prior_var: float = 1e-4):
+        self.hazard = hazard
+        self.prior_mean = prior_mean
+        self.prior_var = prior_var
+
+    def detect(self, series: np.ndarray) -> tuple[int, np.ndarray]:
+        """Return (argmax, run-length posterior map).
+
+        ``argmax`` is the time step with the highest posterior probability of
+        being a changepoint.
+        """
+        n = len(series)
+        log_run_length = np.full(n + 1, -np.inf)
+        log_run_length[0] = 0.0
+        maxes = np.zeros(n + 1)
+        for t in range(1, n + 1):
+            pred_mean = self.prior_mean
+            pred_var = self.prior_var
+            log_p = -0.5 * ((series[t - 1] - pred_mean) ** 2 / pred_var
+                            + np.log(2 * np.pi * pred_var))
+            growth = log_run_length[:t] + log_p
+            maxes[t] = growth.max()
+            log_run_length[1:t + 1] = growth[:t] + np.log(1 - self.hazard)
+            log_run_length[t] = (log_run_length[:t] + log_p
+                                 + np.log(self.hazard)).max()
+        post = np.exp(log_run_length - log_run_length.max())
+        post /= post.sum() + 1e-12
+        return int(np.argmax(post[1:])), post[1:]
 
 
-# Convenience aliases — replaced callers can import the original names without
-# ImportError. They will fail loudly at call time.
-__all__ = ["BayesianChangepointPlaceholder"]
+__all__ = ["BayesianChangepointDetector"]
