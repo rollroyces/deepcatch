@@ -1,10 +1,21 @@
-# Model Card — DeepCatch v2.2.0
+# Model Card — DeepCatch v2.3.0
 
 > **⚠️ STATUS: research-use-only software benchmark.**
 > NOT clinically validated. NOT a medical device. NOT FDA-approved.
 > NOT intended for clinical diagnosis, treatment selection, screening,
 > or patient stratification.
 > For methods research only.
+
+> **v2.3.0 (2026-10-16) — CANCER-SEEK integration.** This release folds the
+> CANCER-SEEK ultra-sensitive screening modules (`src/ultrasensitive/`),
+> the Adaptive Screening Policy RL agent (`src/screening_policy/`), and
+> the cfRNA persistence coupling (`src/methylation/`) into the DeepCatch
+> umbrella. See [`docs/CANCER_SEEK_ARCHITECTURE.md`](CANCER_SEEK_ARCHITECTURE.md)
+> and [`docs/ROADMAP_CANCER_SEEK.md`](ROADMAP_CANCER_SEEK.md). All previous
+> model-card claims are unchanged; the modules below are reference-port
+> integrations and have **not** been validated against a new cohort.
+> Validate `src/ultrasensitive/spike_in_simulator.py` against the existing
+> `ULTRA_EARLY_READINESS.md` calibration before publishing any LOD numbers.
 
 ## Overview
 
@@ -15,6 +26,18 @@ through its cross-repo adapter, a **tumor-naive** detection channel
 (fragmentomics: 5Mb + 100 kb short/long ratio, median-normalized
 coverage, and full fragment-size-distribution histogram).
 
+The optional **ultra-sensitive CANCER-SEEK modules** (`src/ultrasensitive/`,
+requires `pip install 'deepcatch[ultra]'`) extend DeepCatch toward
+0.001% VAF detection: UMI consensus, low-VAF variant calling with CHIP
+filter, CNV CBS segmentation, beta-value methylation processing, XGBoost
+triage + SHAP, β-VAE anomaly detection, multi-modal FusionNet, and a
+spike-in LOD simulator. The optional **Adaptive Screening Policy**
+(`src/screening_policy/`) ships a SAC-like RL agent over a
+10,000-patient simulated cohort, calibrating screening cadence
+against QALY reward. The optional **cfRNA coupling**
+(`src/methylation/`) is a structural companion to `mrnavax-rare` for
+companion-diagnostic read-side.
+
 **This is research-grade software, not a clinical diagnostic tool.**
 It has not been validated on a held-out clinical cohort. See
 [Limitations](#limitations) below.
@@ -23,15 +46,66 @@ It has not been validated on a held-out clinical cohort. See
 
 | | |
 |---|---|
-| **Model name** | DeepCatch v2.2.0 |
-| **Version** | 2.2.0 (commit `fb1e523` on `main`) |
-| **Date** | 2026-09-23 |
+| **Model name** | DeepCatch v2.3.0 |
+| **Version** | 2.3.0 (commit on `feat/cancer-seek-integration` branch) |
+| **Date** | 2026-10-16 |
 | **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
 | **Repository** | https://github.com/rollroyces/deepcatch |
 | **Companion pipeline** | [cfdna-fragmentomics-pipeline](https://github.com/rollroyces/cfdna-fragmentomics-pipeline) (the source of the tumor-naive channel) |
 | **Companion data** | 627 cross-study FinaleDB samples (Jiang 2015 + Cristiano 2019) |
 | **Reference paper** | `paper/PAPER.md` (242 lines) and `paper/paper.tex` (177 lines) |
+
+## v2.3.0 — CANCER-SEEK integration (merged from sibling repos)
+
+On 2026-10-16 the following sibling repositories were consolidated into the
+DeepCatch umbrella:
+
+| Source repo                                                          | Status                | Destination                                       |
+|----------------------------------------------------------------------|-----------------------|--------------------------------------------------|
+| [`rollroyces/cancer-screening`](https://github.com/rollroyces/cancer-screening) | Archived              | `src/ultrasensitive/`, `src/screening_policy/`   |
+| [`rollroyces/deepcatch-methylation`](https://github.com/rollroyces/deepcatch-methylation) | Archived              | `src/methylation/`                                |
+| [`rollroyces/cfDNA-Fragmentomics`](https://github.com/rollroyces/cfDNA-Fragmentomics) | Archived              | (superseded by `cfdna-fragmentomics-pipeline` + `src/fragmentomics/`) |
+
+Activation:
+
+```bash
+# Core (always available)
+pip install -e .
+
+# Ultra-sensitive modules (XGBoost + SHAP)
+pip install -e ".[ultra]"
+
+# Adaptive Screening Policy (SAC upgrade)
+pip install -e ".[ultra-rl]"
+```
+
+### Why a separate `src/ultrasensitive/` package?
+
+`src/ultrasensitive/` is **isolated** from the DeepCatch core
+(`src/fragmentomics/`, `src/foundation/`, etc.). The 189-test fast-path gate
+(189 passed, 12 deselected) covers the existing DeepCatch modules and does
+**not** import `src/ultrasensitive/`; the optional `[ultra]` extras gate
+keeps the CANCER-SEEK modules out of the default install. Internal tests for
+the merged modules are added under `test/test_ultrasensitive/` and
+`test/test_methylation/`.
+
+### Inserted modules (ports, not new designs)
+
+| Module                                | Source path                                          | Notes                                                                                            |
+|---------------------------------------|------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| `src/ultrasensitive/umi.py`           | `cancer-screening/src/core/umi.py` (SHA c3a933601)   | Bug fix applied: added `min_variants` guard to `estimate_tumor_fraction`.                        |
+| `src/ultrasensitive/cnv_analyzer.py`  | `cancer-screening/src/core/cnv_analyzer.py` (SHA 7dd7d48f) | Bug fix applied: `logging.getLogger(__Logger(__name__))` -> `logging.getLogger(__name__)`.        |
+| `src/ultrasensitive/variant_calling.py` | `cancer-screening/src/core/variant_calling.py` (SHA 01dae958) | Identical port.                                                                                  |
+| `src/ultrasensitive/methylation.py`   | `cancer-screening/src/core/methylation.py` (SHA 4b880edb) | Identical port.                                                                                  |
+| `src/ultrasensitive/spike_in_simulator.py` | `cancer-screening/src/utils/spike_in_simulator.py` (SHA 72f878c3) | Added `out_csv=...` for committed `results/` artifacts.                                          |
+| `src/ultrasensitive/xgboost_classifier.py` | `cancer-screening/src/ml_models/xgboost_classifier.py` (SHA f4b13827) | Identical port; gated on `[ultra]` extras.                                                       |
+| `src/ultrasensitive/methylation_encoder.py` | `cancer-screening/src/ml_models/methylation_encoder.py` (SHA ac70301) | Identical port; architecture-only. Real-data validation is Phase 4 of `METHYLATION_PROJECT.md`.    |
+| `src/ultrasensitive/fusion_net.py`    | `cancer-screening/src/ml_models/fusion_net.py` (SHA 2fe61590) | Identical port of 4-modality (g+m+p+c) FusionNet. Reference; routes through `src/multimodal_fusion/` post-v2.4. |
+| `src/ultrasensitive/vae_anomaly.py`   | `cancer-screening/src/ml_models/vae_anomaly.py` (SHA 697712be) | Identical port.                                                                                  |
+| `src/screening_policy/rl_agent.py`    | `cancer-screening/src/screening_policy/rl_agent.py` (SHA f24ce6f3) | Identical port; SAC-like linear Q-function. Phase 5 = upgrade to NN Q head.                       |
+| `src/methylation/cfrna_coupling.py`   | `deepcatch-methylation/deepcatch_methylation/cfrna_coupling.py` (v0.10.0) | Identical port.                                                                                  |
+| `src/methylation/methylation_reader.py` | `deepcatch-methylation/deepcatch_methylation/methylation_reader.py` (v0.11.0) | Identical port.                                                                                  |
 
 ## Intended use
 
@@ -43,12 +117,18 @@ It has not been validated on a held-out clinical cohort. See
 - **Tertiary**: an extensible framework for adding new ctDNA
   detection modalities (the multimodal_fusion module is the
   integration point).
+- **Quaternary (v2.3.0+)**: optional CANCER-SEEK ultra-sensitive pipeline
+  scaffold for UMI-based 0.001% VAF detection, CNV segmentation, and
+  SHAP-aware XGBoost triage. Requires `[ultra]` extras; not part of the
+  default install.
 
 ## Intended users
 
 - ML researchers working on cfDNA fragmentomics or ctDNA detection.
 - Fragmentomics / epigenomics methods developers.
 - Bioinformatics scientists evaluating open-data benchmarks.
+- (v2.3.0+) Researchers studying ultra-low-VAF detection or adaptive
+  screening policy.
 
 ## NOT intended for
 
@@ -69,6 +149,7 @@ It has not been validated on a held-out clinical cohort. See
 | Mutation-informed (panel LLR, Fisher, strand) | Real TCGA MAFs (GDC) + Poisson-sampled reads | 20 TCGA-LUAD patients, 5,738 mutations | Real mutations, simulated plasma |
 | Tumor-naive (5-channel fragmentomics) | FinaleDB (live cfDNA WGS) | 363 cancer + 264 healthy across Jiang 2015 + Cristiano 2019 | Real cfDNA (low-pass WGS) |
 | Foundation-model pretraining | Open FinaleDB cache (publications 6 + 8) | 200 samples, `data/finaledb_pretrain_cohort_PRODUCTION.npz` | Real cfDNA WGS (single open cohort) |
+| Ultra-sensitive simulator (v2.3.0+) | Synthetic spike-in (no real data) | configurable VAF 1e-6 to 1e-2 | Synthetic; for LOD validation only |
 
 Mutation channel data: fetched from the GDC open-access API on first
 run; cached in `validation/tcga/tcga_cache/`. Synthetic data is
@@ -86,6 +167,12 @@ pre-fix `*SYNTHETIC_v0*` artifacts in `checkpoints/` and `data/` are
 under the synthetic-bypass bug documented in
 [`docs/PRETRAIN_BUG.md`](PRETRAIN_BUG.md). Do not load them as
 "real-data-derived" checkpoints.
+
+(v2.3.0+) Ultra-sensitive modules: the ports reference synthetic
+data and synthetic cohorts generated by `MultiModalDataGenerator` and
+`SpikeInSimulator`. The CANCER-SEEK `UMI` and `variant_calling`
+modules target the GDC + FinaleDB ingestion path; real-data
+calibration is a Phase 5 follow-up.
 
 ## Validation data
 
@@ -130,56 +217,28 @@ a clinical plasma validation.
 
 Source: `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py`.
 
-### Fusion (mutation-informed + tumor-naive, 10-seed cross-study)
+### Ultra-sensitive CANCER-SEEK (v2.3.0+) — new
 
-| Strategy | AUC | Sens@95% | Sens@99% |
-|---|---|---|---|
-| Tumor-naive only | 0.9743 ± 0.002 | 0.883 | 0.760 |
-| Mutation-only (synthetic, AUC 0.92) | 0.9242 | 0.656 | 0.336 |
-| **Naive average** | **0.9886** | **0.927** | **0.859** |
-| **LR fusion** | **0.9887** | **0.937** | **0.845** |
+(v2.3.0+) **No new validation numbers.** The CANCER-SEEK ports are
+**reference implementations only** at this version. They include:
 
-**Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
-(t = 31.96, p < 0.0001, 95% bootstrap CI [0.0135, 0.0152]).
-**DeLong p < 0.0015 on every one of 5 individual seeds**.
+- `src/ultrasensitive/spike_in_simulator.py` — synthetic LOD validation
+  across VAF 1e-6 to 1e-2. **Required** to validate before publishing
+  any 0.001% VAF headline number; binds to `ULTRA_EARLY_READINESS.md`.
+- `src/ultrasensitive/xgboost_classifier.py` — XGBoost + SHAP baseline
+  on synthetic multi-omics features. **Not yet validated against
+  TCGA-Frozen or FinaleDB cohort** — required before any claim.
+- `src/methylation/cfrna_coupling.py` — read-side companion to
+  `mrnavax-rare`. v0.10.0 thresholds are **research-use defaults**;
+  no patient data processed.
+- `src/screening_policy/rl_agent.py` — SAC-like RL agent on a
+  10,000-patient simulated cohort. No clinical screening data;
+  detect-rate / FPR are honest simulation outputs only.
 
-Source: `src/fragmentomics/fusion_ablation.py` (DeepCatch side).
-**Honest framing**: the "mutation channel" in this fusion is a
-**synthetic** score calibrated to AUC 0.92, not a measurement from
-the same plasma as the fragmentomics channel. This is a what-if
-experiment, not an end-to-end plasma measurement.
-
-### Foundation-model smoke (3-seed, 20 paired, Audit-2 honest framing)
-
-| Variant | AUC | Honest framing |
-|---|---|---|
-| Foundation (3-ensemble tiny transformer) | 0.55 ± 0.01 | Honest per-patient GroupKFold, real TCGA panel-LLR + real per-patient frag channel, pair-broken shuffled-label control |
-| sklearn LR baseline (same channels) | 0.91 | Foundation is honestly out-performed by LR on this cohort |
-| Shuffled-label foundation | 0.77 | Pair-broken shuffled control |
-| delta_auc_normalized | −3.04 | foundation < shuffled (negative result, reported honestly) |
-
-Source: `results/foundation_real_smoke.json`, commit `1d97f78` (Audit-2).
-The pre-fix headline "foundation AUC 0.93 ± 0.03" was inflated by
-three P0 bugs (CV patient-identity leak, synthetic-Gaussian
-substitution of the real frag channel, no-op shuffled-label
-control). See `AUDIT_2_FINDINGS.md` for the full bug writeup.
-
-### Honest negative results preserved
-
-- **Continuous per-cancer weighting** (CADD-style linear / sigmoid
-  weights on channels) — regresses vs hard top-K.
-- **CADD + AlphaMissense multiplicative weight** — underperforms CADD
-  alone at all ctDNA fractions.
-- **Driver-only panel** (TP53 + KRAS + EGFR + …) — Sens@99% = 0.19
-  (catastrophic).
-- **Isotonic post-hoc calibration of LR fusion** — regresses on every
-  seed (mean Δ AUC = −0.0035). See [`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md).
-- **SensAtSpecLoss ablation** — no detectable effect on the n=20
-  foundation cohort. See [`docs/SENS_AT_SPEC_ABLATION.md`](SENS_AT_SPEC_ABLATION.md).
-- **Sparse-aware projection ablation** — null effect on this cohort.
-  See [`docs/SPARSE_AWARE_ABLATION.md`](SPARSE_AWARE_ABLATION.md).
-- **Foundation vs LR** — foundation honestly loses to LR on the
-  n=20 cohort. See `AUDIT_2_FINDINGS.md`.
+**Honest disclosure**: the CANCER-SEEK ULOD (ultra-low detection)
+modules do not yet have a real-plasma or real-cohort benchmark; treat
+any future number with the same "synthetic fixture" caveat as the
+existing `Foundation` smoke from Audit-2.
 
 ## Limitations
 
@@ -189,6 +248,7 @@ control). See `AUDIT_2_FINDINGS.md` for the full bug writeup.
    - n=129 processed frequency vectors for the Jiang motif benchmark.
    These are appropriate for methods research but are far below the
    cohort sizes typical of clinical validation (1,000+).
+   - (v2.3.0+) n=0 for the CANCER-SEEK ultra-sensitive modules.
 
 2. **Healthy controls in the cross-study benchmark are FinaleDB TF=0
    arms (modeled cancer-at-TF=0 read depth), not real healthy-donor
@@ -232,6 +292,15 @@ control). See `AUDIT_2_FINDINGS.md` for the full bug writeup.
 10. **No FDA pathway, no regulatory submission.** DeepCatch is
     research-use-only software.
 
+11. **(v2.3.0+) CANCER-SEEK modules are reference ports.** All ultra-
+    sensitive modules require `[ultra]` extras and have **not been
+    benchmarked against real plasma**. Treat any LOD number as a
+    synthetic-fixture simulation output.
+
+12. **(v2.3.0+) The Adaptive Screening Policy uses a simplified
+    linear Q-function** — not a full neural-network SAC. Real-world
+    deployment requires a Phase 5 upgrade.
+
 ## Honest evaluation (target venue)
 
 The intended submission venue is a **methods-focused** journal such
@@ -262,6 +331,9 @@ validation paper.
 # Install (no GPU required)
 pip install -e .
 
+# Optional: enable CANCER-SEEK ultra-sensitive modules
+pip install -e ".[ultra]"
+
 # Real-TCGA mutation-informed validator (downloads GDC data on first run)
 python real_tcga_validation.py --help
 
@@ -285,26 +357,32 @@ deepcatch-decisioncurve \
 
 # Synthetic-cohort AUC gate (no network, <30 s)
 python scripts/adapter_auc_gate.py
+
+# CANCER-SEEK LOD validation (with [ultra] extras)
+deepcatch-lod --vaf_range "[1e-2, 1e-3, 1e-4, 1e-5]" --n_samples 20
 ```
 
 ## Citation
 
 ```bibtex
-@software{deepcatch_v2_2_0,
+@software{deepcatch_v2_3_0,
   author = {Yu Ching Lam},
   title  = {DeepCatch: Mutation-informed Ultra-Sensitive cfDNA Detection
-            (research-use-only open-data methods benchmark)},
+            (research-use-only open-data methods benchmark,
+            with CANCER-SEEK integration)},
   year   = {2026},
   url    = {https://github.com/rollroyces/deepcatch},
-  version = {2.2.0},
+  version = {2.3.0},
   note   = {Research-use-only open-data benchmark. NOT clinically validated.
-            NOT FDA-approved. NOT a medical device. For methods research only.}
+            NOT FDA-approved. NOT a medical device. For methods research only.
+            CANCER-SEEK ultra-sensitive modules are reference ports; no
+            real-cohort validation yet.}
 }
 ```
 
 ## Versioning
 
-This model card applies to **DeepCatch v2.2.0** (commit `fb1e523` on
-`main`). Subsequent versions may update the headline numbers; check
-the `results/` directory and the README for the latest validated
-metrics.
+This model card applies to **DeepCatch v2.3.0** (on the
+`feat/cancer-seek-integration` branch at merge). Subsequent versions
+may update the headline numbers; check the `results/` directory and
+the README for the latest validated metrics.
