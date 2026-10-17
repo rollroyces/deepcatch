@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepcatch"
-version = "2.2.0"
-description = "Mutation-informed ultra-sensitive cfDNA detection: panel-LLR, strand score, fisher, fragmentomics, GNN methylation, tissue deconvolution, and a REST API for clinical use."
+version = "2.3.0"
+description = "Mutation-informed ultra-sensitive cfDNA detection: panel-LLR, strand score, fisher, fragmentomics, GNN methylation, tissue deconvolution, ultra-sensitive CANCER-SEEK modules (UMI, low-VAF caller, CNV, XGBoost, VAE anomaly, RL screening policy), and a REST API for clinical use."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -13,7 +13,8 @@ authors = [
     {name = "Yu Ching Lam (Independent Researcher)"},
 ]
 keywords = ["cfDNA", "ctDNA", "liquid-biopsy", "cancer-detection",
-            "variant-calling", "panel-LLR", "fragmentomics", "methylation"]
+            "variant-calling", "panel-LLR", "fragmentomics", "methylation",
+            "ultra-sensitive", "CANCER-SEEK", "UMI", "CNV", "XGBoost"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -51,6 +52,19 @@ api = [
 tumor-naive = [
     "cfdna-fragmentomics-pipeline>=0.2.0",
 ]
+# CANCER-SEEK ultra-sensitive modules (XGBoost + SHAP for cancer triage).
+# Activates: src.ultrasensitive.{xgboost_classifier, fusion_net, vae_anomaly,
+# methylation_encoder} plus the full screening_policy RL path.
+ultra = [
+    "xgboost>=2.0.0",
+    "shap>=0.42.0",
+]
+# Adaptive Screening Policy RL agent. Optional -- pulls stable-baselines3 if
+# the user wants to upgrade from the demo linear Q-function to a policy network.
+ultra-rl = [
+    "stable-baselines3>=2.2.0",
+    "gymnasium>=0.29.0",
+]
 # Development / testing
 dev = [
     "pytest>=7.0.0",
@@ -65,11 +79,11 @@ dev = [
 "Issue tracker" = "https://github.com/rollroyces/deepcatch/issues"
 
 [project.scripts]
-# CLI entry points — installed automatically by `pip install`.
+# CLI entry points -- installed automatically by `pip install`.
 # Run as: `deepcatch-tumornaive`, `deepcatch-fusion`, etc.
 #
 # Note: deepcatch-tcga (the real-TCGA validator) is intentionally NOT
-# a console_script — it lives at the repo root and downloads from the
+# a console_script -- it lives at the repo root and downloads from the
 # GDC API on first run. To run it directly:
 #   python real_tcga_validation.py
 # See `--help` for the full flag list.
@@ -79,6 +93,9 @@ deepcatch-decisioncurve = "src.fragmentomics.decision_curve_cli:main"
 # Note: deepcatch-aucgate is the synthetic-cohort smoke test. Run
 # directly from the repo:
 #   python scripts/adapter_auc_gate.py
+# CANCER-SEEK LOD validator. Run as:
+#   python scripts/ultrasensitive_lod.py
+deepcatch-lod = "src.ultrasensitive.spike_in_simulator:run_lod_validation:main"
 
 [tool.setuptools]
 packages = [
@@ -95,6 +112,12 @@ packages = [
     "src.synthetic_data",
     "src.tissue_deconv",
     "src.variant_calling",
+    # CANCER-SEEK ultra-sensitive modules (port of cancer-screening repo)
+    "src.ultrasensitive",
+    # Adaptive Screening Policy RL (port of cancer-screening/src/screening_policy/)
+    "src.screening_policy",
+    # Methylation cfRNA coupling + reader (port of deepcatch-methylation)
+    "src.methylation",
     "validation",
 ]
 include-package-data = true
@@ -108,4 +131,5 @@ addopts = "-q --no-header"
 testpaths = ["test"]
 markers = [
     "slow: marks tests as slow (deselect with -m 'not slow')",
+    "ultra: marks tests as CANCER-SEEK ultra-sensitive (require [ultra] extras)",
 ]
