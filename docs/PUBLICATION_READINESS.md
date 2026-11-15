@@ -16,6 +16,13 @@
 
 **S3 verdict**: `partial` — Some object kinds are reachable (fragment objects included) and others are not; new publications can still be fetched.
 
+**Read `labels-missing` as "not in the training labels file", not "unusable".**
+Publications 1, 7 and 9 are exactly the studies used as the held-out
+external cohort (`results/external_validation_finaledb.json`): they are
+fetched from the API and the S3 bucket for scoring, and deliberately
+contribute no training data. The training labels file carries
+publications 6 and 8 only.
+
 ## Per-publication readiness
 
 | Publication | Study | Verdict | n_labels (cell-line filtered) | n_features_present | Why |

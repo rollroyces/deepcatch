@@ -24,7 +24,7 @@
 | 3.5 Comparison to published cfDNA benchmarks | ✅ filled (NEW) | ~430 | DELFI, CancerSEEK, Galleri, CAPP-Seq, FinaleMe comparator table + honest-positioning paragraph |
 | 4.1 What this work does | ✅ drafted | ~80 | engineering substrate, not clinical assay |
 | 4.2 What this work does NOT do | ✅ drafted (touched) | ~230 | added HCC_J outlier reading, per-cancer denominator limits, cross-study framing |
-| 4.3 Limitations | ✅ drafted | ~260 | small n, simulated healthy, no real plasma, FinaleDB API down, encoder size |
+| 4.3 Limitations | ✅ drafted | ~260 | small n, simulated healthy, no real plasma, partial FinaleDB access (API up, some S3 object kinds 403), encoder size |
 | 4.4 Future work | ✅ drafted | ~150 | real-plasma IRB cohort, cross-platform, methylation, larger pretrain |
 | 5. Availability | ✅ drafted | ~210 | github URL, license, data pointers, one-bash reproduction pointer |
 | `paper/REPRODUCE.md` | ✅ NEW | ~190 | one-bash driver + step-by-step manual commands + acceptance checklist |
