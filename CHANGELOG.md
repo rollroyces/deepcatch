@@ -124,7 +124,11 @@ cohort size.
   them to contain them, so regenerating an artifact without updating the
   prose fails the build. It caught one gap immediately: the preprint
   quoted the single-type transfer direction (0.6805) but not the reverse
-  (0.9361), which the abstract now states.
+  (0.9361), which the abstract now states. A second check fails if a
+  *superseded* figure reappears in a current-facing document. The
+  quotable-number list lives once, in `scripts/benchmark_numbers.py`,
+  which prints every quoted figure with its artifact and which the test
+  imports, so the test and the printer cannot disagree.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out
