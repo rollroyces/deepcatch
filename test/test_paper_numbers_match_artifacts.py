@@ -114,6 +114,11 @@ CURRENT_DOCS = [
     "REVIEWERS.md",
     "TEAM.md",
     "USAGE.md",
+    "ULTRA_EARLY_READINESS.md",
+    "docs/EXTERNAL_VALIDATION.md",
+    "docs/CROSS_STUDY_LOSO.md",
+    "docs/PORTFOLIO_ROADMAP.md",
+    "docs/METHYLATION_PIPELINE.md",
     "paper/paper.tex",
     "paper/PAPER.md",
     "paper/METHODS_PAPER.md",
@@ -128,6 +133,8 @@ CURRENT_DOCS = [
     "docs/HARMONIZATION.md",
     "docs/METHYLATION_PIPELINE.md",
     "docs/site/index.html",
+    "ULTRA_EARLY_READINESS.md",
+    "docs/PORTFOLIO_ROADMAP.md",
 ]
 
 

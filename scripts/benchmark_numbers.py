@@ -23,16 +23,20 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QUOTED_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "7", "auc"),
-     ["paper/paper.tex", "paper.md"]),
+     ["paper/paper.tex", "paper.md", "README.md",
+      "docs/EXTERNAL_VALIDATION.md"]),
     ("cross_study_finallydb_gc_corrected.json",
      ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md", "paper.md"]),
+     ["paper/METHODS_PAPER.md", "paper.md", "README.md", "MODEL.md",
+      "ULTRA_EARLY_READINESS.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
     ("cross_study_finallydb.json",
      ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md"]),
+     ["paper/METHODS_PAPER.md", "README.md", "ULTRA_EARLY_READINESS.md",
+      "docs/CROSS_STUDY_BENCHMARK.md"]),
     ("methylation_cohort_channel.json",
      ("beta_summary_auc_loo",),
-     ["paper/paper.tex", "paper.md"]),
+     ["paper/paper.tex", "paper.md", "README.md", "MODEL.md",
+      "ULTRA_EARLY_READINESS.md", "docs/METHYLATION_PIPELINE.md"]),
 ]
 
 # Numbers that need a lookup rather than a plain path.

@@ -153,6 +153,12 @@ cohort size.
   seven of its tests that use the default invocation share one smoke
   run through a module-scoped fixture instead of each repeating the
   ~27 s training run -- so the file costs 37 s rather than 3.5 minutes.
+- **The drift guard now covers the collaborator-facing documents.** It
+  checked the manuscript but not README.md, MODEL.md,
+  ULTRA_EARLY_READINESS.md or the per-experiment write-ups -- the files a
+  wet-lab collaborator reads before deciding whether to send us data.
+  Those now have to quote the committed artifacts too, and the
+  superseded-value sweep covers them as well.
 - **The preprint's data-availability statement named the wrong datasets.**
   It listed TCGA-LUAD and FLARE but not FinaleDB -- which is where the
   cross-study benchmark (n=627) and the held-out external cohort
