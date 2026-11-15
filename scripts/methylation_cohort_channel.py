@@ -463,6 +463,17 @@ def main() -> int:
             "beta summary does, then the beta summary is not adding "
             "anything over library complexity, and the two must be "
             "compared before the channel is claimed."),
+        "what_the_channel_actually_computes": (
+            "The decoder emits HARD 0/1 state assignments, not fractional "
+            "beta: ~91% of the covered loci come back exactly 1.0 and the "
+            "rest exactly 0.0, with nothing in between. So the per-sample "
+            "summary is literally the FRACTION OF COVERED LOCI CALLED "
+            "METHYLATED, over a locus set that differs between samples "
+            "(~10k covered loci for the colorectal cancers, ~50k for the "
+            "transplant controls). The per-CpG test shows the state "
+            "assignment is identical between the arms at the same locus "
+            "(median difference exactly 0), so the sample-level "
+            "separation is coverage and composition, not methylation."),
         "honest_framing": (
             "The HMM was trained once across the cohort and each sample was "
             "decoded separately, so every beta value is derived from that "
