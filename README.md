@@ -418,7 +418,8 @@ deepcatch/
 
 | Commit | What changed |
 |---|---|
-| **c782efc** (HEAD) | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
+| **v2.3.0** (HEAD) | **External validation on held-out public publications** (AUC 0.9915 on pub 7 WGS, 0.8819 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments · CI repaired from 2 red jobs to 8 green |
+| **c782efc** | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
 | `eb9948a` | Fix: refuse to fabricate cross-platform AUC from `synth_*` files |
 | `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |
 | `506e14a` | Update `cross_platform_readiness.json` (fragmentomics-only verdict) |
@@ -428,7 +429,7 @@ deepcatch/
 | `0ad0033` | SensAtSpecLoss, BalancedCE, CalibrationLoss (`src/foundation/losses.py`) |
 | `ec16e0d` | REAL AlphaMissense fix (key construction bug, +0.057 AUC at K=200) |
 
-Full history: `git log --oneline` (100+ commits since v2.2.0). Notes per commit: [`docs/`](docs/).
+Full history: `git log --oneline`. What changed in v2.3.0: [`CHANGELOG.md`](CHANGELOG.md). Notes per commit: [`docs/`](docs/).
 
 ---
 
