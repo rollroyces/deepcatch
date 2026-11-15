@@ -71,14 +71,32 @@ class FastaIndex:
         return raw.decode("ascii", errors="replace").replace("\n", "")
 
 
-def write_sam(frag_path: Path, fa: FastaIndex, sam_path: Path) -> int:
+def write_sam(frag_path: Path, fa: FastaIndex, sam_path: Path,
+              max_fragments: int = 0) -> int:
+    """Write the SAM.
+
+    ``max_fragments`` subsamples the file UNIFORMLY: every k-th fragment
+    is kept, so the retained set still spans the whole genome. Keeping a
+    prefix would be wrong -- the fragment files are coordinate-sorted, so
+    a prefix covers only the start of chr1 and leaves chr22 empty.
+
+    The subsample matters for tractability: a whole-genome sample holds
+    ~29 M fragments, and writing them with their full sequence produces
+    a 13 GB SAM per sample.
+    """
     n = 0
+    stride = 1
+    if max_fragments:
+        total = sum(1 for _ in gzip.open(frag_path, "rt"))
+        stride = max(1, -(-total // max_fragments))  # ceil
     with gzip.open(frag_path, "rt") as fi, open(sam_path, "w") as fo:
         fo.write("@HD\tVN:1.6\tSO:coordinate\n")
         for chrom, (offset, length, line_bases) in sorted(
                 fa.index.items(), key=lambda kv: kv[1][1], reverse=True):
             fo.write(f"@SQ\tSN:{chrom}\tLN:{length}\n")
         for i, line in enumerate(fi):
+            if stride > 1 and (i % stride) != 0:
+                continue
             parts = line.rstrip("\n").split("\t")
             if len(parts) < 5:
                 continue
@@ -110,6 +128,10 @@ def main() -> int:
     ap.add_argument("--fa", required=True, help="hg19 reference FASTA")
     ap.add_argument("--out-bam", required=True)
     ap.add_argument("--keep-sam", action="store_true")
+    ap.add_argument("--max-fragments", type=int, default=0,
+                    help="subsample uniformly to at most N fragments per "
+                         "sample (0 = keep all). A whole-genome sample has "
+                         "~29M fragments and its SAM is ~13 GB.")
     args = ap.parse_args()
 
     frag = Path(args.input)
@@ -121,7 +143,7 @@ def main() -> int:
     sam = out_bam.with_suffix(".sam")
 
     fa = FastaIndex(Path(args.fa))
-    n = write_sam(frag, fa, sam)
+    n = write_sam(frag, fa, sam, args.max_fragments)
     print(f"wrote {n} fragment pairs to {sam}", flush=True)
 
     subprocess.run(["samtools", "sort", "-O", "BAM", "-o", str(out_bam),
