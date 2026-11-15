@@ -13,121 +13,59 @@ This test reads the headline numbers **out of the artifacts** and
 requires them to appear in the documents that cite them. Regenerate an
 artifact without updating the prose and this goes red.
 
+The list of quotable numbers is not written here: it lives in
+``scripts/benchmark_numbers.py`` (``QUOTED_NUMBERS`` /
+``QUOTED_SPECIAL``), which is also the script that prints every quoted
+figure with its artifact. One list, so the test and the printer can
+never disagree about what is quotable.
+
 It is deliberately a text-presence check rather than a parser: the point
 is not to re-derive the manuscript, it is to make drift impossible to
-miss. The authoritative list of quotable numbers lives in
-``scripts/benchmark_numbers.py``.
+miss.
 """
 from __future__ import annotations
 
+import importlib.util
 import io
-import json
+import sys
 from pathlib import Path
 
 import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_REPO_ROOT))
 
 
-def _load(name: str):
-    path = _REPO_ROOT / "results" / name
-    if not path.exists():
-        pytest.skip(f"{name} not present")
-    with io.open(path, encoding="utf-8") as f:
-        return json.load(f)
+def _load_numbers_module():
+    spec = importlib.util.spec_from_file_location(
+        "benchmark_numbers", _REPO_ROOT / "scripts" / "benchmark_numbers.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_numbers = _load_numbers_module()
 
 
 def _read(rel: str) -> str:
     return io.open(_REPO_ROOT / rel, encoding="utf-8").read()
 
 
-def _fmt(value: float) -> str:
-    return f"{value:.4f}"
+def _cases():
+    """(label, value, documents) for every quoted number."""
+    for label, value, _artifact, documents in _numbers.quoted_values():
+        yield label, value, documents
 
 
-def _per_strategy_auc(artifact: dict, strategy: str) -> float:
-    for row in artifact["per_strategy"][strategy]:
-        if row["metric"] == "auc":
-            return float(row["mean"])
-    raise AssertionError(f"no auc row for {strategy}")
-
-
-def _loso_direction(artifact: dict, train: str, test: str) -> float:
-    """The pooled test AUC for one leave-one-study-out direction."""
-    for entry in artifact["loso"]:
-        if (entry["train_study"] == train and entry["test_study"] == test
-                and entry["harmonization"] == "self_zscore"):
-            return float(entry["pooled_test_auc"]["auc"])
-    raise AssertionError(f"no LOSO entry {train} -> {test}")
-
-
-# (artifact, path into the artifact, documents that must quote it)
-HEADLINE_NUMBERS = [
-    ("external_validation_finaledb.json",
-     ("per_publication_auc", "7", "auc"),
-     ["paper/paper.tex", "paper.md"]),
-    ("cross_study_loso.json",
-     None,  # handled by the direction-specific test
-     []),
-    ("cross_study_finallydb_gc_corrected.json",
-     ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md", "paper.md"]),
-    ("cross_study_finallydb.json",
-     ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md"]),
-    ("fusion_ablation_isotonic.json",
-     None,  # handled separately: the per-strategy table
-     ["paper/paper.tex"]),
-    ("methylation_cohort_channel.json",
-     ("beta_summary_auc_loo",),
-     ["paper/paper.tex", "paper.md"]),
-]
-
-
-def _dig(artifact: dict, path):
-    node = artifact
-    for key in path:
-        node = node[key]
-    return node
-
-
-@pytest.mark.parametrize("artifact_name,path,documents", HEADLINE_NUMBERS)
-def test_headline_number_is_quoted_wherever_it_is_cited(artifact_name, path,
-                                                         documents):
-    artifact = _load(artifact_name)
-    if path is None:
-        pytest.skip("handled by the fusion-specific test")
-    value = float(_dig(artifact, path))
-    rendered = _fmt(value)
+@pytest.mark.parametrize("label,value,documents", list(_cases()))
+def test_quoted_number_is_present_wherever_it_is_cited(label, value,
+                                                       documents):
+    rendered = f"{value:.4f}"
     for doc in documents:
         text = _read(doc)
         assert rendered in text, (
-            f"{doc} does not quote {rendered} (from "
-            f"results/{artifact_name}{'.'.join(map(str, path))}). "
-            f"Update the prose or the artifact.")
-    print(f"{artifact_name}{path} -> {rendered} quoted in {documents}")
-
-
-def test_fusion_naive_average_is_quoted_in_the_preprint():
-    artifact = _load("fusion_ablation_isotonic.json")
-    value = _per_strategy_auc(artifact, "naive_average")
-    rendered = _fmt(value)
-    assert rendered in _read("paper/paper.tex"), (
-        f"paper/paper.tex does not quote the naive-average AUC {rendered} from "
-        "results/fusion_ablation_isotonic.json")
-    assert rendered in _read("docs/site/index.html"), (
-        f"the landing page does not quote the naive-average AUC {rendered}")
-
-
-def test_loso_transfer_numbers_are_quoted_in_the_preprint():
-    """Both transfer directions must appear with the artifact's values."""
-    artifact = _load("cross_study_loso.json")
-    tex = _read("paper/paper.tex")
-    for train, test in (("jiang", "cristiano"), ("cristiano", "jiang")):
-        rendered = _fmt(_loso_direction(artifact, train, test))
-        assert rendered in tex, (
-            f"paper/paper.tex does not quote the {train} -> {test} transfer "
-            f"AUC {rendered} from results/cross_study_loso.json")
+            f"{doc} does not quote {rendered} (from {label}). Update the "
+            f"prose or the artifact.")
 
 
 def test_methylation_null_is_quoted_with_its_permutation_p_value():
@@ -139,8 +77,10 @@ def test_methylation_null_is_quoted_with_its_permutation_p_value():
 
 
 def test_paired_fusion_delta_matches_the_artifact():
-    """The abstract quotes a paired delta; it must be the artifact's."""
-    artifact = _load("fusion_ablation_isotonic.json")
+    """The preprint quotes a paired delta; it must be the artifact's."""
+    artifact = _numbers.load("fusion_ablation_isotonic.json")
+    if artifact is None:
+        pytest.skip("fusion artifact not present")
     per_seed = artifact["per_seed_per_strategy"]
     tn = [s["tumor_naive"]["auc"] for s in per_seed]
     na = [s["naive_average"]["auc"] for s in per_seed]
@@ -149,3 +89,54 @@ def test_paired_fusion_delta_matches_the_artifact():
     assert rendered in _read("paper/paper.tex"), (
         f"the paired fusion delta quoted in the preprint is not the one in the "
         f"artifact ({rendered})")
+
+
+# Figures that the v2.3.0 regeneration superseded. They must not reappear
+# in a current-facing document; the CHANGELOG and the dated audit records
+# are allowed to name them, because describing the old value is the
+# point of those files.
+SUPERSEDED = [
+    "0.9670",   # the old GC-corrected pooled AUC
+    "0.9747",   # the old legacy pooled AUC
+    "0.9753",   # the companion pipeline's unseeded tumor-naive figure
+    # 0.9886 is deliberately absent: it was the old naive-average fusion
+    # AUC, but it is also the CURRENT per-cancer OV AUC, so a string check
+    # cannot distinguish them. The presence check covers the fusion
+    # number instead (the documents must quote 0.9884).
+    "0.4657",   # the old shuffled-label null
+    "0.9225",   # the old PCA-20 pooled AUC
+    "0.9458",   # the old PCA-20 per-publication AUC
+]
+CURRENT_DOCS = [
+    "README.md",
+    "MODEL.md",
+    "REVIEWERS.md",
+    "TEAM.md",
+    "USAGE.md",
+    "paper/paper.tex",
+    "paper/PAPER.md",
+    "paper/METHODS_PAPER.md",
+    "paper/README.md",
+    "paper.md",
+    "docs/CROSS_STUDY_BENCHMARK.md",
+    "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
+    "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    "docs/CROSS_STUDY_LOSO.md",
+    "docs/EXTERNAL_VALIDATION.md",
+    "docs/FUSION_ISOTONIC.md",
+    "docs/HARMONIZATION.md",
+    "docs/METHYLATION_PIPELINE.md",
+    "docs/site/index.html",
+]
+
+
+@pytest.mark.parametrize("value", SUPERSEDED)
+def test_superseded_figures_do_not_reappear(value):
+    """A regenerated number must not leave its predecessor behind."""
+    for doc in CURRENT_DOCS:
+        path = _REPO_ROOT / doc
+        if not path.exists():
+            continue
+        text = io.open(path, encoding="utf-8").read()
+        assert value not in text, (
+            f"{doc} still quotes the superseded figure {value}")

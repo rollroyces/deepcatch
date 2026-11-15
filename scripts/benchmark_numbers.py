@@ -4,6 +4,12 @@
 One place to read them from, so the prose and the artifacts cannot drift
 apart: the script reads the committed ``results/*.json`` and prints every
 figure the documents quote, with the artifact it came from.
+
+``QUOTED_NUMBERS`` is the authoritative list -- artifact, the path to the
+number inside it, and the documents that must contain it.
+``test/test_paper_numbers_match_artifacts.py`` imports that list and
+fails the build when an artifact is regenerated and the prose is not
+updated, so the two never disagree about what is quotable.
 """
 from __future__ import annotations
 
@@ -12,6 +18,32 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# (artifact file, path into the artifact, documents that must quote it)
+QUOTED_NUMBERS = [
+    ("external_validation_finaledb.json",
+     ("per_publication_auc", "7", "auc"),
+     ["paper/paper.tex", "paper.md"]),
+    ("cross_study_finallydb_gc_corrected.json",
+     ("pooled", "harmonized", "auc_mean"),
+     ["paper/METHODS_PAPER.md", "paper.md"]),
+    ("cross_study_finallydb.json",
+     ("pooled", "harmonized", "auc_mean"),
+     ["paper/METHODS_PAPER.md"]),
+    ("methylation_cohort_channel.json",
+     ("beta_summary_auc_loo",),
+     ["paper/paper.tex", "paper.md"]),
+]
+
+# Numbers that need a lookup rather than a plain path.
+QUOTED_SPECIAL = [
+    ("cross_study_loso.json", "loso jiang -> cristiano",
+     "paper/paper.tex"),
+    ("cross_study_loso.json", "loso cristiano -> jiang",
+     "paper/paper.tex"),
+    ("fusion_ablation_isotonic.json", "naive_average",
+     "paper/paper.tex"),
+]
 
 
 def load(name: str):
@@ -26,7 +58,57 @@ def line(label, value, source):
     print(f"  {label:<46} {value}   [{source}]")
 
 
+def dig(artifact, path):
+    node = artifact
+    for key in path:
+        node = node[key]
+    return node
+
+
+def loso_direction(artifact, train, test):
+    for entry in artifact["loso"]:
+        if (entry["train_study"] == train and entry["test_study"] == test
+                and entry["harmonization"] == "self_zscore"):
+            return float(entry["pooled_test_auc"]["auc"])
+    raise KeyError(f"{train} -> {test} not in the LOSO artifact")
+
+
+def fusion_auc(artifact, strategy):
+    for row in artifact["per_strategy"][strategy]:
+        if row["metric"] == "auc":
+            return float(row["mean"])
+    raise KeyError(f"no auc row for {strategy}")
+
+
+def quoted_values():
+    """Yield (label, value, artifact, documents) for every quoted number."""
+    for artifact_name, path, documents in QUOTED_NUMBERS:
+        artifact = load(artifact_name)
+        if artifact is None:
+            continue
+        yield (f"{artifact_name}{'.'.join(map(str, path))}",
+               float(dig(artifact, path)), artifact_name, documents)
+    for artifact_name, what, document in QUOTED_SPECIAL:
+        artifact = load(artifact_name)
+        if artifact is None:
+            continue
+        if what.startswith("loso "):
+            train, test = (part.strip() for part in what[5:].split("->"))
+            value = loso_direction(artifact, train, test)
+            label = f"{artifact_name} {train} -> {test}"
+        else:
+            value = fusion_auc(artifact, what)
+            label = f"{artifact_name} {what}"
+        yield (label, value, artifact_name, [document])
+
+
 def main() -> int:
+    print("== numbers the documents quote (authoritative list)")
+    for label, value, artifact_name, documents in quoted_values():
+        line(label, f"{value:.4f}", artifact_name)
+        print(f"      quoted in: {', '.join(documents)}")
+    print()
+
     gc = load("cross_study_finallydb_gc_corrected.json")
     legacy = load("cross_study_finallydb.json")
     pc = load("per_cancer_sens_at_spec.json")
