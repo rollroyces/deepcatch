@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T10:04:59.991965+00:00",
+  "generated_at": "2026-11-15T22:03:57.045898+00:00",
   "config": {
     "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)",
     "pca_n": 200,
@@ -21,7 +21,7 @@
   },
   "reproducibility": {
     "transfer_numbers": "deterministic: the LOSO directions use a seeded PCA (random_state=0) and a fixed train/test split by publication, so the transfer AUCs reproduce exactly",
-    "in_domain_reference": "computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA is unseeded, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much"
+    "in_domain_reference": "computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA was unseeded before v2.3.0, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much"
   },
   "cohort": {
     "n_samples_with_features": 627,

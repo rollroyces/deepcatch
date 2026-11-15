@@ -111,6 +111,20 @@ cohort size.
   abstract now quotes these and states that the fused mutation channel is a
   calibrated synthetic proxy rather than the real panel LLR.
   Artifact: `results/fusion_ablation_isotonic.json`.
+- **The leave-one-study-out artifact was regenerated and reproduced itself.**
+  Re-running `scripts/cross_study_loso.py` against the seeded benchmark
+  changed nothing but the timestamp and a stale note (the note said the
+  headline benchmark's PCA "is unseeded"; it was not any more) -- every
+  transfer number came back identical: jiang -> cristiano 0.6805,
+  cristiano -> jiang 0.9361, in-domain 0.9789 / 0.9690. That is the
+  cleanest available evidence that the pipeline is now deterministic.
+- **A test now keeps the manuscript and the artifacts in step.**
+  `test/test_paper_numbers_match_artifacts.py` reads the headline
+  numbers out of the committed JSON and requires the documents that cite
+  them to contain them, so regenerating an artifact without updating the
+  prose fails the build. It caught one gap immediately: the preprint
+  quoted the single-type transfer direction (0.6805) but not the reverse
+  (0.9361), which the abstract now states.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out

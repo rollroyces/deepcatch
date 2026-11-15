@@ -1,6 +1,6 @@
 # Leave-One-Study-Out (LOSO) Cross-Publication Benchmark
 > **Scope**: open-data cross-publication transfer on FinaleDB publications 6 (jiang) + 8 (cristiano). **NOT** clinical validation. **NOT** external cohort validation. The test publication is fully held out of training.
-- Generated: `2026-11-15T10:04:59.991965+00:00`
+- Generated: `2026-11-15T22:03:57.045898+00:00`
 - Features: `5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)`
 - PCA n_components: `200` (capped at min(pca_n, n_train) per direction)
 - Classifier: `LogisticRegression(max_iter=2000)`
@@ -69,4 +69,4 @@ Leave one cancer type out of a single publication; train on the remaining types 
 
 ## Reproducibility
 - **transfer_numbers**: deterministic: the LOSO directions use a seeded PCA (random_state=0) and a fixed train/test split by publication, so the transfer AUCs reproduce exactly
-- **in_domain_reference**: computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA is unseeded, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much
+- **in_domain_reference**: computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA was unseeded before v2.3.0, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much

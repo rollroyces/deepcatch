@@ -307,10 +307,11 @@ def in_domain_cv(X, y, seeds, pca_n: int):
 
     Mirrors ``scripts/cross_study_finallydb.py:pooled_oof`` -- same
     folds, same per-study z-score harmonization fit on the train fold
-    only -- but with a SEEDED PCA. The headline benchmark's PCA is
-    unseeded, which makes the 506-sample publication's in-domain AUC
-    drift by ~0.003 between runs; seeding it keeps this artifact
-    reproducible.
+    only -- but with a SEEDED PCA. The headline benchmark's PCA was
+    unseeded until v2.3.0, which made the 506-sample publication's
+    in-domain AUC drift by ~0.003 between runs; both are seeded now, so
+    this artifact and the headline benchmark agree to within that
+    former drift.
 
     Returns (auc_mean, auc_std, per_seed_aucs).
     """
@@ -600,7 +601,7 @@ def main():
                                    "folds, same per-study z-score "
                                    "harmonization fit on the train fold) but "
                                    "with a SEEDED PCA. The headline "
-                                   "benchmark's PCA is unseeded, so its own "
+                                   "benchmark's PCA was unseeded before v2.3.0, so its own "
                                    "per-publication AUC drifts ~0.003 "
                                    "run-to-run on the 506-sample publication; "
                                    "these references can therefore differ "
