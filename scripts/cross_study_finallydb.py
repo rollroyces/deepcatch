@@ -650,6 +650,7 @@ def build_per_cancer_standalone_payload(
     pooled_harmonized=None,
     pooled_n_pos=None,
     pooled_n_neg=None,
+    specificities_grid=None,
 ):
     """Build the standalone JSON from a pre-computed OvR artifact map.
 
@@ -669,12 +670,21 @@ def build_per_cancer_standalone_payload(
     harmonized cross-study cohort). When provided, they override
     any derivation from per-cancer artifacts.
 
+    `specificities_grid` is the operative sens@spec grid. It defaults
+    to the legacy {0.95, 0.98, 0.99}; --include-screening extends it
+    with {0.995, 0.999}. It is passed in explicitly because it is
+    configured in main() -- reading it as a module-level name here
+    raised NameError at call time and broke the per-cancer output
+    step of paper/REPRODUCE.sh.
+
     **Per-cancer iteration (not concatenated) for the same reason:**
     n_neg=264 (full healthy count) per cancer, not 1848 (7×264).
 
     Writes the JSON to `out_path` and returns the payload dict.
     """
     rows = {}
+    specificities = (tuple(specificities_grid) if specificities_grid
+                     else DEFAULT_SPEC_GRID)
     for cancer, art in ovr_artifacts.items():
         if art.get("skipped"):
             # Match the canonical cfDNA schema even when skipped (n=0
@@ -714,7 +724,7 @@ def build_per_cancer_standalone_payload(
             s=s_sub,
             cancer_label=label_sub,
             study_label=study_sub,
-            specificities=specificities_grid,
+            specificities=specificities,
             prevalences=DEFAULT_PREVALENCES,
             include_pooled=False,
         )
@@ -810,7 +820,7 @@ def build_per_cancer_standalone_payload(
             s=np.concatenate(pooled_s),
             cancer_label=np.concatenate(pooled_label),
             study_label=np.concatenate(pooled_study) if pooled_study else None,
-            specificities=specificities_grid,
+            specificities=specificities,
             prevalences=DEFAULT_PREVALENCES,
             include_pooled=True,
         )
@@ -1667,6 +1677,7 @@ def main():
             pooled_harmonized=pooled_h,
             pooled_n_pos=cohort.get("n_cancer_in_labels"),
             pooled_n_neg=cohort.get("n_healthy_in_labels"),
+            specificities_grid=specificities_grid,
         )
         n_rows = len(standalone["per_cancer"])
         n_skipped = sum(1 for r in standalone["per_cancer"].values()

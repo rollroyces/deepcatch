@@ -38,7 +38,12 @@ from unittest.mock import patch as mock_patch
 
 import numpy as np
 import pytest
-import torch
+
+# torch is an optional dependency: the "Core tests" CI job installs only
+# numpy/scipy/scikit-learn/pandas/matplotlib/seaborn/pytest. A hard
+# `import torch` aborts collection for the WHOLE session, so every other
+# test in that job silently never runs. Skip this module instead.
+torch = pytest.importorskip("torch")
 
 # Make deepcatch importable regardless of pytest invocation cwd.
 ROOT = Path(__file__).resolve().parent.parent
