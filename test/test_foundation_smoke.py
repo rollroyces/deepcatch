@@ -80,13 +80,26 @@ def _run_smoke(tmp_dir: str, features_dir: str | None = None) -> dict:
         return json.load(f)
 
 
+@pytest.fixture(scope="module")
+def smoke_result(tmp_path_factory):
+    """Run the smoke ONCE for the whole module.
+
+    Each test used to call `_run_smoke` for itself, so the same ~27 s
+    training run was repeated eight times over. The smoke is
+    deterministic given the same inputs, so one run serves every
+    assertion; the synthetic-fallback test still runs its own, because it
+    deliberately points the script at an empty feature cache.
+    """
+    out_dir = tmp_path_factory.mktemp("foundation_smoke")
+    return _run_smoke(str(out_dir))
+
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_returns_all_three_channel_metrics(tmp_path):
+def test_smoke_returns_all_three_channel_metrics(smoke_result):
     """The smoke output must report foundation + lr_baseline + naive_avg,
     plus the shuffled-label negative control and the signal-to-artifact
     ratio so reviewers can verify the AUC is signal-driven, not artifact.
     """
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     for key in (
         "foundation_auc_mean", "foundation_auc_std",
         "foundation_sens_at_99_mean",
@@ -102,7 +115,7 @@ def test_smoke_returns_all_three_channel_metrics(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_shuffled_label_auc_is_below_real(tmp_path):
+def test_smoke_shuffled_label_auc_is_below_real(smoke_result):
     """Sanity check: when labels are shuffled, the model AUC must be
     meaningfully below the real-labels AUC. Otherwise the real AUC is
     an artifact of the paired cancer/control design.
@@ -110,7 +123,7 @@ def test_smoke_shuffled_label_auc_is_below_real(tmp_path):
     We allow shuffled_auc up to 0.65 (some patient-pair structure
     always leaks through); we require shuffled_auc < real_auc - 0.10.
     """
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     real = d["lr_baseline_auc_mean"]
     shuf = d["shuffled_lr_baseline_auc_mean"]
     # Audit-2 fix: under per-patient GroupKFold, lr_baseline is
@@ -126,11 +139,11 @@ def test_smoke_shuffled_label_auc_is_below_real(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_lr_baseline_beats_naive_avg(tmp_path):
+def test_smoke_lr_baseline_beats_naive_avg(smoke_result):
     """The sklearn LR on [panel, frag] should be at least as good as the
     naive average for any cohort with non-degenerate signal.
     """
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     # LR has one extra parameter to fit; on the synthetic cohort
     # (panel + frag both AUC ~0.92) it should match or beat the mean.
     assert d["lr_baseline_auc_mean"] >= d["naive_avg_auc_mean"] - 0.02, (
@@ -140,9 +153,9 @@ def test_smoke_lr_baseline_beats_naive_avg(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_lr_baseline_auc_above_chance(tmp_path):
+def test_smoke_lr_baseline_auc_above_chance(smoke_result):
     """The LR baseline must be well above 0.5 AUC on the synthetic cohort."""
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     assert d["lr_baseline_auc_mean"] > 0.70, (
         f"lr_baseline AUC {d['lr_baseline_auc_mean']:.3f} should be well "
         f"above chance on a synthetic cohort with AUC-0.92 channels"
@@ -150,7 +163,7 @@ def test_smoke_lr_baseline_auc_above_chance(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_foundation_auc_above_chance(tmp_path):
+def test_smoke_foundation_auc_above_chance(smoke_result):
     """Foundation must run end-to-end and produce a finite AUC.
 
     Audit-2 fix: the previous assertion ``foundation_auc_mean > 0.65``
@@ -163,7 +176,7 @@ def test_smoke_foundation_auc_above_chance(tmp_path):
     The head-to-head with LR is covered by the gate, not by an
     absolute threshold.
     """
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     auc = d["foundation_auc_mean"]
     assert 0.5 <= auc <= 1.0, (
         f"foundation AUC {auc:.3f} out of valid range; smoke is broken"
@@ -188,7 +201,7 @@ def test_smoke_data_source_is_synthetic_when_no_cache(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_foundation_within_lr_baseline_band(tmp_path):
+def test_smoke_foundation_within_lr_baseline_band(smoke_result):
     """Foundation must not be catastrophically worse than LR baseline.
 
     Audit-2 fix: under honest per-patient ``GroupKFold`` the
@@ -205,7 +218,7 @@ def test_smoke_foundation_within_lr_baseline_band(tmp_path):
     script itself via ``--gate-foundation-vs-lr`` (default 0.20 in
     publication mode; relaxed to 0.30 in CI ``--quick`` mode).
     """
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     gap = d["lr_baseline_auc_mean"] - d["foundation_auc_mean"]
     assert 0.0 <= gap < 0.50, (
         f"foundation AUC {d['foundation_auc_mean']:.3f} is "
@@ -216,9 +229,9 @@ def test_smoke_foundation_within_lr_baseline_band(tmp_path):
 
 
 @pytest.mark.skipif(not _HAS_TORCH, reason="torch not installed")
-def test_smoke_all_three_gates_present(tmp_path):
+def test_smoke_all_three_gates_present(smoke_result):
     """The JSON must report all three gate thresholds + pass/fail."""
-    d = _run_smoke(str(tmp_path))
+    d = smoke_result
     for key in (
         "gate_auc", "gate_foundation_vs_lr", "gate_significant",
         "gate_pass",
