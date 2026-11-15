@@ -55,7 +55,7 @@ from sklearn.preprocessing import StandardScaler
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
     from fragmentomics.tumor_naive_adapter import (
-        load_cohort, load_labels_tsv,
+        load_cohort, load_labels_and_studies,
         CHANNEL_NAMES,
     )
     # DeLong test lives in DeepCatch's validation/ (repo root sibling of
@@ -327,18 +327,15 @@ def main() -> int:
     ap.add_argument("--no-harmonize", action="store_true")
     args = ap.parse_args()
 
-    labels = load_labels_tsv(args.labels)
-    study_of: dict[str, str] = {}
-    with open(args.labels) as f:
-        for line in f:
-            line = line.rstrip("\n").rstrip("\r")
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) >= 3:
-                study_of[parts[0]] = parts[2]
-            else:
-                study_of[parts[0]] = "default"
+    # Labels AND studies come from the same file, with the column
+    # positions resolved from the header when there is one. Reading the
+    # study positionally picks up the LABEL column on the canonical
+    # 4-column labels_multiclass.tsv (sample / disease_class / label /
+    # study), which makes every sample look like it belongs to a study
+    # called "cancer" or "control" -- the per-study harmonisation then
+    # removes the very signal it is supposed to isolate, and the pooled
+    # AUC collapses to chance.
+    labels, study_of = load_labels_and_studies(args.labels)
     sample_ids = sorted(labels)
     print(f"[fusion] loading {len(sample_ids)} samples from {args.features_dir}",
           file=sys.stderr)

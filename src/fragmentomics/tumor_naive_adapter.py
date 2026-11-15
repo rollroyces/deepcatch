@@ -196,6 +196,85 @@ def load_cohort(
     return np.stack(rows, axis=0), order
 
 
+def labels_columns(labels_tsv: str) -> tuple[int, Optional[int]]:
+    """Return the (label, study) column indices of a labels TSV.
+
+    Three layouts occur in this ecosystem and they are not
+    interchangeable:
+
+    * ``sample / disease_class / label / study`` -- the canonical
+      FinaleDB ``labels_multiclass.tsv`` (has a header row);
+    * ``sample / label / study`` -- the per-study ``features/labels.tsv``
+      (no header row);
+    * ``sample / label`` -- the minimal two-column form.
+
+    Reading the label positionally breaks on the first layout (it picks up
+    ``disease_class``), and reading the study positionally breaks on the
+    second (it picks up the label). So both are resolved from the header
+    when there is one, and positionally only when there is not.
+    """
+    with open(labels_tsv) as f:
+        first = f.readline().rstrip("\n").rstrip("\r")
+    if not first:
+        return 1, None
+    parts = first.split("\t")
+    names = [p.strip().lower() for p in parts]
+    if names and names[0] in ("sample", "sample_id", "id"):
+        label_col = None
+        study_col = None
+        for i, name in enumerate(names):
+            if name in ("label", "class", "y", "target"):
+                label_col = i
+            elif name in ("study", "publication", "cohort", "dataset"):
+                study_col = i
+        if label_col is None:
+            label_col = 1 if len(parts) > 1 else 0
+        return label_col, study_col
+    # Headerless: sample, label, [study]
+    if len(parts) >= 3:
+        return 1, 2
+    return 1, None
+
+
+def load_labels_and_studies(labels_tsv: str) -> Tuple[Dict[str, int], Dict[str, str]]:
+    """Read a labels TSV into (sample → 0/1, sample → study).
+
+    Recognized labels (case-insensitive): cancer/positive/tumor/y/1/true
+    → 1; healthy/control/normal/n/0/false → 0. Anything else raises.
+    """
+    POS = {"cancer", "positive", "tumor", "y", "1", "true", "case"}
+    NEG = {"healthy", "control", "normal", "n", "0", "false"}
+    label_col, study_col = labels_columns(labels_tsv)
+    labels: Dict[str, int] = {}
+    studies: Dict[str, str] = {}
+    with open(labels_tsv) as f:
+        for line in f:
+            line = line.rstrip("\n").rstrip("\r")
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+            if not labels and parts[0].strip().lower() in ("sample", "sample_id", "id"):
+                continue  # header row
+            s = parts[0]
+            if label_col >= len(parts):
+                continue
+            lab = parts[label_col].strip().lower()
+            if lab in POS:
+                labels[s] = 1
+            elif lab in NEG:
+                labels[s] = 0
+            else:
+                raise ValueError(
+                    f"Unrecognized label {lab!r} for sample {s!r}; "
+                    f"expected one of {sorted(POS | NEG)}"
+                )
+            if study_col is not None and study_col < len(parts):
+                studies[s] = parts[study_col].strip()
+    return labels, studies
+
+
 def load_labels_tsv(labels_tsv: str) -> Dict[str, int]:
     """Read a labels TSV. Returns dict sample_id → int (0/1).
 
@@ -205,45 +284,14 @@ def load_labels_tsv(labels_tsv: str) -> Dict[str, int]:
       optionally ``disease_class`` / ``study``) -- this is the canonical
       FinaleDB ``labels_multiclass.tsv`` layout
       (``sample\\tdisease_class\\tlabel\\tstudy``);
-    * a headerless two-column ``{sample}\\t{label}`` file.
+    * a headerless ``{sample}\\t{label}`` file, optionally with a third
+      ``{study}`` column.
 
     Recognized labels (case-insensitive): cancer/positive/tumor/y/1/true
     → 1; healthy/control/normal/n/0/false → 0. Anything else raises.
     """
-    POS = {"cancer", "positive", "tumor", "y", "1", "true", "case"}
-    NEG = {"healthy", "control", "normal", "n", "0", "false"}
-    out: Dict[str, int] = {}
-    label_col = 1
-    with open(labels_tsv) as f:
-        for line in f:
-            line = line.rstrip("\n").rstrip("\r")
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) < 2:
-                continue
-            # Header detection: a first row whose first cell is not a
-            # sample id but the literal word "sample" names the columns.
-            if not out and parts[0].strip().lower() == "sample":
-                for i, name in enumerate(parts):
-                    if name.strip().lower() in ("label", "class", "y"):
-                        label_col = i
-                        break
-                continue
-            s = parts[0]
-            if label_col >= len(parts):
-                continue
-            lab = parts[label_col].strip().lower()
-            if lab in POS:
-                out[s] = 1
-            elif lab in NEG:
-                out[s] = 0
-            else:
-                raise ValueError(
-                    f"Unrecognized label {lab!r} for sample {s!r}; "
-                    f"expected one of {sorted(POS | NEG)}"
-                )
-    return out
+    labels, _ = load_labels_and_studies(labels_tsv)
+    return labels
 
 
 def expected_dim(channels: Optional[List[str]] = None) -> int:

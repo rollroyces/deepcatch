@@ -23,6 +23,7 @@ from src.fragmentomics.tumor_naive_adapter import (  # noqa: E402
     expected_dim,
     load_cohort,
     load_labels_tsv,
+    load_labels_and_studies,
     load_sample,
 )
 
@@ -184,6 +185,40 @@ def test_load_labels_tsv_header_with_label_in_first_column():
         path = f.name
     try:
         assert load_labels_tsv(path) == {"A": 1, "B": 0}
+    finally:
+        os.unlink(path)
+
+
+def test_load_labels_and_studies_resolves_the_study_column():
+    """The study column must not be read positionally.
+
+    On the canonical 4-column layout the third column is the LABEL, so
+    reading the study positionally makes every sample look like it
+    belongs to a study called "cancer" or "control" -- the per-study
+    harmonisation then removes the signal it is meant to isolate.
+    """
+    with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
+        f.write("sample\tdisease_class\tlabel\tstudy\n")
+        f.write("H1\tHCC_J\tcancer\tjiang\n")
+        f.write("H2\tHCC_J\tcancer\tjiang\n")
+        f.write("C1\tCRC\thealthy\tcristiano\n")
+        path = f.name
+    try:
+        labels, studies = load_labels_and_studies(path)
+        assert labels == {"H1": 1, "H2": 1, "C1": 0}
+        assert studies == {"H1": "jiang", "H2": "jiang", "C1": "cristiano"}
+    finally:
+        os.unlink(path)
+
+
+def test_load_labels_and_studies_handles_a_two_column_file():
+    with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
+        f.write("A\tcancer\nB\thealthy\n")
+        path = f.name
+    try:
+        labels, studies = load_labels_and_studies(path)
+        assert labels == {"A": 1, "B": 0}
+        assert studies == {}
     finally:
         os.unlink(path)
 
