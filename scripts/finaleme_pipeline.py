@@ -106,6 +106,13 @@ REFERENCE_FILES: Dict[str, Path] = {
 # fragment file in the 6-column bedpe schema
 # (chrom, start, end, name, mapq, strand) with a "chr" chromosome prefix.
 FINALEME_STEP1_CLASS = "org.cchmc.epifluidlab.finaleme.utils.CpgMultiMetricsStatsNoBam"
+# The BAM route produces the matrix the HMM decoder consumes:
+#     CpgMultiMetricsStats [opts] hg19.2bit cpg_list.bed wgs.bam detail.txt.gz
+# It needs read bases (so the BAM has to carry SEQ/QUAL -- see
+# scripts/finaleme_bam_from_frag.py) and, for cfDNA rather than
+# bisulfite sequencing, -wgsMode (otherwise it tries to infer bisulfite
+# positions and needs an MD tag).
+FINALEME_STEP1_BAM_CLASS = "org.cchmc.epifluidlab.finaleme.utils.CpgMultiMetricsStatsV2"
 FINALEME_STEP3_CLASS = "org.cchmc.epifluidlab.finaleme.hmm.FinaleMe"
 
 REQUIRED_INPUTS: List[str] = [
@@ -342,6 +349,33 @@ def cmd_features(args: argparse.Namespace) -> int:
     output_path = output_dir / (input_path.stem.replace(".frag.bed.gz", "") + ".cpg_features.hg19.bed.gz")
 
     jar_path = r.finaleme_jar["path"]
+    if getattr(args, "bam", None):
+        # BAM route: the matrix the HMM decoder reads.
+        bam = Path(args.bam)
+        if not bam.is_file():
+            raise MissingInputError(f"BAM not found: {bam}")
+        cmd = [
+            "java",
+            f"-Xmx{args.jvm_heap}",
+            "-XX:+UseParallelGC",
+            f"-XX:ParallelGCThreads={args.parallel_gc_threads}",
+            "-cp", jar_path,
+            FINALEME_STEP1_BAM_CLASS,
+            str(REFERENCE_FILES["hg19.2bit"]),
+            str(REFERENCE_FILES["cpg_motif_bedgraph"]),
+            str(bam),
+            str(output_path),
+            "-wgsMode",
+            "-minMapQ", "0",
+            "-minBaseQ", "0",
+        ]
+        print(" ".join(cmd))
+        rc = subprocess.run(cmd).returncode
+        if rc != 0:
+            return rc
+        print(f"features_output: {output_path}")
+        return 0
+
     cmd = [
         "java",
         f"-Xmx{args.jvm_heap}",
