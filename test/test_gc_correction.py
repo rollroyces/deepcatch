@@ -30,6 +30,26 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(SCRIPTS))
 
 
+def _repo_gc_correction():
+    """Load THIS repo's gc_correction by explicit path.
+
+    A plain ``from gc_correction import ...`` is not safe here: the
+    sibling cfdna-fragmentomics-pipeline checkout carries a legacy
+    ``gc_correction`` module that does not expose these symbols, and its
+    ``honest_benchmark`` pivots ``sys.path[0]`` at import time. When an
+    earlier test in the same session imports that legacy module, it
+    stays cached in ``sys.modules`` and shadows the repo's own copy --
+    which is how these tests pass alone and fail in a full run. Loading
+    by path removes the ambiguity entirely.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "deepcatch_gc_correction", SCRIPTS / "gc_correction.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 # ─────────────────────────────────────────────────────────────────────── #
 # 1. Per-chrom GC table sanity
 # ─────────────────────────────────────────────────────────────────────── #
@@ -45,10 +65,11 @@ def test_per_chrom_gc_table_matches_reference():
         bias estimation).
       - Overall mean is in [0.35, 0.45] for hg38 (~0.41).
     """
-    from gc_correction import (
-        CHROM_MEAN_GC, build_per_chrom_gc_table, load_gc_reference,
-        N_BINS_TOTAL,
-    )
+    gc_correction = _repo_gc_correction()
+    CHROM_MEAN_GC = gc_correction.CHROM_MEAN_GC
+    build_per_chrom_gc_table = gc_correction.build_per_chrom_gc_table
+    load_gc_reference = gc_correction.load_gc_reference
+    N_BINS_TOTAL = gc_correction.N_BINS_TOTAL
     # Test build_per_chrom_gc_table
     arr = build_per_chrom_gc_table()
     assert arr.shape == (N_BINS_TOTAL,), (
@@ -104,9 +125,9 @@ def test_gc_correction_subtracts_bias():
     with GC at the cohort-level (the mean across samples is what the
     script fits on).
     """
-    from gc_correction import (
-        fit_gc_coverage_curve, correct_coverage,
-    )
+    gc_correction = _repo_gc_correction()
+    fit_gc_coverage_curve = gc_correction.fit_gc_coverage_curve
+    correct_coverage = gc_correction.correct_coverage
     rng = np.random.default_rng(2026)
     n_bins = 1200   # > n_bins_min=500 floor in fit_gc_coverage_curve
     n_per_study = 100

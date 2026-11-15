@@ -83,13 +83,24 @@ sys.path.insert(2, str(_PIPELINE_DIR))
 # pivots sys.path[0] to its own scripts dir. We must capture
 # `DEFAULT_GC_NPY` etc. before that pivot happens; otherwise Python
 # resolves `from gc_correction import …` to the legacy file.
-from gc_correction import (  # noqa: E402
-    DEFAULT_GC_NPY,
-    N_BINS_TOTAL,
-    fit_gc_coverage_curve,
-    correct_coverage,
-    load_gc_reference,
-)
+#
+# The import is done by explicit path rather than by name: if anything
+# in this interpreter has already imported the legacy `gc_correction`
+# (the sibling's honest_benchmark does exactly that), the name is cached
+# in sys.modules and a plain `from gc_correction import …` picks the
+# legacy module up no matter what sys.path says.
+import importlib.util as _importlib_util  # noqa: E402
+
+_gc_spec = _importlib_util.spec_from_file_location(
+    "deepcatch_gc_correction", _REPO_ROOT / "scripts" / "gc_correction.py")
+_gc_correction = _importlib_util.module_from_spec(_gc_spec)
+_gc_spec.loader.exec_module(_gc_correction)
+
+DEFAULT_GC_NPY = _gc_correction.DEFAULT_GC_NPY
+N_BINS_TOTAL = _gc_correction.N_BINS_TOTAL
+fit_gc_coverage_curve = _gc_correction.fit_gc_coverage_curve
+correct_coverage = _gc_correction.correct_coverage
+load_gc_reference = _gc_correction.load_gc_reference
 
 from honest_benchmark import fsd_vec, load5  # noqa: E402 (may pivot sys.path[0]; safe)
 
