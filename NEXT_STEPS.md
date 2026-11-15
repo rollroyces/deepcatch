@@ -1,25 +1,51 @@
 # DeepCatch — Next Steps: From Research Simulation to Clinical Validation
 
-**Status:** All P0 code fixes committed on `p0-fixes` branch (228/228 tests green).
-This document is the prioritized, executable action plan.
+**Status (2026-11-16):** v2.3.0 is on `main` and the CI is green
+(581 tests, core + deep-learning + paper PDF + docs site). The P0 fixes
+below were merged in August; section 1 (the Jiang nested CV) is still
+open and still blocked on one file. What is left before anything else is
+the preprint, and it is ready — section 0 is now that, not a branch push.
+
+Since this plan was written the repo gained: the held-out external
+validation (0.9915 on a whole-genome publication that contributes no
+training data), the leave-one-study-out transfer measurement (0.6805 /
+0.9361), regularized late fusion replacing the neural encoder (0.9825),
+the V3 methylation channel measured on 31 real samples (a **null**, with
+its mechanism and a control), and a benchmark that is now bit-
+reproducible — `test/test_benchmark_reproducibility.py` asserts that two
+runs agree exactly, and `test/test_paper_numbers_match_artifacts.py`
+asserts that the manuscript quotes the artifacts.
 
 ---
 
-## 0. Push the branch (TODAY — 5 minutes)
+## 0. Publish the preprint (TODAY — 10 minutes)
+
+The PDF is compiled and current: **`paper/biorxiv_submission_v2.3.0.pdf`**
+(6 pages, 2 figures, all results current). Three steps, all of them
+need your browser session:
 
 ```bash
-cd /Users/hermes/deepcatch
-git push origin p0-fixes
+# 1. Zenodo integration (once) -> https://zenodo.org/account/settings/github/
+#    enable rollroyces/deepcatch
+
+# 2. Tag the release (the DOI is minted from the tag)
+cd /path/to/deepcatch
+git checkout main && git pull
+git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9915), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
+git push origin v2.3.0
+# then publish the release at
+# https://github.com/rollroyces/deepcatch/releases/new
+# attaching paper/biorxiv_submission_v2.3.0.pdf
+
+# 3. Upload the PDF to bioRxiv and add the corresponding-author email
+#    to the submission form (the email is deliberately not in the repo)
 ```
 
-If GitHub auth isn't set up:
-```bash
-gh auth login
-# or: export GH_TOKEN=<your PAT with repo scope>
-```
-
-Then open a PR on github.com/rollroyces/deepcatch from `p0-fixes` → `main`.
-The CI will run (core + DL + guard jobs) and confirm 228/228 green.
+The submission metadata is in `paper/BIORXIV_SUBMISSION.md`; the venue
+map for what comes after the preprint is in
+`docs/JOURNAL_SUBMISSION.md` (preprint first, then JOSS or PLOS
+Computational Biology). The ORCID is already registered and in
+`CITATION.cff`; the DOI goes there too once Zenodo mints it.
 
 ---
 
@@ -206,7 +232,7 @@ or JCO Clinical Cancer Informatics (if you add clinical validation).
 
 | File | Purpose |
 |---|---|
-| `p0-fixes` branch (5 commits) | All code fixes, panel detection, Fisher/Strand scoring, context-aware sim, CHIP wiring, nested CV |
+| `p0-fixes` branch (5 commits, merged Aug 2026) | All code fixes, panel detection, Fisher/Strand scoring, context-aware sim, CHIP wiring, nested CV |
 | `review/agent_review_2026-08-10.md` | Full external review + fix log |
 | `docs/PRODUCTION_ROADMAP.md` | Production validation plan with literature references |
 | `results/real_tcga_validation.json` | Panel AUC 0.9215 verified (20 LUAD patients) |
