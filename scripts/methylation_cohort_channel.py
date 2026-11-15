@@ -367,6 +367,72 @@ def main() -> int:
         auc_common = _loo_auc(fc)
         names, y = saved_names, saved_y
 
+    # Per-CpG test on the shared loci: for every CpG, the difference in
+    # mean beta between the cancer and control arms; the summary is the
+    # MEDIAN of those differences and its permutation null. This asks
+    # "is there a methylation difference at all", without leaning on a
+    # scalar summary that composition can manufacture.
+    per_cpg = {}
+    if common_summary and len(common_summary) >= 8:
+        cn2 = sorted(common_summary)
+        # Per-CpG paired test: each CpG is tested on the samples that
+        # actually cover it (the arms do not cover identical loci), and
+        # the per-CpG results are aggregated. A permutation over the
+        # sample labels gives the null for the aggregate.
+        labels2 = {n: (common_summary[n]["label"] if common_summary[n]["label"]
+                       is not None else 0) for n in cn2}
+        vals_by_cpg = {}
+        for name in cn2:
+            for k, v in decoded_maps.get(name, {}).items():
+                vals_by_cpg.setdefault(k, {})[name] = v
+        if vals_by_cpg:
+            rows = []
+            for k, d in vals_by_cpg.items():
+                ys = [labels2[n] for n in d]
+                if len(set(ys)) < 2:
+                    continue
+                p_ = [d[n] for n in d if labels2[n] == 1]
+                n_ = [d[n] for n in d if labels2[n] == 0]
+                if not p_ or not n_:
+                    continue
+                rows.append((k, float(np.mean(p_)), float(np.mean(n_)),
+                             len(p_), len(n_)))
+            if len(rows) >= 50:
+                diffs = np.array([r[1] - r[2] for r in rows])
+                obs = float(np.median(diffs))
+                # permutation null: shuffle the sample labels across the
+                # samples that cover each CpG, recompute the median.
+                rng = np.random.default_rng(0)
+                null = []
+                for _ in range(200):
+                    perm_labels = {n: int(rng.integers(0, 2))
+                                   for n in cn2}
+                    d2 = []
+                    for k, d in vals_by_cpg.items():
+                        ys = [perm_labels[n] for n in d]
+                        if len(set(ys)) < 2:
+                            continue
+                        p_ = [d[n] for n in d if perm_labels[n] == 1]
+                        n_ = [d[n] for n in d if perm_labels[n] == 0]
+                        if p_ and n_:
+                            d2.append(float(np.mean(p_) - np.mean(n_)))
+                    if d2:
+                        null.append(float(np.median(d2)))
+                null = np.asarray(null)
+                per_cpg = {
+                    "n_cpgs_tested": int(len(rows)),
+                    "median_beta_difference_cancer_minus_control": round(obs, 5),
+                    "fraction_of_cpgs_higher_in_cancer": round(
+                        float((diffs > 0).mean()), 4),
+                    "permutation_p_value": (
+                        round(float((np.abs(null) >= abs(obs)).mean()), 4)
+                        if null.size else None),
+                    "null_median_sd": (round(float(null.std()), 5)
+                                       if null.size else None),
+                    "note": "each CpG is tested on the samples that cover it, "
+                            "because the arms do not cover identical loci",
+                }
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -383,6 +449,7 @@ def main() -> int:
             "n_shared_cpgs": int(common_size),
             "beta_summary_auc_loo": auc_common,
             "per_sample": common_summary,
+            "per_cpg_test": per_cpg,
         },
         "depth_matched": {
             "cpgs_cap": int(cap),
@@ -426,6 +493,11 @@ def main() -> int:
     if auc_common is not None:
         print(f"  common-CpG-set beta summary: {auc_common} "
               f"({common_size} shared CpGs)")
+    if per_cpg:
+        print(f"  per-CpG median beta difference: "
+              f"{per_cpg['median_beta_difference_cancer_minus_control']} "
+              f"over {per_cpg['n_cpgs_tested']} CpGs "
+              f"(permutation p={per_cpg['permutation_p_value']})")
     if auc_matched is not None:
         print(f"  depth-matched beta summary   : {auc_matched} "
               f"(cap {cap} CpGs)")
