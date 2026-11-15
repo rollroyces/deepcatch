@@ -229,7 +229,12 @@ def main() -> int:
             "of tens of samples: it is a feasibility measurement of the "
             "channel, not a validated feature. It will not survive a "
             "leave-one-study-out check, it uses no external cohort, and "
-            "the GNN that would consume it is still untrained."),
+            "the GNN that would consume it is still untrained. "
+            "CONFOUND TO CHECK BEFORE BELIEVING IT: the number of CpGs with "
+            "coverage differs between samples (library complexity and depth), "
+            "and the beta summary is not depth-normalised -- a difference in "
+            "the summary can therefore reflect depth rather than biology. "
+            "The per-sample n_cpgs column is the thing to look at first."),
     }
     os.makedirs(os.path.dirname(args.out_json) or ".", exist_ok=True)
     with open(args.out_json, "w") as f:
