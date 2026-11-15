@@ -228,13 +228,13 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `d92a658` (51/51), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
-| 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — ORCID still sandbox; PDF rendered but not submitted |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `760eb31` (**581 tests**, 4 CI workflows green), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
-| 4 | V3 model implemented + evaluated | ☐ | Design revision in progress; primary lever is CADD Top-K=20 (validated); implementation pending |
+| 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_channel_diagnosis.json` |
 | 5 | Per-cancer AUC table committed | ✅ | `results/per_cancer_auc.json` + table in `bench` |
 | 6 | FinaleDB IAM or polite decline | ☐ | FinaleDB email still pending — send in this week's task list |
-| 7 | Methylation channel integrated | ☐ | FinaleMe Step 3 OOM blocks; will ship "research-stage" if not |
+| 7 | Methylation channel integrated | ✅ | FinaleMe runs on real fragments (frag → BAM → per-CpG matrix → WGBS prior → HMM decode); the OOM was worked around by restricting to chr22 and subsampling fragments uniformly. `docs/METHYLATION_PIPELINE.md` |
 | 8 | Deployed docs site shows V3 status | ✅ | https://rollroyces.github.io/deepcatch/ (V3 badge will be added post-Phase B) |
 | 9 | Comprehensive Sens@Spec + PPV@Prev table | ✅ | `cfdna-fragmentomics-pipeline` `1e500c3` — `results/sens_spec_table.json` + `docs/SENS_SPEC_TABLE.md` |
 | 10 | Per-cancer top-K channel selection | ✅ | `cfdna-fragmentomics-pipeline` `b5d8260` — OV Sens@99% +10.7pp |
@@ -299,13 +299,23 @@ per-cancer channel selection, and the CADD×AlphaMissense honest null result.
 - Comprehensive Sens@Spec + PPV@Prev table with DeLong CI (`1e500c3`, pipeline)
 
 **Pending user action (this is what blocks public visibility):**
-- Register production ORCID (gates bioRxiv submission)
-- Submit to bioRxiv once ORCID is live
-- Create Zenodo account for code DOI deposits
+- ~~Register production ORCID~~ — done (`0009-0008-9113-769X`, also in
+  `CITATION.cff`)
+- **Submit to bioRxiv** — `paper/biorxiv_submission_v2.3.0.pdf` is
+  compiled and current; the form still needs the corresponding-author
+  email (deliberately not in the repo)
+- **Zenodo**: link the GitHub account
+  (<https://zenodo.org/account/settings/github/>) and tag `v2.3.0`; the
+  runbook is `ZENODO_SETUP.md`
+- Decide what to do with the open CANCER-SEEK/cfRNA PR, whose title
+  claims a version number that the release now uses
 
 **Blocked on external factors:**
-- FinaleDB API (Postgres broken, S3 403) — email authors this week
-- FinaleMe v0.58.1 OOM blocks Step 3 (whole-genome multi-sample) — needs v0.61
+- ~~FinaleDB API (Postgres broken, S3 403)~~ — the API answers 200 again;
+  S3 is partial (fragment objects 200, `*.bedGraph.bgz` 403), which is
+  enough for the fragment-based work
+- ~~FinaleMe v0.58.1 OOM blocks Step 3~~ — worked around by restricting
+  the per-CpG matrices to chr22 and subsampling fragments uniformly
 - Held-out clinical validation needs a clinical collaborator + IRB
 - FLARE/GSE317007 cross-platform re-test blocked on no somatic variant data in deposit — would need SRA raw reads + Nanopore somatic caller (multi-day)
 
