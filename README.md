@@ -19,6 +19,34 @@
 
 ---
 
+## 🤝 Seeking wet-lab collaborators for external cohort validation
+
+**This project has the analysis pipeline; it does not have the clinical plasma.** Everything published here runs on public data (FinaleDB, TCGA, GEO) and therefore cannot say anything about performance on a real screening population. If you run cfDNA sequencing and have a cohort with cancer/control labels, **you are exactly the collaborator this project needs** — and the analysis side is already built, validated and open source.
+
+What is already in place, so a collaboration starts from a working baseline rather than from scratch:
+
+| Piece | State |
+|---|---|
+| 5-channel DELFI feature extractor (5 Mb / 100 kb ratios + coverage, FSD-196) | ready, self-contained (`src/fragmentomics/finale_features.py`) |
+| Cross-study benchmark with per-study harmonization and two confound controls | ready (`scripts/cross_study_finallydb.py`) |
+| Leave-one-study-out transfer measurement | ready (`scripts/cross_study_loso.py`) |
+| Public external-cohort fetcher (no IRB, no data-use agreement) | ready (`scripts/fetch_external_cohort.py`) |
+| Mutation-panel LLR with CADD / AlphaMissense weighting | ready (real TCGA-LUAD, AUC 0.921 @ 0.1% ctDNA) |
+| Regularized late fusion / Bayesian model averaging | ready (`src/foundation/regularized_fusion.py`) |
+
+**What a collaborator contributes**: the cohort (plasma + labels + stage), and the clinical interpretation. **What we contribute**: feature extraction, harmonization, the statistical protocol (DeLong CIs, sens@spec grids, PPV at screening prevalence, leave-one-cohort-out), and the code.
+
+Scope that would be useful, in order of what unblocks the most:
+
+1. **Unpaired plasma, cancer + non-cancer** (any tumour type) — enough to run the same external-validation protocol as the public cohort.
+2. **Serial draws** (the same patient over time) — this is what the longitudinal Stage-2 tracker cannot be evaluated on at all right now.
+3. **Stage I vs late-stage labels** — the stage breakdown is implemented and waiting for data.
+4. **Matched tumour tissue** — enables tumour-specific fragmentomics instead of tumour-agnostic ones.
+
+Everything is MIT-licensed and every number in the repository traces to a committed JSON artifact, so a collaborator can audit the analysis end to end before deciding anything. See [`TEAM.md`](TEAM.md) §2 for the contribution model and [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md) for the validation plan.
+
+---
+
 ## Demo (3 real browser recordings)
 
 Three real GUI demos recorded with browser automation — every frame is a real screenshot taken with `browser_exec` (real Chromium driving the actual public sites, the actual JupyterLab instance, and the actual FastAPI server). No terminal playback needed, no JS dependencies, no fabricated slides. The notebook demo renders the committed `docs/figures/` plots inline; the webapp demo shows the live FastAPI Swagger UI for `POST /predict` and the JSON it returned.

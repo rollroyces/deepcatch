@@ -132,7 +132,7 @@ This is the assay-design benchmark — *not* a clinical readout. Source: `result
 
 ---
 
-## 3. Multi-modal foundation fusion — the AUDIT-2 honest number
+## 3. Multi-modal fusion — the AUDIT-2 honest number, and the estimator that fixes it
 
 The foundation multi-modal fusion layer (Stage 1, `src/foundation/`) has a published **honest** evaluation under Audit-2 (`AUDIT_2_FINDINGS.md`):
 
@@ -144,9 +144,27 @@ The foundation multi-modal fusion layer (Stage 1, `src/foundation/`) has a publi
 | shuffled_foundation AUC | 0.31 (anti-correlated) | **0.741** (picks up pair-invariant) |
 | gate_pass | true | **false** |
 
-**Conclusion**: the foundation model does not beat the sklearn LR baseline on n=40 paired TCGA-LUAD. The reason is structural — the per-arm sequencing-noise jitter (TF=0.001 vs TF=0) dominates the per-sample separable signal, GroupKFold denies the foundation access to per-patient mutation signatures, and LR has fewer parameters to overfit.
+**Conclusion**: the *neural* foundation encoder does not beat the sklearn LR baseline on n=40 paired TCGA-LUAD. The reason is structural — the per-arm sequencing-noise jitter (TF=0.001 vs TF=0) dominates the per-sample separable signal, GroupKFold denies the foundation access to per-patient mutation signatures, and LR has fewer parameters to overfit.
 
-**Implication for ultra-early signaling**: the foundation fusion layer is **not a current headline**. The cross-study fragmentomics pipeline (1.1) and the panel-LLR detector (2.1) carry the ultra-early signal today.
+### 3.1 The fix is a smaller estimator, not a bigger encoder
+
+An encoder with more capacity cannot fix this; a *smaller estimator* can. Two late-fusion estimators were added (`src/foundation/regularized_fusion.py`) and measured on the **same** protocol — same real TCGA-derived channels, same per-patient `GroupKFold`, same run as the re-computed LR baseline (`scripts/fusion_regularized_smoke.py`, artifact `results/fusion_regularized_smoke.json`):
+
+| Estimator | AUC (3 seeds) | permuted-label control | arm-swap control |
+|---|---|---|---|
+| foundation encoder (audit-2) | 0.554 ± 0.005 | — | — |
+| LR baseline (re-computed here) | **0.9042 ± 0.0174** | 0.569 | 0.383 |
+| equal-weight average | 0.9150 ± 0.0178 | 0.614 | 0.513 |
+| **regularized late fusion** | **0.9825 ± 0.0094** | 0.573 | 0.436 |
+| **Bayesian model average** | **0.9650 ± 0.0089** | 0.511 | 0.413 |
+
+The re-computed LR baseline (0.9042) and equal-weight average (0.9150) reproduce the published 0.910 / 0.915, so the comparison is within-run. Regularized late fusion beats the LR baseline by **+0.078 AUC** and Bayesian model averaging by **+0.061**, on the same folds, with no torch dependency.
+
+**The control needed fixing too.** The audit-2 "pair-broken shuffle" was a no-op: it permuted the positive and negative index sets separately and then reassigned 1s and 0s to those same sets, which reproduces `y_true` exactly. The "shuffled" numbers in the audit-2 table are therefore the *honest* numbers. The corrected control is a label permutation inside each fold, and its null on this paired design is **0.42 ± 0.12, not 0.5** (measured over 50 permutations per seed): every patient contributes one positive and one negative arm whose panel scores differ by ~+127 with the positive arm higher in 100% of patients, so a model fitted to random labels still recovers that within-pair axis and lands *below* 0.5. A control below 0.5 is therefore not on its own evidence of leakage here; it has to be read against the measured null.
+
+**What this does and does not claim.** n=40 samples from 20 patients, simulated plasma at TF=0.001, one cancer type (LUAD). This is an *estimator-class* result — late fusion is the right model class at this sample size — and not a clinical performance claim. The readiness check `foundation_fusion_layer` is now artifact-driven from `results/fusion_regularized_smoke.json` instead of hard-coding 0.554.
+
+**Implication for ultra-early signaling**: the neural foundation encoder remains not a current headline, but the fusion *layer* is now carried by the late-fusion estimators. The cross-study fragmentomics pipeline (1.1) and the panel-LLR detector (2.1) still carry the ultra-early signal today.
 
 The path forward is documented in `docs/PRODUCTION_ROADMAP.md` §6.3 and `NEXT_STEPS.md` §6: replace the SPRT-based CET Stage 2 with a censored-Poisson hierarchical-Bayes tracker; build a per-arm sequencing-noise model; pair on real plasma.
 

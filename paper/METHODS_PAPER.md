@@ -114,6 +114,24 @@ On 20 paired TCGA-LUAD patients at 0.1% ctDNA, real-panel + real-mutation-derive
 
 **Honest framing (audit-2 P0-A→P0-F fixed):** under per-patient GroupKFold, the foundation model is honestly out-performed by the sklearn LR baseline on this paired design. The foundation picks up some pair-invariant signal even under pair-broken label shuffle (hence `shuffled_foundation AUC = 0.741 > 0.5`), but the real-label AUC is below the shuffled-label AUC on this cohort — the model overfits. The honest metric is the *delta* (foundation − shuffled), not the absolute AUC. See `AUDIT_2_FINDINGS.md`.
 
+#### 3.1.1 The estimator class is the problem, and a smaller estimator fixes it
+
+A neural encoder cannot be rescued by more capacity on n=40; the fix is a smaller *estimator* that fuses the two channel scores late. Two such estimators were implemented (`src/foundation/regularized_fusion.py`) and measured on the identical protocol, with the LR baseline re-computed in the same run so the comparison is within-run (`scripts/fusion_regularized_smoke.py`; artifact `results/fusion_regularized_smoke.json`):
+
+| Estimator | AUC (3 seeds, per-patient GroupKFold) | permuted-label control | arm-swap control |
+|---|---|---|---|
+| foundation encoder (audit-2) | 0.554 ± 0.005 | — | — |
+| `lr_baseline` (re-computed here) | 0.9042 ± 0.0174 | 0.569 | 0.383 |
+| `naive_average` | 0.9150 ± 0.0178 | 0.614 | 0.513 |
+| **`regularized_late_fusion`** | **0.9825 ± 0.0094** | 0.573 | 0.436 |
+| **`bayesian_model_average`** | **0.9650 ± 0.0089** | 0.511 | 0.413 |
+
+The re-computed LR baseline (0.9042) and equal-weight average (0.9150) reproduce the published 0.910 / 0.915, so the comparison is like-for-like. Regularized late fusion beats the LR baseline by **+0.078 AUC**, Bayesian model averaging by **+0.061**, with no torch dependency and no change to the CV protocol.
+
+**The label-permutation control had to be corrected to be usable.** The audit-2 "pair-broken shuffle" permuted the positive and negative index sets separately and then reassigned 1s and 0s to those same sets, which reproduces `y_true` exactly — the control was a no-op, and the "shuffled" numbers in the audit-2 table are the honest numbers. The corrected control permutes labels inside each fold. Its null on this paired design is **0.42 ± 0.12, not 0.5** (measured over 50 permutations per seed): every patient contributes one positive and one negative arm whose panel scores differ by ~+127, with the positive arm higher in 100% of patients, so a model fitted to random labels still recovers that within-pair axis and lands *below* 0.5. A control below 0.5 is therefore not on its own evidence of leakage here; it must be read against the measured null.
+
+**Scope.** n=40 samples from 20 patients, simulated plasma at TF=0.001, one cancer type. This is an estimator-class result, not a clinical performance claim.
+
 ### 3.2 Cross-study AUC on FinaleDB publications 6 + 8 (n=627)
 
 The cross-study pool is the union of FinaleDB publication 6 (Jiang 2015 [16], n=121: 89 HCC + 32 healthy) and publication 8 (Cristiano 2019 [7], n=506: 274 cancer + 232 healthy) after the missing-artifact filter (31 samples dropped: 31/658 = 4.7%). Features are the canonical 5-channel DELFI profile (5 Mb ratio + 5 Mb coverage + 100 kb ratio + 100 kb counts + FSD-196, 63,246-dim), with the 4th channel being the GC-bias-corrected 100kb-coverage (`c100_gc_corrected`) per `scripts/gc_correction.py` (default ON; legacy `cn = c100 / median(c100)` retained under `--no-gc-correction` for backward compat). The pipeline is a 5-seed × 5-fold StratifiedKFold, LR(max_iter=2000) on PCA(200) of a per-study z-score StandardScaler fit on the **train** fold only. Source: `results/cross_study_finallydb_gc_corrected.json` (GC-OFF legacy: `results/cross_study_finallydb.json`; companion narrative `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`).
@@ -147,6 +165,25 @@ The shuffled-pooled AUC (0.5069 ± 0.0103, sens@95=0.044, sens@99=0.017) is well
 Without harmonization, the classifier trivially achieves AUC ≈ 1.000 because "which study is this from?" is trivially answerable. With per-study z-scoring, the same control collapses to **0.49** — the per-study mean/variance is the only signal and the harmonization removes it by design. The drop from 1.000 → 0.49 (~80× shift across the operating-point flip) proves the pooled-harmonized 0.9738 AUC is a cancer signal, not a study batch.
 
 **Honest framing.** These numbers are **pooled out-of-fold** AUC on the 627-sample cross-study cohort, under 5-seed × 5-fold internal CV. They are NOT external validation, NOT held-out clinical plasma, and NOT clinical-grade operating points (Galleri, CancerSEEK). They measure how well the 5-channel DELFI features separate cancer-vs-healthy in the pooled cohort with per-study batch removed. The drop from per-cohort AUCs (Jiang 0.9791, Cristiano 0.9693) to pooled-harmonized 0.9738 is small (~0.005 AUC), which is the expected size when the per-study batches are mild on this FinaleDB-uniformly-processed cohort. The companion pipeline artifact `docs/CROSS_STUDY_BENCHMARK.md` carries the full per-cohort + per-cancer + true-confound tables. The classifier is intentionally a linear LR (not the foundation encoder) so the headline number is interpretable as the separability of the published 5-channel feature set, not as a DeepCatch architectural contribution.
+
+#### 3.2.1 Leave-one-study-out: the pooled number does not survive a publication holdout
+
+A pooled OOF over a merged cohort can train on samples from one publication and test on samples from another, so §3.2 measures *within-cohort* separation, not transfer to an unseen study. Holding a whole publication out measures the thing a reviewer will ask for. Source: `scripts/cross_study_loso.py`; artifact `results/cross_study_loso.json`; narrative `docs/CROSS_STUDY_LOSO.md`.
+
+| Direction | Train | Test | Test AUC [DeLong 95% CI] | sens@95% | sens@99% |
+|---|---|---|---|---|---|
+| Jiang → Cristiano | pub 6 (n=121) | pub 8 (n=506) | **0.6805** [0.6344–0.7267] | 0.256 | 0.183 |
+| Cristiano → Jiang | pub 8 (n=506) | pub 6 (n=121) | **0.9361** [0.8909–0.9813] | 0.775 | 0.506 |
+| *in-domain (Jiang)* | — | — | *0.9789 ± 0.0027* | | |
+| *in-domain (Cristiano)* | — | — | *0.9690 ± 0.0021* | | |
+
+The pooled 0.9670 of §3.2 therefore **does not survive a publication holdout in the single-cancer-type direction**: 0.967 → 0.681. The asymmetry is informative rather than mysterious. Jiang is HCC-only, so training on it yields an HCC-specific decision boundary, while the held-out Cristiano set contains six non-HCC cancer types; a within-study leave-one-cancer-type-out control (train on the remaining types + healthy, test on the held-out type) transfers at **0.857–1.000**, so "unseen cancer type" is not the blocker by itself, and the reverse direction (pan-cancer training → unseen HCC test) crosses the study boundary at 0.936. The binding constraint is the *composition of the training cohort*, not the study shift. A PCA-component sweep (5/10/20/50/100 → 0.662/0.707/0.722/0.667/0.644) rules out a capacity artefact.
+
+**How to read §3.2 after this subsection.** The pooled 0.9670 is an honest *within-cohort* separation number with per-study batch removed, and the true-confound control still shows the pooled signal is cancer rather than study identity. It is not evidence of cross-study generalisation; §3.2.1 is. The distinction matters for any claim about deploying the classifier on a new cohort, and it is the reason the external validation in §3.2.2 uses publications that were never touched during training.
+
+#### 3.2.2 External validation on held-out public publications
+
+*(pending — external cohort download in progress; see `docs/EXTERNAL_VALIDATION.md` and `results/external_validation_finaledb.json`)*
 
 ### 3.3 Per-cancer sensitivity at fixed specificity (with DeLong CIs)
 

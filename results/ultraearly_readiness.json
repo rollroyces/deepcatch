@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T16:47:43.938588+00:00",
+  "repo_commit": "88082c2",
+  "summary_counts": {
+    "ready": 5,
+    "not_ready": 0,
+    "gap": 0
+  },
+  "headline_status": "READY for ultra-early cancer signaling at the open-data + in-silico panel-LLR level. Clinical-grade evidence requires real plasma validation (see ULTRA_EARLY_READINESS.md \u00a74).",
+  "checks": [
+    {
+      "name": "cross_study_pooled_auc_gc_corrected",
+      "description": "FinaleDB pubs 6+8 cross-study pooled AUC with GC/maptaxia correction (5-channel fragmentomics).",
+      "source": "results/cross_study_finallydb_gc_corrected.json",
+      "verdict": "ready",
+      "value": 0.9670298021537691,
+      "threshold": ">=0.950 (floor=0.800)",
+      "notes": "AUC 0.9670 \u00b1 0.0035 across 5 seeds \u00d7 5 folds. True-confound control collapsed to 0.499 (signal IS cancer-vs-healthy, not batch). See open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model."
+    },
+    {
+      "name": "pooled_sens_at_99_spec",
+      "description": "Pooled sens@99% spec on FinaleDB cohort.",
+      "source": "results/per_cancer_sens_at_spec.json",
+      "verdict": "ready",
+      "value": 0.628099173553719,
+      "threshold": ">=0.600",
+      "notes": "Per-cancer sens@99% spec: {'BRCA': 0.302, 'CRC': 0.778, 'HCC_J': 0.146, 'LUAD': 0.494, 'OTHER_C': 0.593, 'OV': 0.75, 'PAAD': 0.35}"
+    },
+    {
+      "name": "panel_llr_ultra_low_vaf_0_1pct",
+      "description": "Panel-LLR AUC at 0.1% ctDNA on the TCGA-LUAD panel. Production-spec readout (50k\u00d7 depth + \u22641e-4 error).",
+      "source": "results/real_tcga_validation.json",
+      "verdict": "ready",
+      "value": 1.0,
+      "threshold": ">=0.900 (floor=0.700)",
+      "notes": "AUC 1.0000 \u00b1 0.0000 at depth=50000, bg_error=1e-05. sens@95%=1.000, sens@99%=1.000."
+    },
+    {
+      "name": "foundation_fusion_layer",
+      "description": "Stage-1 multi-modal fusion layer vs the LR baseline, on paired TCGA-LUAD (n=40 samples / 20 patients, per-patient GroupKFold).",
+      "source": "results/fusion_regularized_smoke.json",
+      "verdict": "ready",
+      "value": 0.9825,
+      "threshold": "fusion AUC > LR baseline (0.9042)",
+      "notes": "regularized_late_fusion 0.9825 vs LR baseline 0.9042 (same run, same folds). The neural foundation encoder scores 0.554 +/- 0.005 on this cohort -- it overfits a cohort of this size, so the fix is a smaller late-fusion estimator rather than a better encoder. Permuted-label null measured at ~0.42 (NOT 0.5) on this paired design; see scripts/fusion_regularized_smoke.py. n=40 simulated plasma, one cancer type -- an estimator-class result, not a clinical one."
+    },
+    {
+      "name": "stage_breakdown_capability",
+      "description": "Per-cancer sens@spec broken down by Stage I vs LATE vs UNKNOWN. New build_stage_breakdown_table function exercised by tests + synthetic smoke.",
+      "source": "src/per_cancer_sens_at_spec.py + tests",
+      "verdict": "ready",
+      "value": {
+        "synth_n_stage_I": 15,
+        "synth_n_stage_late": 15,
+        "synth_n_stage_unknown": 0,
+        "synth_stage_I_auc": 1.0
+      },
+      "threshold": "returns a populated per_stage breakdown on any input TSV with a 'stage' column",
+      "notes": "Open-data FinaleDB cohort has no stage labels \u2014 the stage breakdown is wired up but not populated for the current headline. See ULTRA_EARLY_READINESS.md \u00a71.3."
+    }
+  ],
+  "gaps": []
+}

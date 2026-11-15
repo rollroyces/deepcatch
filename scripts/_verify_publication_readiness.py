@@ -128,51 +128,77 @@ def probe_finaledb_api():
 
 
 def probe_finaledb_s3():
-    """HEAD-probe the FinaleDB S3 bucket to confirm bucket accessibility.
+    """HEAD-probe several FinaleDB S3 objects to confirm accessibility.
 
-    The S3 bucket was made private in 2026-09 (every key returns 403).
-    We only probe ONE key (EE1 — the first seqrun) to keep the diagnostic
-    cheap. 200 = public; 403 = private; connection error = network down.
+    The previous version probed ONE key (EE1) and reported "private" on
+    a 403. That was a false negative: the bucket is **partially**
+    public. As of 2026-11-15 the ``.frag.tsv.bgz`` fragment objects
+    and the ``.bigWig`` coverage objects return 200, while
+    ``.bedGraph.bgz`` objects and the EE1 key return 403. Probing a
+    single arbitrary key therefore reported "cannot fetch any new
+    frag.tsv.bgz files" at a time when they were fetchable.
+
+    So: probe several keys of different kinds, and report
+    ``public`` / ``partial`` / ``private`` / ``unreachable`` from what
+    is actually reachable.
     """
-    url = (
-        "https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/"
-        "entries/EE1/hg38/EE1.hg38.frag.tsv.bgz"
-    )
-    try:
-        req = urllib.request.Request(url, method="HEAD")
-        with urllib.request.urlopen(req, timeout=API_PROBE_TIMEOUT) as resp:
-            return {
-                "url": url,
-                "status": resp.status,
-                "verdict": "public",
-                "checked_at": datetime.now(timezone.utc).isoformat(),
-            }
-    except urllib.error.HTTPError as e:
-        if e.code == 403:
-            return {
-                "url": url,
-                "status": 403,
-                "verdict": "private",
-                "verdict_reason": (
-                    "S3 bucket returns 403 — bucket was made private. "
-                    "Cannot fetch any new frag.tsv.bgz files."
-                ),
-                "checked_at": datetime.now(timezone.utc).isoformat(),
-            }
-        return {
-            "url": url,
-            "status": e.code,
-            "verdict": "error",
-            "checked_at": datetime.now(timezone.utc).isoformat(),
-        }
-    except urllib.error.URLError as e:
-        return {
-            "url": url,
-            "status": None,
-            "verdict": "unreachable",
-            "verdict_reason": str(e),
-            "checked_at": datetime.now(timezone.utc).isoformat(),
-        }
+    base = ("https://s3.us-east-2.amazonaws.com/"
+            "finaledb.epifluidlab.cchmc.org/")
+    keys = [
+        "entries/EE85723/hg38/EE85723.hg38.frag.tsv.bgz",
+        "entries/EE85723/hg38/EE85723.hg38.insert_size_metrics.txt",
+        "entries/EE85723/hg38/EE85723.hg38.frag_profile.mapq30.bw",
+        "entries/EE85723/hg38/EE85723.hg38.coverage.mapq30.bedGraph.bgz",
+        "entries/EE1/hg38/EE1.hg38.frag.tsv.bgz",
+    ]
+    checked, reachable, frag_reachable = [], 0, 0
+    for key in keys:
+        url = base + key
+        status = None
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            with urllib.request.urlopen(req, timeout=API_PROBE_TIMEOUT) as resp:
+                status = resp.status
+        except urllib.error.HTTPError as e:
+            status = e.code
+        except Exception as e:  # pragma: no cover - network variance
+            status = f"error: {type(e).__name__}"
+        if status == 200:
+            reachable += 1
+            if key.endswith(".frag.tsv.bgz"):
+                frag_reachable += 1
+        checked.append({"key": key, "status": status})
+
+    if frag_reachable > 0:
+        verdict = "public" if reachable == len(keys) else "partial"
+        reason = (
+            "Fragment objects are reachable — new publications can be "
+            "fetched with scripts/fetch_external_cohort.py."
+            if verdict == "public" else
+            "Some object kinds are reachable (fragment objects included) and "
+            "others are not; new publications can still be fetched."
+        )
+    elif reachable > 0:
+        verdict, reason = "partial", (
+            "Some objects are reachable but no fragment object was; "
+            "feature extraction is not possible from S3 right now."
+        )
+    else:
+        verdict, reason = "private", (
+            "No probed object is reachable (403) — the bucket looks private "
+            "or the keys changed."
+        )
+    return {
+        "url": base,
+        "status": 200 if frag_reachable else 403,
+        "verdict": verdict,
+        "verdict_reason": reason,
+        "n_keys_probed": len(keys),
+        "n_reachable": reachable,
+        "n_fragment_objects_reachable": frag_reachable,
+        "keys": checked,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 # ──────────────────────────────────────────────────────────────────────

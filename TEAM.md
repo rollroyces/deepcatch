@@ -78,6 +78,18 @@ mechanism.
 
 ### 2.1 Clinical / wet-lab co-author — **HIGHEST PRIORITY**
 
+> **Update 2026-11-15 — the ask is now narrower and much more concrete.**
+> The external-validation machinery is built and running on public data:
+> `scripts/fetch_external_cohort.py` pulls never-trained FinaleDB
+> publications from the public API + S3 (no IRB, no data-use agreement),
+> `src/fragmentomics/finale_features.py` extracts the 5-channel DELFI
+> profile, and `scripts/external_validation_finaledb.py` scores the
+> held-out cohort. What that *cannot* do is validate a clinical assay:
+> open data has no prospective follow-up, no serial draws, no stage
+> labels, and a "healthy" arm that is a modelled control rather than a
+> real donor. A wet-lab cohort is the only thing that closes that gap,
+> and the analysis side is already done and audited.
+
 **What we'd want from you**: real plasma cfDNA data from patients
 with confirmed cancer diagnoses (preferably pan-cancer, but any
 tumor type useful). The data should be:
@@ -91,7 +103,9 @@ tumor type useful). The data should be:
 explicitly said the work needs "real held-out clinical data" before
 Nature Medicine / Cancer Discovery will accept it. Single-author
 benchmarks on public data are appropriate for *Bioinformatics* or
-*PLOS Comp Bio* but not for clinical-impact journals.
+*PLOS Comp Bio* but not for clinical-impact journals. The public
+external cohort (§3.2.2 of the manuscript) answers the *transfer*
+question; it does not answer the *assay* question.
 
 **Time commitment**: a one-time data drop + one Skype call to align
 on the re-analysis.

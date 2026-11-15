@@ -1,0 +1,352 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T16:44:11.026362+00:00",
+  "protocol": {
+    "cohort": "TCGA-LUAD paired (20 patients x 2 arms), real MAF-derived panel scores and real mutation-derived fragmentomics channel; simulated plasma at TF=0.001",
+    "cv": "GroupKFold(n_splits=min(5, n_patients)) over patient groups -- both arms of every patient stay together",
+    "controls": {
+      "permuted_label_auc": "global label permutation; a correct estimator lands at ~0.5",
+      "arm_swap_auc": "arms swapped within half the patients; a model leaning on the per-patient invariant lands below 0.5"
+    },
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "n_inner_folds": 3
+  },
+  "summary": {
+    "lr_baseline": {
+      "auc_mean": 0.9042,
+      "auc_std": 0.0174,
+      "permuted_label_auc_mean": 0.5692,
+      "arm_swap_auc_mean": 0.3833,
+      "per_seed_auc": [
+        0.925,
+        0.905,
+        0.8825
+      ]
+    },
+    "naive_average": {
+      "auc_mean": 0.915,
+      "auc_std": 0.0178,
+      "permuted_label_auc_mean": 0.6142,
+      "arm_swap_auc_mean": 0.5133,
+      "per_seed_auc": [
+        0.93,
+        0.925,
+        0.89
+      ]
+    },
+    "regularized_late_fusion": {
+      "auc_mean": 0.9825,
+      "auc_std": 0.0094,
+      "permuted_label_auc_mean": 0.5733,
+      "arm_swap_auc_mean": 0.4358,
+      "per_seed_auc": [
+        0.995,
+        0.98,
+        0.9725
+      ]
+    },
+    "bayesian_model_average": {
+      "auc_mean": 0.965,
+      "auc_std": 0.0089,
+      "permuted_label_auc_mean": 0.5108,
+      "arm_swap_auc_mean": 0.4133,
+      "per_seed_auc": [
+        0.9775,
+        0.96,
+        0.9575
+      ]
+    }
+  },
+  "per_seed": {
+    "0": {
+      "metrics": {
+        "lr_baseline": {
+          "auc": 0.925,
+          "sens_at_95": 0.8,
+          "sens_at_99": 0.15,
+          "permuted_label_auc": 0.5275,
+          "arm_swap_auc": 0.3375
+        },
+        "naive_average": {
+          "auc": 0.93,
+          "sens_at_95": 0.75,
+          "sens_at_99": 0.5,
+          "permuted_label_auc": 0.6025,
+          "arm_swap_auc": 0.5575
+        },
+        "regularized_late_fusion": {
+          "auc": 0.995,
+          "sens_at_95": 1.0,
+          "sens_at_99": 0.9,
+          "permuted_label_auc": 0.5775,
+          "arm_swap_auc": 0.4
+        },
+        "bayesian_model_average": {
+          "auc": 0.9775,
+          "sens_at_95": 1.0,
+          "sens_at_99": 0.55,
+          "permuted_label_auc": 0.47,
+          "arm_swap_auc": 0.41
+        }
+      },
+      "diagnostics": {
+        "selected_C": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          1.0
+        ],
+        "selected_shrink": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "bma_weights": [
+          {
+            "panel_only": 0.1223,
+            "frag_only": 0.0,
+            "equal_weight": 0.0004,
+            "mean_of_channels": 0.0026,
+            "stack": 0.8746
+          },
+          {
+            "panel_only": 0.1225,
+            "frag_only": 0.0,
+            "equal_weight": 0.0004,
+            "mean_of_channels": 0.003,
+            "stack": 0.874
+          },
+          {
+            "panel_only": 0.0993,
+            "frag_only": 0.0,
+            "equal_weight": 0.0005,
+            "mean_of_channels": 0.0028,
+            "stack": 0.8974
+          },
+          {
+            "panel_only": 0.0783,
+            "frag_only": 0.0,
+            "equal_weight": 0.0006,
+            "mean_of_channels": 0.0028,
+            "stack": 0.9183
+          },
+          {
+            "panel_only": 0.141,
+            "frag_only": 0.0,
+            "equal_weight": 0.0005,
+            "mean_of_channels": 0.0023,
+            "stack": 0.8561
+          }
+        ],
+        "empirical_null": {
+          "trials": 50,
+          "mean": 0.3997,
+          "std": 0.1213,
+          "q05": 0.2259,
+          "q95": 0.6001,
+          "fraction_below_0.5": 0.72
+        }
+      }
+    },
+    "1": {
+      "metrics": {
+        "lr_baseline": {
+          "auc": 0.905,
+          "sens_at_95": 0.7,
+          "sens_at_99": 0.15,
+          "permuted_label_auc": 0.47,
+          "arm_swap_auc": 0.525
+        },
+        "naive_average": {
+          "auc": 0.925,
+          "sens_at_95": 0.9,
+          "sens_at_99": 0.35,
+          "permuted_label_auc": 0.4825,
+          "arm_swap_auc": 0.4625
+        },
+        "regularized_late_fusion": {
+          "auc": 0.98,
+          "sens_at_95": 1.0,
+          "sens_at_99": 0.6,
+          "permuted_label_auc": 0.455,
+          "arm_swap_auc": 0.605
+        },
+        "bayesian_model_average": {
+          "auc": 0.96,
+          "sens_at_95": 0.95,
+          "sens_at_99": 0.3,
+          "permuted_label_auc": 0.3725,
+          "arm_swap_auc": 0.5275
+        }
+      },
+      "diagnostics": {
+        "selected_C": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "selected_shrink": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "bma_weights": [
+          {
+            "panel_only": 0.129,
+            "frag_only": 0.0,
+            "equal_weight": 0.0003,
+            "mean_of_channels": 0.0035,
+            "stack": 0.8671
+          },
+          {
+            "panel_only": 0.0922,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0004,
+            "mean_of_channels": 0.0042,
+            "stack": 0.9031
+          },
+          {
+            "panel_only": 0.0866,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0005,
+            "mean_of_channels": 0.0049,
+            "stack": 0.9079
+          },
+          {
+            "panel_only": 0.0889,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0007,
+            "mean_of_channels": 0.0042,
+            "stack": 0.9062
+          },
+          {
+            "panel_only": 0.2038,
+            "frag_only": 0.0,
+            "equal_weight": 0.0005,
+            "mean_of_channels": 0.0029,
+            "stack": 0.7929
+          }
+        ],
+        "empirical_null": {
+          "trials": 50,
+          "mean": 0.4017,
+          "std": 0.1035,
+          "q05": 0.26,
+          "q95": 0.5794,
+          "fraction_below_0.5": 0.74
+        }
+      }
+    },
+    "2": {
+      "metrics": {
+        "lr_baseline": {
+          "auc": 0.8825,
+          "sens_at_95": 0.75,
+          "sens_at_99": 0.3,
+          "permuted_label_auc": 0.71,
+          "arm_swap_auc": 0.2875
+        },
+        "naive_average": {
+          "auc": 0.89,
+          "sens_at_95": 0.75,
+          "sens_at_99": 0.45,
+          "permuted_label_auc": 0.7575,
+          "arm_swap_auc": 0.52
+        },
+        "regularized_late_fusion": {
+          "auc": 0.9725,
+          "sens_at_95": 0.8,
+          "sens_at_99": 0.75,
+          "permuted_label_auc": 0.6875,
+          "arm_swap_auc": 0.3025
+        },
+        "bayesian_model_average": {
+          "auc": 0.9575,
+          "sens_at_95": 0.8,
+          "sens_at_99": 0.55,
+          "permuted_label_auc": 0.69,
+          "arm_swap_auc": 0.3025
+        }
+      },
+      "diagnostics": {
+        "selected_C": [
+          10.0,
+          10.0,
+          10.0,
+          10.0,
+          10.0
+        ],
+        "selected_shrink": [
+          0.75,
+          1.0,
+          1.0,
+          0.75,
+          1.0
+        ],
+        "bma_weights": [
+          {
+            "panel_only": 0.1483,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0006,
+            "mean_of_channels": 0.0049,
+            "stack": 0.8462
+          },
+          {
+            "panel_only": 0.137,
+            "frag_only": 0.0003,
+            "equal_weight": 0.0014,
+            "mean_of_channels": 0.0101,
+            "stack": 0.8512
+          },
+          {
+            "panel_only": 0.1665,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0011,
+            "mean_of_channels": 0.0069,
+            "stack": 0.8254
+          },
+          {
+            "panel_only": 0.1232,
+            "frag_only": 0.0002,
+            "equal_weight": 0.0014,
+            "mean_of_channels": 0.0066,
+            "stack": 0.8686
+          },
+          {
+            "panel_only": 0.2267,
+            "frag_only": 0.0001,
+            "equal_weight": 0.0028,
+            "mean_of_channels": 0.0078,
+            "stack": 0.7626
+          }
+        ],
+        "empirical_null": {
+          "trials": 50,
+          "mean": 0.4176,
+          "std": 0.1187,
+          "q05": 0.2725,
+          "q95": 0.6157,
+          "fraction_below_0.5": 0.78
+        }
+      }
+    }
+  },
+  "baseline_reference": {
+    "source": "scripts/foundation_real_smoke.py (Audit-2 honest numbers)",
+    "foundation_auc": 0.554,
+    "lr_baseline_auc": 0.91,
+    "naive_average_auc": 0.915
+  },
+  "honest_framing": "Same data, same folds, same control as the foundation smoke: the LR baseline is re-computed here so the comparison is within-run. A fusion estimator that beats the LR baseline on this cohort is evidence about the estimator class, not about clinical performance -- n=40 samples from 20 patients, simulated plasma, one cancer type."
+}

@@ -1,20 +1,20 @@
 # Publication Readiness (FinaleDB Open-Data Benchmark)
-- Generated: `2026-09-23T15:33:49.019966+00:00`
+- Generated: `2026-11-15T16:54:53.394362+00:00`
 - Labels file: `/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv`
 - Features dir: `/Users/hermes/cfdna-fragmentomics-pipeline/data/features`
 
 ## FinaleDB infrastructure status
 
-**API verdict**: `api-down` — /misc responds but /publication + /seqrun + /summary all return 500 — Postgres connection lost. No way to enumerate seqruns or publications; cannot refetch features for publications missing from the local cache.
+**API verdict**: `ok` — All probed endpoints respond. Features for publications missing locally can be re-fetched via the standard pipeline.
 
 | Endpoint | URL | Status |
 |---|---|---:|
 | `/api/v1/misc` | `<http://finaledb.research.cchmc.org/api/v1/misc>` | 200 |
-| `/api/v1/publication` | `<http://finaledb.research.cchmc.org/api/v1/publication>` | 500 |
-| `/api/v1/seqrun` | `<http://finaledb.research.cchmc.org/api/v1/seqrun>` | 500 |
-| `/api/v1/summary` | `<http://finaledb.research.cchmc.org/api/v1/summary>` | 500 |
+| `/api/v1/publication` | `<http://finaledb.research.cchmc.org/api/v1/publication>` | 200 |
+| `/api/v1/seqrun` | `<http://finaledb.research.cchmc.org/api/v1/seqrun>` | 200 |
+| `/api/v1/summary` | `<http://finaledb.research.cchmc.org/api/v1/summary>` | 200 |
 
-**S3 verdict**: `private` — S3 bucket returns 403 — bucket was made private. Cannot fetch any new frag.tsv.bgz files.
+**S3 verdict**: `partial` — Some object kinds are reachable (fragment objects included) and others are not; new publications can still be fetched.
 
 ## Per-publication readiness
 
@@ -28,7 +28,7 @@
 
 ## Default benchmark scope
 
-- **Default publications**: `['6', '8']` — the only publications with `ready` status as of `2026-09-23T15:33:49.019966+00:00`.
+- **Default publications**: `['6', '8']` — the only publications with `ready` status as of `2026-11-15T16:54:53.394362+00:00`.
 - `--publications` override: pass any subset. Missing publications are reported via stderr warnings, NOT hard-failed (the script skips them gracefully).
 - `--include-snyder` / `--include-sun`: shortcuts for publications 1 / 7.
 

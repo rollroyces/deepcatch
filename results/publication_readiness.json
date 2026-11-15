@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-23T15:33:49.019966+00:00",
+  "generated_at": "2026-11-15T16:54:53.394362+00:00",
   "labels_file": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
   "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
   "finaledb_api": {
@@ -12,30 +12,55 @@
       },
       "publication": {
         "url": "http://finaledb.research.cchmc.org/api/v1/publication",
-        "status": 500,
-        "body_excerpt": null
+        "status": 200,
+        "body_excerpt": "{\"count\":8,\"results\":[{\"id\":1,\"author\":[\"Snyder\"],\"journal\":\"Cell\",\"date\":\"2016-01-14\",\"identifiers\":{\"pmid\":\"26771485\",\"doi\":\"10.1016/j.cell.2015.11.050\"},\"citeShort\":\"Snyder et al., 2016\",\"title\":\"C"
       },
       "seqrun": {
         "url": "http://finaledb.research.cchmc.org/api/v1/seqrun",
-        "status": 500,
-        "body_excerpt": null
+        "status": 200,
+        "body_excerpt": "{\"count\":50,\"offset\":0,\"total\":2579,\"results\":[{\"id\":85723,\"altId\":{\"original\":\"TBR917.rep2\"},\"assay\":\"WGS\",\"analysis\":{\"hg19\":[{\"desc\":\"fragment\",\"key\":\"entries/EE85723/hg19/EE85723.hg19.frag.tsv.bgz"
       },
       "summary": {
         "url": "http://finaledb.research.cchmc.org/api/v1/summary",
-        "status": 500,
-        "body_excerpt": null
+        "status": 200,
+        "body_excerpt": "{\"seqRunCnt\":2579,\"sampleCnt\":2505,\"instrument\":{\"NextSeq 500\":141,\"HiSeq 4000\":5,\"NovaSeq 6000\":3,\"HiSeq X Ten\":66,\"HiSeq 2000\":856,\"HiSeq 2500\":1508},\"disease\":{\"Colorectal cancer\":48,\"Liver cancer\""
       }
     },
-    "verdict": "api-down",
-    "verdict_reason": "/misc responds but /publication + /seqrun + /summary all return 500 \u2014 Postgres connection lost. No way to enumerate seqruns or publications; cannot refetch features for publications missing from the local cache.",
-    "checked_at": "2026-09-23T15:33:47.296603+00:00"
+    "verdict": "ok",
+    "verdict_reason": "All probed endpoints respond. Features for publications missing locally can be re-fetched via the standard pipeline.",
+    "checked_at": "2026-11-15T16:54:49.994887+00:00"
   },
   "finaledb_s3": {
-    "url": "https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/entries/EE1/hg38/EE1.hg38.frag.tsv.bgz",
-    "status": 403,
-    "verdict": "private",
-    "verdict_reason": "S3 bucket returns 403 \u2014 bucket was made private. Cannot fetch any new frag.tsv.bgz files.",
-    "checked_at": "2026-09-23T15:33:49.019335+00:00"
+    "url": "https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/",
+    "status": 200,
+    "verdict": "partial",
+    "verdict_reason": "Some object kinds are reachable (fragment objects included) and others are not; new publications can still be fetched.",
+    "n_keys_probed": 5,
+    "n_reachable": 3,
+    "n_fragment_objects_reachable": 1,
+    "keys": [
+      {
+        "key": "entries/EE85723/hg38/EE85723.hg38.frag.tsv.bgz",
+        "status": 200
+      },
+      {
+        "key": "entries/EE85723/hg38/EE85723.hg38.insert_size_metrics.txt",
+        "status": 200
+      },
+      {
+        "key": "entries/EE85723/hg38/EE85723.hg38.frag_profile.mapq30.bw",
+        "status": 200
+      },
+      {
+        "key": "entries/EE85723/hg38/EE85723.hg38.coverage.mapq30.bedGraph.bgz",
+        "status": 403
+      },
+      {
+        "key": "entries/EE1/hg38/EE1.hg38.frag.tsv.bgz",
+        "status": 403
+      }
+    ],
+    "checked_at": "2026-11-15T16:54:53.390823+00:00"
   },
   "per_publication": {
     "1": {
@@ -88,5 +113,5 @@
     "6",
     "8"
   ],
-  "honest_summary": "FinaleDB API verdict: `api-down`. Blocked publications: 1 (snyder), 7 (sun), 9 (adalsteinsson). The cross-study benchmark uses the `ready` set (['6', '8']) until API/S3 are restored."
+  "honest_summary": "FinaleDB API verdict: `ok`. Blocked publications: 1 (snyder), 7 (sun), 9 (adalsteinsson). The cross-study benchmark uses the `ready` set (['6', '8']) until API/S3 are restored."
 }
