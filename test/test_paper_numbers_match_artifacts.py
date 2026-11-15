@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import re
 import sys
 from pathlib import Path
 
@@ -162,3 +163,25 @@ def test_figures_are_rendered_from_the_headline_artifact():
         "the figures must be rendered from the headline (GC-corrected) "
         f"benchmark, not {Path(module.POOLED_JSON).name}")
     assert Path(module.PER_CANCER_JSON).name == "per_cancer_sens_at_spec.json"
+
+
+def test_abstract_fits_the_biorxiv_character_limit():
+    """bioRxiv rejects an abstract over 3000 characters.
+
+    The abstract grew with the v2.3.0 results and passed 3000 without
+    anyone checking; the upload would have been refused. This keeps the
+    margin visible.
+    """
+    tex = _read("paper/paper.tex")
+    match = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.S)
+    assert match, "paper.tex has no abstract"
+    plain = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", match.group(1))
+    plain = re.sub(r"\\[a-zA-Z]+", "", plain)
+    plain = re.sub(r"\$[^$]*\$", "0", plain)
+    length = len(" ".join(plain.split()))
+    assert length <= 3000, (
+        f"the abstract is {length} characters; bioRxiv rejects anything "
+        f"over 3000")
+    assert length <= 2950, (
+        f"the abstract is {length} characters -- only {3000 - length} of "
+        "margin left under bioRxiv's limit")

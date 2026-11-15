@@ -138,6 +138,11 @@ cohort size.
   regenerated and the PDF rebuilt. The paper-number guard now also
   asserts which artifact the figure script reads, so the same drift
   cannot come back through the images.
+- **The abstract fitted bioRxiv's character limit again.** It grew with the
+  v2.3.0 results to 3119 plain-text characters against bioRxiv's 3000
+  limit, so the upload would have been refused; it is now 2894 with every
+  number intact. A test fails the build if the abstract exceeds 3000
+  characters, or creeps within 50 of the limit.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out
