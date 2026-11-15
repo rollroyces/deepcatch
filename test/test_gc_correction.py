@@ -383,6 +383,13 @@ def test_cross_study_pipeline_gc_correction_off_unchanged(tmp_path):
         "--top-cancer-n", "3",
         "--no-gc-correction",
         "--out-json", str(out_json),
+        # The script's defaults for these two are the PUBLISHED
+        # artifacts (results/per_cancer_sens_at_spec.json and
+        # docs/CROSS_STUDY_BENCHMARK.md). Leaving them at the default
+        # overwrites the numbers the paper cites with a fresh,
+        # slightly drifted run.
+        "--out-per-cancer-json", str(tmp_path / "per_cancer.json"),
+        "--out-md", str(tmp_path / "out.md"),
     ]
     r = subprocess.run(cmd, capture_output=True, text=True,
                        cwd=str(ROOT), timeout=600)
