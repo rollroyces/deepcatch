@@ -47,6 +47,9 @@ CLASS_PATH = (
     + ":" + os.path.join(FINALEME_HOME, "fm_src/FinaleMe-main/target/lib/*")
 )
 PRIOR = os.path.join(FINALEME_HOME, "wgbs_buffyCoat_jensen2015GB.methy.hg19.bw")
+# Fraction of samples that must cover a CpG for it to enter the common
+# set used by the composition control.
+COVER_FRACTION = 0.8
 
 
 def attach_prior(matrix_path: str, out_path: str) -> dict:
@@ -110,6 +113,27 @@ def decode(model: str, matrix: str, out: str, decode_only: bool) -> int:
         print(f"decode failed for {matrix}:\n{proc.stderr[-1500:]}",
               file=sys.stderr)
     return proc.returncode
+
+
+
+def load_decoded_cpg_betas(decoded_path: str) -> dict:
+    """Map (chrom, start) -> beta for one decoded sample."""
+    out = {}
+    try:
+        with gzip.open(decoded_path, "rt") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 4:
+                    continue
+                try:
+                    out[(parts[0], int(parts[1]))] = float(parts[3]) / 100.0
+                except ValueError:
+                    continue
+    except (OSError, EOFError):
+        return {}
+    return out
 
 
 def summarise(decoded_path: str, max_cpgs: int | None = None) -> dict:
@@ -284,6 +308,65 @@ def main() -> int:
         auc_matched = _loo_auc(fm)
         auc_matched_depth = _loo_auc(nm.reshape(-1, 1))
 
+    # Third control: restrict every sample to the SAME CpG set (the
+    # intersection), which removes compositional differences as well as
+    # depth. Depth matching caps the count but each sample still keeps a
+    # different subset; a common set makes the comparison exact.
+    common_summary = {}
+    common_size = 0
+    decoded_maps = {}
+    for name in names:
+        out = os.path.join(work, f"{name}.decoded.txt.gz")
+        if os.path.exists(out):
+            decoded_maps[name] = load_decoded_cpg_betas(out)
+    if decoded_maps:
+        # A strict intersection collapses on this cohort -- one sample
+        # covers a different region set, so the intersection over all
+        # samples can be empty even though pairs overlap in thousands of
+        # CpGs. Use a coverage-frequency threshold instead: the CpGs that
+        # at least COVERAGE_FRACTION of the samples see.
+        from collections import Counter
+        cover = Counter()
+        for m in decoded_maps.values():
+            cover.update(m.keys())
+        n_samples = len(decoded_maps)
+        need = max(2, int(np.ceil(COVER_FRACTION * n_samples)))
+        common = {k for k, c in cover.items() if c >= need}
+        if len(common) < 50:
+            # Fall back to the most widely covered loci.
+            common = {k for k, _ in cover.most_common(max(50, n_samples * 50))}
+        common_size = len(common)
+        if common_size >= 50:
+            for name, m in decoded_maps.items():
+                vals = [m[k] for k in common if k in m]
+                if vals:
+                    a = np.asarray(vals, dtype=float)
+                    common_summary[name] = {
+                        "n_cpgs": int(a.size),
+                        "beta_mean": round(float(a.mean()), 4),
+                        "beta_median": round(float(np.median(a)), 4),
+                        "fraction_methylated": round(float((a > 0.5).mean()), 4),
+                        "fraction_fully_methylated": round(
+                            float((a >= 0.999).mean()), 4),
+                        "label": per_sample[name].get("label"),
+                        "disease": per_sample[name].get("disease"),
+                    }
+    auc_common = None
+    if common_summary:
+        cn = sorted(common_summary)
+        yc = np.array([common_summary[n]["label"] if common_summary[n]["label"]
+                        is not None else 0 for n in cn])
+        fc = np.array([[common_summary[n]["beta_mean"],
+                        common_summary[n]["beta_median"],
+                        common_summary[n]["fraction_methylated"],
+                        common_summary[n]["fraction_fully_methylated"]]
+                       for n in cn], dtype=float)
+        saved_names, saved_y = names, y
+
+        names, y = cn, yc
+        auc_common = _loo_auc(fc)
+        names, y = saved_names, saved_y
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -296,6 +379,11 @@ def main() -> int:
         "beta_summary_auc_loo": auc,
         "beta_mean_only_auc": auc_beta_mean_only,
         "cpgs_covered_only_auc_loo": auc_depth_only,
+        "common_cpg_set": {
+            "n_shared_cpgs": int(common_size),
+            "beta_summary_auc_loo": auc_common,
+            "per_sample": common_summary,
+        },
         "depth_matched": {
             "cpgs_cap": int(cap),
             "beta_summary_auc_loo": auc_matched,
@@ -335,6 +423,9 @@ def main() -> int:
         print(f"  beta_mean alone (no model)  : {auc_beta_mean_only}")
     if auc_depth_only is not None:
         print(f"  CpGs-covered only (confound): {auc_depth_only}")
+    if auc_common is not None:
+        print(f"  common-CpG-set beta summary: {auc_common} "
+              f"({common_size} shared CpGs)")
     if auc_matched is not None:
         print(f"  depth-matched beta summary   : {auc_matched} "
               f"(cap {cap} CpGs)")
