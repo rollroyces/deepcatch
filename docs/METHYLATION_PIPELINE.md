@@ -229,6 +229,29 @@ this is a feasibility control, not an independent validation. No
 independent, deep, untrimmed MspI cohort is reachable from the public
 corpora surveyed in `docs/PUBLIC_DATA_SOURCES.md`.
 
+### 5.3 Depth is the cause, on one library
+
+The cleanest control uses one library and changes only the depth. The
+same CRAG matrix, scored at every depth it happens to reach:
+
+| observations per CpG | 1 | 2 | 3 | 5 | 8 | 10 | 15 | 21 |
+|---|---|---|---|---|---|---|---|---|
+| CpGs whose methylation estimate is graded | 0.8% | 1.6% | 3.1% | 3.7% | 5.7% | 8.1% | 11.1% | 11.5% |
+
+"Graded" means the CpG's boundary fraction is not a constant zero, i.e.
+the estimate carries information about whether that CpG was cut out of
+the library. The resolution rises monotonically with depth, and at the
+one-observation depth the FinaleDB libraries sit at, it is 0.8% — the
+degenerate regime the channel is stuck in. Reproduce with:
+
+```
+python scripts/methylation_channel_diagnosis.py \
+    --matrices-dir <window matrix dir> \
+    --out-json results/methylation_channel_diagnosis.json
+```
+
+and read `depth.resolution_by_depth`.
+
 ## 6. What is still missing for a methylation *channel*
 
 The extraction path runs on real public data and the channel has been

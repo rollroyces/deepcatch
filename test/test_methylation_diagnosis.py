@@ -119,6 +119,36 @@ def test_separation_reports_none_for_a_single_class():
     assert diag.separation(x, y)["auc"] is None
 
 
+def test_depth_ablation_shows_resolution_growing_with_depth():
+    """The same CpGs resolve as more observations arrive."""
+    per_cpg = {
+        ("chr22", 1): [0, 5, 5, 5],          # a boundary observation appears
+        ("chr22", 2): [5, 5, 5, 5],          # never at a fragment end
+        ("chr22", 3): [0],                   # seen once
+        ("chr22", 4): [5],
+    }
+    out = diag.depth_ablation(per_cpg)
+    assert out["1"]["cpgs_scored"] == 4
+    # at depth 1 two of the four CpGs happen to be observed at an end
+    assert out["1"]["cpgs_with_non_zero_boundary_fraction"] == 2
+    # at depth 4 the CpG seen only once drops out of the scoring
+    assert out["4"]["cpgs_scored"] == 2
+    assert out["4"]["cpgs_with_non_zero_boundary_fraction"] == 1
+
+
+def test_resolution_by_depth_is_a_cohort_average():
+    per_sample = {
+        "a": {"depth_ablation": {"2": {"cpgs_scored": 10,
+                                       "cpgs_with_non_zero_boundary_fraction": 2}}},
+        "b": {"depth_ablation": {"2": {"cpgs_scored": 30,
+                                       "cpgs_with_non_zero_boundary_fraction": 12}}},
+    }
+    out = diag._resolution_by_depth(per_sample)
+    assert out["2"]["n_samples_with_this_depth"] == 2
+    assert out["2"]["cpgs_scored"] == 40
+    assert out["2"]["fraction_graded"] == pytest.approx(14 / 40)
+
+
 def test_read_decoded_reports_decoder_degeneracy(tmp_path):
     path = tmp_path / "s.decoded.txt.gz"
     _write_decoded(path, [100.0, 100.0, 0.0, 55.0])

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T19:55:41.057945+00:00",
+  "generated_at": "2026-11-15T20:13:05.232358+00:00",
   "cohort": {
     "n_samples": 31,
     "n_samples_with_decoded_output": 31,
@@ -10,7 +10,404 @@
     "mean_obs_per_cpg_across_samples": 1.089,
     "min_obs_per_cpg_across_samples": 1.001,
     "max_obs_per_cpg_across_samples": 1.223,
-    "note": "a methylation state is only identified where a CpG is observed repeatedly; below ~2 observations per CpG the per-CpG state carries no information"
+    "note": "a methylation state is only identified where a CpG is observed repeatedly; below ~2 observations per CpG the per-CpG state carries no information",
+    "resolution_by_depth": {
+      "1": {
+        "n_samples_with_this_depth": 31,
+        "cpgs_scored": 1091321,
+        "fraction_graded": 0.01103
+      },
+      "2": {
+        "n_samples_with_this_depth": 31,
+        "cpgs_scored": 7623,
+        "fraction_graded": 0.00997
+      },
+      "3": {
+        "n_samples_with_this_depth": 29,
+        "cpgs_scored": 4109,
+        "fraction_graded": 0.01217
+      },
+      "4": {
+        "n_samples_with_this_depth": 27,
+        "cpgs_scored": 3042,
+        "fraction_graded": 0.01381
+      },
+      "5": {
+        "n_samples_with_this_depth": 25,
+        "cpgs_scored": 2451,
+        "fraction_graded": 0.01999
+      },
+      "6": {
+        "n_samples_with_this_depth": 26,
+        "cpgs_scored": 2076,
+        "fraction_graded": 0.02505
+      },
+      "7": {
+        "n_samples_with_this_depth": 22,
+        "cpgs_scored": 1736,
+        "fraction_graded": 0.03053
+      },
+      "8": {
+        "n_samples_with_this_depth": 23,
+        "cpgs_scored": 1436,
+        "fraction_graded": 0.03412
+      },
+      "9": {
+        "n_samples_with_this_depth": 21,
+        "cpgs_scored": 1302,
+        "fraction_graded": 0.03456
+      },
+      "10": {
+        "n_samples_with_this_depth": 22,
+        "cpgs_scored": 1203,
+        "fraction_graded": 0.03907
+      },
+      "11": {
+        "n_samples_with_this_depth": 22,
+        "cpgs_scored": 1065,
+        "fraction_graded": 0.04601
+      },
+      "12": {
+        "n_samples_with_this_depth": 24,
+        "cpgs_scored": 854,
+        "fraction_graded": 0.04801
+      },
+      "13": {
+        "n_samples_with_this_depth": 21,
+        "cpgs_scored": 823,
+        "fraction_graded": 0.05711
+      },
+      "14": {
+        "n_samples_with_this_depth": 20,
+        "cpgs_scored": 753,
+        "fraction_graded": 0.06109
+      },
+      "15": {
+        "n_samples_with_this_depth": 19,
+        "cpgs_scored": 605,
+        "fraction_graded": 0.06116
+      },
+      "16": {
+        "n_samples_with_this_depth": 20,
+        "cpgs_scored": 501,
+        "fraction_graded": 0.05589
+      },
+      "17": {
+        "n_samples_with_this_depth": 15,
+        "cpgs_scored": 445,
+        "fraction_graded": 0.04719
+      },
+      "18": {
+        "n_samples_with_this_depth": 11,
+        "cpgs_scored": 374,
+        "fraction_graded": 0.05882
+      },
+      "19": {
+        "n_samples_with_this_depth": 16,
+        "cpgs_scored": 441,
+        "fraction_graded": 0.05669
+      },
+      "20": {
+        "n_samples_with_this_depth": 21,
+        "cpgs_scored": 472,
+        "fraction_graded": 0.06144
+      },
+      "21": {
+        "n_samples_with_this_depth": 20,
+        "cpgs_scored": 477,
+        "fraction_graded": 0.06499
+      },
+      "22": {
+        "n_samples_with_this_depth": 15,
+        "cpgs_scored": 336,
+        "fraction_graded": 0.05952
+      },
+      "23": {
+        "n_samples_with_this_depth": 15,
+        "cpgs_scored": 351,
+        "fraction_graded": 0.07977
+      },
+      "24": {
+        "n_samples_with_this_depth": 16,
+        "cpgs_scored": 365,
+        "fraction_graded": 0.06849
+      },
+      "25": {
+        "n_samples_with_this_depth": 15,
+        "cpgs_scored": 365,
+        "fraction_graded": 0.06575
+      },
+      "26": {
+        "n_samples_with_this_depth": 16,
+        "cpgs_scored": 313,
+        "fraction_graded": 0.07348
+      },
+      "27": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 208,
+        "fraction_graded": 0.06731
+      },
+      "28": {
+        "n_samples_with_this_depth": 13,
+        "cpgs_scored": 239,
+        "fraction_graded": 0.07113
+      },
+      "29": {
+        "n_samples_with_this_depth": 13,
+        "cpgs_scored": 234,
+        "fraction_graded": 0.0641
+      },
+      "30": {
+        "n_samples_with_this_depth": 11,
+        "cpgs_scored": 173,
+        "fraction_graded": 0.0578
+      },
+      "31": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 150,
+        "fraction_graded": 0.05333
+      },
+      "32": {
+        "n_samples_with_this_depth": 13,
+        "cpgs_scored": 171,
+        "fraction_graded": 0.05848
+      },
+      "33": {
+        "n_samples_with_this_depth": 10,
+        "cpgs_scored": 131,
+        "fraction_graded": 0.07634
+      },
+      "34": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 106,
+        "fraction_graded": 0.06604
+      },
+      "35": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 100,
+        "fraction_graded": 0.04
+      },
+      "36": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 110,
+        "fraction_graded": 0.06364
+      },
+      "37": {
+        "n_samples_with_this_depth": 7,
+        "cpgs_scored": 83,
+        "fraction_graded": 0.08434
+      },
+      "38": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 81,
+        "fraction_graded": 0.06173
+      },
+      "39": {
+        "n_samples_with_this_depth": 8,
+        "cpgs_scored": 88,
+        "fraction_graded": 0.10227
+      },
+      "40": {
+        "n_samples_with_this_depth": 12,
+        "cpgs_scored": 114,
+        "fraction_graded": 0.07018
+      },
+      "41": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 72,
+        "fraction_graded": 0.05556
+      },
+      "42": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 5,
+        "fraction_graded": 0.2
+      },
+      "43": {
+        "n_samples_with_this_depth": 9,
+        "cpgs_scored": 60,
+        "fraction_graded": 0.06667
+      },
+      "44": {
+        "n_samples_with_this_depth": 4,
+        "cpgs_scored": 28,
+        "fraction_graded": 0.07143
+      },
+      "45": {
+        "n_samples_with_this_depth": 4,
+        "cpgs_scored": 21,
+        "fraction_graded": 0.09524
+      },
+      "46": {
+        "n_samples_with_this_depth": 6,
+        "cpgs_scored": 40,
+        "fraction_graded": 0.05
+      },
+      "47": {
+        "n_samples_with_this_depth": 6,
+        "cpgs_scored": 36,
+        "fraction_graded": 0.16667
+      },
+      "48": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 11,
+        "fraction_graded": 0.09091
+      },
+      "49": {
+        "n_samples_with_this_depth": 6,
+        "cpgs_scored": 27,
+        "fraction_graded": 0.03704
+      },
+      "50": {
+        "n_samples_with_this_depth": 7,
+        "cpgs_scored": 36,
+        "fraction_graded": 0.13889
+      },
+      "51": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 7,
+        "fraction_graded": 0.14286
+      },
+      "52": {
+        "n_samples_with_this_depth": 6,
+        "cpgs_scored": 25,
+        "fraction_graded": 0.16
+      },
+      "53": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 4,
+        "fraction_graded": 0.25
+      },
+      "54": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 8,
+        "fraction_graded": 0.25
+      },
+      "55": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 6,
+        "fraction_graded": 0.33333
+      },
+      "56": {
+        "n_samples_with_this_depth": 5,
+        "cpgs_scored": 12,
+        "fraction_graded": 0.16667
+      },
+      "57": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 7,
+        "fraction_graded": 0.42857
+      },
+      "58": {
+        "n_samples_with_this_depth": 4,
+        "cpgs_scored": 13,
+        "fraction_graded": 0.0
+      },
+      "59": {
+        "n_samples_with_this_depth": 4,
+        "cpgs_scored": 14,
+        "fraction_graded": 0.21429
+      },
+      "60": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 0.0
+      },
+      "61": {
+        "n_samples_with_this_depth": 3,
+        "cpgs_scored": 7,
+        "fraction_graded": 0.0
+      },
+      "62": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 3,
+        "fraction_graded": 0.0
+      },
+      "63": {
+        "n_samples_with_this_depth": 4,
+        "cpgs_scored": 14,
+        "fraction_graded": 0.14286
+      },
+      "64": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 4,
+        "fraction_graded": 0.5
+      },
+      "65": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 2,
+        "fraction_graded": 1.0
+      },
+      "66": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 5,
+        "fraction_graded": 0.0
+      },
+      "67": {
+        "n_samples_with_this_depth": 3,
+        "cpgs_scored": 4,
+        "fraction_graded": 0.5
+      },
+      "69": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 1.0
+      },
+      "70": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 3,
+        "fraction_graded": 0.0
+      },
+      "71": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 0.0
+      },
+      "72": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 4,
+        "fraction_graded": 0.0
+      },
+      "73": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 1.0
+      },
+      "75": {
+        "n_samples_with_this_depth": 2,
+        "cpgs_scored": 2,
+        "fraction_graded": 0.0
+      },
+      "76": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 3,
+        "fraction_graded": 0.0
+      },
+      "77": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 0.0
+      },
+      "80": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 2,
+        "fraction_graded": 0.0
+      },
+      "84": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 0.0
+      },
+      "86": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 1.0
+      },
+      "108": {
+        "n_samples_with_this_depth": 1,
+        "cpgs_scored": 1,
+        "fraction_graded": 0.0
+      }
+    }
   },
   "scores": {
     "coverage_baseline_n_cpgs": {
@@ -52,6 +449,7 @@
     "T99": {
       "n_observations": 60361,
       "n_cpgs": 60152,
+      "truncated": false,
       "mean_obs_per_cpg": 1.003,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 30,
@@ -77,6 +475,68 @@
       "fraction_cpgs_identified": 0.00063,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 60152,
+          "cpgs_with_non_zero_boundary_fraction": 665,
+          "fraction_graded": 0.01106
+        },
+        "2": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02632
+        },
+        "3": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "5": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "10": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "13": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "14": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "26": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "30": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 51038,
         "beta_mean": 0.90605,
@@ -89,6 +549,7 @@
     "TBR1448": {
       "n_observations": 59671,
       "n_cpgs": 59605,
+      "truncated": false,
       "mean_obs_per_cpg": 1.001,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 8,
@@ -114,6 +575,48 @@
       "fraction_cpgs_identified": 0.00045,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 59605,
+          "cpgs_with_non_zero_boundary_fraction": 620,
+          "fraction_graded": 0.0104
+        },
+        "2": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "7": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 50992,
         "beta_mean": 0.90962,
@@ -126,6 +629,7 @@
     "TBR1449": {
       "n_observations": 65074,
       "n_cpgs": 64897,
+      "truncated": false,
       "mean_obs_per_cpg": 1.003,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 25,
@@ -151,6 +655,63 @@
       "fraction_cpgs_identified": 0.00055,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 64897,
+          "cpgs_with_non_zero_boundary_fraction": 750,
+          "fraction_graded": 0.01156
+        },
+        "2": {
+          "cpgs_scored": 36,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02778
+        },
+        "3": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "9": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "13": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "22": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "25": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 56007,
         "beta_mean": 0.90887,
@@ -163,6 +724,7 @@
     "TBR1450": {
       "n_observations": 62361,
       "n_cpgs": 62043,
+      "truncated": false,
       "mean_obs_per_cpg": 1.005,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 43,
@@ -188,6 +750,93 @@
       "fraction_cpgs_identified": 0.00063,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 62043,
+          "cpgs_with_non_zero_boundary_fraction": 692,
+          "fraction_graded": 0.01115
+        },
+        "2": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "7": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "11": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.08333
+        },
+        "12": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.09091
+        },
+        "15": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.1
+        },
+        "20": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "21": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "22": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.16667
+        },
+        "23": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.25
+        },
+        "28": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "43": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 52999,
         "beta_mean": 0.89745,
@@ -200,6 +849,7 @@
     "TBR1451": {
       "n_observations": 63376,
       "n_cpgs": 63151,
+      "truncated": false,
       "mean_obs_per_cpg": 1.004,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 34,
@@ -225,6 +875,73 @@
       "fraction_cpgs_identified": 0.00055,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 63151,
+          "cpgs_with_non_zero_boundary_fraction": 609,
+          "fraction_graded": 0.00964
+        },
+        "2": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05556
+        },
+        "6": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07692
+        },
+        "7": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.08333
+        },
+        "9": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.09091
+        },
+        "10": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.1
+        },
+        "15": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "17": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "19": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "30": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "34": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 53684,
         "beta_mean": 0.90729,
@@ -237,6 +954,7 @@
     "TBR1452": {
       "n_observations": 62551,
       "n_cpgs": 62403,
+      "truncated": false,
       "mean_obs_per_cpg": 1.002,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 23,
@@ -262,6 +980,73 @@
       "fraction_cpgs_identified": 0.00042,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 62403,
+          "cpgs_with_non_zero_boundary_fraction": 667,
+          "fraction_graded": 0.01069
+        },
+        "2": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "9": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "10": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "11": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "21": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "23": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 52995,
         "beta_mean": 0.90773,
@@ -274,6 +1059,7 @@
     "TBR1453": {
       "n_observations": 61076,
       "n_cpgs": 60807,
+      "truncated": false,
       "mean_obs_per_cpg": 1.004,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 41,
@@ -299,6 +1085,78 @@
       "fraction_cpgs_identified": 0.00049,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 60807,
+          "cpgs_with_non_zero_boundary_fraction": 672,
+          "fraction_graded": 0.01105
+        },
+        "2": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03333
+        },
+        "3": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "7": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "13": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "18": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "19": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "28": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 52278,
         "beta_mean": 0.90399,
@@ -311,6 +1169,7 @@
     "TBR1454": {
       "n_observations": 63753,
       "n_cpgs": 63518,
+      "truncated": false,
       "mean_obs_per_cpg": 1.004,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 33,
@@ -336,6 +1195,73 @@
       "fraction_cpgs_identified": 0.00074,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 63518,
+          "cpgs_with_non_zero_boundary_fraction": 753,
+          "fraction_graded": 0.01185
+        },
+        "2": {
+          "cpgs_scored": 47,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "14": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "15": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "17": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "29": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "33": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 54134,
         "beta_mean": 0.90697,
@@ -348,6 +1274,7 @@
     "TBR1573": {
       "n_observations": 56477,
       "n_cpgs": 56352,
+      "truncated": false,
       "mean_obs_per_cpg": 1.002,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 20,
@@ -373,6 +1300,58 @@
       "fraction_cpgs_identified": 0.00051,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 56352,
+          "cpgs_with_non_zero_boundary_fraction": 549,
+          "fraction_graded": 0.00974
+        },
+        "2": {
+          "cpgs_scored": 29,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03448
+        },
+        "4": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "9": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "13": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "14": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 47933,
         "beta_mean": 0.90873,
@@ -385,6 +1364,7 @@
     "TBR1574": {
       "n_observations": 58218,
       "n_cpgs": 57889,
+      "truncated": false,
       "mean_obs_per_cpg": 1.006,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 52,
@@ -410,6 +1390,88 @@
       "fraction_cpgs_identified": 0.00074,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 57889,
+          "cpgs_with_non_zero_boundary_fraction": 650,
+          "fraction_graded": 0.01123
+        },
+        "2": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "11": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "13": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "19": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "21": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "22": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "24": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "28": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "45": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "52": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 49185,
         "beta_mean": 0.91709,
@@ -422,6 +1484,7 @@
     "TBR1575": {
       "n_observations": 57142,
       "n_cpgs": 56932,
+      "truncated": false,
       "mean_obs_per_cpg": 1.004,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 32,
@@ -447,6 +1510,68 @@
       "fraction_cpgs_identified": 0.00056,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 56932,
+          "cpgs_with_non_zero_boundary_fraction": 651,
+          "fraction_graded": 0.01143
+        },
+        "2": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "11": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "15": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "26": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 48637,
         "beta_mean": 0.91089,
@@ -459,6 +1584,7 @@
     "TBR1576": {
       "n_observations": 62122,
       "n_cpgs": 61910,
+      "truncated": false,
       "mean_obs_per_cpg": 1.003,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 32,
@@ -484,6 +1610,73 @@
       "fraction_cpgs_identified": 0.00052,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 61910,
+          "cpgs_with_non_zero_boundary_fraction": 770,
+          "fraction_graded": 0.01244
+        },
+        "2": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "8": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "11": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "14": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "17": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "21": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "23": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 52828,
         "beta_mean": 0.9133,
@@ -496,6 +1689,7 @@
     "TBR1577": {
       "n_observations": 59205,
       "n_cpgs": 58880,
+      "truncated": false,
       "mean_obs_per_cpg": 1.006,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 44,
@@ -521,6 +1715,93 @@
       "fraction_cpgs_identified": 0.00078,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 58880,
+          "cpgs_with_non_zero_boundary_fraction": 604,
+          "fraction_graded": 0.01026
+        },
+        "2": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02174
+        },
+        "3": {
+          "cpgs_scored": 28,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "4": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "7": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "10": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "15": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "19": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "21": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "22": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "24": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "26": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "44": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 50275,
         "beta_mean": 0.91346,
@@ -533,6 +1814,7 @@
     "TBR1578": {
       "n_observations": 55137,
       "n_cpgs": 54922,
+      "truncated": false,
       "mean_obs_per_cpg": 1.004,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 24,
@@ -558,6 +1840,73 @@
       "fraction_cpgs_identified": 0.0008,
       "label": 0,
       "disease": "Liver transplant",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 54922,
+          "cpgs_with_non_zero_boundary_fraction": 614,
+          "fraction_graded": 0.01118
+        },
+        "2": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02273
+        },
+        "3": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "6": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "10": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "12": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "15": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "16": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "17": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "20": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "21": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "24": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 46149,
         "beta_mean": 0.91209,
@@ -570,6 +1919,7 @@
     "TBR901": {
       "n_observations": 13159,
       "n_cpgs": 11003,
+      "truncated": false,
       "mean_obs_per_cpg": 1.196,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 77,
@@ -595,6 +1945,188 @@
       "fraction_cpgs_identified": 0.03563,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 11003,
+          "cpgs_with_non_zero_boundary_fraction": 116,
+          "fraction_graded": 0.01054
+        },
+        "2": {
+          "cpgs_scored": 392,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0102
+        },
+        "3": {
+          "cpgs_scored": 229,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00873
+        },
+        "4": {
+          "cpgs_scored": 164,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01829
+        },
+        "5": {
+          "cpgs_scored": 135,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.02963
+        },
+        "6": {
+          "cpgs_scored": 112,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02679
+        },
+        "7": {
+          "cpgs_scored": 102,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02941
+        },
+        "8": {
+          "cpgs_scored": 67,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0597
+        },
+        "9": {
+          "cpgs_scored": 60,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.05
+        },
+        "10": {
+          "cpgs_scored": 59,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.05085
+        },
+        "11": {
+          "cpgs_scored": 53,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0566
+        },
+        "12": {
+          "cpgs_scored": 48,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0625
+        },
+        "13": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06818
+        },
+        "14": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09302
+        },
+        "15": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10526
+        },
+        "16": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10811
+        },
+        "18": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08571
+        },
+        "19": {
+          "cpgs_scored": 34,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08824
+        },
+        "20": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.09091
+        },
+        "21": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06452
+        },
+        "23": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.1
+        },
+        "25": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "26": {
+          "cpgs_scored": 23,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08696
+        },
+        "27": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09091
+        },
+        "28": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "29": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05882
+        },
+        "31": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0625
+        },
+        "33": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.08333
+        },
+        "35": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.09091
+        },
+        "36": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "39": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "47": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "49": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "56": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "77": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 8086,
         "beta_mean": 0.96958,
@@ -607,6 +2139,7 @@
     "TBR910": {
       "n_observations": 15506,
       "n_cpgs": 12678,
+      "truncated": false,
       "mean_obs_per_cpg": 1.223,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 108,
@@ -632,6 +2165,183 @@
       "fraction_cpgs_identified": 0.05024,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 12678,
+          "cpgs_with_non_zero_boundary_fraction": 152,
+          "fraction_graded": 0.01199
+        },
+        "2": {
+          "cpgs_scored": 637,
+          "cpgs_with_non_zero_boundary_fraction": 14,
+          "fraction_graded": 0.02198
+        },
+        "3": {
+          "cpgs_scored": 268,
+          "cpgs_with_non_zero_boundary_fraction": 8,
+          "fraction_graded": 0.02985
+        },
+        "4": {
+          "cpgs_scored": 180,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.02778
+        },
+        "5": {
+          "cpgs_scored": 153,
+          "cpgs_with_non_zero_boundary_fraction": 7,
+          "fraction_graded": 0.04575
+        },
+        "6": {
+          "cpgs_scored": 122,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.04918
+        },
+        "7": {
+          "cpgs_scored": 113,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.0531
+        },
+        "8": {
+          "cpgs_scored": 83,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04819
+        },
+        "9": {
+          "cpgs_scored": 76,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03947
+        },
+        "10": {
+          "cpgs_scored": 72,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.04167
+        },
+        "11": {
+          "cpgs_scored": 62,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.06452
+        },
+        "12": {
+          "cpgs_scored": 58,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.06897
+        },
+        "13": {
+          "cpgs_scored": 51,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07843
+        },
+        "14": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09302
+        },
+        "15": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10256
+        },
+        "16": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10526
+        },
+        "20": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.13514
+        },
+        "21": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.11429
+        },
+        "23": {
+          "cpgs_scored": 34,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08824
+        },
+        "24": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06061
+        },
+        "25": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07407
+        },
+        "28": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07692
+        },
+        "30": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04762
+        },
+        "31": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "32": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "39": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.11111
+        },
+        "40": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.15385
+        },
+        "41": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.08333
+        },
+        "45": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "48": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "50": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "63": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "76": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "80": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "108": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9322,
         "beta_mean": 0.9681,
@@ -644,6 +2354,7 @@
     "TBR911.rep1": {
       "n_observations": 19496,
       "n_cpgs": 16726,
+      "truncated": false,
       "mean_obs_per_cpg": 1.166,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 86,
@@ -669,6 +2380,198 @@
       "fraction_cpgs_identified": 0.02894,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 16726,
+          "cpgs_with_non_zero_boundary_fraction": 170,
+          "fraction_graded": 0.01016
+        },
+        "2": {
+          "cpgs_scored": 484,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0062
+        },
+        "3": {
+          "cpgs_scored": 282,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00355
+        },
+        "4": {
+          "cpgs_scored": 206,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01456
+        },
+        "5": {
+          "cpgs_scored": 158,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01266
+        },
+        "6": {
+          "cpgs_scored": 133,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02256
+        },
+        "7": {
+          "cpgs_scored": 110,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02727
+        },
+        "8": {
+          "cpgs_scored": 102,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02941
+        },
+        "9": {
+          "cpgs_scored": 88,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02273
+        },
+        "10": {
+          "cpgs_scored": 86,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03488
+        },
+        "11": {
+          "cpgs_scored": 71,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.04225
+        },
+        "12": {
+          "cpgs_scored": 59,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.05085
+        },
+        "14": {
+          "cpgs_scored": 55,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07273
+        },
+        "15": {
+          "cpgs_scored": 52,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07692
+        },
+        "18": {
+          "cpgs_scored": 45,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08889
+        },
+        "20": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10256
+        },
+        "21": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07895
+        },
+        "23": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08108
+        },
+        "24": {
+          "cpgs_scored": 36,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05556
+        },
+        "25": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05714
+        },
+        "26": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0625
+        },
+        "27": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06667
+        },
+        "28": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "30": {
+          "cpgs_scored": 23,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08696
+        },
+        "31": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "36": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.11765
+        },
+        "37": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.15385
+        },
+        "38": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.18182
+        },
+        "39": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.2
+        },
+        "40": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.22222
+        },
+        "41": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "43": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.14286
+        },
+        "46": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "52": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "61": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "70": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "72": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "86": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 1.0
+        }
+      },
       "decoded": {
         "n_cpgs": 12653,
         "beta_mean": 0.97103,
@@ -681,6 +2584,7 @@
     "TBR911.rep2": {
       "n_observations": 19020,
       "n_cpgs": 16372,
+      "truncated": false,
       "mean_obs_per_cpg": 1.162,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 84,
@@ -706,6 +2610,213 @@
       "fraction_cpgs_identified": 0.0281,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 16372,
+          "cpgs_with_non_zero_boundary_fraction": 151,
+          "fraction_graded": 0.00922
+        },
+        "2": {
+          "cpgs_scored": 460,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.01304
+        },
+        "3": {
+          "cpgs_scored": 240,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00833
+        },
+        "4": {
+          "cpgs_scored": 192,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01042
+        },
+        "5": {
+          "cpgs_scored": 152,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01316
+        },
+        "6": {
+          "cpgs_scored": 137,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0219
+        },
+        "7": {
+          "cpgs_scored": 114,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.03509
+        },
+        "8": {
+          "cpgs_scored": 104,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.04808
+        },
+        "9": {
+          "cpgs_scored": 94,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04255
+        },
+        "10": {
+          "cpgs_scored": 85,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04706
+        },
+        "11": {
+          "cpgs_scored": 74,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.05405
+        },
+        "12": {
+          "cpgs_scored": 65,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.06154
+        },
+        "13": {
+          "cpgs_scored": 56,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07143
+        },
+        "14": {
+          "cpgs_scored": 51,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07843
+        },
+        "15": {
+          "cpgs_scored": 49,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08163
+        },
+        "16": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08696
+        },
+        "17": {
+          "cpgs_scored": 41,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09756
+        },
+        "20": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07895
+        },
+        "21": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08108
+        },
+        "23": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.09091
+        },
+        "24": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.125
+        },
+        "25": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.12903
+        },
+        "26": {
+          "cpgs_scored": 28,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.10714
+        },
+        "27": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.11111
+        },
+        "28": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07692
+        },
+        "29": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "30": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "32": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "33": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05556
+        },
+        "36": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05882
+        },
+        "37": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07692
+        },
+        "38": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.09091
+        },
+        "39": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.1
+        },
+        "40": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "43": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "44": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "52": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "58": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "63": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "72": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "84": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 12469,
         "beta_mean": 0.9716,
@@ -718,6 +2829,7 @@
     "TBR912": {
       "n_observations": 14405,
       "n_cpgs": 12251,
+      "truncated": false,
       "mean_obs_per_cpg": 1.176,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 61,
@@ -743,6 +2855,178 @@
       "fraction_cpgs_identified": 0.02955,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 12251,
+          "cpgs_with_non_zero_boundary_fraction": 133,
+          "fraction_graded": 0.01086
+        },
+        "2": {
+          "cpgs_scored": 362,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.00829
+        },
+        "3": {
+          "cpgs_scored": 232,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00431
+        },
+        "4": {
+          "cpgs_scored": 165,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "5": {
+          "cpgs_scored": 140,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00714
+        },
+        "6": {
+          "cpgs_scored": 111,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00901
+        },
+        "7": {
+          "cpgs_scored": 92,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01087
+        },
+        "8": {
+          "cpgs_scored": 78,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01282
+        },
+        "9": {
+          "cpgs_scored": 64,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01562
+        },
+        "10": {
+          "cpgs_scored": 56,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03571
+        },
+        "11": {
+          "cpgs_scored": 54,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03704
+        },
+        "12": {
+          "cpgs_scored": 51,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03922
+        },
+        "13": {
+          "cpgs_scored": 48,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0625
+        },
+        "14": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04651
+        },
+        "15": {
+          "cpgs_scored": 42,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04762
+        },
+        "16": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05405
+        },
+        "17": {
+          "cpgs_scored": 36,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05556
+        },
+        "19": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05714
+        },
+        "20": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0303
+        },
+        "22": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03125
+        },
+        "23": {
+          "cpgs_scored": 28,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07143
+        },
+        "24": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "25": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04
+        },
+        "26": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04762
+        },
+        "32": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "34": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0625
+        },
+        "36": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07143
+        },
+        "37": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "43": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "45": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "52": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "61": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9123,
         "beta_mean": 0.9694,
@@ -755,6 +3039,7 @@
     "TBR914.rep1": {
       "n_observations": 20650,
       "n_cpgs": 17894,
+      "truncated": false,
       "mean_obs_per_cpg": 1.154,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 75,
@@ -780,6 +3065,218 @@
       "fraction_cpgs_identified": 0.02492,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 17894,
+          "cpgs_with_non_zero_boundary_fraction": 211,
+          "fraction_graded": 0.01179
+        },
+        "2": {
+          "cpgs_scored": 446,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.01345
+        },
+        "3": {
+          "cpgs_scored": 253,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00791
+        },
+        "4": {
+          "cpgs_scored": 201,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00995
+        },
+        "5": {
+          "cpgs_scored": 159,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01258
+        },
+        "6": {
+          "cpgs_scored": 146,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0137
+        },
+        "7": {
+          "cpgs_scored": 120,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01667
+        },
+        "8": {
+          "cpgs_scored": 104,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01923
+        },
+        "9": {
+          "cpgs_scored": 90,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04444
+        },
+        "10": {
+          "cpgs_scored": 81,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04938
+        },
+        "11": {
+          "cpgs_scored": 74,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.04054
+        },
+        "12": {
+          "cpgs_scored": 65,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.04615
+        },
+        "13": {
+          "cpgs_scored": 62,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.06452
+        },
+        "14": {
+          "cpgs_scored": 52,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07692
+        },
+        "15": {
+          "cpgs_scored": 48,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08333
+        },
+        "17": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09091
+        },
+        "18": {
+          "cpgs_scored": 40,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.1
+        },
+        "19": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.13158
+        },
+        "21": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.13514
+        },
+        "22": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.15152
+        },
+        "23": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.15625
+        },
+        "24": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.16667
+        },
+        "25": {
+          "cpgs_scored": 29,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.13793
+        },
+        "26": {
+          "cpgs_scored": 28,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.14286
+        },
+        "28": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.14815
+        },
+        "29": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.11538
+        },
+        "30": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "31": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09091
+        },
+        "32": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "33": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.1
+        },
+        "38": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.11765
+        },
+        "39": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0625
+        },
+        "40": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "43": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "49": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "50": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "58": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "59": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "66": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "67": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "75": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 13828,
         "beta_mean": 0.9698,
@@ -792,6 +3289,7 @@
     "TBR914.rep2": {
       "n_observations": 20332,
       "n_cpgs": 17711,
+      "truncated": false,
       "mean_obs_per_cpg": 1.148,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 71,
@@ -817,6 +3315,193 @@
       "fraction_cpgs_identified": 0.02377,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 17711,
+          "cpgs_with_non_zero_boundary_fraction": 183,
+          "fraction_graded": 0.01033
+        },
+        "2": {
+          "cpgs_scored": 421,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.00713
+        },
+        "3": {
+          "cpgs_scored": 245,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00816
+        },
+        "4": {
+          "cpgs_scored": 187,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0107
+        },
+        "5": {
+          "cpgs_scored": 159,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01258
+        },
+        "6": {
+          "cpgs_scored": 131,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0229
+        },
+        "7": {
+          "cpgs_scored": 121,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02479
+        },
+        "8": {
+          "cpgs_scored": 102,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02941
+        },
+        "9": {
+          "cpgs_scored": 85,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03529
+        },
+        "10": {
+          "cpgs_scored": 77,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02597
+        },
+        "11": {
+          "cpgs_scored": 69,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02899
+        },
+        "12": {
+          "cpgs_scored": 66,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0303
+        },
+        "13": {
+          "cpgs_scored": 55,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03636
+        },
+        "14": {
+          "cpgs_scored": 51,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.05882
+        },
+        "16": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06522
+        },
+        "17": {
+          "cpgs_scored": 42,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07143
+        },
+        "18": {
+          "cpgs_scored": 40,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05
+        },
+        "19": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05128
+        },
+        "20": {
+          "cpgs_scored": 37,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05405
+        },
+        "21": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06061
+        },
+        "24": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06452
+        },
+        "25": {
+          "cpgs_scored": 29,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03448
+        },
+        "27": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "28": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "29": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "31": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "33": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "35": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "37": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "44": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "46": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "47": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "59": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "63": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "66": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "71": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 13611,
         "beta_mean": 0.96891,
@@ -829,6 +3514,7 @@
     "TBR916.rep1": {
       "n_observations": 14839,
       "n_cpgs": 12848,
+      "truncated": false,
       "mean_obs_per_cpg": 1.155,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 62,
@@ -854,6 +3540,183 @@
       "fraction_cpgs_identified": 0.02693,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 12848,
+          "cpgs_with_non_zero_boundary_fraction": 129,
+          "fraction_graded": 0.01004
+        },
+        "2": {
+          "cpgs_scored": 346,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.00867
+        },
+        "3": {
+          "cpgs_scored": 196,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01531
+        },
+        "4": {
+          "cpgs_scored": 163,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0184
+        },
+        "5": {
+          "cpgs_scored": 134,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.02985
+        },
+        "6": {
+          "cpgs_scored": 107,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.03738
+        },
+        "7": {
+          "cpgs_scored": 89,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03371
+        },
+        "8": {
+          "cpgs_scored": 78,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02564
+        },
+        "9": {
+          "cpgs_scored": 70,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02857
+        },
+        "10": {
+          "cpgs_scored": 61,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.04918
+        },
+        "11": {
+          "cpgs_scored": 54,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07407
+        },
+        "12": {
+          "cpgs_scored": 49,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08163
+        },
+        "13": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09091
+        },
+        "14": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.10526
+        },
+        "15": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05714
+        },
+        "18": {
+          "cpgs_scored": 34,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02941
+        },
+        "19": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03125
+        },
+        "20": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03333
+        },
+        "21": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "23": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08333
+        },
+        "24": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04545
+        },
+        "28": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "29": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "30": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "31": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "34": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "35": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "43": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "47": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "51": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "56": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "62": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9538,
         "beta_mean": 0.97547,
@@ -866,6 +3729,7 @@
     "TBR916.rep2": {
       "n_observations": 15145,
       "n_cpgs": 13054,
+      "truncated": false,
       "mean_obs_per_cpg": 1.16,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 67,
@@ -891,6 +3755,178 @@
       "fraction_cpgs_identified": 0.02903,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 13054,
+          "cpgs_with_non_zero_boundary_fraction": 141,
+          "fraction_graded": 0.0108
+        },
+        "2": {
+          "cpgs_scored": 379,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "3": {
+          "cpgs_scored": 207,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01449
+        },
+        "4": {
+          "cpgs_scored": 148,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01351
+        },
+        "5": {
+          "cpgs_scored": 128,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02344
+        },
+        "6": {
+          "cpgs_scored": 109,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0367
+        },
+        "7": {
+          "cpgs_scored": 90,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03333
+        },
+        "9": {
+          "cpgs_scored": 73,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0274
+        },
+        "10": {
+          "cpgs_scored": 67,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02985
+        },
+        "11": {
+          "cpgs_scored": 52,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03846
+        },
+        "12": {
+          "cpgs_scored": 49,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04082
+        },
+        "13": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06818
+        },
+        "14": {
+          "cpgs_scored": 42,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07143
+        },
+        "16": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07895
+        },
+        "17": {
+          "cpgs_scored": 36,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05556
+        },
+        "19": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06061
+        },
+        "21": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.09677
+        },
+        "22": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06667
+        },
+        "23": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "24": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08333
+        },
+        "25": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "27": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.1
+        },
+        "28": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "29": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0625
+        },
+        "34": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07143
+        },
+        "36": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07692
+        },
+        "39": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "40": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.14286
+        },
+        "42": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.2
+        },
+        "53": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.25
+        },
+        "57": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.33333
+        },
+        "59": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.5
+        },
+        "67": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 1.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9645,
         "beta_mean": 0.97107,
@@ -903,6 +3939,7 @@
     "TBR917.rep1": {
       "n_observations": 15461,
       "n_cpgs": 13259,
+      "truncated": false,
       "mean_obs_per_cpg": 1.166,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 75,
@@ -928,6 +3965,198 @@
       "fraction_cpgs_identified": 0.0307,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 13259,
+          "cpgs_with_non_zero_boundary_fraction": 165,
+          "fraction_graded": 0.01244
+        },
+        "2": {
+          "cpgs_scored": 407,
+          "cpgs_with_non_zero_boundary_fraction": 7,
+          "fraction_graded": 0.0172
+        },
+        "3": {
+          "cpgs_scored": 218,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.01835
+        },
+        "4": {
+          "cpgs_scored": 161,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01863
+        },
+        "5": {
+          "cpgs_scored": 132,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0303
+        },
+        "6": {
+          "cpgs_scored": 110,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.03636
+        },
+        "7": {
+          "cpgs_scored": 93,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03226
+        },
+        "8": {
+          "cpgs_scored": 76,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03947
+        },
+        "9": {
+          "cpgs_scored": 71,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02817
+        },
+        "10": {
+          "cpgs_scored": 69,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02899
+        },
+        "11": {
+          "cpgs_scored": 57,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03509
+        },
+        "12": {
+          "cpgs_scored": 50,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04
+        },
+        "13": {
+          "cpgs_scored": 48,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04167
+        },
+        "14": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04348
+        },
+        "15": {
+          "cpgs_scored": 41,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04878
+        },
+        "16": {
+          "cpgs_scored": 40,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.025
+        },
+        "17": {
+          "cpgs_scored": 38,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02632
+        },
+        "19": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02857
+        },
+        "20": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0303
+        },
+        "21": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "22": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "23": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "25": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03846
+        },
+        "26": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04545
+        },
+        "27": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "30": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "33": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "34": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "35": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "36": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "37": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "39": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "46": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "50": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "51": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.25
+        },
+        "56": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.33333
+        },
+        "62": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "75": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9851,
         "beta_mean": 0.96861,
@@ -940,6 +4169,7 @@
     "TBR917.rep2": {
       "n_observations": 15122,
       "n_cpgs": 13020,
+      "truncated": false,
       "mean_obs_per_cpg": 1.161,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 73,
@@ -965,6 +4195,188 @@
       "fraction_cpgs_identified": 0.03164,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 13020,
+          "cpgs_with_non_zero_boundary_fraction": 162,
+          "fraction_graded": 0.01244
+        },
+        "2": {
+          "cpgs_scored": 412,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.00971
+        },
+        "3": {
+          "cpgs_scored": 235,
+          "cpgs_with_non_zero_boundary_fraction": 7,
+          "fraction_graded": 0.02979
+        },
+        "4": {
+          "cpgs_scored": 156,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.03846
+        },
+        "5": {
+          "cpgs_scored": 125,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.048
+        },
+        "6": {
+          "cpgs_scored": 94,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.05319
+        },
+        "7": {
+          "cpgs_scored": 77,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.06494
+        },
+        "8": {
+          "cpgs_scored": 75,
+          "cpgs_with_non_zero_boundary_fraction": 6,
+          "fraction_graded": 0.08
+        },
+        "9": {
+          "cpgs_scored": 70,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.07143
+        },
+        "10": {
+          "cpgs_scored": 57,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.08772
+        },
+        "11": {
+          "cpgs_scored": 49,
+          "cpgs_with_non_zero_boundary_fraction": 5,
+          "fraction_graded": 0.10204
+        },
+        "12": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08696
+        },
+        "13": {
+          "cpgs_scored": 45,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.08889
+        },
+        "14": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06977
+        },
+        "15": {
+          "cpgs_scored": 40,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.025
+        },
+        "17": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02857
+        },
+        "18": {
+          "cpgs_scored": 34,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02941
+        },
+        "19": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03125
+        },
+        "21": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "22": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03846
+        },
+        "25": {
+          "cpgs_scored": 23,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04348
+        },
+        "26": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "29": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.1
+        },
+        "32": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.14286
+        },
+        "33": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.15385
+        },
+        "34": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.16667
+        },
+        "35": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.18182
+        },
+        "37": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.22222
+        },
+        "41": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "43": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.14286
+        },
+        "45": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.16667
+        },
+        "46": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.2
+        },
+        "50": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.25
+        },
+        "56": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.33333
+        },
+        "58": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "73": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 1.0
+        }
+      },
       "decoded": {
         "n_cpgs": 9758,
         "beta_mean": 0.97623,
@@ -977,6 +4389,7 @@
     "TBR919.rep1": {
       "n_observations": 19028,
       "n_cpgs": 16656,
+      "truncated": false,
       "mean_obs_per_cpg": 1.142,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 64,
@@ -1002,6 +4415,183 @@
       "fraction_cpgs_identified": 0.0284,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 16656,
+          "cpgs_with_non_zero_boundary_fraction": 196,
+          "fraction_graded": 0.01177
+        },
+        "2": {
+          "cpgs_scored": 473,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.00634
+        },
+        "3": {
+          "cpgs_scored": 221,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00452
+        },
+        "4": {
+          "cpgs_scored": 164,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0061
+        },
+        "5": {
+          "cpgs_scored": 140,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00714
+        },
+        "6": {
+          "cpgs_scored": 120,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.01667
+        },
+        "7": {
+          "cpgs_scored": 103,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00971
+        },
+        "8": {
+          "cpgs_scored": 92,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01087
+        },
+        "9": {
+          "cpgs_scored": 78,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01282
+        },
+        "10": {
+          "cpgs_scored": 68,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01471
+        },
+        "11": {
+          "cpgs_scored": 60,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03333
+        },
+        "13": {
+          "cpgs_scored": 50,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04
+        },
+        "14": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02174
+        },
+        "17": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02326
+        },
+        "18": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02857
+        },
+        "20": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0303
+        },
+        "21": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0625
+        },
+        "22": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06452
+        },
+        "24": {
+          "cpgs_scored": 29,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03448
+        },
+        "25": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "26": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04
+        },
+        "27": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04545
+        },
+        "29": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "30": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05882
+        },
+        "34": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0625
+        },
+        "35": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "43": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "46": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "49": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "54": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "58": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "64": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 12437,
         "beta_mean": 0.96904,
@@ -1014,6 +4604,7 @@
     "TBR919.rep2": {
       "n_observations": 17598,
       "n_cpgs": 15393,
+      "truncated": false,
       "mean_obs_per_cpg": 1.143,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 56,
@@ -1039,6 +4630,173 @@
       "fraction_cpgs_identified": 0.02826,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 15393,
+          "cpgs_with_non_zero_boundary_fraction": 177,
+          "fraction_graded": 0.0115
+        },
+        "2": {
+          "cpgs_scored": 435,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0092
+        },
+        "3": {
+          "cpgs_scored": 211,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.01896
+        },
+        "4": {
+          "cpgs_scored": 146,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02055
+        },
+        "5": {
+          "cpgs_scored": 123,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02439
+        },
+        "6": {
+          "cpgs_scored": 112,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02679
+        },
+        "7": {
+          "cpgs_scored": 100,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03
+        },
+        "8": {
+          "cpgs_scored": 90,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03333
+        },
+        "9": {
+          "cpgs_scored": 72,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02778
+        },
+        "10": {
+          "cpgs_scored": 66,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0303
+        },
+        "11": {
+          "cpgs_scored": 62,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03226
+        },
+        "12": {
+          "cpgs_scored": 50,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04
+        },
+        "13": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02174
+        },
+        "14": {
+          "cpgs_scored": 45,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02222
+        },
+        "16": {
+          "cpgs_scored": 40,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.025
+        },
+        "18": {
+          "cpgs_scored": 34,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.08824
+        },
+        "19": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.09375
+        },
+        "20": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.09677
+        },
+        "21": {
+          "cpgs_scored": 28,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07143
+        },
+        "22": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07407
+        },
+        "24": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "26": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08333
+        },
+        "28": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05
+        },
+        "32": {
+          "cpgs_scored": 16,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "35": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "36": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 11,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.09091
+        },
+        "46": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "47": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.25
+        },
+        "49": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.33333
+        },
+        "55": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "56": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 11562,
         "beta_mean": 0.97399,
@@ -1051,6 +4809,7 @@
     "TBR921": {
       "n_observations": 14996,
       "n_cpgs": 13123,
+      "truncated": false,
       "mean_obs_per_cpg": 1.143,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 60,
@@ -1076,6 +4835,183 @@
       "fraction_cpgs_identified": 0.02606,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 13123,
+          "cpgs_with_non_zero_boundary_fraction": 164,
+          "fraction_graded": 0.0125
+        },
+        "2": {
+          "cpgs_scored": 342,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00585
+        },
+        "3": {
+          "cpgs_scored": 205,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00488
+        },
+        "4": {
+          "cpgs_scored": 157,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00637
+        },
+        "5": {
+          "cpgs_scored": 120,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00833
+        },
+        "6": {
+          "cpgs_scored": 98,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0102
+        },
+        "7": {
+          "cpgs_scored": 81,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.03704
+        },
+        "8": {
+          "cpgs_scored": 66,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0303
+        },
+        "9": {
+          "cpgs_scored": 64,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03125
+        },
+        "10": {
+          "cpgs_scored": 56,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03571
+        },
+        "11": {
+          "cpgs_scored": 49,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04082
+        },
+        "12": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04348
+        },
+        "13": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04545
+        },
+        "14": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04651
+        },
+        "15": {
+          "cpgs_scored": 41,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04878
+        },
+        "17": {
+          "cpgs_scored": 35,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02857
+        },
+        "19": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0303
+        },
+        "20": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0625
+        },
+        "21": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03333
+        },
+        "22": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04
+        },
+        "23": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04167
+        },
+        "24": {
+          "cpgs_scored": 23,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04348
+        },
+        "25": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04545
+        },
+        "26": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "27": {
+          "cpgs_scored": 18,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05556
+        },
+        "29": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.14286
+        },
+        "30": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.11111
+        },
+        "31": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.125
+        },
+        "33": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.14286
+        },
+        "35": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.16667
+        },
+        "36": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "41": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "49": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "50": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "60": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 10020,
         "beta_mean": 0.97223,
@@ -1088,6 +5024,7 @@
     "TBR922.rep1": {
       "n_observations": 18620,
       "n_cpgs": 16330,
+      "truncated": false,
       "mean_obs_per_cpg": 1.14,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 69,
@@ -1113,6 +5050,188 @@
       "fraction_cpgs_identified": 0.02456,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 16330,
+          "cpgs_with_non_zero_boundary_fraction": 198,
+          "fraction_graded": 0.01212
+        },
+        "2": {
+          "cpgs_scored": 401,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00499
+        },
+        "3": {
+          "cpgs_scored": 217,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00922
+        },
+        "4": {
+          "cpgs_scored": 171,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0117
+        },
+        "5": {
+          "cpgs_scored": 130,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02308
+        },
+        "6": {
+          "cpgs_scored": 114,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.02632
+        },
+        "7": {
+          "cpgs_scored": 97,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04124
+        },
+        "8": {
+          "cpgs_scored": 90,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04444
+        },
+        "9": {
+          "cpgs_scored": 67,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02985
+        },
+        "10": {
+          "cpgs_scored": 65,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03077
+        },
+        "11": {
+          "cpgs_scored": 61,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03279
+        },
+        "13": {
+          "cpgs_scored": 51,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03922
+        },
+        "14": {
+          "cpgs_scored": 47,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04255
+        },
+        "15": {
+          "cpgs_scored": 45,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04444
+        },
+        "16": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.04545
+        },
+        "17": {
+          "cpgs_scored": 43,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.02326
+        },
+        "19": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05128
+        },
+        "21": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03333
+        },
+        "22": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07407
+        },
+        "23": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08
+        },
+        "24": {
+          "cpgs_scored": 24,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.08333
+        },
+        "26": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09091
+        },
+        "29": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "30": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.1
+        },
+        "31": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.05263
+        },
+        "33": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.07692
+        },
+        "36": {
+          "cpgs_scored": 12,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.08333
+        },
+        "39": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.2
+        },
+        "44": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.22222
+        },
+        "47": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.25
+        },
+        "50": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.33333
+        },
+        "52": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.4
+        },
+        "57": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.5
+        },
+        "64": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.66667
+        },
+        "65": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 1.0
+        },
+        "69": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 1.0
+        }
+      },
       "decoded": {
         "n_cpgs": 12281,
         "beta_mean": 0.9673,
@@ -1125,6 +5244,7 @@
     "TBR922.rep2": {
       "n_observations": 18266,
       "n_cpgs": 15971,
+      "truncated": false,
       "mean_obs_per_cpg": 1.144,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 67,
@@ -1150,6 +5270,198 @@
       "fraction_cpgs_identified": 0.02417,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 15971,
+          "cpgs_with_non_zero_boundary_fraction": 163,
+          "fraction_graded": 0.01021
+        },
+        "2": {
+          "cpgs_scored": 386,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.00518
+        },
+        "3": {
+          "cpgs_scored": 219,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00457
+        },
+        "4": {
+          "cpgs_scored": 169,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00592
+        },
+        "5": {
+          "cpgs_scored": 136,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00735
+        },
+        "6": {
+          "cpgs_scored": 113,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.00885
+        },
+        "7": {
+          "cpgs_scored": 88,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.01136
+        },
+        "8": {
+          "cpgs_scored": 80,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.025
+        },
+        "9": {
+          "cpgs_scored": 78,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02564
+        },
+        "10": {
+          "cpgs_scored": 67,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.02985
+        },
+        "11": {
+          "cpgs_scored": 60,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.03333
+        },
+        "12": {
+          "cpgs_scored": 56,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.05357
+        },
+        "13": {
+          "cpgs_scored": 50,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06
+        },
+        "15": {
+          "cpgs_scored": 46,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06522
+        },
+        "16": {
+          "cpgs_scored": 45,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.06667
+        },
+        "18": {
+          "cpgs_scored": 39,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05128
+        },
+        "19": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.0625
+        },
+        "20": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03226
+        },
+        "22": {
+          "cpgs_scored": 30,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.06667
+        },
+        "25": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07407
+        },
+        "26": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.07692
+        },
+        "27": {
+          "cpgs_scored": 22,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09091
+        },
+        "28": {
+          "cpgs_scored": 21,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.09524
+        },
+        "29": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.1
+        },
+        "32": {
+          "cpgs_scored": 19,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.10526
+        },
+        "33": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.13333
+        },
+        "34": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.14286
+        },
+        "37": {
+          "cpgs_scored": 13,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.15385
+        },
+        "40": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.2
+        },
+        "43": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.22222
+        },
+        "47": {
+          "cpgs_scored": 8,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.375
+        },
+        "50": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.28571
+        },
+        "52": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.33333
+        },
+        "54": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.4
+        },
+        "55": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.5
+        },
+        "59": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.66667
+        },
+        "63": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 1.0
+        },
+        "67": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 1.0
+        }
+      },
       "decoded": {
         "n_cpgs": 12174,
         "beta_mean": 0.97205,
@@ -1162,6 +5474,7 @@
     "TBR924": {
       "n_observations": 15440,
       "n_cpgs": 13571,
+      "truncated": false,
       "mean_obs_per_cpg": 1.138,
       "median_obs_per_cpg": 1,
       "max_obs_per_cpg": 61,
@@ -1187,6 +5500,173 @@
       "fraction_cpgs_identified": 0.02476,
       "label": 1,
       "disease": "Colorectal cancer",
+      "depth_ablation": {
+        "1": {
+          "cpgs_scored": 13571,
+          "cpgs_with_non_zero_boundary_fraction": 156,
+          "fraction_graded": 0.0115
+        },
+        "2": {
+          "cpgs_scored": 336,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0119
+        },
+        "3": {
+          "cpgs_scored": 201,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0199
+        },
+        "4": {
+          "cpgs_scored": 165,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.01818
+        },
+        "5": {
+          "cpgs_scored": 125,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.024
+        },
+        "6": {
+          "cpgs_scored": 101,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.0297
+        },
+        "7": {
+          "cpgs_scored": 91,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.04396
+        },
+        "8": {
+          "cpgs_scored": 78,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.05128
+        },
+        "9": {
+          "cpgs_scored": 65,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.06154
+        },
+        "10": {
+          "cpgs_scored": 59,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.0678
+        },
+        "11": {
+          "cpgs_scored": 52,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.07692
+        },
+        "13": {
+          "cpgs_scored": 44,
+          "cpgs_with_non_zero_boundary_fraction": 4,
+          "fraction_graded": 0.09091
+        },
+        "14": {
+          "cpgs_scored": 41,
+          "cpgs_with_non_zero_boundary_fraction": 3,
+          "fraction_graded": 0.07317
+        },
+        "15": {
+          "cpgs_scored": 36,
+          "cpgs_with_non_zero_boundary_fraction": 2,
+          "fraction_graded": 0.05556
+        },
+        "16": {
+          "cpgs_scored": 33,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.0303
+        },
+        "17": {
+          "cpgs_scored": 32,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03125
+        },
+        "18": {
+          "cpgs_scored": 31,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03226
+        },
+        "20": {
+          "cpgs_scored": 27,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03704
+        },
+        "22": {
+          "cpgs_scored": 26,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.03846
+        },
+        "23": {
+          "cpgs_scored": 25,
+          "cpgs_with_non_zero_boundary_fraction": 1,
+          "fraction_graded": 0.04
+        },
+        "24": {
+          "cpgs_scored": 20,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "25": {
+          "cpgs_scored": 17,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "26": {
+          "cpgs_scored": 15,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "29": {
+          "cpgs_scored": 14,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "31": {
+          "cpgs_scored": 10,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "32": {
+          "cpgs_scored": 9,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "34": {
+          "cpgs_scored": 7,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "35": {
+          "cpgs_scored": 6,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "38": {
+          "cpgs_scored": 5,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "40": {
+          "cpgs_scored": 4,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "48": {
+          "cpgs_scored": 3,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "49": {
+          "cpgs_scored": 2,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        },
+        "61": {
+          "cpgs_scored": 1,
+          "cpgs_with_non_zero_boundary_fraction": 0,
+          "fraction_graded": 0.0
+        }
+      },
       "decoded": {
         "n_cpgs": 10241,
         "beta_mean": 0.96405,

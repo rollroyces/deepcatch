@@ -71,6 +71,8 @@ def read_matrix(path: str) -> dict:
     n_obs = 0
     per_cpg: dict[tuple[str, int], list[int]] = defaultdict(list)
     methy_stat_counts: dict[str, int] = defaultdict(int)
+    truncated = False
+    rows: list[tuple[tuple[str, int], int, str]] = []
     try:
         with gzip.open(path, "rt") as f:
             for line in f:
@@ -84,18 +86,28 @@ def read_matrix(path: str) -> dict:
                     dist_to_end = int(parts[10])
                 except ValueError:
                     continue
-                per_cpg[key].append(dist_to_end)
-                methy_stat_counts[parts[6]] += 1
-                n_obs += 1
+                rows.append((key, dist_to_end, parts[6]))
     except (OSError, EOFError) as exc:
-        print(f"skipping unreadable matrix {path}: {exc}", file=sys.stderr)
-        return {"n_observations": 0, "n_cpgs": 0}
+        # A file that is still being written (or was cut short) ends
+        # mid-stream. Every complete row before the break is still valid
+        # data; only the last one may be a partial line, so it is
+        # dropped and the file is flagged.
+        truncated = True
+        print(f"matrix {os.path.basename(path)} is truncated ({exc}); "
+              "keeping the complete rows", file=sys.stderr)
+        if rows:
+            rows.pop()
+    for key, dist_to_end, methy_stat in rows:
+        per_cpg[key].append(dist_to_end)
+        methy_stat_counts[methy_stat] += 1
+        n_obs += 1
 
     n_boundary = sum(1 for v in per_cpg.values() for d in v if d == 0)
     obs_counts = np.array([len(v) for v in per_cpg.values()], dtype=float)
     return {
         "n_observations": int(n_obs),
         "n_cpgs": int(len(per_cpg)),
+        "truncated": truncated,
         "mean_obs_per_cpg": round(float(obs_counts.mean()), 3) if obs_counts.size else 0.0,
         "median_obs_per_cpg": int(np.median(obs_counts)) if obs_counts.size else 0,
         "max_obs_per_cpg": int(obs_counts.max()) if obs_counts.size else 0,
@@ -138,6 +150,38 @@ def boundary_estimates(per_cpg: dict, min_obs: int) -> dict:
         "fraction_cpgs_fully_unmethylated": round(float((a >= 0.999).mean()), 5),
         "fraction_cpgs_fully_methylated": round(float((a <= 0.001).mean()), 5),
     }
+
+
+def depth_ablation(per_cpg: dict) -> dict:
+    """How much of the methylation estimate is resolved at each depth.
+
+    A CpG seen once cannot distinguish "interior to every fragment" from
+    "at the end of a fragment", so its methylation state is not
+    identified and the estimate is a constant. As more observations
+    arrive, a CpG that was cut out of the library starts to show
+    boundary observations and the estimate becomes graded.
+
+    This is the cleanest way to show that depth -- not the decoder --
+    is what limits the channel: the same library, the same estimator,
+    scored at every depth it happens to have.
+    """
+    depths = sorted({len(v) for v in per_cpg.values()})
+    out: dict[str, dict] = {}
+    for d in depths:
+        scored = graded = 0
+        for dists in per_cpg.values():
+            if len(dists) < d:
+                continue
+            scored += 1
+            if any(x == 0 for x in dists[:d]):
+                graded += 1
+        if scored:
+            out[str(d)] = {
+                "cpgs_scored": scored,
+                "cpgs_with_non_zero_boundary_fraction": graded,
+                "fraction_graded": round(graded / scored, 5),
+            }
+    return out
 
 
 def read_decoded(path: str) -> dict:
@@ -283,13 +327,40 @@ def matched_locus_test(per_cpg_values: dict, labels: dict,
     }
 
 
+def _resolution_by_depth(per_sample: dict) -> dict:
+    """Cohort-level view of how the estimate resolves as depth grows.
+
+    For every depth that at least one sample reaches, the fraction of
+    CpGs whose methylation estimate is graded (a non-zero boundary
+    fraction) is averaged over the samples that have that depth.
+    """
+    by_depth: dict[int, list[tuple[int, int]]] = {}
+    for info in per_sample.values():
+        for depth_str, row in (info.get("depth_ablation") or {}).items():
+            by_depth.setdefault(int(depth_str), []).append(
+                (row["cpgs_with_non_zero_boundary_fraction"], row["cpgs_scored"]))
+    out = {}
+    for depth in sorted(by_depth):
+        rows = by_depth[depth]
+        scored = sum(r[1] for r in rows)
+        graded = sum(r[0] for r in rows)
+        out[str(depth)] = {
+            "n_samples_with_this_depth": len(rows),
+            "cpgs_scored": scored,
+            "fraction_graded": round(graded / scored, 5) if scored else None,
+        }
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--matrices-dir", required=True,
                     help="directory of per-sample *.matrix.txt.gz files")
-    ap.add_argument("--labels", required=True,
-                    help="TSV: sample<TAB>label(0/1)<TAB>disease")
+    ap.add_argument("--labels", default=None,
+                    help="TSV: sample<TAB>label(0/1)<TAB>disease. Optional: "
+                         "without it the script reports the depth ablation "
+                         "for a single library and skips the scoring.")
     ap.add_argument("--decoded-dir", default=None,
                     help="optional directory of *.decoded.txt.gz to compare "
                          "the HMM output with the model-free estimator")
@@ -301,12 +372,13 @@ def main() -> int:
 
     labels: dict[str, int] = {}
     diseases: dict[str, str] = {}
-    with open(args.labels) as f:
-        for line in f:
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) >= 2 and parts[0] != "sample":
-                labels[parts[0]] = int(parts[1])
-                diseases[parts[0]] = parts[2] if len(parts) > 2 else "unknown"
+    if args.labels:
+        with open(args.labels) as f:
+            for line in f:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) >= 2 and parts[0] != "sample":
+                    labels[parts[0]] = int(parts[1])
+                    diseases[parts[0]] = parts[2] if len(parts) > 2 else "unknown"
 
     matrices = sorted(os.path.join(args.matrices_dir, n)
                       for n in os.listdir(args.matrices_dir)
@@ -335,6 +407,7 @@ def main() -> int:
             info["n_cpgs_used"] / info["n_cpgs"], 5) if info["n_cpgs"] else None
         info["label"] = labels.get(name)
         info["disease"] = diseases.get(name, "unknown")
+        info["depth_ablation"] = depth_ablation(per_cpg)
         per_sample[name] = info
         # Keep the per-CpG boundary estimates for the matched-locus test.
         per_cpg_boundary[name] = {
@@ -358,6 +431,7 @@ def main() -> int:
     names = sorted(per_sample)
     y = np.array([per_sample[n]["label"] if per_sample[n]["label"] is not None
                   else 0 for n in names], dtype=int)
+    scored = bool(labels) and len(set(y.tolist())) > 1
 
     def col(key: str) -> np.ndarray:
         return np.array([per_sample[n].get(key) if per_sample[n].get(key)
@@ -369,7 +443,7 @@ def main() -> int:
     scores: dict[str, object] = {}
 
     def safe_sep(x: np.ndarray) -> dict:
-        if np.isnan(x).any() or not np.isfinite(x).any():
+        if not scored or np.isnan(x).any() or not np.isfinite(x).any():
             return {"auc": None, "auc_directionless": None, "direction": None}
         return separation(x, y)
 
@@ -377,7 +451,7 @@ def main() -> int:
     scores["coverage_baseline_obs_per_cpg"] = safe_sep(depth)
     scores["boundary_estimator"] = safe_sep(boundary)
 
-    if decoded_values and len(decoded_values) >= 5:
+    if decoded_values and len(decoded_values) >= 5 and scored:
         dnames = sorted(decoded_values)
         dy = np.array([per_sample[n]["label"] if per_sample[n]["label"] is not None
                        else 0 for n in dnames], dtype=int)
@@ -392,9 +466,9 @@ def main() -> int:
 
     # Matched-locus comparison: the same statistic computed only on CpGs
     # both arms cover, where composition cannot manufacture a difference.
-    matched = matched_locus_test(per_cpg_boundary, labels)
+    matched = (matched_locus_test(per_cpg_boundary, labels) if scored else None)
     matched_hmm = (matched_locus_test(decoded_values, labels)
-                   if decoded_values else None)
+                   if decoded_values and scored else None)
 
     payload = {
         "schema_version": "1.0",
@@ -414,6 +488,7 @@ def main() -> int:
             "note": "a methylation state is only identified where a CpG is "
                     "observed repeatedly; below ~2 observations per CpG the "
                     "per-CpG state carries no information",
+            "resolution_by_depth": _resolution_by_depth(per_sample),
         },
         "scores": scores,
         "matched_locus_boundary_estimator": matched,
