@@ -1,0 +1,389 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T04:28:53.252470+00:00",
+  "config": {
+    "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)",
+    "pca_n": 200,
+    "classifier": "LogisticRegression(max_iter=2000)",
+    "seeds": [
+      42,
+      13,
+      7,
+      99,
+      1234
+    ],
+    "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+    "labels_multiclass": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
+    "publications": [
+      "6",
+      "8"
+    ]
+  },
+  "cohort": {
+    "n_samples_with_features": 627,
+    "n_features": 63246,
+    "n_cancer": 363,
+    "n_healthy": 264,
+    "per_study": {
+      "cristiano": {
+        "n": 506,
+        "n_cancer": 274,
+        "n_healthy": 232,
+        "disease_types": [
+          "BRCA",
+          "CRC",
+          "LUAD",
+          "OTHER_C",
+          "OV",
+          "PAAD"
+        ]
+      },
+      "jiang": {
+        "n": 121,
+        "n_cancer": 89,
+        "n_healthy": 32,
+        "disease_types": [
+          "HCC_J"
+        ]
+      }
+    }
+  },
+  "loso": [
+    {
+      "train_study": "cristiano",
+      "test_study": "jiang",
+      "harmonization": "self_zscore",
+      "n_train": 506,
+      "n_test": 121,
+      "train_cancer": 274,
+      "train_healthy": 232,
+      "test_cancer": 89,
+      "test_healthy": 32,
+      "train_disease_types": [
+        "BRCA",
+        "CRC",
+        "LUAD",
+        "OTHER_C",
+        "OV",
+        "PAAD"
+      ],
+      "pca_n_components": 200,
+      "pooled_test_auc": {
+        "auc": 0.9361,
+        "ci_lo": 0.8909,
+        "ci_hi": 0.9813,
+        "n_pos": 89,
+        "n_neg": 32
+      },
+      "sens_at_spec": {
+        "0.95": 0.7753,
+        "0.98": 0.5056,
+        "0.99": 0.5056,
+        "0.995": 0.5056,
+        "0.999": 0.5056
+      },
+      "per_cancer_ovr_on_test": {
+        "HCC_J": {
+          "n_pos": 89,
+          "auc": 0.9361,
+          "ci_lo": 0.8909,
+          "ci_hi": 0.9813,
+          "n_neg": 32
+        }
+      }
+    },
+    {
+      "train_study": "cristiano",
+      "test_study": "jiang",
+      "harmonization": "train_global",
+      "n_train": 506,
+      "n_test": 121,
+      "train_cancer": 274,
+      "train_healthy": 232,
+      "test_cancer": 89,
+      "test_healthy": 32,
+      "train_disease_types": [
+        "BRCA",
+        "CRC",
+        "LUAD",
+        "OTHER_C",
+        "OV",
+        "PAAD"
+      ],
+      "pca_n_components": 200,
+      "pooled_test_auc": {
+        "auc": 0.928,
+        "ci_lo": 0.8806,
+        "ci_hi": 0.9754,
+        "n_pos": 89,
+        "n_neg": 32
+      },
+      "sens_at_spec": {
+        "0.95": 0.7416,
+        "0.98": 0.5169,
+        "0.99": 0.5169,
+        "0.995": 0.5169,
+        "0.999": 0.5169
+      },
+      "per_cancer_ovr_on_test": {
+        "HCC_J": {
+          "n_pos": 89,
+          "auc": 0.928,
+          "ci_lo": 0.8806,
+          "ci_hi": 0.9754,
+          "n_neg": 32
+        }
+      }
+    },
+    {
+      "train_study": "jiang",
+      "test_study": "cristiano",
+      "harmonization": "self_zscore",
+      "n_train": 121,
+      "n_test": 506,
+      "train_cancer": 89,
+      "train_healthy": 32,
+      "test_cancer": 274,
+      "test_healthy": 232,
+      "train_disease_types": [
+        "HCC_J"
+      ],
+      "pca_n_components": 121,
+      "pooled_test_auc": {
+        "auc": 0.6805,
+        "ci_lo": 0.6344,
+        "ci_hi": 0.7267,
+        "n_pos": 274,
+        "n_neg": 232
+      },
+      "sens_at_spec": {
+        "0.95": 0.2555,
+        "0.98": 0.1861,
+        "0.99": 0.1825,
+        "0.995": 0.1752,
+        "0.999": 0.1314
+      },
+      "per_cancer_ovr_on_test": {
+        "BRCA": {
+          "n_pos": 53,
+          "auc": 0.6051,
+          "ci_lo": 0.5219,
+          "ci_hi": 0.6883,
+          "n_neg": 232
+        },
+        "CRC": {
+          "n_pos": 27,
+          "auc": 0.6078,
+          "ci_lo": 0.4659,
+          "ci_hi": 0.7496,
+          "n_neg": 232
+        },
+        "LUAD": {
+          "n_pos": 79,
+          "auc": 0.7301,
+          "ci_lo": 0.6642,
+          "ci_hi": 0.7961,
+          "n_neg": 232
+        },
+        "OTHER_C": {
+          "n_pos": 27,
+          "auc": 0.4393,
+          "ci_lo": 0.2991,
+          "ci_hi": 0.5796,
+          "n_neg": 232
+        },
+        "OV": {
+          "n_pos": 28,
+          "auc": 0.6421,
+          "ci_lo": 0.5152,
+          "ci_hi": 0.769,
+          "n_neg": 232
+        },
+        "PAAD": {
+          "n_pos": 60,
+          "auc": 0.8412,
+          "ci_lo": 0.7859,
+          "ci_hi": 0.8965,
+          "n_neg": 232
+        }
+      },
+      "pca_component_sweep_auc": {
+        "5": 0.6617,
+        "10": 0.7074,
+        "20": 0.7223,
+        "50": 0.667,
+        "100": 0.6442
+      }
+    },
+    {
+      "train_study": "jiang",
+      "test_study": "cristiano",
+      "harmonization": "train_global",
+      "n_train": 121,
+      "n_test": 506,
+      "train_cancer": 89,
+      "train_healthy": 32,
+      "test_cancer": 274,
+      "test_healthy": 232,
+      "train_disease_types": [
+        "HCC_J"
+      ],
+      "pca_n_components": 121,
+      "pooled_test_auc": {
+        "auc": 0.6653,
+        "ci_lo": 0.6185,
+        "ci_hi": 0.7121,
+        "n_pos": 274,
+        "n_neg": 232
+      },
+      "sens_at_spec": {
+        "0.95": 0.2044,
+        "0.98": 0.1679,
+        "0.99": 0.1533,
+        "0.995": 0.1496,
+        "0.999": 0.1204
+      },
+      "per_cancer_ovr_on_test": {
+        "BRCA": {
+          "n_pos": 53,
+          "auc": 0.5678,
+          "ci_lo": 0.4851,
+          "ci_hi": 0.6505,
+          "n_neg": 232
+        },
+        "CRC": {
+          "n_pos": 27,
+          "auc": 0.6414,
+          "ci_lo": 0.5112,
+          "ci_hi": 0.7717,
+          "n_neg": 232
+        },
+        "LUAD": {
+          "n_pos": 79,
+          "auc": 0.705,
+          "ci_lo": 0.637,
+          "ci_hi": 0.7731,
+          "n_neg": 232
+        },
+        "OTHER_C": {
+          "n_pos": 27,
+          "auc": 0.4215,
+          "ci_lo": 0.2854,
+          "ci_hi": 0.5575,
+          "n_neg": 232
+        },
+        "OV": {
+          "n_pos": 28,
+          "auc": 0.6219,
+          "ci_lo": 0.4955,
+          "ci_hi": 0.7484,
+          "n_neg": 232
+        },
+        "PAAD": {
+          "n_pos": 60,
+          "auc": 0.8397,
+          "ci_lo": 0.7841,
+          "ci_hi": 0.8952,
+          "n_neg": 232
+        }
+      }
+    }
+  ],
+  "in_domain": [
+    {
+      "study": "cristiano",
+      "n": 506,
+      "n_cancer": 274,
+      "n_healthy": 232,
+      "cv_auc_mean": 0.9701,
+      "cv_auc_std": 0.0031,
+      "per_seed_auc": [
+        0.9708,
+        0.9687,
+        0.9666,
+        0.9688,
+        0.9756
+      ]
+    },
+    {
+      "study": "jiang",
+      "n": 121,
+      "n_cancer": 89,
+      "n_healthy": 32,
+      "cv_auc_mean": 0.9789,
+      "cv_auc_std": 0.0027,
+      "per_seed_auc": [
+        0.9803,
+        0.974,
+        0.981,
+        0.9782,
+        0.981
+      ]
+    }
+  ],
+  "within_study_cross_type_control": {
+    "cristiano": {
+      "BRCA": {
+        "n_pos": 53,
+        "n_train": 453,
+        "auc": 0.9862,
+        "ci_lo": 0.9688,
+        "ci_hi": 1.0,
+        "n_neg": 232
+      },
+      "CRC": {
+        "n_pos": 27,
+        "n_train": 479,
+        "auc": 0.8922,
+        "ci_lo": 0.8053,
+        "ci_hi": 0.9791,
+        "n_neg": 232
+      },
+      "LUAD": {
+        "n_pos": 79,
+        "n_train": 427,
+        "auc": 0.9869,
+        "ci_lo": 0.9699,
+        "ci_hi": 1.0,
+        "n_neg": 232
+      },
+      "OTHER_C": {
+        "n_pos": 27,
+        "n_train": 479,
+        "auc": 0.9563,
+        "ci_lo": 0.9096,
+        "ci_hi": 1.0,
+        "n_neg": 232
+      },
+      "OV": {
+        "n_pos": 28,
+        "n_train": 478,
+        "auc": 1.0,
+        "ci_lo": 1.0,
+        "ci_hi": 1.0,
+        "n_neg": 232
+      },
+      "PAAD": {
+        "n_pos": 60,
+        "n_train": 446,
+        "auc": 0.857,
+        "ci_lo": 0.784,
+        "ci_hi": 0.9299,
+        "n_neg": 232
+      }
+    },
+    "jiang": {
+      "HCC_J": {
+        "skipped": true,
+        "reason": "training set is single-class (this study has fewer than two cancer types)"
+      }
+    }
+  },
+  "interpretation": [
+    "Train-Jiang / test-Cristiano pooled test AUC = 0.6805 (DeLong 95% CI 0.6344-0.7267), n_test=506.",
+    "Jiang is HCC-only (train types: HCC_J) while Cristiano contains no HCC, so this direction conflates two transfers: unseen STUDY and unseen CANCER TYPE. Read it together with the within-study cross-type control before attributing the result to either.",
+    "The pooled cross-study benchmark in scripts/cross_study_finallydb.py never holds a publication out, so it cannot answer this question; these numbers are the transfer measurement the pooled number is often read as.",
+    "Reverse direction (train-Cristiano / test-Jiang) pooled test AUC = 0.9361 (DeLong 95% CI 0.8909-0.9813).",
+    "self_zscore lets the held-out publication normalize itself using its own feature statistics (unsupervised, no labels). train_global applies the training publication's scaler to the test publication with no test-set statistics; it is reported as a sensitivity check because the two publications were pre-processed differently."
+  ]
+}
