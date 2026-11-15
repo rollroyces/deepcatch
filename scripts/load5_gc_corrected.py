@@ -68,6 +68,12 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 _PIPELINE_DIR = Path(
     "/Users/hermes/cfdna-fragmentomics-pipeline"
 )
+# Put this repo's own scripts/ FIRST so `gc_correction` resolves to the
+# DeepCatch copy (which exposes DEFAULT_GC_NPY). When run as a script,
+# Python auto-prepends scripts/ to sys.path[0]; under pytest it does
+# not, so without this the sibling pipeline's legacy copy shadows ours
+# and the import below raises ImportError.
+sys.path.insert(0, str(_REPO_ROOT / "scripts"))
 sys.path.insert(1, str(_PIPELINE_DIR / "scripts"))
 sys.path.insert(2, str(_PIPELINE_DIR))
 

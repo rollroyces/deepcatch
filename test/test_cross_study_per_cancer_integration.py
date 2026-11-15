@@ -471,7 +471,7 @@ def _synthetic_pooled_array(n_cancer=200, n_healthy=200, n_features=20,
     return X, y, st
 
 
-@pytest.mark.slow
+@pytest.mark.requires_sister_pipeline
 def test_shuffled_label_control_emits_null_auc():
     """On a synthetic null cohort, the shuffled-label control must emit
     a pooled AUC near 0.5 (well below the 0.55 null-control floor).
@@ -513,7 +513,7 @@ def test_shuffled_label_control_emits_null_auc():
     assert len(result["shuffled_pooled_per_seed_auc"]) == 2
 
 
-@pytest.mark.slow
+@pytest.mark.requires_sister_pipeline
 def test_shuffled_label_control_does_not_modify_main_json(tmp_path):
     """Running `write_shuffled_control_json` on synthetic data must NOT
     touch the production `results/cross_study_finallydb.json` file.
@@ -560,6 +560,7 @@ def test_shuffled_label_control_does_not_modify_main_json(tmp_path):
     )
 
 
+@pytest.mark.requires_sister_pipeline
 def test_shuffled_label_control_schema_contract(tmp_path):
     """The shuffled-control JSON has the documented schema:
 

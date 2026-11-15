@@ -701,16 +701,48 @@ def test_cross_study_script_has_include_screening_flag():
     assert "SCREENING_SPECIFICITIES" in src
 
 
-def test_ultraearly_readiness_gate_passes_on_current_artifacts():
-    """The CI gate script (scripts/ultraearly_readiness_gate.py) exits 0
-    when the readiness JSON has no gaps (the current artifact state).
+def test_ultraearly_readiness_gate_agrees_with_readiness_artifact(tmp_path):
+    """The gate must exit 0 iff the readiness artifact reports no gaps.
+
+    The project's current state DOES have a gap (the foundation fusion
+    layer is not_ready, and stage_breakdown_capability is a gap), and the
+    dedicated "Ultra-early readiness verdict" CI job is designed to fail
+    while that is true. Asserting that the gate *passes* would hard-code
+    the project's current readiness state into a unit test and fail for a
+    state reason rather than a logic reason; this asserts the gate's
+    actual invariant instead, which holds in either state.
+
+    The readiness CLI is pointed at tmp_path so the test does not
+    rewrite the tracked docs/ULTRA_EARLY_READINESS_AUTO.md.
     """
+    art_path = tmp_path / "ultraearly_readiness.json"
+    gen = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness.py"),
+         "--out-json", str(art_path),
+         "--out-md", str(tmp_path / "readiness.md")],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert gen.returncode == 0, (
+        f"readiness CLI failed: rc={gen.returncode} {gen.stderr[-500:]}"
+    )
+    assert art_path.exists(), f"readiness artifact not written: {art_path}"
+    with open(art_path) as f:
+        art = json.load(f)
+    n_gaps = art.get("summary_counts", {}).get("gap", 0)
+
     r = subprocess.run(
         [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness_gate.py")],
-        capture_output=True, text=True, timeout=30,
+        capture_output=True, text=True,
+        env={**os.environ, "READINESS_JSON": str(art_path)},
+        timeout=60,
     )
-    assert r.returncode == 0, f"gate failed unexpectedly: {r.stderr}"
-    assert "Ultra-early readiness gate passed" in r.stdout
+    expected = 1 if n_gaps else 0
+    assert r.returncode == expected, (
+        f"gate exit code {r.returncode} disagrees with the artifact's "
+        f"gap count {n_gaps} (expected {expected}). stdout={r.stdout[-400:]}"
+    )
+    if expected == 0:
+        assert "Ultra-early readiness gate passed" in r.stdout
 
 
 def test_ultraearly_readiness_gate_fails_when_json_is_missing(tmp_path):

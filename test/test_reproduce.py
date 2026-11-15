@@ -96,6 +96,7 @@ def test_verify_environment_py_is_importable():
     assert "ok" in proc.stdout
 
 
+@pytest.mark.requires_venv
 def test_reproduce_all_sh_exists_and_runs_dry(tmp_path: Path):
     """`scripts/reproduce_all.sh` exists, passes bash -n syntax check,
     and supports --dry-run."""
@@ -270,6 +271,7 @@ def test_verify_environment_exits_zero_when_viable():
 # ──────────────────────────────────────────────────────────────────────
 
 
+@pytest.mark.requires_venv
 def test_reproduce_all_sh_only_filter_works(tmp_path: Path):
     """`--only` excludes non-listed steps from actually running.
 

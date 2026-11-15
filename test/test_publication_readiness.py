@@ -242,6 +242,7 @@ def test_include_snyder_adds_publication_1(tmp_path):
     assert "--include-snyder" in r.stdout
 
 
+@pytest.mark.requires_sister_pipeline
 def test_synthetic_three_publication_pipeline_runs(tmp_path,
                                                    synthetic_multi_publication_cache):
     """End-to-end run on a synthetic 3-publication cache:
@@ -323,6 +324,7 @@ def test_synthetic_three_publication_pipeline_runs(tmp_path,
     assert "Publication" in md_text or "publication" in md_text
 
 
+@pytest.mark.requires_sister_pipeline
 def test_publication_skipped_when_no_features_locally(tmp_path):
     """When the requested publication has labels but no features locally,
     the script gracefully skips it (and reports it in
@@ -463,6 +465,7 @@ def test_load_labels_multiclass_handles_explicit_publication_column(tmp_path):
     assert publication["S3"] == "1"
 
 
+@pytest.mark.requires_sister_pipeline
 def test_section_per_publication_runs_with_synthetic_mask():
     """`section_per_publication` returns one row per requested
     publication and correctly reports SKIPPED when n is below the

@@ -154,6 +154,7 @@ def test_gc_correction_subtracts_bias():
 # 3. load5_gc_corrected produces a different output
 # ─────────────────────────────────────────────────────────────────────── #
 
+@pytest.mark.requires_sister_pipeline
 def test_load5_with_gc_correction_produces_different_output(tmp_path):
     """`load5_gc_corrected(gc_corrected=True)` must NOT return the same
     array as `load5(...)` on the same features cache. The 4th channel
@@ -226,6 +227,7 @@ def rng_fixed(mean, std, n):
 # 5. load5_gc_corrected_cv: cohort-level train-only fit
 # ─────────────────────────────────────────────────────────────────────── #
 
+@pytest.mark.requires_sister_pipeline
 def test_load5_gc_corrected_cv_preserves_shape_and_changes_c100(tmp_path):
     """`load5_gc_corrected_cv(...)` produces an X with the same shape
     as the legacy `load5(...)` call, but with the 4th channel (the
