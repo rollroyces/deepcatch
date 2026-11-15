@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "deepcatch"
-version = "2.2.0"
+version = "2.3.0"
 description = "Mutation-informed ultra-sensitive cfDNA detection: panel-LLR, strand score, fisher, fragmentomics, GNN methylation, tissue deconvolution, and a REST API for clinical use."
 readme = "README.md"
 requires-python = ">=3.10"

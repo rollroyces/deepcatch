@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use DeepCatch in your research, please cite it as follows."
-title: "DeepCatch v2.2.0: An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations"
+title: "DeepCatch v2.3.0: An Open-Source Benchmark for cfDNA Fragmentomics with External Validation on Held-Out Public Cohorts"
 authors:
   - given-names: "Yu Ching"
     family-names: "Lam"
@@ -12,8 +12,8 @@ url: "https://github.com/rollroyces/deepcatch"
 repository-code: "https://github.com/rollroyces/deepcatch"
 repository-companion: "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
 license: MIT
-version: "2.2.0"
-date-released: 2026-08-21
+version: "2.3.0"
+date-released: 2026-11-16
 keywords:
   - "cfDNA"
   - "ctDNA"
@@ -25,18 +25,23 @@ keywords:
   - "open science"
   - "benchmark"
 abstract: >
-  DeepCatch v2.2.0 is an open-source panel-based ultra-sensitive ctDNA
-  detection pipeline benchmarked against real TCGA tumor mutations. Using
-  20 TCGA-LUAD patients (5,738 somatic mutations, GDC open access) as
-  ground truth and a context-aware sequencing error model, we simulate
-  plasma cfDNA at tumor fractions 10% down to 0.1%. At 0.1% ctDNA, panel
-  log-likelihood-ratio (LLR) aggregation achieves AUC 0.921 (Sens@95%
-  0.770), with paired cancer-vs-control win rate 1.000 across seeds. The
-  companion cfdna-fragmentomics-pipeline contributes a tumor-naive
-  detection channel (cross-study pan-cancer AUC 0.9745 +/- 0.002 on 627
-  FinaleDB samples from Jiang 2015 + Cristiano 2019). Naive averaging
-  of the two channels achieves AUC 0.9886 (Sens@95% 0.927) — paired
-  t-test: fusion > tumor-naive alone at p < 0.0001.
+  DeepCatch v2.3.0 is an open-source cfDNA fragmentomics benchmark that is
+  validated on public data the model has never been trained on. A 5-channel
+  DELFI profile (5 Mb / 100 kb ratios and coverage, plus a 196-bin fragment-size
+  distribution) is extracted from publicly served FinaleDB fragment files and
+  scored with a per-study harmonised PCA + logistic-regression pipeline.
+  Training on FinaleDB publications 6 + 8 (n=627) and testing on held-out
+  publications 1, 7 and 9 gives an external AUC of 0.9915 [0.9712, 1.0000] on
+  the whole-genome publication (n=31) and 0.8819 [0.7701, 0.9936] pooled over
+  the publications carrying both classes; the whole-exome publication does not
+  transfer (breast 0.4119, prostate 0.3193), so the assay platform, not the
+  study, is the binding constraint. A leave-one-study-out run inside the
+  training cohort gives 0.6805, so the pooled 0.9670 is reported as a
+  within-cohort separation number rather than a generalisation claim. The
+  multi-modal stage is carried by a regularized late fusion (AUC 0.9825) and a
+  Bayesian model average (0.9650) rather than the neural encoder (0.554) at
+  this sample size. The methylation path runs end to end on real public
+  fragment data. Not clinically validated; research use only.
 identifiers:
   - type: doi
     value: "to be assigned (preprint)"

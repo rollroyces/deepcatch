@@ -426,7 +426,7 @@ deepcatch/
 | `0ad0033` | SensAtSpecLoss, BalancedCE, CalibrationLoss (`src/foundation/losses.py`) |
 | `ec16e0d` | REAL AlphaMissense fix (key construction bug, +0.057 AUC at K=200) |
 
-Full history: `git log --oneline` (60+ commits since v2.2.0). Notes per commit: [`docs/`](docs/).
+Full history: `git log --oneline` (100+ commits since v2.2.0). Notes per commit: [`docs/`](docs/).
 
 ---
 
@@ -452,7 +452,7 @@ Full history: `git log --oneline` (60+ commits since v2.2.0). Notes per commit: 
                    for Early Cancer Detection from cfDNA},
   author       = {Yu Ching Lam and DeepCatch Contributors},
   year         = {2026},
-  version      = {2.2.0},
+  version      = {2.3.0},
   url          = {https://github.com/rollroyces/deepcatch},
 }
 ```

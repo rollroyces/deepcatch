@@ -1,4 +1,4 @@
-# Model Card — DeepCatch v2.2.0
+# Model Card — DeepCatch v2.3.0
 
 > **⚠️ STATUS: research-use-only software benchmark.**
 > NOT clinically validated. NOT a medical device. NOT FDA-approved.
