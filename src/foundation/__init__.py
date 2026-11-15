@@ -20,36 +20,52 @@ Pre-training is self-supervised (no labels needed) using:
 Downstream fine-tuning supports cancer detection, TOO prediction,
 and healthy aging screening with a drop-in API compatible with
 the existing CrossAttentionFusion.
+
+Lazy re-exports
+---------------
+The submodules below pull in torch (``model``, ``pretrain``,
+``downstream``). Importing them eagerly at package-import time made
+``import src.foundation`` fail in any environment without torch --
+including the "Core tests" CI job, which installs only
+numpy/scipy/scikit-learn/pandas/matplotlib/seaborn/pytest. That
+aborted the whole pytest session at collection, so a single optional
+dependency silenced every test in the job.
+
+PEP 562 module-level ``__getattr__`` keeps the public API identical
+(``from src.foundation import FoundationDownstream`` still works) while
+importing each submodule only when one of its names is actually
+requested. ``src.foundation.regularized_fusion`` is torch-free and now
+importable in a torch-free environment.
 """
+from __future__ import annotations
 
-from .config import (
-    FoundationConfig,
-    DEFAULT_CONFIG,
-    PROTOTYPE_CONFIG,
-    PRODUCTION_CONFIG,
-    MODALITY_DIMS,
-)
+import importlib
 
-from .model import (
-    MultiModalEncoder,
-    PretrainHead,
-    ContrastiveHead,
-)
-
-from .data import (
-    MultiModalDataGenerator,
-    MODALITY_NAMES,
-    MODALITY_DIMS as _MODALITY_DIMS,
-)
-
-from .pretrain import FoundationPretrainer
-
-from .downstream import FoundationDownstream, FoundationCompatibilityWrapper
-
-from .synthetic_benchmark import (
-    FoundationBenchmark,
-    run_benchmark,
-)
+# Public name -> submodule that defines it.
+_LAZY_EXPORTS = {
+    # Config
+    "FoundationConfig": ".config",
+    "DEFAULT_CONFIG": ".config",
+    "PROTOTYPE_CONFIG": ".config",
+    "PRODUCTION_CONFIG": ".config",
+    "MODALITY_DIMS": ".config",
+    # Model
+    "MultiModalEncoder": ".model",
+    "PretrainHead": ".model",
+    "ContrastiveHead": ".model",
+    # Data
+    "MultiModalDataGenerator": ".data",
+    "MODALITY_NAMES": ".data",
+    "_MODALITY_DIMS": ".data",
+    # Training
+    "FoundationPretrainer": ".pretrain",
+    # Downstream
+    "FoundationDownstream": ".downstream",
+    "FoundationCompatibilityWrapper": ".downstream",
+    # Benchmark
+    "FoundationBenchmark": ".synthetic_benchmark",
+    "run_benchmark": ".synthetic_benchmark",
+}
 
 __all__ = [
     # Config
@@ -74,3 +90,19 @@ __all__ = [
     "FoundationBenchmark",
     "run_benchmark",
 ]
+
+
+def __getattr__(name: str):
+    """Resolve a public name to its submodule on first access."""
+    module_name = _LAZY_EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(
+            f"module 'src.foundation' has no attribute {name!r}")
+    module = importlib.import_module(module_name, __name__)
+    value = getattr(module, name)
+    globals()[name] = value  # cache, so this runs once per name
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_EXPORTS))
