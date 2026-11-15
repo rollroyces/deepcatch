@@ -129,6 +129,13 @@ cohort size.
   quotable-number list lives once, in `scripts/benchmark_numbers.py`,
   which prints every quoted figure with its artifact and which the test
   imports, so the test and the printer cannot disagree.
+- **The figures were showing the legacy benchmark.** `scripts/plot_figures.py`
+  read `results/cross_study_finallydb.json` (the no-GC artifact, pooled AUC
+  0.9770) while the manuscript quotes the GC-corrected 0.9684 -- so Figure 1
+  in the submission PDF plotted a different curve from the one the text
+  describes. The script now reads the headline artifact and falls back to
+  the legacy one only when it is absent; the three affected figures were
+  regenerated and the PDF rebuilt.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out

@@ -63,7 +63,13 @@ RESULTS_DIR = REPO_ROOT / "results"
 DOCS_DIR = REPO_ROOT / "docs"
 FIG_DIR = DOCS_DIR / "figures"
 
-POOLED_JSON = RESULTS_DIR / "cross_study_finallydb.json"
+# The figures must show the pipeline the manuscript quotes. The headline
+# benchmark is the GC-corrected run (results/cross_study_finallydb_
+# gc_corrected.json); the legacy no-GC artifact is the fallback for a
+# checkout that does not have it. Rendering the legacy file here showed
+# a pooled ROC for 0.9770 in a manuscript that quotes 0.9684.
+POOLED_JSON = RESULTS_DIR / "cross_study_finallydb_gc_corrected.json"
+POOLED_JSON_FALLBACK = RESULTS_DIR / "cross_study_finallydb.json"
 PER_CANCER_JSON = RESULTS_DIR / "per_cancer_sens_at_spec.json"
 
 # Default DPI tuned to keep PNGs <500 KB on the four-figure budget
@@ -85,8 +91,9 @@ def _load_json(path: Path) -> dict:
 
 
 def load_pooled() -> dict:
-    """Load pooled per-seed AUC + sens@spec from cross_study_finallydb.json."""
-    blob = _load_json(POOLED_JSON)
+    """Load pooled per-seed AUC + sens@spec from the headline artifact."""
+    path = POOLED_JSON if POOLED_JSON.exists() else POOLED_JSON_FALLBACK
+    blob = _load_json(path)
     pooled = blob["pooled"]
     harmonized = pooled["harmonized"]
     no_harm = pooled["no_harmonize"]
@@ -126,12 +133,13 @@ def load_per_cancer() -> dict:
 
     Returns a dict keyed by cancer name with the union of fields needed
     for fig2 + fig4:
-      - per_seed_auc (from cross_study_finallydb.json:per_cancer)
+      - per_seed_auc (from the headline benchmark artifact:per_cancer)
       - auc_mean, auc_std (same)
       - sens_at_95/98/99 (from per_cancer_sens_at_spec.json:per_cancer)
       - n_pos, n_total (from per_cancer_sens_at_spec.json:per_cancer)
     """
-    cs = _load_json(POOLED_JSON)
+    cs = _load_json(POOLED_JSON if POOLED_JSON.exists()
+                    else POOLED_JSON_FALLBACK)
     pc = _load_json(PER_CANCER_JSON)
 
     out: dict = {}
