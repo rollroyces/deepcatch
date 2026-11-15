@@ -1,0 +1,145 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T17:51:13.438394+00:00",
+  "design": {
+    "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019) -- n=627",
+    "test": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on",
+    "data_source": "public FinaleDB REST API + public S3 fragment objects; no IRB, no data-use agreement",
+    "harmonization": "per-matrix z-score (each publication normalized by its own feature statistics)",
+    "classifier": "PCA(n_components=200) + LogisticRegression(max_iter=2000), fitted on the training cohort only",
+    "labels": "FinaleDB disease field: a diagnosis ending in 'cancer' -> cancer; Healthy / Hepatitis B / Cirrhosis / inflammatory bowel disease / SLE / liver transplant -> non-cancer control"
+  },
+  "cohorts": {
+    "train": {
+      "n": 627,
+      "n_cancer": 363,
+      "n_healthy": 264
+    },
+    "external": {
+      "n": 77,
+      "n_cancer": 63,
+      "n_non_cancer": 14,
+      "per_publication": {
+        "1": 9,
+        "7": 30,
+        "9": 38
+      }
+    }
+  },
+  "pooled_external_auc": {
+    "auc": 0.6304,
+    "ci_lo": 0.514,
+    "ci_hi": 0.7468,
+    "n_pos": 63,
+    "n_neg": 14
+  },
+  "pooled_external_auc_matched_publications_only": {
+    "auc": 0.8743,
+    "ci_lo": 0.7595,
+    "ci_hi": 0.9891,
+    "n_pos": 25,
+    "n_neg": 14
+  },
+  "training_derived_threshold": {
+    "specificity_target": 0.99,
+    "threshold": 0.994004,
+    "train_specificity_at_threshold": 0.9924,
+    "note": "threshold fitted on the training cohort's out-of-fold scores; used to score case-only external publications"
+  },
+  "sens_at_spec": {
+    "0.95": 0.5556,
+    "0.98": 0.5556,
+    "0.99": 0.5556,
+    "0.995": 0.5556,
+    "0.999": 0.5556
+  },
+  "per_publication_auc": {
+    "1": {
+      "n": 9,
+      "auc": 1.0,
+      "ci_lo": 1.0,
+      "ci_hi": 1.0,
+      "n_pos": 8,
+      "n_neg": 1
+    },
+    "7": {
+      "n": 30,
+      "auc": 0.9864,
+      "ci_lo": 0.9564,
+      "ci_hi": 1.0,
+      "n_pos": 17,
+      "n_neg": 13
+    },
+    "9": {
+      "n": 38,
+      "n_cancer": 38,
+      "n_non_cancer": 0,
+      "auc": null,
+      "reason": "case-only publication (no non-cancer controls in this study); reported as sensitivity at the training-derived threshold",
+      "sensitivity_at_train_threshold_99spec": 0.4211
+    }
+  },
+  "per_disease_auc": {
+    "Bladder cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Breast cancer": {
+      "n": 20,
+      "auc": 0.4179,
+      "ci_lo": 0.2086,
+      "ci_hi": 0.6271,
+      "n_pos": 20,
+      "n_neg": 14
+    },
+    "Colorectal cancer": {
+      "n": 18,
+      "auc": 0.9405,
+      "ci_lo": 0.8439,
+      "ci_hi": 1.0,
+      "n_pos": 18,
+      "n_neg": 14
+    },
+    "Esophageal cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Head and neck cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Inflammatory bowel disease": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Kidney cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Liver transplant": {
+      "n": 13,
+      "auc": 0.5302,
+      "ci_lo": 0.305,
+      "ci_hi": 0.7554,
+      "n_pos": 13,
+      "n_neg": 14
+    },
+    "Lung cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Ovarian cancer": {
+      "skipped": true,
+      "reason": "n=1"
+    },
+    "Prostate cancer": {
+      "n": 19,
+      "auc": 0.5075,
+      "ci_lo": 0.2856,
+      "ci_hi": 0.7294,
+      "n_pos": 19,
+      "n_neg": 14
+    }
+  },
+  "honest_framing": "The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. Read the per-publication and per-disease rows before quoting the pooled number."
+}

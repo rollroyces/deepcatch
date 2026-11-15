@@ -183,7 +183,30 @@ The pooled 0.9670 of §3.2 therefore **does not survive a publication holdout in
 
 #### 3.2.2 External validation on held-out public publications
 
-*(pending — external cohort download in progress; see `docs/EXTERNAL_VALIDATION.md` and `results/external_validation_finaledb.json`)*
+The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 and 8. This subsection evaluates on publications that are **never used for training, feature extraction statistics, or hyper-parameter selection**: publication 1 (Snyder 2016 [18], Cell), publication 7 (Sun 2019 [19], Genome Research) and publication 9 (Adalsteinsson 2017 [20], Nat Commun). The samples are fetched from the public FinaleDB REST API and the public S3 fragment objects by `scripts/fetch_external_cohort.py` — no IRB, no data-use agreement — and the 5-channel features are extracted by the self-contained `src/fragmentomics/finale_features.py`. Source: `scripts/external_validation_finaledb.py`; artifact `results/external_validation_finaledb.json`; narrative `docs/EXTERNAL_VALIDATION.md`.
+
+| Publication | Assay | n (ca/non-ca) | External AUC [DeLong 95% CI] |
+|---|---|---|---|
+| 1 — Snyder 2016 | WGS | 9 (8/1) | 1.000 [1.000, 1.000] — n too small to interpret |
+| 7 — Sun 2019 | WGS | 30 (17/13) | **0.9864** [0.9564, 1.0000] |
+| 9 — Adalsteinsson 2017 | WES | 38 (38/0) | case-only: sensitivity 0.421 at the training-derived 99%-specificity threshold |
+| **pooled over publications carrying both classes** | — | 39 (25/14) | **0.8743** [0.7595, 0.9891] |
+
+**The assay platform, not the study, is the binding constraint.** Publication 7 is a *whole-genome* study, like the training publications, and the classifier transfers to it essentially intact (CRC one-vs-rest AUC 0.9405). Publication 9 is *whole-exome* and does not transfer: breast cancer 0.4179 and prostate cancer 0.5075 against the same non-cancer controls. The DELFI 5 Mb / 100 kb profile is a whole-genome coverage signal, and an exome-targeted assay has a different coverage shape altogether; per-publication z-score harmonization cannot repair that. This is the kind of boundary that an internal pooled cross-validation cannot reveal, and it is the reason the external set is reported per publication and per disease rather than as a single pooled number.
+
+**Scope.** Publication 9 contributes cases without controls, so it is reported as sensitivity at the threshold fixed in training (0.994, the training cohort's 99%-specificity operating point) rather than folded into an AUC; pooling it with the matched publications would put a case-only cohort into an AUC denominator and produce a number that means nothing (0.6304 for the naive pooled figure, against 0.8743 for the publications that carry both classes). The non-cancer arm is small (14 samples) and is drawn from different publications than most of the cancer arm, so the confidence intervals are wide and the per-disease rows carry the weight. This is external validation on *public* data — a different study, a different institution, a different assay — and not a clinical validation: no prospective follow-up, no stage labels, and no real healthy-donor controls.
+
+#### 3.2.3 What the three cross-study numbers together say
+
+| Question | Number | Section |
+|---|---|---|
+| Can the features separate cancer from healthy in a pooled open cohort? | 0.9670 ± 0.0035 | 3.2 |
+| Is that signal cancer rather than study identity? | true-confound control collapses to 0.499 | 3.2 |
+| Does the classifier transfer to an unseen publication? | 0.986 (WGS), 0.87 pooled, 0.42 sensitivity (WES) | 3.2.2 |
+| Does it transfer to an unseen publication in the single-type direction? | 0.681 | 3.2.1 |
+| Can the neural encoder do this? | 0.554 — no; late fusion reaches 0.9825 | 3.1.1 |
+
+The honest summary is that the *features* transfer across studies when the assay is comparable (0.87-0.99), that the *training cohort composition* matters more than the study shift for single-type directions (0.681), and that changing the assay platform breaks the transfer entirely (0.42). None of these numbers is a clinical performance estimate.
 
 ### 3.3 Per-cancer sensitivity at fixed specificity (with DeLong CIs)
 

@@ -124,7 +124,12 @@ def _load_external(external_dir: str):
     labels = {s["sample"]: int(s["label"]) for s in keep}
     studies = {s["sample"]: str(s["publication"]) for s in keep}
     X, y, st = _load5_from(feat_dir, labels, studies)
-    disease = np.array([s["disease"] or "UNKNOWN" for s in keep])
+    # ``load5`` emits rows in sorted-sample order, so every per-sample
+    # array must be built in that same order -- the manifest is not
+    # sorted, and mixing the two silently mislabels the rows.
+    order = sorted(labels)
+    disease_by_sample = {s["sample"]: (s["disease"] or "UNKNOWN") for s in keep}
+    disease = np.array([disease_by_sample[s] for s in order])
     return X, y, st, disease, keep, manifest
 
 
@@ -200,23 +205,54 @@ def main() -> int:
     sens = {f"{s:g}": round(_sens_at_spec(yte, score, s), 4)
             for s in tuple(DEFAULT_SPECIFICITIES) + tuple(SCREENING_SPECIFICITIES)}
 
-    # ---- per-publication breakdown ----
+    # ---- threshold transferred from the TRAINING cohort ----
+    # A held-out publication that carries only cancer samples (no
+    # controls) cannot contribute to an AUC, but it can still be scored
+    # at a threshold fixed in training -- which is how a case-only
+    # external cohort is normally reported.
+    from cross_study_finallydb import pooled_oof
+    ytr_oof, score_tr_oof, _ = pooled_oof(Xtr, ytr, sttr, list(range(5)),
+                                           args.pca, harmonize=True)
+    thr_spec = 0.99
+    fpr, tpr, thr = roc_curve(ytr, score_tr_oof)
+    idx = np.where(fpr <= (1.0 - thr_spec))[0]
+    train_threshold = float(thr[idx[-1]]) if len(idx) else float("nan")
+    train_spec_at_thr = round(float(1.0 - fpr[idx[-1]]), 4) if len(idx) else None
+
+    # ---- publications with both classes -> AUC; case-only -> sensitivity ----
     per_pub = {}
+    matched_mask = np.zeros(len(yte), dtype=bool)
     for pub in sorted(set(stte.tolist())):
         m = stte == pub
-        if len(np.unique(yte[m])) < 2:
-            per_pub[pub] = {"skipped": True,
-                            "reason": "only one class present",
-                            "n": int(m.sum())}
+        classes = set(yte[m].tolist())
+        if len(classes) < 2:
+            pos = int((yte[m] == 1).sum())
+            det = round(float((score[m] >= train_threshold).mean()), 4) if pos else None
+            per_pub[pub] = {
+                "n": int(m.sum()), "n_cancer": pos, "n_non_cancer": 0,
+                "auc": None,
+                "reason": "case-only publication (no non-cancer controls in "
+                          "this study); reported as sensitivity at the "
+                          "training-derived threshold",
+                "sensitivity_at_train_threshold_99spec": det,
+            }
             continue
+        matched_mask |= m
         per_pub[pub] = {"n": int(m.sum()), **_auc_ci(yte[m], score[m])}
 
-    # ---- per-disease breakdown ----
+    # Pooled AUC over the publications that carry both classes (the only
+    # combination where an AUC is meaningful).
+    if matched_mask.any():
+        pooled_matched = _auc_ci(yte[matched_mask], score[matched_mask])
+    else:
+        pooled_matched = None
+
+    # ---- per-disease breakdown (vs the external non-cancer controls) ----
     per_dis = {}
     healthy = yte == 0
     for dis in sorted({d for d in dte if d != "HEALTHY"}):
         idx = dte == dis
-        if idx.sum() < 5:
+        if idx.sum() < 5 or healthy.sum() < 5:
             per_dis[dis] = {"skipped": True, "reason": f"n={int(idx.sum())}"}
             continue
         yy = np.concatenate([np.ones(idx.sum()), np.zeros(healthy.sum())])
@@ -257,6 +293,14 @@ def main() -> int:
                              for p in sorted(set(stte.tolist()))}},
         },
         "pooled_external_auc": pooled,
+        "pooled_external_auc_matched_publications_only": pooled_matched,
+        "training_derived_threshold": {
+            "specificity_target": thr_spec,
+            "threshold": round(train_threshold, 6),
+            "train_specificity_at_threshold": train_spec_at_thr,
+            "note": "threshold fitted on the training cohort's out-of-fold "
+                    "scores; used to score case-only external publications",
+        },
         "sens_at_spec": sens,
         "per_publication_auc": per_pub,
         "per_disease_auc": per_dis,
@@ -297,8 +341,10 @@ def main() -> int:
         "|---|---:|---|",
     ]
     for pub, row in per_pub.items():
-        if row.get("skipped"):
-            md.append(f"| {pub} | {row['n']} | skipped ({row['reason']}) |")
+        if row.get("auc") is None:
+            md.append(f"| {pub} | {row['n']} (case-only) | sensitivity at the "
+                      f"training threshold = "
+                      f"{row.get('sensitivity_at_train_threshold_99spec')} |")
         else:
             md.append(f"| {pub} | {row['n']} | {row['auc']} "
                       f"[{row['ci_lo']}, {row['ci_hi']}] |")
@@ -317,10 +363,19 @@ def main() -> int:
     print(f"      wrote {args.out_md}")
 
     print()
-    print(f"  POOLED EXTERNAL AUC: {pooled['auc']} "
+    print(f"  POOLED EXTERNAL AUC (all publications): {pooled['auc']} "
           f"[{pooled['ci_lo']}, {pooled['ci_hi']}]")
+    if pooled_matched:
+        print(f"  POOLED EXTERNAL AUC (publications with both classes): "
+              f"{pooled_matched['auc']} [{pooled_matched['ci_lo']}, "
+              f"{pooled_matched['ci_hi']}]")
+    print(f"  training-derived threshold (99% spec): {train_threshold:.4f}")
     for pub, row in per_pub.items():
-        if not row.get("skipped"):
+        if row.get("auc") is None:
+            print(f"    pub {pub}: n={row['n']} case-only, sensitivity at the "
+                  f"training threshold = "
+                  f"{row.get('sensitivity_at_train_threshold_99spec')}")
+        else:
             print(f"    pub {pub}: n={row['n']} AUC={row['auc']} "
                   f"[{row['ci_lo']}, {row['ci_hi']}]")
     return 0
