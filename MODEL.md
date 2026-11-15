@@ -164,6 +164,81 @@ three P0 bugs (CV patient-identity leak, synthetic-Gaussian
 substitution of the real frag channel, no-op shuffled-label
 control). See `AUDIT_2_FINDINGS.md` for the full bug writeup.
 
+### Late fusion — the estimator that does work at this sample size
+
+The neural encoder is the wrong model class for n=40. Two late-fusion
+estimators were measured on the identical protocol (real TCGA-derived
+channels, per-patient GroupKFold, LR baseline re-computed in the same
+run):
+
+| Estimator | AUC (3 seeds) | permuted-label control | arm-swap control |
+|---|---|---|---|
+| foundation encoder | 0.554 ± 0.005 | — | — |
+| `lr_baseline` (re-computed) | 0.9042 ± 0.0174 | 0.569 | 0.383 |
+| `naive_average` | 0.9150 ± 0.0178 | 0.614 | 0.513 |
+| **`regularized_late_fusion`** | **0.9825 ± 0.0094** | 0.573 | 0.436 |
+| **`bayesian_model_average`** | **0.9650 ± 0.0089** | 0.511 | 0.413 |
+
+Source: `results/fusion_regularized_smoke.json`
+(`scripts/fusion_regularized_smoke.py`); implementation in
+`src/foundation/regularized_fusion.py`. The re-computed LR baseline
+(0.9042) and equal-weight average (0.9150) reproduce the published
+0.910 / 0.915, so the comparison is within-run.
+
+**The control had to be repaired to mean anything.** The audit-2
+"pair-broken shuffle" permuted the positive and negative index sets
+separately and reassigned 1s and 0s to those same sets, which
+reproduces `y_true` exactly — it was a no-op, and the "shuffled"
+numbers in the audit-2 table are the honest numbers. The corrected
+control permutes labels inside each fold; its null on this paired
+design is **0.42 ± 0.12, not 0.5** (measured over 50 permutations per
+seed), because every patient contributes one positive and one negative
+arm whose panel scores differ by ~+127 with the positive arm higher in
+100% of patients, so a model fitted to random labels still recovers
+that within-pair axis and lands below 0.5. A control below 0.5 is
+therefore not on its own evidence of leakage; it must be read against
+the measured null.
+
+**Scope**: 40 samples from 20 patients, simulated plasma at TF=0.001,
+one cancer type. This is an estimator-class result, not a clinical
+performance claim.
+
+### External validation on held-out public publications
+
+Training uses FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano
+2019), n=627. The external cohort is publications 1, 7 and 9, fetched
+from the public FinaleDB API and S3 (no IRB, no data-use agreement);
+278 of 283 samples were extracted. Source:
+`results/external_validation_finaledb.json`; narrative
+[`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md).
+
+| Publication | Assay | n (ca/non-ca) | External AUC [DeLong 95% CI] |
+|---|---|---|---|
+| 1 — Snyder 2016 | WGS | 9 (8/1) | 0.875 [0.630, 1.000] |
+| 7 — Sun 2019 | WGS | 31 (18/13) | **0.9915** [0.9712, 1.0000] |
+| 9 — Adalsteinsson 2017 | WES | 238 (238/0) | case-only: sensitivity 0.403 at the training-derived 99%-specificity threshold |
+| **pooled over publications carrying both classes** | — | 40 (26/14) | **0.8819** [0.7701, 0.9936] |
+
+The assay platform, not the study, is the binding constraint: the
+whole-genome held-out publication transfers essentially intact
+(colorectal one-vs-rest 0.9474) while the whole-exome one does not
+(breast 0.4119, prostate 0.3193 — below chance). Per-publication
+z-score harmonization removes a study's location/scale shift but not
+a change of assay platform. Publication 9 ships 1,508 cancer samples
+and zero controls, so it is reported as sensitivity at a
+training-fixed threshold rather than folded into an AUC denominator.
+
+### Leave-one-study-out transfer
+
+Holding a publication out of the *training* cohort is a different
+measurement: `scripts/cross_study_loso.py` gives 0.6805
+[0.6344, 0.7267] for train-Jiang → test-Cristiano against in-domain
+0.9789 / 0.9701. The asymmetry is informative — Jiang is HCC-only, so
+training on it yields an HCC-specific boundary, while a pan-cancer
+training set yields a generic one (train-Cristiano → test-Jiang
+0.9361). The pooled 0.9670 does **not** survive a publication
+holdout and must not be read as a generalisation claim.
+
 ### Honest negative results preserved
 
 - **Continuous per-cancer weighting** (CADD-style linear / sigmoid
@@ -198,10 +273,15 @@ control). See `AUDIT_2_FINDINGS.md` for the full bug writeup.
    outcomes.** The validation is on open-data WGS fragments from
    public repositories.
 
-4. **No external held-out validation.** Every headline number is
-   pooled OOF on the same cohort the model was trained on. The
-   cross-study benchmark pools two studies with per-study
-   z-score harmonization but does not hold one study out.
+4. **External validation exists, but it is public-data external
+   validation, not clinical validation.** Publications 1/7/9 were never
+   trained on and give AUC 0.9915 (pub 7, WGS), 0.8819 pooled over the
+   publications carrying both classes, and 0.403 sensitivity on the
+   whole-exome publication. What it still lacks: prospective follow-up,
+   stage labels, and real healthy-donor controls — the non-cancer arm is
+   14 public samples. A leave-one-study-out run inside the training
+   cohort gives 0.6805, so the pooled 0.9670 is a within-cohort
+   separation number, not a generalisation claim.
 
 5. **Mutation-informed channel in the fusion experiment is
    synthetic.** The fusion AUC 0.9886 is a what-if pairing of a
