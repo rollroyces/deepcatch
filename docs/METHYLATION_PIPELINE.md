@@ -199,6 +199,36 @@ probability without an HMM, a prior or any training.
 `scripts/methylation_channel_diagnosis.py` computes it and pairs every
 score with its coverage baseline.
 
+### 5.2 The control: the same measurement on a library that carries the signal
+
+A null is only interpretable if the measurement is shown to be able to
+produce an effect, so the identical estimator was run on a genuine
+MspI-digested library — CRAG BH01 (Zenodo 6914806), a healthy donor,
+chr22, 13.4 M fragments — using the same pipeline and the same
+5 Mb window of chr22:
+
+| | FinaleDB pub 7 (control) | FinaleDB pub 7 (cancer) | **CRAG BH01 (deep MspI)** |
+|---|---|---|---|
+| observations per CpG | 1.00 | 1.20 | **21.40** (median 21, max 31) |
+| CpGs with >= 2 observations | 26 | 392 | 158 (of the window so far) |
+| ... of those, with a boundary fraction of exactly 0 | **100%** | **97.2%** | **88.6%** |
+| ... with a graded, non-zero boundary fraction | 0% | 2.8% | **11.4%** (0.042–0.062) |
+
+At one observation per CpG the estimate is either "interior" or
+nothing: 97–100% of the CpGs that are seen at all carry a boundary
+fraction of exactly zero, which is why the decoder returns hard calls
+and why the per-CpG comparison between the arms has a median difference
+of zero. At 21 observations per CpG the same estimator returns graded
+values for one CpG in nine, and the decoder has something to work
+with. The pipeline is therefore not broken; the FinaleDB libraries are
+too shallow and too trimmed for the feature they are being asked to
+carry.
+
+The CRAG samples are publication 6 — the DeepCatch training cohort — so
+this is a feasibility control, not an independent validation. No
+independent, deep, untrimmed MspI cohort is reachable from the public
+corpora surveyed in `docs/PUBLIC_DATA_SOURCES.md`.
+
 ## 6. What is still missing for a methylation *channel*
 
 The extraction path runs on real public data and the channel has been

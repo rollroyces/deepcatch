@@ -1,9 +1,9 @@
 # DeepCatch — Ultra-Early Cancer Signaling: Readiness Status
 
-**Date:** 2026-10-07 (HKT)
-**Commit:** `cc029c1` (HEAD of `main`)
+**Date:** 2026-11-16 (HKT)
+**Commit:** `ed886c7` (HEAD of `main`)
 **Audience:** clinical / translational collaborators and clinical reviewers
-**Headline:** *the ultra-early signal is real, but the readiness is uneven* — fragmentomics is ready to publish a Stage I vs late-stage honest number on the open-data cohort; the panel detector is ready as an *in silico* benchmark at 0.1% ctDNA but needs real-plasma LoD validation; the foundation multi-modal fusion failed the per-patient honest test and is **not** a current headline for ultra-early signaling.
+**Headline:** *the ultra-early signal is real, but the readiness is uneven* — fragmentomics is ready to publish a Stage I vs late-stage honest number on the open-data cohort; the panel detector is ready as an *in silico* benchmark at 0.1% ctDNA but needs real-plasma LoD validation; the multi-modal fusion *layer* now works through regularized late fusion (0.9825) even though the neural encoder does not (0.554); and the methylation channel has been measured on real public data and is a **null** — it reports library depth, not methylation.
 
 ---
 
@@ -17,7 +17,8 @@
 | **Stage I vs late-stage breakdown** | **Ready** *(computable, n=0 in open-data)* | New `build_stage_breakdown_table` in `src/per_cancer_sens_at_spec.py`. The open-data FinaleDB cohort **does not carry stage labels**, so the breakdown is omitted by default and only fires when an input TSV has a `stage` column. |
 | **Panel-LLR ultra-low-VAF sweep** (TCGA-LUAD 5,738 mutations, *spike-in simulation*) | **Ready (in silico only)** | At 0.1% ctDNA, AUC 0.921 / sens@99% = 0.49; at 0.05% the curve still passes the gate; at 0.01% the panel is information-limited. |
 | **Assay production specs** (depth + duplex-UMI error rate) | **Ready (in silico only)** | `real_tcga_validation.py --ultraearly-sweep`: 50k× depth + ≤1e-4 error → AUC 1.000 at 0.1% ctDNA. |
-| **Multi-modal foundation fusion** (Stage 1) | **NOT ready** | Audit-2 honest number: foundation AUC 0.55 ± 0.01 vs LR baseline 0.91 on paired TCGA-LUAD. Does not beat LR baseline on n=40 paired. |
+| **Multi-modal foundation fusion** (Stage 1) | **Ready as a fusion layer** *(the neural encoder is not)* | The neural encoder is not (audit-2 honest: 0.55 ± 0.01 vs LR 0.91 on paired TCGA-LUAD), but **regularized late fusion reaches 0.9825 ± 0.0094** and Bayesian model averaging 0.9650 ± 0.0089 on the same folds, with the LR baseline re-computed in-run at 0.9042. See §3.1. |
+| **Methylation channel** (V3) | **NOT ready** | Measured on 31 real FinaleDB samples: the decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the loci both arms cover, the median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs (permutation p = 1.0). The public libraries are size-selected at ~300 bp and give 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent. The extraction path works; the channel is **not** a feature. See §3.2. |
 | **Longitudinal Stage 2 (Kalman)** | **NOT ready** | Honest baseline AUC 0.49; needs redesign per `docs/PRODUCTION_ROADMAP.md` §6. |
 | **Real plasma validation** | **NOT ready** | No paired plasma + tissue cohort in repo. This is the binding constraint. |
 
@@ -168,6 +169,28 @@ The re-computed LR baseline (0.9042) and equal-weight average (0.9150) reproduce
 
 The path forward is documented in `docs/PRODUCTION_ROADMAP.md` §6.3 and `NEXT_STEPS.md` §6: replace the SPRT-based CET Stage 2 with a censored-Poisson hierarchical-Bayes tracker; build a per-arm sequencing-noise model; pair on real plasma.
 
+### 3.2 The methylation channel — measured, and a null
+
+The V3 methylation path was run end-to-end on real public fragments and scored. It is reported here as a **null**, with the number and the mechanism.
+
+| Quantity (31 real samples: 17 colorectal cancer, 14 liver-transplant controls) | LOO AUC |
+|---|---|
+| decoded β summary | **0.9444** |
+| number of covered CpGs alone | **0.9444** |
+| observations per CpG alone | **0.9444** |
+| β summary on the 1,550 loci both arms cover | 0.8120 |
+
+Three unrelated quantities give the *identical* AUC, so the channel's discrimination is library complexity. The matched-locus test is the one that composition cannot manufacture: over **103,863 CpGs** the median cancer-minus-control difference in decoded β is **exactly 0.0**, with a permutation null of exactly 0.0 (p = 1.0), and only 0.035% of the decoder's calls carry a value strictly between 0 and 1.
+
+The mechanism is in the libraries. FinaleMe infers methylation from the *digestion pattern* — an unmethylated CpG is cut out of the library and sits at a fragment end, a methylated one stays interior — and reads only fragment geometry (`FragLen`, `Norm_Frag_cov`, `Offset_frag`, `Dist_frag_end`) plus a prior, never the base calls. The reachable public libraries remove that signature twice over:
+
+- **size selection** — the FinaleDB library is trimmed at ~300 bp (not one fragment in 330,975 is longer), so its ends are truncation points, and they land on CpGs at *below* the chance rate (0.68x);
+- **depth** — it delivers 1.09 observations per CpG (controls reach 54,922–64,897 CpGs, cancers 11,003–17,894, each seen about once), and a per-CpG state needs more than one observation.
+
+A genuinely MspI-digested library is 41x deeper per chromosome (13,449,528 chr22 fragments) and shows a 1.43x enrichment of CpG-landing fragment ends — but the deep CRAG/Jiang chr22 BAMs are publication 6, i.e. the training cohort, so they can give a feasibility test and not an independent validation.
+
+**Status for a collaborator**: the methylation *extraction* path runs on real public data and the GNN consumes real β values, but the channel carries no methylation signal on the libraries currently reachable. Do not quote a methylation AUC from this repo. Scripts: `scripts/methylation_cohort_channel.py`, `scripts/methylation_channel_diagnosis.py`, `scripts/methylation_library_check.py`; artifacts `results/methylation_cohort_channel.json`, `results/methylation_channel_diagnosis.json`, `results/methylation_library_check.json`; write-up `docs/METHYLATION_PIPELINE.md` §5.
+
 ---
 
 ## 4. Readiness checklist (what blocks ready)
@@ -181,6 +204,7 @@ The path forward is documented in `docs/PRODUCTION_ROADMAP.md` §6.3 and `NEXT_S
 | Production assay SOP | clinical lab | Validation of duplex-UMI + 50k× spec on real instrument |
 | Longitudinal Stage 2 redesign | author | Per-patient paired data |
 | Foundation fusion re-validation | author | Real unpaired plasma cohort (LR baseline is the current ceiling) |
+| Methylation channel on a real library | author + clinical partner | A deep, size-unselected MspI library that is **not** publication 6 (the training cohort). The reachable FinaleDB libraries are trimmed at ~300 bp and give 1.09 observations per CpG, so they cannot carry the signal FinaleMe reads. |
 
 The detailed 12-month execution plan is in [`docs/PRODUCTION_ROADMAP.md` §7](./docs/PRODUCTION_ROADMAP.md). The TODAY action is `NEXT_STEPS.md` §0 — push the branch and confirm CI is green.
 
