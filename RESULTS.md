@@ -6,6 +6,26 @@
 - github.com/rollroyces/deepcatch (v2.2.0)
 - github.com/rollroyces/cfdna-fragmentomics-pipeline (v0.2.0)
 
+> **This is a dated snapshot (2026-08-24), not the current results.**
+> The DeepCatch side has moved on to **v2.3.0** and its headline numbers
+> have changed — and are now reproducible. Current figures, each tied to
+> the artifact it comes from:
+>
+> | | now | artifact |
+> |---|---|---|
+> | pooled cross-study, GC-corrected | **0.9684 ± 0.0027** | `results/cross_study_finallydb_gc_corrected.json` |
+> | pooled cross-study, legacy no-GC | **0.9770 ± 0.0013** | `results/cross_study_finallydb.json` |
+> | held-out external cohort (never trained on) | **0.9915** [0.9712–1.0000] | `results/external_validation_finaledb.json` |
+> | leave-one-study-out transfer | **0.6805** / **0.9361** | `results/cross_study_loso.json` |
+> | naive-average fusion | **0.9884 ± 0.0010** | `results/fusion_ablation_isotonic.json` |
+> | methylation channel | **a null** (0.9444 = the coverage baseline) | `results/methylation_channel_diagnosis.json` |
+>
+> `scripts/benchmark_numbers.py` prints every number the documents quote,
+> and `test/test_paper_numbers_match_artifacts.py` fails the build if the
+> prose and the artifacts disagree. The figures below that describe the
+> tumor-naive channel are the **pipeline** repository's own; that
+> repository is being revised separately.
+
 ---
 
 ## TL;DR
