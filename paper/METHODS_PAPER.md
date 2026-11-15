@@ -210,6 +210,36 @@ The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 an
 
 The honest summary is that the *features* transfer across studies when the assay is comparable (0.87-0.99), that the *training cohort composition* matters more than the study shift for single-type directions (0.681), and that changing the assay platform breaks the transfer entirely (0.42). None of these numbers is a clinical performance estimate.
 
+#### 3.2.4 The V3 methylation channel measures library complexity, not methylation
+
+The V3 pipeline was run end-to-end on real public fragments: FinaleDB publication 7 (Sun 2019), blood plasma, **31 samples** (17 colorectal cancer, 14 liver-transplant controls), hg19 fragments, chr22 CpGs, one HMM trained on the cohort and each sample decoded with it (`scripts/methylation_cohort_channel.py`; artifacts `results/methylation_cohort_channel.json`, `results/methylation_channel_diagnosis.json`).
+
+| Quantity | LOO AUC |
+|---|---|
+| decoded β summary (4 features) | **0.9444** |
+| number of covered CpGs alone | **0.9444** |
+| observations per CpG alone | **0.9444** |
+| β summary restricted to the 1,550 CpGs both arms cover | 0.8120 |
+| β summary, depth-matched to 11,003 CpGs | 0.9444 (coverage-only 0.8034) |
+
+Three unrelated quantities — the decoded methylome, how many CpGs the library reached, and how many times each CpG was observed — return the **identical** leave-one-out AUC of 0.9444. The channel's discrimination is library complexity.
+
+The matched-locus test cannot be explained that way, because it compares the two arms only on the loci both of them cover: over **103,863 CpGs** the median cancer-minus-control difference in decoded β is **exactly 0.0**, with a permutation null of exactly 0.0 (p = 1.0), and only 2.4% of CpGs are higher in cancer.
+
+The mechanism is visible in the libraries themselves (`scripts/methylation_library_check.py`, artifact `results/methylation_library_check.json`). FinaleMe infers methylation from the *digestion pattern* — an unmethylated CpG is cut out of the library and sits at a fragment end, a methylated one stays interior — and the released decoder reads `Offset_frag`, `Dist_frag_end`, `FragLen`, `Norm_Frag_cov` and the prior, never the base calls. Two properties of the reachable public libraries remove that signal:
+
+| | FinaleDB pub 7 (Sun 2019) | CRAG BH01 (deep MspI library) |
+|---|---|---|
+| chr22 fragments | 330,975 | 13,449,528 (**41x**) |
+| median / mean fragment length | 126 / 112 bp | 175 / 404 bp |
+| longest fragment | **296 bp** | 30.6 Mb |
+| fraction >= 300 bp | **0.000%** | 12.9% |
+| fragment ends landing on a CpG | 1.11% / 1.03% (**0.68x / 0.63x chance**) | 2.34% / 1.32% (1.43x / 0.81x chance) |
+
+First, the FinaleDB library is **size-selected at ~300 bp**: not one fragment in 330,975 is longer, so its ends are truncation points rather than digestion sites and land on CpGs at *below* the chance rate. Second, the library is **too shallow to identify a state**: it delivers 1.09 observations per CpG (range 1.00-1.22), with controls reaching 54,922-64,897 CpGs and cancers 11,003-17,894, each CpG seen about once. At one observation per CpG the decoder extrapolates, and what it returns is a restatement of library depth. The decoder output confirms the degeneracy: only 0.035% of called CpGs carry a value strictly between 0 and 1, so the β summary is a count of hard calls, not a graded methylome.
+
+This is reported as a **null**. The methylation *extraction* path runs on real public data; on the publicly available FinaleDB libraries the *channel* is not a validated feature, and the public methylome data needed to build one does not exist in a usable form in the reachable corpus.
+
 ### 3.3 Per-cancer sensitivity at fixed specificity (with DeLong CIs)
 
 Per-cancer OvR is computed with **per-study z-score harmonization inside each CV fold** so the same offset that drove §3.2's pooled AUC is also removed in the per-cancer fits. Top-5 cancers by count, scored against ALL healthy samples (the cross-study generalization view). For sens@spec 95% CIs the standalone artifact uses **DeLong placement-value** CIs (`src/per_cancer_sens_at_spec.py`; Sun & Xu 2014 form); for the AUC variance we use the 5-seed ± std across the StratifiedKFold seeds. Source: `results/cross_study_finallydb.json:per_cancer` (point estimates + bootstrap 95% CIs on sens@spec) and `results/per_cancer_sens_at_spec.json` (DeLong CIs + PPV@prev).
@@ -249,8 +279,9 @@ At the published MCED screening-prevalence assumption of 0.1% (10⁻³), this 5-
 | **focal-BCE loss** (`loss="sens_at_spec"`, α_pos=20) | NULL: Δ AUC = −0.0005 [−0.0015, +0.0005], p=0.30 (n=20 paired seeds). Supersedes the n=5 "positive direction, NS" reading. | `docs/SENS_AT_SPEC_ABLATION.md` |
 | **sparse-aware projection** (`projection_kinds={"frag_basic":"sparse_aware"}`) | NEGATIVE, marginal: Δ AUC = −0.0155 [−0.0315, +0.0005], p=0.055 (5 seeds). The slot is not sparse at this operating point. | `docs/SPARSE_AWARE_ABLATION.md` |
 | **harmonization** (per-cohort batch-effect check) | MIXED on this cohort: pooled AUC is high (0.974) and per-study AUCs are similar, but the **true-confound control** (cancer=Jiang, healthy=Cristiano) shows that WITHOUT harmonization the classifier would learn "study" instead of "cancer" (1.000 vs 0.489). Reported as **PROTECTIVE** — the harmonization is what makes §3.2 a fair cross-study claim. | `docs/HARMONIZATION.md`, `results/cross_study_finallydb.json:true_confound_control` |
+| **V3 methylation channel** (FinaleMe on 31 real FinaleDB samples) | **NULL, and explained.** The decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the 1,550 loci both arms cover, the median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs (permutation p = 1.0). The libraries are size-selected at ~300 bp (0.000% of fragments longer) and deliver 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent and the decoder returns hard calls. The extraction path works; the channel is not a feature. | §3.2.4, `docs/METHYLATION_PIPELINE.md`, `results/methylation_channel_diagnosis.json` |
 
-All three ablations are reported honestly. No "win by default" framing.
+All four ablations are reported honestly. No "win by default" framing.
 
 ### 3.5 Comparison to published cfDNA benchmarks
 
@@ -298,9 +329,10 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 1. **Small paired synthetic cohort (n=20).** Per-patient GroupKFold on 20 patients means each fold has 4 patients × 2 arms = 8 test samples. CIs are wide; per-seed std on foundation AUC is ~0.01.
 2. **Simulated healthy controls.** The healthy arm of every paired patient is a TF=0 simulation of the same patient's mutations, not an unrelated healthy donor. This is the standard analytical validation approach (Newman 2016 [6]) but it is not a substitute for unrelated healthy plasma.
 3. **No real plasma in downstream validation.** The 0.1% ctDNA numbers are from synthetic reads. Real plasma has additional noise sources (PCR bias, mapping ambiguity, contamination) that the simulation does not capture.
-4. **FinaleDB API degraded.** As of 2026-09-21, the FinaleDB REST API returns 500 on `/api/v1/publication` and `/api/v1/seqrun`. The cross-study sweep runs against the pre-extracted cache, not a fresh live fetch. See `docs/PRETRAINING.md` §"FinaleDB REST API in degraded state."
+4. **FinaleDB access is partial, and one verdict in the repo was wrong.** The API is reachable again (it was down between 2026-09 and 2026-11-15), but S3 access is per-object: the `*.frag.tsv.bgz`, insert-size and `*.bigWig` objects return 200 while `*.bedGraph.bgz` returns 403. A single-key probe had previously reported the whole corpus as private; the multi-key probe in `scripts/fetch_external_cohort.py` is what corrected it.
 5. **Encoder size.** PRODUCTION_CONFIG is 543,872 parameters (embed_dim=128, 4 layers, 4 heads). State-of-the-art fragmentomics encoders are 10–100× larger. The present model fits on CPU in <5 seconds; clinical-grade models would require GPU training.
 6. **Two-channel only.** The pretraining data covers Cristiano 2019 + Jiang 2015 (publications 6 + 8). FinaleMe (Liu 2018 [11]) and the methylation-based MCED publications are not yet in the cohort.
+7. **The methylation channel is not a feature on public libraries.** FinaleMe needs a deep, size-unselected MspI library to read methylation from the digestion pattern. The reachable FinaleDB libraries are trimmed at ~300 bp and deliver ~1.09 fragment observations per CpG, so the decoded methylome is a restatement of library depth (§3.2.4). The CRAG/Jiang chr22 BAMs on Zenodo 6914806 are 41x deeper and do carry the signature, but they are publication 6 — the training cohort — so they would give a feasibility test, not independent validation. No independent MspI cohort is currently reachable.
 
 ### 4.4 Future work
 

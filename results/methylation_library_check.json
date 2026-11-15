@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T19:55:15.403949+00:00",
+  "chromosome": "22",
+  "libraries": [
+    {
+      "file": "TBR921.hg19.frag.tsv.bgz",
+      "n_fragments": 330975,
+      "fragment_length_median": 126,
+      "fragment_length_mean": 111.88,
+      "fragment_length_max": 296,
+      "fraction_at_or_above_300bp": 0.0,
+      "length_profile": {
+        "<150": 0.714876,
+        "150-200": 0.269371,
+        "200-250": 0.011064,
+        "250-300": 0.004689,
+        "300-400": 0.0,
+        "400-500": 0.0,
+        "500-700": 0.0,
+        "700-1k": 0.0,
+        "1k-2k": 0.0,
+        ">2k": 0.0
+      },
+      "fragment_ends_on_a_cpg": {
+        "start_rate": 0.011082,
+        "end_rate": 0.010342,
+        "chance_rate_per_position": 0.016426,
+        "start_enrichment_over_chance": 0.675,
+        "end_enrichment_over_chance": 0.63
+      }
+    },
+    {
+      "file": "BH01.chr22.frag.bed.gz",
+      "n_fragments": 13449528,
+      "fragment_length_median": 175,
+      "fragment_length_mean": 403.8,
+      "fragment_length_max": 30641070,
+      "fraction_at_or_above_300bp": 0.128757,
+      "length_profile": {
+        "<150": 0.137164,
+        "150-200": 0.636393,
+        "200-250": 0.076454,
+        "250-300": 0.021232,
+        "300-400": 0.095947,
+        "400-500": 0.01555,
+        "500-700": 0.01424,
+        "700-1k": 0.002827,
+        "1k-2k": 0.000166,
+        ">2k": 2.7e-05
+      },
+      "fragment_ends_on_a_cpg": {
+        "start_rate": 0.023422,
+        "end_rate": 0.013235,
+        "chance_rate_per_position": 0.016426,
+        "start_enrichment_over_chance": 1.426,
+        "end_enrichment_over_chance": 0.806
+      }
+    }
+  ],
+  "interpretation": {
+    "size_selection": "fraction_at_or_above_300bp near zero means the library was size-selected; fragment ends are then truncation points, not digestion sites, and no CpG marks an unmethylated site",
+    "digestion_signature": "start_enrichment_over_chance near 1 means fragment ends are unrelated to CpGs, so the methylation state is not identifiable from the fragment geometry",
+    "depth": "fragments per CpG is the number of observations a CpG receives; a state needs more than one"
+  }
+}

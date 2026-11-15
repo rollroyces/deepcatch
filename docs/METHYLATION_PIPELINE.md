@@ -1,7 +1,10 @@
 # The V3 methylation pipeline on real public data
 
-**Status: the chain runs end-to-end on real FinaleDB fragments. Two
-upstream caveats remain, both documented below.**
+**Status: the chain runs end-to-end on real FinaleDB fragments, and the
+resulting channel has been measured. The measurement is a null: the
+channel does not separate cancer from control beyond library complexity.
+Sections 5 and 6 give the evidence; sections 2 and 3 give the two
+upstream caveats that remain.**
 
 This is the write-up of what was actually executed, not a design
 document. Every number and file referenced here was produced by the
@@ -104,20 +107,115 @@ UCSC:
 | `CpG_index.hg19.bed.gz` | Zenodo | 130 MB — **not** usable as the CpG list: its rows are `(chr, pos, index)`, not a BED, so the tool reads the index as the end coordinate |
 | `healthy/cancer_WGS.mincg7.example.hmm_model` | Zenodo | see caveat 1 |
 
-## 5. What is still missing for a methylation *channel*
+## 5. The channel was measured, and it is a null
 
-The pipeline produces per-CpG methylation calls from real public data
-today. What it does **not** yet produce is a discriminative feature:
-`src/methylation_gnn/` still needs
+The pipeline was run over a **31-sample cohort** — FinaleDB publication 7
+(Sun 2019), blood plasma, 17 colorectal cancer and 14 liver-transplant
+controls, hg19 fragments, chr22 CpGs. The HMM was trained once on the
+cohort and each sample decoded with that model.
 
-1. a beta channel that is not degenerate — i.e. either the matching
-   old FinaleMe build for the pretrained models, or a WGBS reference
-   panel to train the HMM against;
-2. per-sample beta summaries over many samples (the run above is one
-   sample on one chromosome), so the channel can be computed for a
-   cohort and tested against the cancer/control label;
-3. the GNN training run on those real beta summaries.
+```
+python scripts/methylation_cohort_channel.py \
+    --matrices-dir  ../methylation_cohort/matrices \
+    --labels        ../methylation_cohort/cohort_labels.tsv \
+    --work-dir      ../methylation_cohort/final_work \
+    --out-json      results/methylation_cohort_channel.json
+```
+
+| Quantity | LOO AUC |
+|---|---|
+| decoded β summary (4 features) | **0.9444** |
+| number of covered CpGs alone | **0.9444** |
+| observations per CpG alone | **0.9444** |
+| `beta_mean` alone, no model | 0.9530 |
+| β summary, 1,550 CpGs covered by *both* arms | 0.8120 |
+| β summary, depth-matched to 11,003 CpGs | 0.9444 (coverage-only 0.8034) |
+
+Three different quantities — the decoded methylome, the number of CpGs
+the library reached, and how many times each CpG was observed — give the
+**identical** leave-one-out AUC of 0.9444. The channel's discrimination
+is library complexity; the methylome adds nothing to it.
+
+The matched-locus test is the one that cannot be explained away. Every
+CpG is compared between the arms on the samples that actually cover it,
+so composition cannot manufacture the difference:
+
+```
+n_cpgs_tested                                     103863
+median_beta_difference_cancer_minus_control       0.0
+fraction_of_cpgs_higher_in_cancer                 0.0245
+permutation_p_value                               1.0
+null_median_sd                                    0.0
+```
+
+The median cancer-minus-control difference is **exactly zero** over
+103,863 CpGs, and the permutation null is also exactly zero, so the
+observed value is unremarkable (p = 1.0). At the loci both arms cover,
+the two groups carry the same methylation calls.
+
+### 5.1 Why: the libraries do not carry the signal FinaleMe reads
+
+FinaleMe predicts methylation from the *fragmentation pattern*: an
+unmethylated CpG is cut out of the library, so it sits at a fragment
+end; a methylated one is not cut, so it stays in the interior
+(`FinaleMe.java` reads columns 4, 7, 9, 10 and 11 of the feature file —
+`FragLen`, `Norm_Frag_cov`, `Offset_frag`, `Dist_frag_end` and the
+prior — and never reads `methy_stat`).
+
+Two things in the FinaleDB libraries destroy that information, and both
+are measurable without running the decoder:
+
+```
+python scripts/methylation_library_check.py \
+    --frag-files <finaledb.frag.tsv.bgz> <crag.frag.bed.gz> \
+    --cpg-bedgraph CG_motif.hg19.chr22.bedgraph.gz \
+    --out-json results/methylation_library_check.json
+```
+
+| | FinaleDB pub 7 (Sun 2019) | CRAG BH01 (deep MspI library) |
+|---|---|---|
+| chr22 fragments | 330,975 | 13,449,528 (**41x**) |
+| median / mean length | 126 / 112 bp | 175 / 404 bp |
+| longest fragment | **296 bp** | 30.6 Mb |
+| fraction >= 300 bp | **0.000%** | 12.9% |
+| fragment ends landing on a CpG | 1.11% / 1.03% (**0.68x / 0.63x chance**) | 2.34% / 1.32% (1.43x / 0.81x chance) |
+
+1. **Size selection.** The FinaleDB library is trimmed at ~300 bp — not
+   one fragment in 330,975 is longer. Its fragment ends are truncation
+   points, not digestion sites, and they land on CpGs at *below* the
+   chance rate. There is no methylation signature left to read.
+2. **Depth.** A per-CpG state is only identified where a CpG is observed
+   repeatedly. Across the cohort the libraries deliver **1.09
+   observations per CpG** (range 1.00–1.22): the controls reach
+   54,922–64,897 CpGs and the cancers 11,003–17,894, each CpG seen once.
+   At one observation per CpG the decoder is extrapolating, not
+   measuring, and what it returns is a restatement of how deep each
+   library went.
+
+The third measurement is the model-free one. A CpG that lies exactly at
+a fragment end was cut out of the library, so the share of a CpG's
+observations that sit at a fragment end estimates its unmethylated
+probability without an HMM, a prior or any training.
+`scripts/methylation_channel_diagnosis.py` computes it and pairs every
+score with its coverage baseline.
+
+## 6. What is still missing for a methylation *channel*
+
+The extraction path runs on real public data and the channel has been
+measured on 31 real samples. What remains is a library that can carry
+the signal:
+
+1. a deep, size-unselected MspI library — the CRAG/Jiang chr22 BAMs on
+   Zenodo 6914806 are 41x deeper per chromosome than the FinaleDB
+   libraries and keep their digestion boundaries; those samples are
+   publication 6, i.e. the training cohort, so they would be a
+   feasibility test and not an independent validation;
+2. an *independent* MspI cohort for the actual validation, because no
+   FinaleDB publication in the reachable corpus is both deep and
+   untrimmed;
+3. the GNN training run on the resulting real beta summaries.
 
 Until then the honest statement is: *the methylation extraction path
-runs on real public data; the methylation channel is not yet a
-validated feature.*
+runs on real public data; on the publicly available FinaleDB libraries
+the channel measures library complexity and nothing else, and it is not
+a validated feature.*

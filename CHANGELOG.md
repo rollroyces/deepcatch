@@ -37,6 +37,20 @@ cohort size.
   per-CpG matrix → WGBS prior → HMM decode → `src/methylation_gnn`.
   `scripts/finaleme_bam_from_frag.py`, `scripts/finaleme_decoder_input.py`,
   `scripts/methylation_real_smoke.py`, `docs/METHYLATION_PIPELINE.md`.
+- **A methylation-channel diagnosis that reports a null.** The channel was
+  measured on 31 real samples (FinaleDB publication 7; 17 colorectal cancer,
+  14 liver-transplant controls) and it separates the arms with leave-one-out
+  AUC **0.9444** — exactly the AUC of the covered-CpG count alone and of the
+  observations-per-CpG count alone. Restricted to the 1,550 loci both arms
+  cover, the median cancer-minus-control difference in decoded β is exactly
+  **0.0** over 103,863 CpGs (permutation p = 1.0), and only 0.035% of the
+  decoder's calls carry a value strictly between 0 and 1. The cause is in the
+  libraries: they are size-selected at ~300 bp (0.000% of fragments longer)
+  and deliver 1.09 observations per CpG, so the digestion signature FinaleMe
+  reads is absent. `scripts/methylation_channel_diagnosis.py`,
+  `scripts/methylation_library_check.py`,
+  `scripts/methylation_cohort_channel.py` (depth instrumentation),
+  `docs/METHYLATION_PIPELINE.md` §5.
 
 ### Fixed
 

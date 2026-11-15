@@ -94,7 +94,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 - **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.989 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
 - **Late fusion that works at this sample size** — the neural encoder scores 0.554 on the honest paired cohort against an LR baseline of 0.910; a regularized late fusion reaches **0.9825 ± 0.0094** and a Bayesian model average **0.9650 ± 0.0089** on the same folds (`src/foundation/regularized_fusion.py`).
 - **Longitudinal Bayes Kalman** — architecture-only (synthetic data, not plasma-validated); CET pipeline (Capture → Enhance → Triage) designed for serial quarterly draws.
-- **Methylation extraction on real public data** — FinaleMe runs end-to-end on FinaleDB fragment files (frag → BAM → per-CpG matrix → WGBS prior → HMM decode); the resulting β channel is not yet a validated feature — see [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
+- **Methylation extraction on real public data — and a measured null** — FinaleMe runs end-to-end on FinaleDB fragment files (frag → BAM → per-CpG matrix → WGBS prior → HMM decode). Scored on 31 real samples (pub 7, 17 colorectal / 14 liver-transplant) the decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the loci both arms cover, the median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs (permutation p = 1.0). The public libraries are size-selected at ~300 bp and deliver 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent. The extraction path works; **the channel is not a validated feature** — see [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
 
 ## Why it matters
 
@@ -418,7 +418,7 @@ deepcatch/
 
 | Commit | What changed |
 |---|---|
-| **v2.3.0** (HEAD) | **External validation on held-out public publications** (AUC 0.9915 on pub 7 WGS, 0.8819 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments · CI repaired from 2 red jobs to 8 green |
+| **v2.3.0** (HEAD) | **External validation on held-out public publications** (AUC 0.9915 on pub 7 WGS, 0.8819 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments, and the channel is **measured to be a null** (0.9444 = the coverage baseline; matched-locus difference 0.0, p = 1.0) · CI repaired from 2 red jobs to 8 green |
 | **c782efc** | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
 | `eb9948a` | Fix: refuse to fabricate cross-platform AUC from `synth_*` files |
 | `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |

@@ -58,11 +58,18 @@ def attach_prior(matrix_path: str, out_path: str) -> dict:
     Keeps columns 0-10 (the decoder reads index 4, 7, 9, 10, 11) and
     replaces the trailing k-mer column with the prior, which is what the
     decoder parses at index 11.
+
+    Also records, per matrix, how many fragment observations each CpG
+    received. That number is the depth at which a methylation state is
+    identified, and it belongs next to every score this script reports:
+    a decoder trained on fewer than about two observations per CpG is
+    extrapolating, not measuring.
     """
     import pyBigWig
 
     bw = pyBigWig.open(PRIOR)
     n_rows = n_prior = n_nan = 0
+    per_matrix: dict[str, dict] = {}
     with gzip.open(out_path, "wt", compresslevel=6) as fo:
         fo.write("\t".join(["chr", "start", "end", "readName", "FragLen",
                              "Frag_strand", "methy_stat", "Norm_Frag_cov",
@@ -79,27 +86,40 @@ def attach_prior(matrix_path: str, out_path: str) -> dict:
                 print(f"skipping unreadable matrix {matrix_path_i}: {exc}",
                       file=sys.stderr)
                 continue
-            if True:
-                for line in matrix_lines[1:]:
-                    parts = line.rstrip("\n").split("\t")
-                    if len(parts) < 11:
-                        continue
-                    prior = "NaN"
-                    try:
-                        vals = bw.values(parts[0], int(parts[1]), int(parts[2]))
-                        if vals and vals[0] is not None:
-                            val = float(vals[0])
-                            if math.isnan(val):
-                                n_nan += 1
-                            else:
-                                prior = f"{val:.4f}"
-                                n_prior += 1
-                    except Exception:
-                        n_nan += 1
-                    fo.write("\t".join(parts[:11] + [prior]) + "\n")
-                    n_rows += 1
+            sample = os.path.basename(matrix_path_i).replace(
+                ".chr22_matrix.txt.gz", "")
+            cpgs: dict[tuple[str, str], int] = {}
+            for line in matrix_lines[1:]:
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 11:
+                    continue
+                key = (parts[0], parts[1])
+                cpgs[key] = cpgs.get(key, 0) + 1
+                prior = "NaN"
+                try:
+                    vals = bw.values(parts[0], int(parts[1]), int(parts[2]))
+                    if vals and vals[0] is not None:
+                        val = float(vals[0])
+                        if math.isnan(val):
+                            n_nan += 1
+                        else:
+                            prior = f"{val:.4f}"
+                            n_prior += 1
+                except Exception:
+                    n_nan += 1
+                fo.write("\t".join(parts[:11] + [prior]) + "\n")
+                n_rows += 1
+            counts = list(cpgs.values())
+            per_matrix[sample] = {
+                "n_observations": len(matrix_lines) - 1,
+                "n_cpgs": len(cpgs),
+                "mean_obs_per_cpg": (round(sum(counts) / len(counts), 4)
+                                     if counts else None),
+                "max_obs_per_cpg": max(counts) if counts else None,
+            }
     bw.close()
-    return {"rows": n_rows, "with_prior": n_prior, "nan_prior": n_nan}
+    return {"rows": n_rows, "with_prior": n_prior, "nan_prior": n_nan,
+            "per_matrix": per_matrix}
 
 
 def decode(model: str, matrix: str, out: str, decode_only: bool) -> int:
@@ -236,6 +256,7 @@ def main() -> int:
             lab, dis = labels.get(name, (None, "unknown"))
             s["label"] = lab
             s["disease"] = dis
+            s.update(stats.get("per_matrix", {}).get(name, {}))
             per_sample[name] = s
 
     # Depth-matched pass: cap every sample at the smallest CpG count
@@ -262,6 +283,8 @@ def main() -> int:
                         per_sample[n]["fraction_fully_methylated"]]
                        for n in names], dtype=float)
     n_cpgs = np.array([per_sample[n]["n_cpgs"] for n in names], dtype=float)
+    obs_per_cpg = np.array([per_sample[n].get("mean_obs_per_cpg", np.nan)
+                             for n in names], dtype=float)
 
     def _loo_auc(X: np.ndarray) -> float | None:
         """Leave-one-out AUC of a small logistic model on X."""
@@ -287,6 +310,11 @@ def main() -> int:
     # classes? If it does, the beta summary is not adding anything over
     # library complexity.
     auc_depth_only = _loo_auc(n_cpgs.reshape(-1, 1))
+    # The observation depth is a second, sharper baseline: it is how many
+    # fragment observations each CpG received, so it is the quantity that
+    # decides whether a per-CpG methylation state is identified at all.
+    auc_obs_per_cpg = (_loo_auc(obs_per_cpg.reshape(-1, 1))
+                       if np.isfinite(obs_per_cpg).all() else None)
     # Single-feature AUC of beta_mean alone (no model, no shrinkage).
     try:
         from sklearn.metrics import roc_auc_score as _rauc
@@ -441,10 +469,25 @@ def main() -> int:
             "n_samples_total": len(matrices),
             "per_sample": per_sample,
         },
-        "cohort_matrix": stats,
+        "cohort_matrix": {k: v for k, v in stats.items() if k != "per_matrix"},
+        "observation_depth": {
+            "mean_obs_per_cpg_across_samples": (
+                round(float(np.nanmean(obs_per_cpg)), 4)
+                if np.isfinite(obs_per_cpg).any() else None),
+            "min_obs_per_cpg": (round(float(np.nanmin(obs_per_cpg)), 4)
+                                if np.isfinite(obs_per_cpg).any() else None),
+            "max_obs_per_cpg": (round(float(np.nanmax(obs_per_cpg)), 4)
+                                if np.isfinite(obs_per_cpg).any() else None),
+            "note": "a per-CpG methylation state is only identified where a "
+                    "CpG is observed repeatedly; below about two observations "
+                    "per CpG the decoder is extrapolating rather than "
+                    "measuring, and the beta summary becomes a restatement "
+                    "of library complexity",
+        },
         "beta_summary_auc_loo": auc,
         "beta_mean_only_auc": auc_beta_mean_only,
         "cpgs_covered_only_auc_loo": auc_depth_only,
+        "obs_per_cpg_only_auc_loo": auc_obs_per_cpg,
         "common_cpg_set": {
             "n_shared_cpgs": int(common_size),
             "beta_summary_auc_loo": auc_common,

@@ -1,0 +1,1206 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T19:55:41.057945+00:00",
+  "cohort": {
+    "n_samples": 31,
+    "n_samples_with_decoded_output": 31,
+    "min_observations_per_cpg": 2
+  },
+  "depth": {
+    "mean_obs_per_cpg_across_samples": 1.089,
+    "min_obs_per_cpg_across_samples": 1.001,
+    "max_obs_per_cpg_across_samples": 1.223,
+    "note": "a methylation state is only identified where a CpG is observed repeatedly; below ~2 observations per CpG the per-CpG state carries no information"
+  },
+  "scores": {
+    "coverage_baseline_n_cpgs": {
+      "auc": 0.0256,
+      "auc_directionless": 0.9744,
+      "direction": "lower_feature_means_positive_class"
+    },
+    "coverage_baseline_obs_per_cpg": {
+      "auc": 0.9615,
+      "auc_directionless": 0.9615,
+      "direction": "higher_feature_means_positive_class"
+    },
+    "boundary_estimator": {
+      "auc": 0.6154,
+      "auc_directionless": 0.6154,
+      "direction": "higher_feature_means_positive_class"
+    },
+    "hmm_beta_mean": {
+      "auc": 0.953,
+      "auc_directionless": 0.953,
+      "direction": "higher_feature_means_positive_class"
+    },
+    "hmm_fraction_intermediate_mean": 0.00035,
+    "hmm_fraction_intermediate_min": 0.0,
+    "hmm_fraction_intermediate_max": 0.00117
+  },
+  "matched_locus_boundary_estimator": {
+    "n_cpgs_tested": 45,
+    "note": "too few CpGs covered by both arms"
+  },
+  "matched_locus_hmm_beta": {
+    "n_cpgs_tested": 103863,
+    "median_difference_cancer_minus_control": 0.0,
+    "fraction_cpgs_higher_in_cancer": 0.02447,
+    "permutation_p_value": 1.0,
+    "null_median_sd": 0.0
+  },
+  "per_sample": {
+    "T99": {
+      "n_observations": 60361,
+      "n_cpgs": 60152,
+      "mean_obs_per_cpg": 1.003,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 30,
+      "n_observations_at_fragment_end": 666,
+      "boundary_observation_rate": 0.01103,
+      "methy_stat_counts": {
+        "m": 60361
+      },
+      "n_cpgs_used": 38,
+      "mean_unmethylated_fraction": 0.00877,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05336,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97368,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 60152,
+        "mean_unmethylated_fraction": 0.01106,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10457,
+        "fraction_cpgs_fully_unmethylated": 0.01106,
+        "fraction_cpgs_fully_methylated": 0.98893
+      },
+      "fraction_cpgs_identified": 0.00063,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 51038,
+        "beta_mean": 0.90605,
+        "beta_std": 0.29176,
+        "fraction_exactly_1": 0.90605,
+        "fraction_exactly_0": 0.09395,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1448": {
+      "n_observations": 59671,
+      "n_cpgs": 59605,
+      "mean_obs_per_cpg": 1.001,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 8,
+      "n_observations_at_fragment_end": 620,
+      "boundary_observation_rate": 0.01039,
+      "methy_stat_counts": {
+        "m": 59671
+      },
+      "n_cpgs_used": 27,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 59605,
+        "mean_unmethylated_fraction": 0.0104,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10146,
+        "fraction_cpgs_fully_unmethylated": 0.0104,
+        "fraction_cpgs_fully_methylated": 0.9896
+      },
+      "fraction_cpgs_identified": 0.00045,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 50992,
+        "beta_mean": 0.90962,
+        "beta_std": 0.28671,
+        "fraction_exactly_1": 0.90961,
+        "fraction_exactly_0": 0.09037,
+        "fraction_intermediate": 2e-05
+      }
+    },
+    "TBR1449": {
+      "n_observations": 65074,
+      "n_cpgs": 64897,
+      "mean_obs_per_cpg": 1.003,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 25,
+      "n_observations_at_fragment_end": 750,
+      "boundary_observation_rate": 0.01153,
+      "methy_stat_counts": {
+        "m": 65074
+      },
+      "n_cpgs_used": 36,
+      "mean_unmethylated_fraction": 0.01389,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.08217,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97222,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 64897,
+        "mean_unmethylated_fraction": 0.01155,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10683,
+        "fraction_cpgs_fully_unmethylated": 0.01154,
+        "fraction_cpgs_fully_methylated": 0.98844
+      },
+      "fraction_cpgs_identified": 0.00055,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 56007,
+        "beta_mean": 0.90887,
+        "beta_std": 0.2878,
+        "fraction_exactly_1": 0.90887,
+        "fraction_exactly_0": 0.09113,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1450": {
+      "n_observations": 62361,
+      "n_cpgs": 62043,
+      "mean_obs_per_cpg": 1.005,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 43,
+      "n_observations_at_fragment_end": 693,
+      "boundary_observation_rate": 0.01111,
+      "methy_stat_counts": {
+        "m": 62361
+      },
+      "n_cpgs_used": 39,
+      "mean_unmethylated_fraction": 0.00111,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.00687,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97436,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 62043,
+        "mean_unmethylated_fraction": 0.01115,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10502,
+        "fraction_cpgs_fully_unmethylated": 0.01115,
+        "fraction_cpgs_fully_methylated": 0.98883
+      },
+      "fraction_cpgs_identified": 0.00063,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 52999,
+        "beta_mean": 0.89745,
+        "beta_std": 0.30337,
+        "fraction_exactly_1": 0.89745,
+        "fraction_exactly_0": 0.10255,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1451": {
+      "n_observations": 63376,
+      "n_cpgs": 63151,
+      "mean_obs_per_cpg": 1.004,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 34,
+      "n_observations_at_fragment_end": 610,
+      "boundary_observation_rate": 0.00963,
+      "methy_stat_counts": {
+        "m": 63376
+      },
+      "n_cpgs_used": 35,
+      "mean_unmethylated_fraction": 0.00286,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.01666,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97143,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 63151,
+        "mean_unmethylated_fraction": 0.00965,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.09773,
+        "fraction_cpgs_fully_unmethylated": 0.00964,
+        "fraction_cpgs_fully_methylated": 0.99034
+      },
+      "fraction_cpgs_identified": 0.00055,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 53684,
+        "beta_mean": 0.90729,
+        "beta_std": 0.29002,
+        "fraction_exactly_1": 0.90729,
+        "fraction_exactly_0": 0.09271,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1452": {
+      "n_observations": 62551,
+      "n_cpgs": 62403,
+      "mean_obs_per_cpg": 1.002,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 23,
+      "n_observations_at_fragment_end": 667,
+      "boundary_observation_rate": 0.01066,
+      "methy_stat_counts": {
+        "m": 62551
+      },
+      "n_cpgs_used": 26,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 62403,
+        "mean_unmethylated_fraction": 0.01069,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10283,
+        "fraction_cpgs_fully_unmethylated": 0.01069,
+        "fraction_cpgs_fully_methylated": 0.98931
+      },
+      "fraction_cpgs_identified": 0.00042,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 52995,
+        "beta_mean": 0.90773,
+        "beta_std": 0.28941,
+        "fraction_exactly_1": 0.90773,
+        "fraction_exactly_0": 0.09227,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1453": {
+      "n_observations": 61076,
+      "n_cpgs": 60807,
+      "mean_obs_per_cpg": 1.004,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 41,
+      "n_observations_at_fragment_end": 673,
+      "boundary_observation_rate": 0.01102,
+      "methy_stat_counts": {
+        "m": 61076
+      },
+      "n_cpgs_used": 30,
+      "mean_unmethylated_fraction": 0.01667,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.08975,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.96667,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 60807,
+        "mean_unmethylated_fraction": 0.01106,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10456,
+        "fraction_cpgs_fully_unmethylated": 0.01105,
+        "fraction_cpgs_fully_methylated": 0.98893
+      },
+      "fraction_cpgs_identified": 0.00049,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 52278,
+        "beta_mean": 0.90399,
+        "beta_std": 0.2946,
+        "fraction_exactly_1": 0.90399,
+        "fraction_exactly_0": 0.09601,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1454": {
+      "n_observations": 63753,
+      "n_cpgs": 63518,
+      "mean_obs_per_cpg": 1.004,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 33,
+      "n_observations_at_fragment_end": 753,
+      "boundary_observation_rate": 0.01181,
+      "methy_stat_counts": {
+        "m": 63753
+      },
+      "n_cpgs_used": 47,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 63518,
+        "mean_unmethylated_fraction": 0.01185,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10823,
+        "fraction_cpgs_fully_unmethylated": 0.01185,
+        "fraction_cpgs_fully_methylated": 0.98815
+      },
+      "fraction_cpgs_identified": 0.00074,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 54134,
+        "beta_mean": 0.90697,
+        "beta_std": 0.29047,
+        "fraction_exactly_1": 0.90697,
+        "fraction_exactly_0": 0.09303,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1573": {
+      "n_observations": 56477,
+      "n_cpgs": 56352,
+      "mean_obs_per_cpg": 1.002,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 20,
+      "n_observations_at_fragment_end": 550,
+      "boundary_observation_rate": 0.00974,
+      "methy_stat_counts": {
+        "m": 56477
+      },
+      "n_cpgs_used": 29,
+      "mean_unmethylated_fraction": 0.01724,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.09123,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.96552,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 56352,
+        "mean_unmethylated_fraction": 0.00975,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.09824,
+        "fraction_cpgs_fully_unmethylated": 0.00974,
+        "fraction_cpgs_fully_methylated": 0.99024
+      },
+      "fraction_cpgs_identified": 0.00051,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 47933,
+        "beta_mean": 0.90873,
+        "beta_std": 0.288,
+        "fraction_exactly_1": 0.90873,
+        "fraction_exactly_0": 0.09127,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1574": {
+      "n_observations": 58218,
+      "n_cpgs": 57889,
+      "mean_obs_per_cpg": 1.006,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 52,
+      "n_observations_at_fragment_end": 650,
+      "boundary_observation_rate": 0.01116,
+      "methy_stat_counts": {
+        "m": 58218
+      },
+      "n_cpgs_used": 43,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 57889,
+        "mean_unmethylated_fraction": 0.01123,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10537,
+        "fraction_cpgs_fully_unmethylated": 0.01123,
+        "fraction_cpgs_fully_methylated": 0.98877
+      },
+      "fraction_cpgs_identified": 0.00074,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 49185,
+        "beta_mean": 0.91709,
+        "beta_std": 0.27573,
+        "fraction_exactly_1": 0.91707,
+        "fraction_exactly_0": 0.08289,
+        "fraction_intermediate": 4e-05
+      }
+    },
+    "TBR1575": {
+      "n_observations": 57142,
+      "n_cpgs": 56932,
+      "mean_obs_per_cpg": 1.004,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 32,
+      "n_observations_at_fragment_end": 651,
+      "boundary_observation_rate": 0.01139,
+      "methy_stat_counts": {
+        "m": 57142
+      },
+      "n_cpgs_used": 32,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 56932,
+        "mean_unmethylated_fraction": 0.01143,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10632,
+        "fraction_cpgs_fully_unmethylated": 0.01143,
+        "fraction_cpgs_fully_methylated": 0.98857
+      },
+      "fraction_cpgs_identified": 0.00056,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 48637,
+        "beta_mean": 0.91089,
+        "beta_std": 0.2849,
+        "fraction_exactly_1": 0.91089,
+        "fraction_exactly_0": 0.08911,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1576": {
+      "n_observations": 62122,
+      "n_cpgs": 61910,
+      "mean_obs_per_cpg": 1.003,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 32,
+      "n_observations_at_fragment_end": 770,
+      "boundary_observation_rate": 0.01239,
+      "methy_stat_counts": {
+        "m": 62122
+      },
+      "n_cpgs_used": 32,
+      "mean_unmethylated_fraction": 0.0,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 1.0,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 61910,
+        "mean_unmethylated_fraction": 0.01244,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.11083,
+        "fraction_cpgs_fully_unmethylated": 0.01244,
+        "fraction_cpgs_fully_methylated": 0.98756
+      },
+      "fraction_cpgs_identified": 0.00052,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 52828,
+        "beta_mean": 0.9133,
+        "beta_std": 0.28139,
+        "fraction_exactly_1": 0.9133,
+        "fraction_exactly_0": 0.0867,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1577": {
+      "n_observations": 59205,
+      "n_cpgs": 58880,
+      "mean_obs_per_cpg": 1.006,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 44,
+      "n_observations_at_fragment_end": 605,
+      "boundary_observation_rate": 0.01022,
+      "methy_stat_counts": {
+        "m": 59205
+      },
+      "n_cpgs_used": 46,
+      "mean_unmethylated_fraction": 0.01087,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.07292,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97826,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 58880,
+        "mean_unmethylated_fraction": 0.01027,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10078,
+        "fraction_cpgs_fully_unmethylated": 0.01026,
+        "fraction_cpgs_fully_methylated": 0.98972
+      },
+      "fraction_cpgs_identified": 0.00078,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 50275,
+        "beta_mean": 0.91346,
+        "beta_std": 0.28117,
+        "fraction_exactly_1": 0.91346,
+        "fraction_exactly_0": 0.08654,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR1578": {
+      "n_observations": 55137,
+      "n_cpgs": 54922,
+      "mean_obs_per_cpg": 1.004,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 24,
+      "n_observations_at_fragment_end": 615,
+      "boundary_observation_rate": 0.01115,
+      "methy_stat_counts": {
+        "m": 55137
+      },
+      "n_cpgs_used": 44,
+      "mean_unmethylated_fraction": 0.01136,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.07452,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97727,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 54922,
+        "mean_unmethylated_fraction": 0.01119,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10516,
+        "fraction_cpgs_fully_unmethylated": 0.01118,
+        "fraction_cpgs_fully_methylated": 0.9888
+      },
+      "fraction_cpgs_identified": 0.0008,
+      "label": 0,
+      "disease": "Liver transplant",
+      "decoded": {
+        "n_cpgs": 46149,
+        "beta_mean": 0.91209,
+        "beta_std": 0.28317,
+        "fraction_exactly_1": 0.91209,
+        "fraction_exactly_0": 0.08791,
+        "fraction_intermediate": 0.0
+      }
+    },
+    "TBR901": {
+      "n_observations": 13159,
+      "n_cpgs": 11003,
+      "mean_obs_per_cpg": 1.196,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 77,
+      "n_observations_at_fragment_end": 137,
+      "boundary_observation_rate": 0.01041,
+      "methy_stat_counts": {
+        "m": 13159
+      },
+      "n_cpgs_used": 392,
+      "mean_unmethylated_fraction": 0.00742,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05659,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97194,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 11003,
+        "mean_unmethylated_fraction": 0.01072,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10224,
+        "fraction_cpgs_fully_unmethylated": 0.01045,
+        "fraction_cpgs_fully_methylated": 0.98855
+      },
+      "fraction_cpgs_identified": 0.03563,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 8086,
+        "beta_mean": 0.96958,
+        "beta_std": 0.17139,
+        "fraction_exactly_1": 0.96933,
+        "fraction_exactly_0": 0.03018,
+        "fraction_intermediate": 0.00049
+      }
+    },
+    "TBR910": {
+      "n_observations": 15506,
+      "n_cpgs": 12678,
+      "mean_obs_per_cpg": 1.223,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 108,
+      "n_observations_at_fragment_end": 180,
+      "boundary_observation_rate": 0.01161,
+      "methy_stat_counts": {
+        "m": 15506
+      },
+      "n_cpgs_used": 637,
+      "mean_unmethylated_fraction": 0.00854,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05786,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97017,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 12678,
+        "mean_unmethylated_fraction": 0.01195,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10745,
+        "fraction_cpgs_fully_unmethylated": 0.01152,
+        "fraction_cpgs_fully_methylated": 0.98699
+      },
+      "fraction_cpgs_identified": 0.05024,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9322,
+        "beta_mean": 0.9681,
+        "beta_std": 0.17522,
+        "fraction_exactly_1": 0.96771,
+        "fraction_exactly_0": 0.03154,
+        "fraction_intermediate": 0.00075
+      }
+    },
+    "TBR911.rep1": {
+      "n_observations": 19496,
+      "n_cpgs": 16726,
+      "mean_obs_per_cpg": 1.166,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 86,
+      "n_observations_at_fragment_end": 191,
+      "boundary_observation_rate": 0.0098,
+      "methy_stat_counts": {
+        "m": 19496
+      },
+      "n_cpgs_used": 484,
+      "mean_unmethylated_fraction": 0.00519,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.04459,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97727,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 16726,
+        "mean_unmethylated_fraction": 0.01025,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10029,
+        "fraction_cpgs_fully_unmethylated": 0.0101,
+        "fraction_cpgs_fully_methylated": 0.98924
+      },
+      "fraction_cpgs_identified": 0.02894,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 12653,
+        "beta_mean": 0.97103,
+        "beta_std": 0.16733,
+        "fraction_exactly_1": 0.9706,
+        "fraction_exactly_0": 0.02869,
+        "fraction_intermediate": 0.00071
+      }
+    },
+    "TBR911.rep2": {
+      "n_observations": 19020,
+      "n_cpgs": 16372,
+      "mean_obs_per_cpg": 1.162,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 84,
+      "n_observations_at_fragment_end": 172,
+      "boundary_observation_rate": 0.00904,
+      "methy_stat_counts": {
+        "m": 19020
+      },
+      "n_cpgs_used": 460,
+      "mean_unmethylated_fraction": 0.00614,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.04972,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97391,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 16372,
+        "mean_unmethylated_fraction": 0.00933,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.09563,
+        "fraction_cpgs_fully_unmethylated": 0.00916,
+        "fraction_cpgs_fully_methylated": 0.99011
+      },
+      "fraction_cpgs_identified": 0.0281,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 12469,
+        "beta_mean": 0.9716,
+        "beta_std": 0.16566,
+        "fraction_exactly_1": 0.97105,
+        "fraction_exactly_0": 0.02815,
+        "fraction_intermediate": 0.0008
+      }
+    },
+    "TBR912": {
+      "n_observations": 14405,
+      "n_cpgs": 12251,
+      "mean_obs_per_cpg": 1.176,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 61,
+      "n_observations_at_fragment_end": 151,
+      "boundary_observation_rate": 0.01048,
+      "methy_stat_counts": {
+        "m": 14405
+      },
+      "n_cpgs_used": 362,
+      "mean_unmethylated_fraction": 0.00625,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05125,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.98066,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 12251,
+        "mean_unmethylated_fraction": 0.01096,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.1036,
+        "fraction_cpgs_fully_unmethylated": 0.01077,
+        "fraction_cpgs_fully_methylated": 0.98865
+      },
+      "fraction_cpgs_identified": 0.02955,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9123,
+        "beta_mean": 0.9694,
+        "beta_std": 0.17194,
+        "fraction_exactly_1": 0.9692,
+        "fraction_exactly_0": 0.03036,
+        "fraction_intermediate": 0.00044
+      }
+    },
+    "TBR914.rep1": {
+      "n_observations": 20650,
+      "n_cpgs": 17894,
+      "mean_obs_per_cpg": 1.154,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 75,
+      "n_observations_at_fragment_end": 231,
+      "boundary_observation_rate": 0.01119,
+      "methy_stat_counts": {
+        "m": 20650
+      },
+      "n_cpgs_used": 446,
+      "mean_unmethylated_fraction": 0.00842,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.06068,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97309,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 17894,
+        "mean_unmethylated_fraction": 0.01172,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10709,
+        "fraction_cpgs_fully_unmethylated": 0.01151,
+        "fraction_cpgs_fully_methylated": 0.98782
+      },
+      "fraction_cpgs_identified": 0.02492,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 13828,
+        "beta_mean": 0.9698,
+        "beta_std": 0.17086,
+        "fraction_exactly_1": 0.96948,
+        "fraction_exactly_0": 0.02994,
+        "fraction_intermediate": 0.00058
+      }
+    },
+    "TBR914.rep2": {
+      "n_observations": 20332,
+      "n_cpgs": 17711,
+      "mean_obs_per_cpg": 1.148,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 71,
+      "n_observations_at_fragment_end": 200,
+      "boundary_observation_rate": 0.00984,
+      "methy_stat_counts": {
+        "m": 20332
+      },
+      "n_cpgs_used": 421,
+      "mean_unmethylated_fraction": 0.00437,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0398,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.98337,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 17711,
+        "mean_unmethylated_fraction": 0.01038,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10103,
+        "fraction_cpgs_fully_unmethylated": 0.01028,
+        "fraction_cpgs_fully_methylated": 0.98933
+      },
+      "fraction_cpgs_identified": 0.02377,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 13611,
+        "beta_mean": 0.96891,
+        "beta_std": 0.17328,
+        "fraction_exactly_1": 0.96855,
+        "fraction_exactly_0": 0.03086,
+        "fraction_intermediate": 0.00059
+      }
+    },
+    "TBR916.rep1": {
+      "n_observations": 14839,
+      "n_cpgs": 12848,
+      "mean_obs_per_cpg": 1.155,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 62,
+      "n_observations_at_fragment_end": 144,
+      "boundary_observation_rate": 0.0097,
+      "methy_stat_counts": {
+        "m": 14839
+      },
+      "n_cpgs_used": 346,
+      "mean_unmethylated_fraction": 0.00602,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.04633,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97399,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 12848,
+        "mean_unmethylated_fraction": 0.01012,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.09959,
+        "fraction_cpgs_fully_unmethylated": 0.00996,
+        "fraction_cpgs_fully_methylated": 0.98934
+      },
+      "fraction_cpgs_identified": 0.02693,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9538,
+        "beta_mean": 0.97547,
+        "beta_std": 0.15453,
+        "fraction_exactly_1": 0.97536,
+        "fraction_exactly_0": 0.02443,
+        "fraction_intermediate": 0.00021
+      }
+    },
+    "TBR916.rep2": {
+      "n_observations": 15145,
+      "n_cpgs": 13054,
+      "mean_obs_per_cpg": 1.16,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 67,
+      "n_observations_at_fragment_end": 159,
+      "boundary_observation_rate": 0.0105,
+      "methy_stat_counts": {
+        "m": 15145
+      },
+      "n_cpgs_used": 379,
+      "mean_unmethylated_fraction": 0.00377,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0306,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97361,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 13054,
+        "mean_unmethylated_fraction": 0.01091,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10349,
+        "fraction_cpgs_fully_unmethylated": 0.0108,
+        "fraction_cpgs_fully_methylated": 0.98843
+      },
+      "fraction_cpgs_identified": 0.02903,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9645,
+        "beta_mean": 0.97107,
+        "beta_std": 0.16725,
+        "fraction_exactly_1": 0.97076,
+        "fraction_exactly_0": 0.02872,
+        "fraction_intermediate": 0.00052
+      }
+    },
+    "TBR917.rep1": {
+      "n_observations": 15461,
+      "n_cpgs": 13259,
+      "mean_obs_per_cpg": 1.166,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 75,
+      "n_observations_at_fragment_end": 180,
+      "boundary_observation_rate": 0.01164,
+      "methy_stat_counts": {
+        "m": 15461
+      },
+      "n_cpgs_used": 407,
+      "mean_unmethylated_fraction": 0.00788,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05444,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97052,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 13259,
+        "mean_unmethylated_fraction": 0.01231,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10958,
+        "fraction_cpgs_fully_unmethylated": 0.01207,
+        "fraction_cpgs_fully_methylated": 0.98703
+      },
+      "fraction_cpgs_identified": 0.0307,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9851,
+        "beta_mean": 0.96861,
+        "beta_std": 0.17407,
+        "fraction_exactly_1": 0.96833,
+        "fraction_exactly_0": 0.03116,
+        "fraction_intermediate": 0.00051
+      }
+    },
+    "TBR917.rep2": {
+      "n_observations": 15122,
+      "n_cpgs": 13020,
+      "mean_obs_per_cpg": 1.161,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 73,
+      "n_observations_at_fragment_end": 178,
+      "boundary_observation_rate": 0.01177,
+      "methy_stat_counts": {
+        "m": 15122
+      },
+      "n_cpgs_used": 412,
+      "mean_unmethylated_fraction": 0.00418,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.03166,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.9733,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 13020,
+        "mean_unmethylated_fraction": 0.0125,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.11064,
+        "fraction_cpgs_fully_unmethylated": 0.01237,
+        "fraction_cpgs_fully_methylated": 0.98679
+      },
+      "fraction_cpgs_identified": 0.03164,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 9758,
+        "beta_mean": 0.97623,
+        "beta_std": 0.15183,
+        "fraction_exactly_1": 0.97581,
+        "fraction_exactly_0": 0.02347,
+        "fraction_intermediate": 0.00072
+      }
+    },
+    "TBR919.rep1": {
+      "n_observations": 19028,
+      "n_cpgs": 16656,
+      "mean_obs_per_cpg": 1.142,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 64,
+      "n_observations_at_fragment_end": 212,
+      "boundary_observation_rate": 0.01114,
+      "methy_stat_counts": {
+        "m": 19028
+      },
+      "n_cpgs_used": 473,
+      "mean_unmethylated_fraction": 0.00549,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0465,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.98097,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 16656,
+        "mean_unmethylated_fraction": 0.01192,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10811,
+        "fraction_cpgs_fully_unmethylated": 0.01177,
+        "fraction_cpgs_fully_methylated": 0.98769
+      },
+      "fraction_cpgs_identified": 0.0284,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 12437,
+        "beta_mean": 0.96904,
+        "beta_std": 0.17282,
+        "fraction_exactly_1": 0.96872,
+        "fraction_exactly_0": 0.03071,
+        "fraction_intermediate": 0.00056
+      }
+    },
+    "TBR919.rep2": {
+      "n_observations": 17598,
+      "n_cpgs": 15393,
+      "mean_obs_per_cpg": 1.143,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 56,
+      "n_observations_at_fragment_end": 192,
+      "boundary_observation_rate": 0.01091,
+      "methy_stat_counts": {
+        "m": 17598
+      },
+      "n_cpgs_used": 435,
+      "mean_unmethylated_fraction": 0.00575,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.04649,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97701,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 15393,
+        "mean_unmethylated_fraction": 0.01153,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10629,
+        "fraction_cpgs_fully_unmethylated": 0.01137,
+        "fraction_cpgs_fully_methylated": 0.98798
+      },
+      "fraction_cpgs_identified": 0.02826,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 11562,
+        "beta_mean": 0.97399,
+        "beta_std": 0.15872,
+        "fraction_exactly_1": 0.97371,
+        "fraction_exactly_0": 0.02569,
+        "fraction_intermediate": 0.00061
+      }
+    },
+    "TBR921": {
+      "n_observations": 14996,
+      "n_cpgs": 13123,
+      "mean_obs_per_cpg": 1.143,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 60,
+      "n_observations_at_fragment_end": 179,
+      "boundary_observation_rate": 0.01194,
+      "methy_stat_counts": {
+        "m": 14996
+      },
+      "n_cpgs_used": 342,
+      "mean_unmethylated_fraction": 0.00419,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.0386,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97953,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 13123,
+        "mean_unmethylated_fraction": 0.01253,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.11092,
+        "fraction_cpgs_fully_unmethylated": 0.01242,
+        "fraction_cpgs_fully_methylated": 0.98705
+      },
+      "fraction_cpgs_identified": 0.02606,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 10020,
+        "beta_mean": 0.97223,
+        "beta_std": 0.16364,
+        "fraction_exactly_1": 0.97166,
+        "fraction_exactly_0": 0.02735,
+        "fraction_intermediate": 0.001
+      }
+    },
+    "TBR922.rep1": {
+      "n_observations": 18620,
+      "n_cpgs": 16330,
+      "mean_obs_per_cpg": 1.14,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 69,
+      "n_observations_at_fragment_end": 211,
+      "boundary_observation_rate": 0.01133,
+      "methy_stat_counts": {
+        "m": 18620
+      },
+      "n_cpgs_used": 401,
+      "mean_unmethylated_fraction": 0.00333,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.03238,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.98005,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 16330,
+        "mean_unmethylated_fraction": 0.01208,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10901,
+        "fraction_cpgs_fully_unmethylated": 0.012,
+        "fraction_cpgs_fully_methylated": 0.98751
+      },
+      "fraction_cpgs_identified": 0.02456,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 12281,
+        "beta_mean": 0.9673,
+        "beta_std": 0.17765,
+        "fraction_exactly_1": 0.96702,
+        "fraction_exactly_0": 0.03257,
+        "fraction_intermediate": 0.00041
+      }
+    },
+    "TBR922.rep2": {
+      "n_observations": 18266,
+      "n_cpgs": 15971,
+      "mean_obs_per_cpg": 1.144,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 67,
+      "n_observations_at_fragment_end": 177,
+      "boundary_observation_rate": 0.00969,
+      "methy_stat_counts": {
+        "m": 18266
+      },
+      "n_cpgs_used": 386,
+      "mean_unmethylated_fraction": 0.00418,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.03979,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97927,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 15971,
+        "mean_unmethylated_fraction": 0.01031,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10069,
+        "fraction_cpgs_fully_unmethylated": 0.01021,
+        "fraction_cpgs_fully_methylated": 0.98929
+      },
+      "fraction_cpgs_identified": 0.02417,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 12174,
+        "beta_mean": 0.97205,
+        "beta_std": 0.16441,
+        "fraction_exactly_1": 0.97158,
+        "fraction_exactly_0": 0.02768,
+        "fraction_intermediate": 0.00074
+      }
+    },
+    "TBR924": {
+      "n_observations": 15440,
+      "n_cpgs": 13571,
+      "mean_obs_per_cpg": 1.138,
+      "median_obs_per_cpg": 1,
+      "max_obs_per_cpg": 61,
+      "n_observations_at_fragment_end": 170,
+      "boundary_observation_rate": 0.01101,
+      "methy_stat_counts": {
+        "m": 15440
+      },
+      "n_cpgs_used": 336,
+      "mean_unmethylated_fraction": 0.0081,
+      "median_unmethylated_fraction": 0.0,
+      "std_unmethylated_fraction": 0.05583,
+      "fraction_cpgs_fully_unmethylated": 0.0,
+      "fraction_cpgs_fully_methylated": 0.97321,
+      "all_covered_cpgs": {
+        "n_cpgs_used": 13571,
+        "mean_unmethylated_fraction": 0.0114,
+        "median_unmethylated_fraction": 0.0,
+        "std_unmethylated_fraction": 0.10559,
+        "fraction_cpgs_fully_unmethylated": 0.0112,
+        "fraction_cpgs_fully_methylated": 0.98814
+      },
+      "fraction_cpgs_identified": 0.02476,
+      "label": 1,
+      "disease": "Colorectal cancer",
+      "decoded": {
+        "n_cpgs": 10241,
+        "beta_mean": 0.96405,
+        "beta_std": 0.18549,
+        "fraction_exactly_1": 0.96328,
+        "fraction_exactly_0": 0.03554,
+        "fraction_intermediate": 0.00117
+      }
+    }
+  },
+  "interpretation": {
+    "coverage_baseline": "coverage_baseline_n_cpgs_auc is the number of covered CpGs alone; a methylation feature must beat it to mean anything",
+    "boundary_estimator": "mean_unmethylated_fraction is the share of a CpG's observations that sit at a fragment end; it estimates the unmethylated state without a model, a prior or training",
+    "matched_locus": "the matched-locus tests restrict both arms to the CpGs they share, so a difference there cannot be produced by library composition",
+    "decoder_degeneracy": "fraction_intermediate near zero means the decoder returned hard 0/1 calls, so the beta summary is a count of called states rather than a graded methylation level"
+  }
+}

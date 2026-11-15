@@ -23,8 +23,8 @@ It has not been validated on a held-out clinical cohort. See
 
 | | |
 |---|---|
-| **Model name** | DeepCatch v2.2.0 |
-| **Version** | 2.2.0 (commit `fb1e523` on `main`) |
+| **Model name** | DeepCatch v2.3.0 |
+| **Version** | 2.3.0 (commit `7f9613b` on `main`) |
 | **Date** | 2026-09-23 |
 | **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
@@ -255,6 +255,16 @@ holdout and must not be read as a generalisation claim.
   See [`docs/SPARSE_AWARE_ABLATION.md`](SPARSE_AWARE_ABLATION.md).
 - **Foundation vs LR** — foundation honestly loses to LR on the
   n=20 cohort. See `AUDIT_2_FINDINGS.md`.
+- **Methylation (V3) channel** — measured on 31 real FinaleDB samples and
+  reported as a **null**: the decoded β summary reaches LOO AUC 0.9444,
+  which is exactly the AUC of the covered-CpG count and of the
+  observations-per-CpG count alone, and at the loci both arms cover the
+  median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs
+  (permutation p = 1.0). The libraries are size-selected at ~300 bp and
+  deliver 1.09 observations per CpG, so the digestion signature FinaleMe
+  reads is absent. The extraction path runs on real public data; the
+  channel is **not** a validated feature. See
+  [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
 
 ## Limitations
 
@@ -376,7 +386,7 @@ python scripts/adapter_auc_gate.py
             (research-use-only open-data methods benchmark)},
   year   = {2026},
   url    = {https://github.com/rollroyces/deepcatch},
-  version = {2.2.0},
+  version = {2.3.0},
   note   = {Research-use-only open-data benchmark. NOT clinically validated.
             NOT FDA-approved. NOT a medical device. For methods research only.}
 }
@@ -384,7 +394,7 @@ python scripts/adapter_auc_gate.py
 
 ## Versioning
 
-This model card applies to **DeepCatch v2.2.0** (commit `fb1e523` on
+This model card applies to **DeepCatch v2.3.0** (commit `7f9613b` on
 `main`). Subsequent versions may update the headline numbers; check
 the `results/` directory and the README for the latest validated
 metrics.
