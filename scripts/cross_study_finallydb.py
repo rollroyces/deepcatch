@@ -72,11 +72,31 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 # Reuse the cfdna-fragmentomics-pipeline 5-channel loader + harmonize helper.
-PIPELINE = "/Users/hermes/cfdna-fragmentomics-pipeline"
-sys.path.insert(0, PIPELINE)
-sys.path.insert(0, os.path.join(PIPELINE, "scripts"))
-from honest_benchmark import load5  # noqa: E402
-from train_classifier import _harmonize  # noqa: E402
+#
+# Imported lazily: the sibling checkout is absent on CI and in a fresh
+# clone, and a module-level import made this file -- and every test that
+# imports it -- unimportable there (pytest aborted the whole "Core tests"
+# session on ModuleNotFoundError: No module named 'honest_benchmark').
+PIPELINE = os.environ.get(
+    "DEEPCATCH_SISTER_PIPELINE",
+    "/Users/hermes/cfdna-fragmentomics-pipeline",
+)
+_SISTER = None
+
+
+def _sister_pipeline():
+    """Return (load5, _harmonize) from the sibling pipeline (cached)."""
+    global _SISTER
+    if _SISTER is None:
+        import importlib
+        for p in (PIPELINE, os.path.join(PIPELINE, "scripts")):
+            if p not in sys.path:
+                sys.path.insert(0, p)
+        _SISTER = (
+            importlib.import_module("honest_benchmark").load5,
+            importlib.import_module("train_classifier")._harmonize,
+        )
+    return _SISTER
 
 # Repo-local extended loader: load5 + 256-dim 4-mer end-motif counts.
 # See scripts/load5_with_motifs.py for the loader contract and the
@@ -253,6 +273,7 @@ def pooled_oof(X, y, st, seeds, pca_n, harmonize):
     """
     score_acc = np.zeros(len(y), dtype=float)
     seed_aucs = []
+    _, _harmonize = _sister_pipeline()
     for sd in seeds:
         cv = StratifiedKFold(5, shuffle=True, random_state=sd)
         oof = np.zeros(len(y), dtype=float)
@@ -1423,6 +1444,7 @@ def main():
         )
         n_motif_dim = 0
     else:
+        load5, _ = _sister_pipeline()
         X, y, st = load5(labels, studies, args.features_dir)
         n_motif_dim = 0
     print(f"      X.shape={X.shape}, n_cancer={(y==1).sum()}, "
@@ -1772,6 +1794,7 @@ def main_with_shuffled(args):
         args.labels_multiclass, set(requested_publications),
     )
     apply_cell_line_filter(labels, studies, disease_class, publication)
+    load5, _ = _sister_pipeline()
     X, y, st = load5(labels, studies, args.features_dir)
     _cli_run_shuffled_label_control(
         args, X, y, st, args.seeds,
