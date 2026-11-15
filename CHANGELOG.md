@@ -152,6 +152,14 @@ cohort size.
   executed anywhere. The deep-learning job now runs that file, with its
   timeout raised to 30 minutes to match the ~28 s per test it takes
   locally.
+- **The preprint's data-availability statement named the wrong datasets.**
+  It listed TCGA-LUAD and FLARE but not FinaleDB -- which is where the
+  cross-study benchmark (n=627) and the held-out external cohort
+  (publications 1, 7, 9) come from, i.e. the paper's headline numbers.
+  It now names every source, states that no patient-identifiable data is
+  redistributed, and records that the external cohort needs no IRB. The
+  manuscript also gains the standard author-contributions, funding and
+  competing-interests sections that life-sciences journals require.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out

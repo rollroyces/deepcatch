@@ -354,10 +354,12 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 
 - **Source code:** github.com/rollroyces/deepcatch
 - **License:** MIT
-- **Data:**
-  - FinaleDB pre-extracted cache: `cfdna-fragmentomics-pipeline/data/features/` (657 samples, Cristiano 2019 + Jiang 2015)
+- **Data** (all public; re-fetched by the scripts in `scripts/`; no
+  patient-identifiable data is redistributed):
+  - FinaleDB pre-extracted cache: `cfdna-fragmentomics-pipeline/data/features/` (657 samples, Cristiano 2019 + Jiang 2015) -- the cross-study benchmark cohort (§3.2), of which 627 have features
+  - FinaleDB **held-out external cohort**: publications 1 (Snyder 2016), 7 (Sun 2019) and 9 (Adalsteinsson 2017), fetched from the public REST API and the public S3 bucket by `scripts/fetch_external_cohort.py`; these contribute **no** training data (§3.2.2). No IRB or data-use agreement is required.
   - GDC TCGA-LUAD MAF files: `validation/tcga/tcga_cache/` (402 MAF files, open access)
-  - FLARE / GSE317007 (ONT HNSCC): see `docs/PATH_TO_IMPACT.md`
+  - FLARE / GSE317007 (ONT HNSCC) and GSE185307: see `docs/PATH_TO_IMPACT.md`
 - **Pretrained checkpoints:**
   - `checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt` (real-data-trained, 543,872 params, PRODUCTION_CONFIG)
   - `checkpoints/foundation_pretrained_SYNTHETIC_v0.pt` (historical; not real-data-trained — do NOT use for "real-data-derived" claims)
