@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import json
 import math
 import os
 import subprocess
@@ -153,7 +154,7 @@ def main() -> int:
 
     matrices = []
     for name in sorted(os.listdir(args.matrices_dir)):
-        if name.endswith(".matrix.txt.gz"):
+        if name.endswith("matrix.txt.gz"):
             matrices.append(os.path.join(args.matrices_dir, name))
     if not matrices:
         print(f"no matrices in {args.matrices_dir}", file=sys.stderr)
