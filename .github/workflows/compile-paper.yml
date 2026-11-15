@@ -8,8 +8,10 @@ on:
       - 'paper/references_final.bib'
       - 'paper/paper.tex'
       - 'paper/PAPER.md'
-      - 'paper/biorxiv_submission_v2.2.0.pdf'
-      - 'paper/figures/**'
+      - 'paper/*.pdf'
+      # the manuscript embeds these, so a figure change must re-trigger it
+      - 'docs/figures/**'
+      - 'results/real_tcga_performance.png'
   workflow_dispatch:
 
 jobs:

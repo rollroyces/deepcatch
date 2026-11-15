@@ -18,7 +18,7 @@ This directory holds the canonical docs for the DeepCatch project:
 
 - **[PAPER.md →](../paper/PAPER.md)** — bioRxiv manuscript (markdown source)
 - **[paper/paper.tex →](../paper/paper.tex)** — LaTeX source
-- **[paper/biorxiv_submission_v2.2.0.pdf →](../paper/biorxiv_submission_v2.2.0.pdf)** — pre-compiled PDF
+- **[paper/biorxiv_submission_v2.3.0.pdf →](../paper/biorxiv_submission_v2.3.0.pdf)** — pre-compiled PDF (the submission artefact; rebuilt from `paper/paper.tex` after the v2.3.0 results landed)
 - **[PREPRINT_ABSTRACT.md](PREPRINT_ABSTRACT.md)** — short abstract
 - **[PATH_TO_IMPACT.md](PATH_TO_IMPACT.md)** — companion-piece narrative
 

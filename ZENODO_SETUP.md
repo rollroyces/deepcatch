@@ -46,7 +46,7 @@ git push origin v0.2.0
 - Go to https://github.com/rollroyces/deepcatch/releases/new
 - Choose the tag, title `DeepCatch v2.2.0`, description with the
   headline numbers (paste from MODEL.md), attach
-  `paper/biorxiv_submission_v2.2.0.pdf` as the release artifact
+  `paper/biorxiv_submission_v2.3.0.pdf` as the release artifact
 - Click "Publish release"
 
 Repeat for the pipeline repo.

@@ -288,7 +288,7 @@ governance model**. Specifically:
   numbers, license, or maintainer): Yu Ching Lam has final say after
   one round of community review.
 - **Headline changes** (changes to `RESULTS.md` TL;DR, `BENCHMARK.md`
-  top section, `paper/PAPER.md` abstract, `paper/biorxiv_submission_v2.2.0.pdf`):
+  top section, `paper/PAPER.md` abstract, `paper/biorxiv_submission_v2.3.0.pdf`):
   requires Yu Ching Lam approval + 2 weeks of public discussion.
 - **License changes**: requires Yu Ching Lam approval + 1 month of
   public discussion + 2 community-member agreement.
@@ -388,8 +388,8 @@ Bioinformatics or PLOS Computational Biology.
 | Headline tumor-naive AUC 0.974-0.978 | ✓ Verified, 4 audit rounds | `RESULTS.md` |
 | Headline fusion AUC 0.989 | ✓ Verified, partly synthetic | `RESULTS.md` §3 |
 | bioRxiv preprint | ⏳ Awaiting user action (ORCID + email) | `paper/BIORXIV_SUBMISSION.md` |
-| 85 unit tests passing | ✓ | `test/` in both repos |
-| 9/9 CI jobs green | ✓ | `.github/workflows/` |
+| 581 tests passing (`pytest src test -q`) | ✓ | `test/` + the per-module suites |
+| CI jobs green (core, deep-learning, paper PDF, docs site) | ✓ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |
 | Cross-repo fusion (DeepCatch + pipeline) | ✓ Working | `src/fragmentomics/fusion_ablation.py` |

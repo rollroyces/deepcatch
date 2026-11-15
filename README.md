@@ -9,14 +9,16 @@
 # 🧬 DeepCatch — Open-Data cfDNA Methods Benchmark
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-238%20passed%2C%2015%20deselected-blue)()
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
+![Tests](https://img.shields.io/badge/Tests-581%20passed-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
 [![Ultra-Early Readiness](https://img.shields.io/badge/Ultra--Early-Status-yellow)](ULTRA_EARLY_READINESS.md)
 
-**DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It fuses complementary molecular modalities through a self-supervised Transformer foundation model, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — all in a single two-stage CET (Capture → Enhance → Triage) pipeline.
+**DeepCatch** is an open-source computational framework for multi-cancer early detection (MCED) from cell-free DNA (cfDNA). It combines tumor-informed mutation panels with a tumor-naive fragmentomics channel, tracks patients longitudinally with Bayesian Kalman filtering, and predicts tissue-of-origin — a two-stage CET (Capture → Enhance → Triage) pipeline.
+
+**Manuscripts:** [`paper.md`](paper.md) (JOSS format) · [`paper/METHODS_PAPER.md`](paper/METHODS_PAPER.md) (long-form methods) · [`paper/paper.tex`](paper/paper.tex) (preprint source, compiled by CI) — submission guide in [`paper/README.md`](paper/README.md).
 
 ---
 
@@ -337,7 +339,7 @@ env -u PYTHONPATH ./.venv/bin/python -m pytest \
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
-# → 228+ tests across all modules
+# → 581 tests across all modules
 
 # Biomedical-review regression tests
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_biomedical_review_fixes.py -v

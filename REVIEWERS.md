@@ -19,7 +19,7 @@ patients from TCGA GDC. Duplex-UMI (1e-4 error) + 50k× depth → sens@95%
 = 1.000.
 
 All code open source. All data from GDC (TCGA-LUAD MAFs) and GEO
-(GSE317007, GSE185307).  228/228 tests green (core + deep-learning modules).
+(GSE317007, GSE185307).  581 tests green (395 core + 186 deep-learning).
 
 ---
 
@@ -98,7 +98,7 @@ Output: `results/real_tcga_validation.json` with all AUCs, sweep, and
 per-seed metrics.  Requires only numpy/scipy/scikit-learn — the GDC MAFs
 are downloaded automatically on first run (open access).
 
-Full test suite: `pytest src test -q` — 228/228 green on Python 3.11-3.14,
+Full test suite: `pytest src test -q` — 581 green on Python 3.11-3.14,
 torch 2.13, torch_geometric.
 
 ---
