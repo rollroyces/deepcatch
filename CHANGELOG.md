@@ -97,6 +97,20 @@ cohort size.
   footing. Per-cancer, sens@spec, the true-confound control and the
   shuffled-label null were regenerated from the same runs
   (`scripts/benchmark_numbers.py` prints all of them).
+- **The fusion ablation was re-run from this repository, with the labels/study
+  columns resolved from the header.** It had never run here before: the labels
+  loader raised on the canonical 4-column `labels_multiclass.tsv`, and behind
+  that lay a second bug — the study column was read positionally, so every
+  sample was assigned to a "study" called cancer or control, the per-study
+  harmonisation removed the signal it was meant to isolate, and the pooled
+  tumor-naive AUC came out at 0.4915 (chance). The corrected, seeded run
+  reproduces the published numbers: tumor-naive **0.9740 ± 0.0013**, naive
+  average **0.9884 ± 0.0010** (paired over 10 seeds: +0.0144, t = 54.50,
+  positive on every seed), LR fusion 0.9884 ± 0.0009, isotonic variant
+  0.9849 ± 0.0014 (it regresses on every seed, as before). The preprint
+  abstract now quotes these and states that the fused mutation channel is a
+  calibrated synthetic proxy rather than the real panel LLR.
+  Artifact: `results/fusion_ablation_isotonic.json`.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out

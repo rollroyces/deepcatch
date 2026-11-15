@@ -84,7 +84,7 @@ python scripts/real_tcga_validation.py --report</code></pre>
                 </div>
                 <div class="card">
                     <h3>Fusion (naive average)</h3>
-                    <p>Two channels averaged. <strong>AUC 0.9886</strong> — paired t-test vs each alone p &lt; 0.0001, DeLong p &lt; 0.0015 on every seed. The two channels are complementary.</p>
+                    <p>Two channels averaged. <strong>AUC 0.9884</strong> — paired over 10 seeds: +0.0144, t = 54.50, positive on every seed. The mutation channel in this pairing is a calibrated synthetic proxy (AUC 0.902), so it is a complementarity result, not a performance claim.</p>
                 </div>
                 <div class="card">
                     <h3>Per-sample risk score</h3>
@@ -114,7 +114,7 @@ python scripts/real_tcga_validation.py --report</code></pre>
                     <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.968 ± 0.003</td></tr>
                     <tr><td>Held-out publications never trained on (Sun 2019 WGS)</td><td>31</td><td>Cancer vs control</td><td>0.9915 [0.9712&ndash;1.0000]</td></tr>
                     <tr><td>Leave-one-study-out (train one publication, test the other)</td><td>627</td><td>Transfer</td><td>0.681 / 0.936</td></tr>
-                    <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.989 ± 0.001</td></tr>
+                    <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.9884 ± 0.0010</td></tr>
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
                     <tr><td>TCGA-LUAD panel LLR @ 0.1% ctDNA</td><td>20 patients</td><td>Ultra-low VAF</td><td>0.921 (Sens@95% = 0.770)</td></tr>
                     <tr><td>Multi-cancer 5-class OvR (LR+PCA(200))</td><td>236 cancer</td><td>Cancer subtyping</td><td>0.970 ± 0.001 macro</td></tr>

@@ -40,52 +40,52 @@ Source: `results/fusion_ablation_isotonic.json`.
 
 | Strategy | AUC (mean ± std) | Sens@95 | Sens@99 |
 |---|---|---|---|
-| Tumor-naive only | 0.9734 ± 0.0018 | 0.885 | 0.766 |
+| Tumor-naive only | 0.9740 ± 0.0013 | 0.880 | 0.742 |
 | Mutation-only (calibrated AUC 0.92) | 0.9020 ± 0.0000 | 0.595 | 0.267 |
-| Naive average | **0.9882 ± 0.0013** | **0.924** | **0.856** |
-| LR fusion (uncalibrated) | **0.9883 ± 0.0013** | **0.930** | 0.850 |
-| **LR fusion (isotonic)** | **0.9848 ± 0.0018** | 0.928 | 0.764 |
+| Naive average | **0.9884 ± 0.0010** | **0.927** | **0.841** |
+| LR fusion (uncalibrated) | **0.9884 ± 0.0009** | **0.932** | 0.833 |
+| **LR fusion (isotonic)** | **0.9849 ± 0.0014** | 0.928 | 0.646 |
 
 ### DeLong (seed 0, vs tumor_naive)
 
 | Strategy | Δ AUC | z | p (two-sided) | significant @ 0.05 |
 |---|---|---|---|---|
-| Naive average | +0.0141 | 3.41 | 0.0007 | yes |
-| LR fusion | +0.0139 | 3.31 | 0.0009 | yes |
-| LR fusion (isotonic) | +0.0082 | 1.72 | 0.085 | **no** |
+| Mutation-only | −0.0709 | −5.30 | 1.2e−07 | yes (worse) |
+| Naive average | +0.0145 | 3.63 | 0.00028 | yes |
+| LR fusion | +0.0144 | 3.53 | 0.00042 | yes |
+| LR fusion (isotonic) | +0.0103 | 2.09 | 0.036 | marginal |
 
 ### Per-seed AUC for LR vs LR-isotonic
 
 Every single seed shows an AUC regression for isotonic, ranging from
-−0.0017 (seed 1) to −0.0060 (seed 7):
+−0.0014 (seed 1) to −0.0051 (seed 6):
 
 ```
-seed 0:  lr=0.9885   iso=0.9829   delta=-0.0056
-seed 1:  lr=0.9888   iso=0.9871   delta=-0.0017
-seed 2:  lr=0.9863   iso=0.9820   delta=-0.0043
-seed 3:  lr=0.9888   iso=0.9837   delta=-0.0051
-seed 4:  lr=0.9876   iso=0.9856   delta=-0.0019
-seed 5:  lr=0.9859   iso=0.9838   delta=-0.0021
-seed 6:  lr=0.9893   iso=0.9868   delta=-0.0024
-seed 7:  lr=0.9902   iso=0.9841   delta=-0.0060
-seed 8:  lr=0.9894   iso=0.9875   delta=-0.0019
-seed 9:  lr=0.9880   iso=0.9850   delta=-0.0031
+seed 0:  lr=0.9872   iso=0.9831   delta=-0.0041
+seed 1:  lr=0.9882   iso=0.9868   delta=-0.0014
+seed 2:  lr=0.9889   iso=0.9863   delta=-0.0026
+seed 3:  lr=0.9882   iso=0.9846   delta=-0.0036
+seed 4:  lr=0.9882   iso=0.9840   delta=-0.0043
+seed 5:  lr=0.9873   iso=0.9850   delta=-0.0023
+seed 6:  lr=0.9878   iso=0.9827   delta=-0.0051
+seed 7:  lr=0.9898   iso=0.9850   delta=-0.0048
+seed 8:  lr=0.9883   iso=0.9843   delta=-0.0040
+seed 9:  lr=0.9901   iso=0.9869   delta=-0.0032
 ```
 
 ## Honest bottom line
 
 **Isotonic calibration did NOT help, and in fact it hurt.** Specifically:
 
-1. **AUC regressed by ~0.35 percentage points** (0.9883 → 0.9848),
+1. **AUC regressed by ~0.35 percentage points** (0.9884 → 0.9849),
    uniformly across all 10 seeds.
-2. **Sens@99 regressed by ~9 percentage points** (0.850 → 0.764),
-   and in one seed (seed 7) isotonic produced **Sens@99 = 0.000** —
+2. **Sens@99 regressed by ~19 percentage points** (0.833 → 0.646),
+   and in two seeds (6 and 7) isotonic produced **Sens@99 = 0.000** —
    the step function collapsed the test-fold scores onto a single
    value, eliminating high-specificity detection entirely.
-3. **DeLong significance against tumor-naive dropped from p=0.0009
-   (uncalibrated LR) to p=0.085 (isotonic)** — isotonic made the
-   fusion's gain over the single-channel baseline statistically
-   undetectable.
+3. **DeLong significance against tumor-naive dropped from p=0.00042
+   (uncalibrated LR) to p=0.036 (isotonic)** — isotonic made the
+   fusion's gain over the single-channel baseline barely detectable.
 
 ### Why did this happen?
 
@@ -99,7 +99,7 @@ introduce **flat regions** (where the in-sample LR score doesn't
 change much but the empirical class fraction does) and these flat
 regions can collapse an entire test fold onto one calibrated value
 when the test fold has narrow score variance — exactly what we saw
-in seed 7.
+in seeds 6 and 7.
 
 In other words: the LR fusion's output is already a monotone
 function of the underlying class-posterior signal, so re-fitting a

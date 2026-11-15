@@ -258,8 +258,8 @@ Output (abbreviated):
 [fusion] class balance: 363 cancer / 264 healthy
 [fusion] mutation-only sanity: AUC=0.902 Sens@95=0.595 (target ~0.92 / 0.77)
   tumor_naive    : mean=0.974  std=0.0014
-  naive_average  : mean=0.9885 std=0.0009
-  lr_fusion      : mean=0.9891 std=0.0009
+  naive_average  : mean=0.9884 std=0.0010
+  lr_fusion      : mean=0.9884 std=0.0009
 ```
 
 **Interpreting fusion output**:

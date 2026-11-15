@@ -136,7 +136,7 @@ Source: `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py`.
 |---|---|---|---|
 | Tumor-naive only | 0.9743 ± 0.002 | 0.883 | 0.760 |
 | Mutation-only (synthetic, AUC 0.92) | 0.9242 | 0.656 | 0.336 |
-| **Naive average** | **0.9886** | **0.927** | **0.859** |
+| **Naive average** | **0.9884** | **0.927** | **0.841** |
 | **LR fusion** | **0.9887** | **0.937** | **0.845** |
 
 **Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
@@ -294,7 +294,7 @@ holdout and must not be read as a generalisation claim.
    separation number, not a generalisation claim.
 
 5. **Mutation-informed channel in the fusion experiment is
-   synthetic.** The fusion AUC 0.9886 is a what-if pairing of a
+   synthetic.** The fusion AUC 0.9884 is a what-if pairing of a
    real fragmentomics channel with a synthetic mutation channel
    calibrated to AUC 0.92 — not a real measurement of both channels
    on the same plasma. Pairing on real plasma is the next phase.

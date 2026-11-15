@@ -86,10 +86,12 @@ Bioinformatics Advances for the science.
 
 ## A note on the numbers quoted from the companion repository
 
-The abstract quotes AUC 0.9753 ± 0.0018 for the tumor-naive channel as
-produced by `cfdna-fragmentomics-pipeline` (`scripts/honest_benchmark.py`).
-That script fits its PCA **without** `random_state`, so that figure is
-not bit-reproducible; the equivalent pipeline inside this repository
-(seeded) gives **0.9684 ± 0.0027** with GC correction and **0.9770 ±
-0.0013** without. The one-line fix in the companion repository is
-tracked separately — see the CHANGELOG of this release.
+The abstract's tumor-naive and fusion numbers are the ones this
+repository produces: **0.9740 ± 0.0013** for the channel and **0.9884 ±
+0.0010** for the naive average with a calibrated synthetic mutation
+channel, both from `results/fusion_ablation_isotonic.json`
+(`src/fragmentomics/fusion_ablation.py`, seeded PCA, 10 seeds). The
+companion repository's `scripts/honest_benchmark.py` still fits its PCA
+without `random_state`, so its own figures are reproducible only to
+within ~0.003; the one-line fix there is tracked separately — see the
+CHANGELOG of this release.
