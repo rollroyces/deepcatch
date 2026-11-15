@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-15T18:55:28.813129+00:00",
+  "source": {
+    "decoded_file": "/Users/hermes/.minimax/sessions/mvs_e28c55de4c1644eaa630bf6e9dc5aeb7/workspace/methylation_run/MBC_1330_1.decoded.txt.gz",
+    "origin": "FinaleMe decode of real FinaleDB fragment data (see docs/METHYLATION_PIPELINE.md)",
+    "synthetic_beta_used": false
+  },
+  "sample": {
+    "name": "MBC_1330_1",
+    "label": 1,
+    "disease": "Breast cancer"
+  },
+  "beta_summary": {
+    "n_cpgs": 56522,
+    "beta_mean": 0.9003,
+    "beta_median": 1.0,
+    "beta_std": 0.2986,
+    "fraction_methylated_below_0.5": 0.0985,
+    "n_chromosomes": 1
+  },
+  "graph": {
+    "n_nodes": 8000,
+    "node_feature_dim": 20,
+    "n_edges": 159980,
+    "edge_types": 159980
+  },
+  "graph_structure_is_synthetic": true,
+  "forward_pass_output_shapes": {
+    "reconstructed": [
+      8000,
+      20
+    ],
+    "anomaly_scores": [
+      8000,
+      1
+    ],
+    "node_embeddings": [
+      8000,
+      256
+    ],
+    "graph_anomaly": [
+      1
+    ]
+  },
+  "honest_framing": "The methylation VALUES are real: they are decoded by FinaleMe from real public FinaleDB fragment data, and no synthetic beta is generated anywhere in this file. The graph TOPOLOGY is not: no reference region set or Hi-C contact map is loaded, so RegulatoryGraphBuilder falls back to synthetic region annotations and random edges -- the builder logs that as 'No reference regions loaded' and 'No edges produced'. This is therefore a demonstration that the module consumes real methylation data end to end, not a performance result: the GNN is untrained, and a channel that discriminates cancer from non-cancer needs a cohort-trained HMM, a trained GNN, and a reference region set."
+}
