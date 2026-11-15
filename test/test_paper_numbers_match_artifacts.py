@@ -140,3 +140,25 @@ def test_superseded_figures_do_not_reappear(value):
         text = io.open(path, encoding="utf-8").read()
         assert value not in text, (
             f"{doc} still quotes the superseded figure {value}")
+
+
+def test_figures_are_rendered_from_the_headline_artifact():
+    """The figures must plot the benchmark the manuscript quotes.
+
+    `scripts/plot_figures.py` once read the legacy no-GC artifact while
+    the text quoted the GC-corrected run, so Figure 1 in the submission
+    PDF showed a 0.9770 curve next to a 0.9684 sentence. This asserts the
+    script's pooled-artifact constant is the headline one.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "plot_figures", _REPO_ROOT / "scripts" / "plot_figures.py")
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except ImportError as exc:  # matplotlib absent in a minimal env
+        pytest.skip(f"plot_figures not importable here: {exc}")
+    assert Path(module.POOLED_JSON).name == (
+        "cross_study_finallydb_gc_corrected.json"), (
+        "the figures must be rendered from the headline (GC-corrected) "
+        f"benchmark, not {Path(module.POOLED_JSON).name}")
+    assert Path(module.PER_CANCER_JSON).name == "per_cancer_sens_at_spec.json"

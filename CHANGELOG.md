@@ -135,7 +135,9 @@ cohort size.
   in the submission PDF plotted a different curve from the one the text
   describes. The script now reads the headline artifact and falls back to
   the legacy one only when it is absent; the three affected figures were
-  regenerated and the PDF rebuilt.
+  regenerated and the PDF rebuilt. The paper-number guard now also
+  asserts which artifact the figure script reads, so the same drift
+  cannot come back through the images.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out
