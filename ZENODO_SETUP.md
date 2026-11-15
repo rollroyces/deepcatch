@@ -3,6 +3,10 @@
 Zenodo gives every GitHub release a permanent DOI for citation. This
 file explains the setup so a reviewer (or future me) can finish it.
 
+**Current release to tag: `v2.3.0`** (the tag commands below are
+version-specific — an older copy of this file pointed at `v2.2.0`,
+which would have put the DOI on the wrong version).
+
 ## What's already in place
 
 - **`CITATION.cff`** at repo root (citation metadata in CFF format,
@@ -10,7 +14,9 @@ file explains the setup so a reviewer (or future me) can finish it.
   button). Both `deepcatch` and `cfdna-fragmentomics-pipeline` have one.
 - **README** has citation blocks.
 - **MODEL.md** has a `@software` BibTeX entry ready for the DOI.
-- **paper/PAPER.md** has a `@misc` BibTeX entry.
+- **paper.md** and `paper/PAPER.md` have `@misc` BibTeX entries.
+- The submission artefact is `paper/biorxiv_submission_v2.3.0.pdf`
+  (compiled from the current `paper/paper.tex`).
 
 ## What needs to happen (one-time, ~5 minutes)
 
@@ -23,29 +29,31 @@ file explains the setup so a reviewer (or future me) can finish it.
 
 ### 2. Make a release tag
 
-For `rollroyces/deepcatch` (v2.2.0 is the current version):
+For `rollroyces/deepcatch` (**v2.3.0** is the current version — tag
+the tip of `main`, not an older commit):
 
 ```bash
 # From the local repo
-cd /Users/hermes/deepcatch
-git tag -a v2.2.0 b59ebc4 -m "DeepCatch v2.2.0: tumor-naive + fusion + DeLong + decision curve + AUC gate + MODEL.md"
-git push origin v2.2.0
+cd /path/to/deepcatch
+git checkout main && git pull
+git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9915), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
+git push origin v2.3.0
 ```
 
-For `rollroyces/cfdna-fragmentomics-pipeline` (current tip is
-`058c1e1`):
+For `rollroyces/cfdna-fragmentomics-pipeline` (check the tip before
+tagging — that repository has its own release history):
 
 ```bash
-cd /Users/hermes/cfdna-fragmentomics-pipeline
-git tag -a v0.2.0 058c1e1 -m "v0.2.0: cross-study AUC 0.9745, AUC gate, HEAD-size guard, 18 unit tests"
+cd /path/to/cfdna-fragmentomics-pipeline
+git tag -a v0.2.0 -m "v0.2.0: cross-study AUC 0.9745, AUC gate, HEAD-size guard, 18 unit tests"
 git push origin v0.2.0
 ```
 
 ### 3. Create the GitHub Release
 
 - Go to https://github.com/rollroyces/deepcatch/releases/new
-- Choose the tag, title `DeepCatch v2.2.0`, description with the
-  headline numbers (paste from MODEL.md), attach
+- Choose the tag `v2.3.0`, title `DeepCatch v2.3.0`, description with
+  the headline numbers (paste from MODEL.md), attach
   `paper/biorxiv_submission_v2.3.0.pdf` as the release artifact
 - Click "Publish release"
 
@@ -84,20 +92,24 @@ Zenodo assigned. Commit. Done.
 ## Alternative: just use bioRxiv's DOI
 
 Once the bioRxiv submission is accepted (~24-48 hour screening),
-bioRxiv will assign a DOI. That DOI is just as good as Zenodo's for
-the purposes of being cited, and it's more discoverable to the
+bioRxiv will assign a DOI. That DOI is just as good as Zenodo's for the
+purposes of being cited, and it's more discoverable to the
 bioinformatics community. The choice is yours; both work.
 
 ## Honest recommendation
 
-- **Submit to bioRxiv first** (already prepared, see
-  `paper/BIORXIV_SUBMISSION.md`).
+- **Submit to bioRxiv first** — the PDF is
+  `paper/biorxiv_submission_v2.3.0.pdf` and the submission metadata is
+  in `paper/BIORXIV_SUBMISSION.md` (see also
+  `docs/JOURNAL_SUBMISSION.md` for the venue map).
 - **Once the bioRxiv DOI is in hand, use it as the primary citation
   in the README** rather than a Zenodo DOI. bioRxiv is more visible
   in the bioinformatics community.
-- **Tag the GitHub release with `v2.2.0-bioRxiv-2026-XX-XX`** so
+- **Tag the GitHub release with `v2.3.0`** (and, if you want the
+  preprint code pinned separately, `v2.3.0-bioRxiv-2026-XX-XX`) so
   anyone reproducing the result uses the exact same code as the
   pre-print.
 - **Zenodo is a backup**, not the primary. Skip it if you don't want
-  the extra 5 minutes.
-
+  the extra 5 minutes — but if you do tag, tag **v2.3.0**, because a
+  DOI minted on an older tag would misrepresent which code produced the
+  reported numbers.

@@ -2,7 +2,7 @@
 
 **Authors:** Royce et al.
 
-**Repository:** github.com/rollroyces/deepcatch (v2.2.0)
+**Repository:** github.com/rollroyces/deepcatch (v2.3.0)
 
 ## Abstract
 

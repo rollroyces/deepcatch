@@ -197,7 +197,15 @@ def load_cohort(
 
 
 def load_labels_tsv(labels_tsv: str) -> Dict[str, int]:
-    """Read `{sample}\\t{label}` TSV. Returns dict sample_id → int (0/1).
+    """Read a labels TSV. Returns dict sample_id → int (0/1).
+
+    Two layouts are accepted:
+
+    * a header row naming the columns (``sample``, ``label`` and
+      optionally ``disease_class`` / ``study``) -- this is the canonical
+      FinaleDB ``labels_multiclass.tsv`` layout
+      (``sample\\tdisease_class\\tlabel\\tstudy``);
+    * a headerless two-column ``{sample}\\t{label}`` file.
 
     Recognized labels (case-insensitive): cancer/positive/tumor/y/1/true
     → 1; healthy/control/normal/n/0/false → 0. Anything else raises.
@@ -205,6 +213,7 @@ def load_labels_tsv(labels_tsv: str) -> Dict[str, int]:
     POS = {"cancer", "positive", "tumor", "y", "1", "true", "case"}
     NEG = {"healthy", "control", "normal", "n", "0", "false"}
     out: Dict[str, int] = {}
+    label_col = 1
     with open(labels_tsv) as f:
         for line in f:
             line = line.rstrip("\n").rstrip("\r")
@@ -213,8 +222,18 @@ def load_labels_tsv(labels_tsv: str) -> Dict[str, int]:
             parts = line.split("\t")
             if len(parts) < 2:
                 continue
+            # Header detection: a first row whose first cell is not a
+            # sample id but the literal word "sample" names the columns.
+            if not out and parts[0].strip().lower() == "sample":
+                for i, name in enumerate(parts):
+                    if name.strip().lower() in ("label", "class", "y"):
+                        label_col = i
+                        break
+                continue
             s = parts[0]
-            lab = parts[1].strip().lower()
+            if label_col >= len(parts):
+                continue
+            lab = parts[label_col].strip().lower()
             if lab in POS:
                 out[s] = 1
             elif lab in NEG:

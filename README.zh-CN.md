@@ -14,7 +14,7 @@
 [![Docs Site](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
 
 > **🔥 正在寻求专家评审 — 请参阅 [REVIEWERS.md](REVIEWERS.md)。**
-> Tag v2.2.0：基于 panel 的 MRD benchmark，全部数据开放访问。
+> Tag v2.3.0：基于 panel 的 MRD benchmark，全部数据开放访问。
 > 等待评审的 PR：https://github.com/rollroyces/deepcatch/pull/2
 
 **DeepCatch** 是一个用于从游离 DNA（cfDNA）进行多癌种早期检测（MCED）的开源计算框架。它通过自监督 Transformer 基础模型融合 **7 种互补的分子模态**，借助贝叶斯卡尔曼滤波对患者进行纵向追踪，并预测组织来源——所有功能在单一的两阶段 CET（Capture → Enhance → Triage，即"捕获 → 增强 → 分诊"）流水线中完成。

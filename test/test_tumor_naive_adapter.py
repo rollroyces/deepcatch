@@ -154,6 +154,40 @@ def test_load_labels_tsv_handles_three_columns():
         os.unlink(path)
 
 
+def test_load_labels_tsv_reads_the_canonical_headered_layout():
+    """The canonical FinaleDB labels_multiclass.tsv has a header row.
+
+    Layout: sample / disease_class / label / study. Without header
+    awareness the loader would read ``disease_class`` as the label and
+    raise on the first row, which is what happened when the fusion
+    ablation was pointed at the real labels file.
+    """
+    with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
+        f.write("sample\tdisease_class\tlabel\tstudy\n")
+        f.write("H342\tHCC_J\tcancer\tjiang\n")
+        f.write("H232\tHCC_J\tcancer\tjiang\n")
+        f.write("C10\tCRC\tcontrol\tcristiano\n")
+        path = f.name
+    try:
+        labels = load_labels_tsv(path)
+        assert labels == {"H342": 1, "H232": 1, "C10": 0}
+    finally:
+        os.unlink(path)
+
+
+def test_load_labels_tsv_header_with_label_in_first_column():
+    """A header that names the columns wins over the positional guess."""
+    with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
+        f.write("sample\tlabel\n")
+        f.write("A\tcancer\n")
+        f.write("B\thealthy\n")
+        path = f.name
+    try:
+        assert load_labels_tsv(path) == {"A": 1, "B": 0}
+    finally:
+        os.unlink(path)
+
+
 def test_load_labels_tsv_rejects_unknown_label():
     with tempfile.NamedTemporaryFile("w", suffix=".tsv", delete=False) as f:
         f.write("A\tmaybe\n")

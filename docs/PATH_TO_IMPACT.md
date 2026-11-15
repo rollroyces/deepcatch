@@ -68,7 +68,7 @@ Post exactly these three things:
 ### 1.3 Get a Zenodo DOI (optional, 1 hour)
 
 Zenodo (zenodo.org) mints a DOI for your GitHub release.  Connect your
-GitHub account → select the deepcatch repo → publish v2.2.0.  This gives
+GitHub account → select the deepcatch repo → publish v2.3.0.  This gives
 you a permanent DOI independent of bioRxiv, and auto-updates with new
 releases.
 
