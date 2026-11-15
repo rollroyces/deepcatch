@@ -45,8 +45,12 @@ python scripts/auc_reproducibility_gate.py
 python run_cross_study.py --parallel 8 --max-mb 500
 
 # 4. Run the headline benchmark
-python scripts/honest_benchmark.py
-# Expect: "Cross-study AUC 0.974 ± 0.002 (5-seed pooled OOF)"
+python scripts/cross_study_finallydb.py \
+    --features-dir <sibling>/data/features \
+    --labels-multiclass <sibling>/labels_multiclass.tsv
+# Expect: pooled harmonized AUC 0.9684 ± 0.0027 (GC-corrected, 5-seed
+# pooled OOF) -- and the same numbers on every re-run: the PCA is
+# seeded, and test/test_benchmark_reproducibility.py asserts it.
 ```
 
 If anything fails, see the [Troubleshooting](#troubleshooting) section.

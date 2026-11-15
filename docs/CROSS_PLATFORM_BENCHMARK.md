@@ -75,7 +75,7 @@ currently-available published numbers as inputs.
   numbers in `multi_cancer_baseline.json` ARE true tissue HM450 β-values
   and are the more credible methylation reference for this demo.
 - The HCC_J per-cancer OvR AUC (0.753) is harder than the pooled
-  cross-study AUC (0.9747, see `RESULTS.md`). OvR is per-cancer-vs-all-healthy.
+  cross-study AUC (0.9770 legacy / 0.9684 GC-corrected, see `docs/CROSS_STUDY_BENCHMARK.md`). OvR is per-cancer-vs-all-healthy.
 
 ## How to run
 
@@ -115,7 +115,7 @@ env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
 ## Related references
 
 - `docs/CROSS_STUDY_BENCHMARK.md` — pooled cross-study fragmentomics numbers
-  (n=627, AUC 0.9747).
+  (n=627, AUC 0.9770 legacy / 0.9684 GC-corrected).
 - `docs/FUSION_ISOTONIC.md` — tumor-naive + mutation-score fusion ablation
   (sibling fusion experiment on the same cohort, real data).
 - `deepcatch-methylation/docs/METHYLATION_PROXY_RESULTS.md` — sibling repo's

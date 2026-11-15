@@ -18,7 +18,7 @@
 | 2.3 Panel-based detection | ✅ drafted | ~80 | pointer to companion paper |
 | 2.4 Validation protocol | ✅ drafted | ~270 | 5-seed × 5-fold GroupKFold + shuffled-label + true-confound + DeLong CIs + bit-identical sanity |
 | 3.1 Honest baseline AUC on paired synthetic cohort | ✅ filled | ~220 | n=20, AUC ≈ 0.55 honest under GroupKFold |
-| 3.2 Cross-study AUC on FinaleDB pub 6+8 | ✅ filled | ~430 | pooled 0.974 ± 0.002, sens@99=0.782; Jiang alone 0.979, Cristiano alone 0.969; true-confound table (0.49 vs 1.00) |
+| 3.2 Cross-study AUC on FinaleDB pub 6+8 | ✅ filled | ~430 | pooled 0.968 ± 0.003, sens@99=0.700; Jiang alone 0.966, Cristiano alone 0.970; true-confound table (0.48 vs 1.00) |
 | 3.3 Per-cancer sens@spec (DeLong CIs + PPV@prev) | ✅ filled | ~470 | top-5 cancers, DeLong CIs at 95/98/99% specificity; prevalence-floor PPV summary table |
 | 3.4 Honest null/negative ablations | ✅ filled | ~190 | focal-BCE null, sparse-aware negative/marginal, harmonization re-classified MIXED/PROTECTIVE on the cross-study confound control |
 | 3.5 Comparison to published cfDNA benchmarks | ✅ filled (NEW) | ~430 | DELFI, CancerSEEK, Galleri, CAPP-Seq, FinaleMe comparator table + honest-positioning paragraph |
@@ -53,7 +53,7 @@
 
 ## What's intentionally NOT in this draft
 
-- **Clinical operating points.** sens@99 = 0.782 is quoted honestly as a pooled-internal-CV number; it is not extrapolated to a held-out clinical cohort, MCED-population prevalence, or FDA pathway. The §3.5 paragraph explicitly rules out a head-to-head reading.
+- **Clinical operating points.** sens@99 = 0.700 is quoted honestly as a pooled-internal-CV number; it is not extrapolated to a held-out clinical cohort, MCED-population prevalence, or FDA pathway. The §3.5 paragraph explicitly rules out a head-to-head reading.
 - **A pretraining-cohort AUC.** The §3.2 number is on the cross-study pool, not on the 200-sample pretraining cohort. The pretraining cohort's purpose is the encoder (MODALITY-token + masked-prediction), not the headline AUC — see `docs/PRETRAINING.md`.
 - **Paired-design ablations of §3.4.** Those run under their own drivers (`docs/SENS_AT_SPEC_ABLATION.md`, `docs/SPARSE_AWARE_ABLATION.md`); the paper quotes the verdict, not the full setup.
 

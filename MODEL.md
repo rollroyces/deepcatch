@@ -236,7 +236,7 @@ measurement: `scripts/cross_study_loso.py` gives 0.6805
 0.9789 / 0.9701. The asymmetry is informative — Jiang is HCC-only, so
 training on it yields an HCC-specific boundary, while a pan-cancer
 training set yields a generic one (train-Cristiano → test-Jiang
-0.9361). The pooled 0.9670 does **not** survive a publication
+0.9361). The pooled 0.9684 does **not** survive a publication
 holdout and must not be read as a generalisation claim.
 
 ### Honest negative results preserved
@@ -290,7 +290,7 @@ holdout and must not be read as a generalisation claim.
    whole-exome publication. What it still lacks: prospective follow-up,
    stage labels, and real healthy-donor controls — the non-cancer arm is
    14 public samples. A leave-one-study-out run inside the training
-   cohort gives 0.6805, so the pooled 0.9670 is a within-cohort
+   cohort gives 0.6805, so the pooled 0.9684 is a within-cohort
    separation number, not a generalisation claim.
 
 5. **Mutation-informed channel in the fusion experiment is

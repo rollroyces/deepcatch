@@ -1,7 +1,7 @@
 > **⚠️ STATUS: research-use-only software benchmark.** NOT clinically validated. NOT a medical device. NOT FDA-approved. NOT production-ready.
-> Headline: open-data cross-study AUC **0.967 ± 0.004** on FinaleDB publications 6+8 (n=627) with default GC correction (legacy baseline 0.9747 is inflated by ~0.008 of GC-axis proxy detection; both numbers reported in the table below). True-confound control collapses to ~0.50 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
+> Headline: open-data cross-study AUC **0.9684 ± 0.0027** on FinaleDB publications 6+8 (n=627) with default GC correction (legacy baseline 0.9770 is inflated by ~0.009 of GC-axis proxy detection; both numbers reported in the table below). True-confound control collapses to ~0.48 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
 > Publication-by-publication readiness (FinaleDB API/S3 status) in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
-> External validation on held-out public publications (never trained on): **AUC 0.9915** [0.9712, 1.0] on FinaleDB publication 7 (WGS, n=31), 0.8819 pooled over the publications carrying both classes. The pooled 0.967 is a *within-cohort* number — leave-one-study-out gives 0.6805. See [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md).
+> External validation on held-out public publications (never trained on): **AUC 0.9915** [0.9712, 1.0] on FinaleDB publication 7 (WGS, n=31), 0.8819 pooled over the publications carrying both classes. The pooled 0.968 is a *within-cohort* number — leave-one-study-out gives 0.6805. See [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md).
 > For **methods research only** — not a clinical assay, not for patient use.
 
 ---
@@ -89,7 +89,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 - **Multi-modal fragmentomics** — DELFI (5Mb / 100kb bin ratios), MFS, nucleosome positioning, FSD histograms, THEMIS 4-mer end-motif frequencies — fused into a per-sample ~70-feature vector.
 - **Cross-study cancer detection** — pooled 5-seed × 5-fold OOF on open-data cfDNA (FinaleDB pubs 6 + 8, n=627 samples across 8 cancer types + healthy); `scripts/cross_study_finallydb.py` with `--gc-correction` (default) and `--include-motifs` flags.
 - **External validation on never-trained public data** — train on FinaleDB pubs 6+8 (n=627), test on pubs 1/7/9 fetched from the public API + S3 (no IRB): **AUC 0.9915** [0.9712, 1.0] on pub 7 (WGS, n=31), 0.8819 pooled over the publications carrying both classes; the whole-exome publication does not transfer (breast 0.4119, prostate 0.3193) — an assay-platform shift, not a study shift.
-- **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; the permuted-label null is 0.466 and its *measured* null on this paired design is 0.42 ± 0.12 (not 0.5), so the control is read against the measured null rather than against chance.
+- **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; the permuted-label null is 0.446 and its *measured* null on this paired design is 0.42 ± 0.12 (not 0.5), so the control is read against the measured null rather than against chance.
 - **Mutation-informed detection panel** — TCGA-derived panel of 5,738 LUAD mutations with CADD-PHRED-scored Top-K=20 selection; AUC 0.92 at 0.1% ctDNA on synthetic cfDNA dilution (spike-in, not clinical plasma).
 - **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.989 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
 - **Late fusion that works at this sample size** — the neural encoder scores 0.554 on the honest paired cohort against an LR baseline of 0.910; a regularized late fusion reaches **0.9825 ± 0.0094** and a Bayesian model average **0.9650 ± 0.0089** on the same folds (`src/foundation/regularized_fusion.py`).
@@ -99,7 +99,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 ## Why it matters
 
 - **The open-data MCED benchmark with two independent confound controls *and* a real external cohort.** [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md) shows the pooled 0.97 AUC survives per-study harmonization (true-confound AUC 0.50 vs no-harmonize AUC 0.999) — the signal is cancer, not batch. [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md) then goes further: the model is trained on publications 6+8 and tested on publications it has never seen, reaching **0.9915** [0.9712, 1.0] on the held-out whole-genome publication — and, just as importantly, *failing* (0.41 / 0.32) on the held-out whole-exome one, which no internal cross-validation could have shown.
-- **GC-axis discovery in this commit (c782efc).** Legacy baseline 0.9747 was inflated ~0.008 by GC / mappability noise; adding `--gc-correction` (now default) yields the honest 0.9670 ± 0.003. [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md) and `ablation.cast` walk through it.
+- **GC-axis discovery in this commit (c782efc).** Legacy baseline 0.9770 was inflated ~0.009 by GC / mappability noise; adding `--gc-correction` (now default) yields the honest 0.9684 ± 0.003. [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md) and `ablation.cast` walk through it.
 - **Reproducible from one shell script.** `paper/REPRODUCE.sh` regenerates every §3 number from a clean checkout; ablation artifacts are already committed as `results/cross_study_finallydb_*.json`.
 
 ---
@@ -108,8 +108,8 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 
 | Setting | Pooled AUC | Pooled sens@99% spec | Notes |
 |---|---:|---:|---|
-| **Baseline** (5-channel, no GC, no motifs) | 0.9747 ± 0.0012 | 0.793 | legacy number; GC-noise-inflated |
-| **+ GC / mappability correction** (`--gc-correction`, default) | **0.9670 ± 0.0035** | 0.755 | honest baseline; removes known batch proxy |
+| **Baseline** (5-channel, no GC, no motifs) | 0.9770 ± 0.0013 | 0.785 | legacy number; GC-noise-inflated |
+| **+ GC / mappability correction** (`--gc-correction`, default) | **0.9684 ± 0.0027** | 0.700 | honest baseline; removes known batch proxy |
 | **+ 4-mer end motifs** (`--include-motifs`) | **0.9768 ± 0.0024** | — | informative when present, slightly above baseline |
 | **Shuffled-label null control** | **0.4657** | 0.0 | batch-and-fold-identity null floor (<0.55 = pass) — varies across seeds (0.46–0.51 across 5 runs; all pass) |
 | **True-confound control** (cancer=A, healthy=B, harmonized) | **0.499** | — | collapses to chance — signal IS cancer-vs-healthy |
@@ -269,7 +269,7 @@ bash paper/REPRODUCE.sh    # re-runs every §3 artifact, regenerates all docs/*.
 
 ## Ultra-early readiness — what's ready today
 
-> **Bottom line:** the **fragmentomics cross-study pipeline is ready** to publish a Stage I vs late-stage honest number on the open-data cohort (n=627, pooled AUC 0.967 ± 0.004 with GC correction, permuted-label null 0.466, true-confound collapse to 0.499) — and it has now been validated externally on publications never used in training (AUC 0.9915 on the held-out WGS publication, [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md)). The **panel-LLR ultra-low-VAF detector is ready** as an *in silico* benchmark at 0.1% ctDNA (AUC 0.921, sens@99% 0.49). The **neural foundation encoder is not** — 0.554 ± 0.005 vs LR baseline 0.910 — but the **fusion layer itself is**: a regularized late fusion reaches 0.9825 ± 0.0094 on the same folds, and the readiness check now reads that artifact rather than a hard-coded number.
+> **Bottom line:** the **fragmentomics cross-study pipeline is ready** to publish a Stage I vs late-stage honest number on the open-data cohort (n=627, pooled AUC 0.968 ± 0.003 with GC correction, permuted-label null 0.446, true-confound collapse to 0.484) — and it has now been validated externally on publications never used in training (AUC 0.9915 on the held-out WGS publication, [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md)). The **panel-LLR ultra-low-VAF detector is ready** as an *in silico* benchmark at 0.1% ctDNA (AUC 0.921, sens@99% 0.49). The **neural foundation encoder is not** — 0.554 ± 0.005 vs LR baseline 0.910 — but the **fusion layer itself is**: a regularized late fusion reaches 0.9825 ± 0.0094 on the same folds, and the readiness check now reads that artifact rather than a hard-coded number.
 >
 > **Read the full readiness report:** [`ULTRA_EARLY_READINESS.md`](ULTRA_EARLY_READINESS.md) — every claim ties to a `results/*.json` artifact, no fabricated numbers.
 

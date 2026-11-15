@@ -69,7 +69,7 @@ PYTHONPATH= ./.venv/bin/python -m pytest \
 |---|---|---|
 | §3.1 (paired synthetic-plasma) | `results/sens_at_spec_ce_n20.json` | foundation AUC 0.5588 ± 0.0094 (n=20 paired seeds) |
 | §3.2 per-cohort rows | `results/cross_study_finallydb.json:per_cohort` | jiang 0.9791 ± 0.0028, cristiano 0.9693 ± 0.0022 |
-| §3.2 pooled rows | `results/cross_study_finallydb.json:pooled` | harmonized 0.9738 ± 0.0018, sens@99 = 0.782 |
+| §3.2 pooled rows | `results/cross_study_finallydb_gc_corrected.json:pooled` (headline) / `results/cross_study_finallydb.json:pooled` (legacy) | GC-corrected harmonized 0.9684 ± 0.0027, sens@99 = 0.700; legacy 0.9770 ± 0.0013, sens@99 = 0.785 |
 | §3.2 true-confound control | `results/cross_study_finallydb.json:true_confound_control` | harmonized 0.49 vs no_harmonize 1.00 |
 | §3.3 per-cancer (bootstrap CIs) | `results/cross_study_finallydb.json:per_cancer` | top-5 OvR AUC + sens@spec |
 | §3.3 per-cancer (DeLong CIs + PPV) | `results/per_cancer_sens_at_spec.json` | top-5 OvR with DeLong 95% CIs + ppv_at_prevalence |

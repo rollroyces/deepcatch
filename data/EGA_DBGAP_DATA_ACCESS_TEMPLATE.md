@@ -50,7 +50,7 @@ This work supports the open-source DeepCatch project
 (github.com/rollroyces/deepcatch), a multi-modal fragmentomics + methylation
 framework for ultra-early cancer detection. DeepCatch's 5-channel pooled
 cross-study benchmark on FinaleDB publications 6 + 8 (n = 627) reports
-AUC 0.967 ± 0.004 with shuffled-label null 0.466 — a clinically meaningful
+AUC 0.968 ± 0.003 with shuffled-label null 0.446 — a clinically meaningful
 signal that requires independent validation on the DELFI cohort. The proposed
 analysis will (a) re-run DeepCatch's tumor-naive 5-channel pipeline on the
 DELFI cohort using only the open-source code, (b) report sens@spec at the

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T16:47:43.938588+00:00",
-  "repo_commit": "88082c2",
+  "generated_at": "2026-11-15T21:12:29.110503+00:00",
+  "repo_commit": "96b38da",
   "summary_counts": {
     "ready": 5,
     "not_ready": 0,
@@ -14,18 +14,18 @@
       "description": "FinaleDB pubs 6+8 cross-study pooled AUC with GC/maptaxia correction (5-channel fragmentomics).",
       "source": "results/cross_study_finallydb_gc_corrected.json",
       "verdict": "ready",
-      "value": 0.9670298021537691,
+      "value": 0.9684259954921112,
       "threshold": ">=0.950 (floor=0.800)",
-      "notes": "AUC 0.9670 \u00b1 0.0035 across 5 seeds \u00d7 5 folds. True-confound control collapsed to 0.499 (signal IS cancer-vs-healthy, not batch). See open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model."
+      "notes": "AUC 0.9684 \u00b1 0.0027 across 5 seeds \u00d7 5 folds. True-confound control collapsed to 0.499 (signal IS cancer-vs-healthy, not batch). See open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model."
     },
     {
       "name": "pooled_sens_at_99_spec",
       "description": "Pooled sens@99% spec on FinaleDB cohort.",
       "source": "results/per_cancer_sens_at_spec.json",
       "verdict": "ready",
-      "value": 0.628099173553719,
+      "value": 0.699724517906336,
       "threshold": ">=0.600",
-      "notes": "Per-cancer sens@99% spec: {'BRCA': 0.302, 'CRC': 0.778, 'HCC_J': 0.146, 'LUAD': 0.494, 'OTHER_C': 0.593, 'OV': 0.75, 'PAAD': 0.35}"
+      "notes": "Per-cancer sens@99% spec: {'BRCA': 0.566, 'CRC': 0.815, 'HCC_J': 0.146, 'LUAD': 0.861, 'OTHER_C': 0.63, 'OV': 0.821, 'PAAD': 0.567}"
     },
     {
       "name": "panel_llr_ultra_low_vaf_0_1pct",

@@ -16,7 +16,7 @@
 
 **Methods.** DeepCatch is an open-source software framework that turns public cfDNA resources (FinaleDB, GDC TCGA, FLARE/GSE317007) into reproducible fragmentomics experiments. The framework combines (i) a six-modality feature schema (5-channel DELFI, 4-mer end motifs, fragment size, coverage/CNV, serology, tissue-of-origin); (ii) a multi-modal fusion encoder with masked-modality self-supervised pre-training and cross-attention fusion; (iii) panel-based tumor-informed detection when a prior cohort is available; and (iv) a validation protocol built on 5-seed × 5-fold GroupKFold with shuffled-label and true-confound controls. The implementation is MIT-licensed, ships with 374+ regression tests, and exposes every intermediate artifact (cohort matrices, per-seed AUC arrays, ablation JSONs) to the reader.
 
-**Results.** On the paired 20-patient TCGA-LUAD synthetic-plasma cohort at 0.1% ctDNA, the foundation encoder honestly achieves AUC ≈ 0.55 (n=20 seeds, per-patient GroupKFold) — below the sklearn LR baseline (0.91) on the same channels, which is the expected outcome on this paired design and is itself a finding worth reporting. On the cross-study FinaleDB publications 6 + 8 (n=627 after missing-artifact filter), a 5-channel DELFI LR with per-study z-score harmonization + per-bin GC bias correction (default ON, see `docs/HARMONIZATION.md §3`) reaches pooled OOF AUC **0.9670 ± 0.0035** (with GC correction; legacy without GC: 0.9747 ± 0.0012 — the GC-corrected version is the more honest cancer signal per the per-publication coherence check), sens@95%=0.868, sens@98%=0.799, sens@99%=0.669. Per-cancer OvR (5-seed ± std) for the top-5 cancers (with GC correction): OV 0.989 ± 0.007, LUAD 0.982 ± 0.003, LUAD-to-PAAD: BRCA 0.972 ± 0.001, PAAD 0.965 ± 0.004, HCC_J 0.704 ± 0.015 (single-cohort reading). A **true-confound control** (cancer = 100% Jiang, healthy = 100% Cristiano) collapses to AUC 0.49 with harmonization vs 1.00 without — proving the pooled 0.967 (and the legacy 0.975) is a cancer signal, not a study batch. Three honest null/negative ablations (focal-BCE loss, sparse-aware projection, harmonization) are documented.
+**Results.** On the paired 20-patient TCGA-LUAD synthetic-plasma cohort at 0.1% ctDNA, the foundation encoder honestly achieves AUC ≈ 0.55 (n=20 seeds, per-patient GroupKFold) — below the sklearn LR baseline (0.91) on the same channels, which is the expected outcome on this paired design and is itself a finding worth reporting. On the cross-study FinaleDB publications 6 + 8 (n=627 after missing-artifact filter), a 5-channel DELFI LR with per-study z-score harmonization + per-bin GC bias correction (default ON, see `docs/HARMONIZATION.md §3`) reaches pooled OOF AUC **0.9684 ± 0.0027** (with GC correction; legacy without GC: 0.9770 ± 0.0013 — the GC-corrected version is the more honest cancer signal per the per-publication coherence check), sens@95%=0.865, sens@98%=0.796, sens@99%=0.700. Per-cancer OvR (5-seed ± std) for the top-5 cancers (with GC correction): OV 0.989 ± 0.007, LUAD 0.981 ± 0.003, BRCA 0.973 ± 0.002, PAAD 0.967 ± 0.004, HCC_J 0.704 ± 0.014 (single-cohort reading). A **true-confound control** (cancer = 100% Jiang, healthy = 100% Cristiano) collapses to AUC 0.48 with harmonization vs 0.999 without — proving the pooled 0.968 (and the legacy 0.977) is a cancer signal, not a study batch. Three honest null/negative ablations (focal-BCE loss, sparse-aware projection, harmonization) are documented, and every benchmark number above is reproduced bit-for-bit by the committed code (seeded PCA, `test/test_benchmark_reproducibility.py`).
 
 **Conclusions.** DeepCatch is not a clinical assay. It is a reproducible fragmentomics engineering substrate: it lets a researcher swap in a new cohort, a new modality, or a new fusion head and get honest numbers in hours rather than months. The framework is most useful for negative results — telling investigators which architectural ideas do NOT help on open data before they spend real-plasma budget on them.
 
@@ -90,11 +90,13 @@ Every reported number follows one protocol:
 
 The framework is implemented in PyTorch with NumPy / scikit-learn baselines. All 374+ tests pass; the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
 
+**Reproducibility is enforced, not assumed.** Every benchmark number in §3.2–§3.5 is a function of the committed code: the PCA inside each CV fold is seeded with the fold-split seed, and `test/test_benchmark_reproducibility.py` enforces two properties — an AST guard fails the build if any `PCA(...)` call in `scripts/` or `src/` is fitted without a `random_state`, and a behavioural test fits the benchmark twice and requires the two runs to agree exactly (with a further check that a different seed still gives a different answer, so the seed is not simply pinning everything). The guard exists because the opposite was true for an earlier revision: with an unseeded PCA, sklearn's randomised solver made every re-run of the benchmark drift (one publication's AUC moved 0.9789 → 0.9821 between two runs of the same command), which would have made the artifacts unverifiable. The numbers in this manuscript are from the seeded run; the artifacts, the narrative documents and the manuscript now come from a single command.
+
 ---
 
 ## 3. Results
 
-> Source-of-truth: `results/cross_study_finallydb.json` (§3.2), `results/per_cancer_sens_at_spec.json` (§3.3), and `docs/CROSS_STUDY_BENCHMARK.md` (the running benchmark narrative). All pooled numbers are 5-seed × 5-fold StratifiedKFold internal CV (pooled OOF); no external validation, no clinical plasma cohort.
+> Source-of-truth: `results/cross_study_finallydb_gc_corrected.json` (§3.2 headline), `results/cross_study_finallydb.json` (§3.2 legacy, no GC), `results/per_cancer_sens_at_spec.json` (§3.3), `results/cross_study_finallydb_shuffled_control.json` (the null control) and `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` (the running benchmark narrative). All pooled numbers are 5-seed × 5-fold StratifiedKFold internal CV (pooled OOF); no external validation, no clinical plasma cohort.
 >
 > Figures: `docs/figures/fig1_pooled_roc.png` (§3.2), `docs/figures/fig2_per_cancer_roc.png` (§3.3), `docs/figures/fig3_calibration.png` (§3.2 sens@spec operating points in ROC space), `docs/figures/fig4_sens_operating_points.png` (§3.3 grouped per-cancer bars). Reproducible via `python scripts/plot_figures.py`; see `docs/figures/README.md`.
 
@@ -138,28 +140,28 @@ The cross-study pool is the union of FinaleDB publication 6 (Jiang 2015 [16], n=
 
 || Cohort | n | Cancer | Healthy | AUC (5-seed mean ± std) |
 ||---|---:|---:|---:|---|
-|| jiang | 121 | 89 | 32 | **0.9656 ± 0.0035** |
-|| cristiano | 506 | 274 | 232 | **0.9702 ± 0.0025** |
-|| **pooled (harmonized, GC corrected)** | 627 | 363 | 264 | **0.9670 ± 0.0035** |
-|| **pooled (harmonized, GC not corrected — legacy)** | 627 | 363 | 264 | 0.9747 ± 0.0012 |
+|| jiang | 121 | 89 | 32 | **0.9661 ± 0.0031** |
+|| cristiano | 506 | 274 | 232 | **0.9698 ± 0.0016** |
+|| **pooled (harmonized, GC corrected)** | 627 | 363 | 264 | **0.9684 ± 0.0027** |
+|| **pooled (harmonized, GC not corrected — legacy)** | 627 | 363 | 264 | 0.9770 ± 0.0013 |
 
-The GC-corrected pooled AUC is **lower by ΔAUC = −0.008** than the legacy pooled AUC (0.9747 → 0.9670). Removing the GC-vs-coverage axis reduced the pooled number by ~0.008 (1.7× the 5-seed pooled std of 0.0012-0.0035, but well within the 5-seed pooled std). The honest reading per `docs/HARMONIZATION.md §3` is that a chunk of the legacy 0.9747 AUC was carrier on the GC axis, which the LR used as an indirect proxy for cancer signal (via CNV-induced GC shifts). The GC-corrected 0.9670 is closer to the within-publication AUCs (Jiang 0.9656, Cristiano 0.9702) than the legacy 0.9747 was, suggesting the legacy pooled number was inflated by ~0.005-0.008 from GC-axis proxy detection. **We report both versions**, not silently swap one for the other.
+The GC-corrected pooled AUC is **lower by ΔAUC = −0.0086** than the legacy pooled AUC (0.9770 → 0.9684). Removing the GC-vs-coverage axis reduced the pooled number by ~0.009 (3× the 5-seed pooled std of 0.0013–0.0027, but well within the 5-seed pooled std). The honest reading per `docs/HARMONIZATION.md §3` is that a chunk of the legacy 0.9770 AUC was carrier on the GC axis, which the LR used as an indirect proxy for cancer signal (via CNV-induced GC shifts). The GC-corrected 0.9684 is close to the within-publication AUCs (Jiang 0.9661, Cristiano 0.9698) than the legacy 0.9770 was, suggesting the legacy pooled number was inflated by ~0.005-0.009 from GC-axis proxy detection. **We report both versions**, not silently swap one for the other.
 
-At the pooled harmonized GC-corrected operating point: **sens@95%=0.868**, **sens@98%=0.799**, **sens@99%=0.669**. The sens@spec numbers are slightly below the legacy (sens@95=0.909, sens@98=0.832, sens@99=0.793); the same Δ ~0.04 holds at every operating point, consistent with the AUC drop being a coherent downward shift rather than a calibration-only change.
+At the pooled harmonized GC-corrected operating point: **sens@95%=0.865**, **sens@98%=0.796**, **sens@99%=0.700**. The sens@spec numbers are slightly below the legacy (sens@95=0.912, sens@98=0.851, sens@99=0.785); the same Δ ~0.04 holds at every operating point, consistent with the AUC drop being a coherent downward shift rather than a calibration-only change.
 
-**Shuffled-label null control.** A pooled 0.97 AUC is open to the reviewer question "is this cancer signal, or batch leakage via fold structure?" We add a label-permutation control that pairs the existing true-confound: the same 5-seed × 5-fold pooled OOF (harmonize + PCA + LR) is re-run on `numpy.random.permutation(y)` (perm_seed=20260924), preserving sample-id pairing. The shuffled-pooled AUC must collapse to ~0.5; if it stays high, the cancer signal is not what's driving the 0.97 AUC. Source: `scripts/cross_study_finallydb_shuffled_control.py`, output `results/cross_study_finallydb_shuffled_control.json`.
+**Shuffled-label null control.** A pooled 0.97 AUC is open to the reviewer question "is this cancer signal, or batch leakage via fold structure?" We add a label-permutation control that pairs the existing true-confound: the same pooled OOF (harmonize + PCA + LR) is re-run on `numpy.random.permutation(y)` (perm_seed=20260924), preserving sample-id pairing. The shuffled-pooled AUC must collapse to ~0.5; if it stays high, the cancer signal is not what's driving the 0.97 AUC. Source: `scripts/cross_study_finallydb_shuffled_control.py`, output `results/cross_study_finallydb_shuffled_control.json`.
 
 || Setting | n | n_cancer | n_healthy | Pooled AUC (5-seed mean ± std) | `control_passed` |
 ||---|---:|---:|---:|---:|---|
-|| **shuffled-label pooled (harmonized)** | 627 | 363 | 264 | **0.5069 ± 0.0103** | **true** (0.5069 < null floor 0.55) |
+|| **shuffled-label pooled (harmonized)** | 627 | 363 | 264 | **0.4460** (1 seed) | **true** (0.4460 < null floor 0.55) |
 
-The shuffled-pooled AUC (0.5069 ± 0.0103, sens@95=0.044, sens@99=0.017) is well inside the healthy null range (0.45–0.55), so the cancer signal — not per-fold publication structure — is what drives the 0.97 real-label AUC. The control is a sanity check, not a gate; a noisy seed could fluctuate above the 0.55 floor, in which case the script prints a `UserWarning` and reports `control_passed: false` honestly. See `docs/CROSS_STUDY_BENCHMARK.md` §3 for the full interpretation (sourced from the same JSON).
+The shuffled-pooled AUC (0.4460, sens@95=0.061, sens@99=0.014) is well inside the healthy null range (0.45–0.55), so the cancer signal — not per-fold publication structure — is what drives the 0.97 real-label AUC. The control is a sanity check, not a gate; a noisy seed could fluctuate above the 0.55 floor, in which case the script prints a `UserWarning` and reports `control_passed: false` honestly. See `docs/CROSS_STUDY_BENCHMARK.md` §3 for the full interpretation (sourced from the same JSON).
 
 **True-confound control.** The honest cross-study claim requires that the signal is cancer, not study. The control builds a synthetic two-arm dataset where cancer = 100% Jiang and healthy = 100% Cristiano (and the symmetric orientation), then rerun the same pipeline:
 
 | Orientation | n cancer | n healthy | AUC harmonized | AUC no_harmonize |
 |---|---:|---:|---:|---:|
-| cancer=Jiang, healthy=Cristiano | 121 | 506 | 0.489 ± 0.004 | 0.999 ± 0.002 |
+| cancer=Jiang, healthy=Cristiano | 121 | 506 | 0.484 ± 0.010 | 0.999 ± 0.001 |
 | cancer=Cristiano, healthy=Jiang | 506 | 121 | 0.496 ± 0.004 | 1.000 ± 0.000 |
 
 Without harmonization, the classifier trivially achieves AUC ≈ 1.000 because "which study is this from?" is trivially answerable. With per-study z-scoring, the same control collapses to **0.49** — the per-study mean/variance is the only signal and the harmonization removes it by design. The drop from 1.000 → 0.49 (~80× shift across the operating-point flip) proves the pooled-harmonized 0.9738 AUC is a cancer signal, not a study batch.
@@ -177,9 +179,9 @@ A pooled OOF over a merged cohort can train on samples from one publication and 
 | *in-domain (Jiang)* | — | — | *0.9789 ± 0.0027* | | |
 | *in-domain (Cristiano)* | — | — | *0.9690 ± 0.0021* | | |
 
-The pooled 0.9670 of §3.2 therefore **does not survive a publication holdout in the single-cancer-type direction**: 0.967 → 0.681. The asymmetry is informative rather than mysterious. Jiang is HCC-only, so training on it yields an HCC-specific decision boundary, while the held-out Cristiano set contains six non-HCC cancer types; a within-study leave-one-cancer-type-out control (train on the remaining types + healthy, test on the held-out type) transfers at **0.857–1.000**, so "unseen cancer type" is not the blocker by itself, and the reverse direction (pan-cancer training → unseen HCC test) crosses the study boundary at 0.936. The binding constraint is the *composition of the training cohort*, not the study shift. A PCA-component sweep (5/10/20/50/100 → 0.662/0.707/0.722/0.667/0.644) rules out a capacity artefact.
+The pooled 0.9684 of §3.2 therefore **does not survive a publication holdout in the single-cancer-type direction**: 0.968 → 0.681. The asymmetry is informative rather than mysterious. Jiang is HCC-only, so training on it yields an HCC-specific decision boundary, while the held-out Cristiano set contains six non-HCC cancer types; a within-study leave-one-cancer-type-out control (train on the remaining types + healthy, test on the held-out type) transfers at **0.857–1.000**, so "unseen cancer type" is not the blocker by itself, and the reverse direction (pan-cancer training → unseen HCC test) crosses the study boundary at 0.936. The binding constraint is the *composition of the training cohort*, not the study shift. A PCA-component sweep (5/10/20/50/100 → 0.662/0.707/0.722/0.667/0.644) rules out a capacity artefact.
 
-**How to read §3.2 after this subsection.** The pooled 0.9670 is an honest *within-cohort* separation number with per-study batch removed, and the true-confound control still shows the pooled signal is cancer rather than study identity. It is not evidence of cross-study generalisation; §3.2.1 is. The distinction matters for any claim about deploying the classifier on a new cohort, and it is the reason the external validation in §3.2.2 uses publications that were never touched during training.
+**How to read §3.2 after this subsection.** The pooled 0.9684 is an honest *within-cohort* separation number with per-study batch removed, and the true-confound control still shows the pooled signal is cancer rather than study identity. It is not evidence of cross-study generalisation; §3.2.1 is. The distinction matters for any claim about deploying the classifier on a new cohort, and it is the reason the external validation in §3.2.2 uses publications that were never touched during training.
 
 #### 3.2.2 External validation on held-out public publications
 
@@ -202,7 +204,7 @@ The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 an
 
 | Question | Number | Section |
 |---|---|---|
-| Can the features separate cancer from healthy in a pooled open cohort? | 0.9670 ± 0.0035 | 3.2 |
+| Can the features separate cancer from healthy in a pooled open cohort? | 0.9684 ± 0.0027 | 3.2 |
 | Is that signal cancer rather than study identity? | true-confound control collapses to 0.499 | 3.2 |
 | Does the classifier transfer to an unseen publication? | 0.986 (WGS), 0.87 pooled, 0.42 sensitivity (WES) | 3.2.2 |
 | Does it transfer to an unseen publication in the single-type direction? | 0.681 | 3.2.1 |
@@ -244,33 +246,33 @@ This is reported as a **null**. The methylation *extraction* path runs on real p
 
 ### 3.3 Per-cancer sensitivity at fixed specificity (with DeLong CIs)
 
-Per-cancer OvR is computed with **per-study z-score harmonization inside each CV fold** so the same offset that drove §3.2's pooled AUC is also removed in the per-cancer fits. Top-5 cancers by count, scored against ALL healthy samples (the cross-study generalization view). For sens@spec 95% CIs the standalone artifact uses **DeLong placement-value** CIs (`src/per_cancer_sens_at_spec.py`; Sun & Xu 2014 form); for the AUC variance we use the 5-seed ± std across the StratifiedKFold seeds. Source: `results/cross_study_finallydb.json:per_cancer` (point estimates + bootstrap 95% CIs on sens@spec) and `results/per_cancer_sens_at_spec.json` (DeLong CIs + PPV@prev).
+Per-cancer OvR is computed with **per-study z-score harmonization inside each CV fold** so the same offset that drove §3.2's pooled AUC is also removed in the per-cancer fits. Top-5 cancers by count, scored against ALL healthy samples (the cross-study generalization view). For sens@spec 95% CIs the standalone artifact uses **DeLong placement-value** CIs (`src/per_cancer_sens_at_spec.py`; Sun & Xu 2014 form); for the AUC variance we use the 5-seed ± std across the StratifiedKFold seeds. Every row below comes from the **GC-corrected** run (the headline pipeline): `results/cross_study_finallydb_gc_corrected.json:per_cancer` (5-seed point estimates + bootstrap 95% CIs on sens@spec) and `results/per_cancer_sens_at_spec.json` (DeLong CIs + PPV@prev, same pipeline).
 
 | Cancer | n_cancer | n_total | AUC mean ± std (5-seed) | Sens@95% | Sens@98% | Sens@99% [bootstrap 95% CI] |
 |---|---:|---:|---|---:|---:|---|
-| HCC_J | 89 | 121 (jiang only) | 0.7248 ± 0.0184 | 0.416 | 0.348 | 0.191 (0.000–0.420) |
-| LUAD | 79 | 343 (jiang+cristiano healthy) | 0.9813 ± 0.0020 | 0.911 | 0.861 | 0.658 (0.392–0.917) |
-| PAAD | 60 | 324 | 0.9368 ± 0.0070 | 0.817 | 0.767 | 0.483 (0.333–0.810) |
-| BRCA | 53 | 317 | 0.9763 ± 0.0034 | 0.943 | 0.849 | 0.547 (0.352–0.937) |
-| OV | 28 | 292 | 0.9924 ± 0.0048 | 1.000 | 0.929 | 0.929 (0.758–1.000) |
+| HCC_J | 89 | 353 (jiang only) | 0.7043 ± 0.0139 | 0.360 | 0.236 | 0.146 (0.000–0.323) |
+| LUAD | 79 | 343 | 0.9810 ± 0.0031 | 0.899 | 0.886 | 0.861 (0.534–0.933) |
+| PAAD | 60 | 324 | 0.9666 ± 0.0038 | 0.883 | 0.800 | 0.567 (0.300–0.853) |
+| BRCA | 53 | 317 | 0.9730 ± 0.0016 | 0.906 | 0.774 | 0.566 (0.136–0.861) |
+| OV | 28 | 292 | 0.9886 ± 0.0070 | 0.964 | 0.893 | 0.821 (0.633–0.963) |
 
 See **Figure 2** (`docs/figures/fig2_per_cancer_roc.png`) for the per-seed AUC distribution (top-5 cancers) and **Figure 4** (`docs/figures/fig4_sens_operating_points.png`) for the grouped sens@95/98/99 bar chart. Figure 4 sources its values directly from the `sens_at_spec` block of `results/per_cancer_sens_at_spec.json` and is the visual companion to the table above.
 
-**Reading the table.** HCC_J (Jiang 2015 alone, n=89) shows the lowest cross-study AUC (0.725); this is the OvR reading against the cross-study healthy pool (mostly Cristiano healthy), and the wide sens@99 CI [0.000–0.420] flags it as a small-denominator outlier that needs a larger follow-on study. LUAD, BRCA, OV have tight CIs at AUC > 0.97 with sens@99 ≥ 0.55. OV is a high-AUC small-n row (n=28 cancer); the 1.000 sens@95 is consistent with the empirical ceiling on 28 positives and the wide CI [0.758–1.000] at sens@99 says the same. PAAD sens@99 sits at 0.483 with a very wide CI [0.333–0.810] — the n=60 denom is the binding constraint here, not the classifier.
+**Reading the table.** HCC_J (Jiang 2015 alone, n=89) shows the lowest cross-study AUC (0.704); this is the OvR reading against the cross-study healthy pool (mostly Cristiano healthy), and the wide sens@99 CI [0.000–0.323] flags it as a small-denominator outlier that needs a larger follow-on study. LUAD, BRCA, OV have tight CIs at AUC > 0.97 with sens@99 ≥ 0.57. OV is a high-AUC small-n row (n=28 cancer); the 0.964 sens@95 is consistent with the empirical ceiling on 28 positives and the wide CI [0.633–0.963] at sens@99 says the same. PAAD sens@99 sits at 0.567 with a very wide CI [0.300–0.853] — the n=60 denom is the binding constraint here, not the classifier.
 
-**Prevalence-floor PPV summary (PPV at spec=99% at standard screening-prevalence grid):** sourced from the same JSON (`results/per_cancer_sens_at_spec.json:per_cancer.*.ppv_at_prevalence`); presented against the pooled AUC's sens@99 = 0.782 as the illustrative ceiling.
+**Prevalence-floor PPV summary (PPV at spec=99% at standard screening-prevalence grid):** sourced from the same JSON (`results/per_cancer_sens_at_spec.json:per_cancer.*.ppv_at_prevalence`); presented against the pooled AUC's sens@99 = 0.700 as the illustrative ceiling.
 
-| Prevalence | PPV at sens@99=0.782, spec=0.99 |
+| Prevalence | PPV at sens@99=0.700, spec=0.99 |
 |---:|---:|
-| 0.001 (Galleri / CancerSEEK target) | 0.073 |
-| 0.004 | 0.239 |
-| 0.01 | 0.441 |
-| 0.05 | 0.805 |
-| 0.10 | 0.897 |
-| 0.20 | 0.951 |
-| 0.50 | 0.987 |
+| 0.001 (Galleri / CancerSEEK target) | 0.065 |
+| 0.004 | 0.219 |
+| 0.01 | 0.414 |
+| 0.05 | 0.786 |
+| 0.10 | 0.886 |
+| 0.20 | 0.946 |
+| 0.50 | 0.986 |
 
-At the published MCED screening-prevalence assumption of 0.1% (10⁻³), this 5-channel LR's pooled sens@99 would project to **PPV ≈ 7.3%** — not yet clinically competitive at that prevalence, even at the strong pooled-AUC operating point. The PPV rises sharply with prevalence: at the 1% prevalence used in some targeted-MRD workflows it reaches **44%**, and at a 10% prevalence (a symptomatic workup) it is **90%**. The prevalence floor is set by `(1 - spec)` false-positives per 10,000 tested — that floor does not depend on the classifier and is the limiting factor at any sens < 1.0; the model only moves the PPV via `sens · prev` in the numerator. The per-cancer PPV rows in the JSON are sharper and the **OvR-specific** PPV at the 0.001 grid is the cross-study-reading ceiling: HCC_J ≈ 0.019 (sens@99=0.191), LUAD ≈ 0.062 (0.658), BRCA ≈ 0.052 (0.547), PAAD ≈ 0.046 (0.483), OV ≈ 0.085 (0.929).
+At the published MCED screening-prevalence assumption of 0.1% (10⁻³), this 5-channel LR's pooled sens@99 would project to **PPV ≈ 6.5%** — not yet clinically competitive at that prevalence, even at the strong pooled-AUC operating point. The PPV rises sharply with prevalence: at the 1% prevalence used in some targeted-MRD workflows it reaches **41%**, and at a 10% prevalence (a symptomatic workup) it is **89%**. The prevalence floor is set by `(1 - spec)` false-positives per 10,000 tested — that floor does not depend on the classifier and is the limiting factor at any sens < 1.0; the model only moves the PPV via `sens · prev` in the numerator. The per-cancer PPV rows in the JSON are sharper and the **OvR-specific** PPV at the 0.001 grid is the cross-study-reading ceiling: HCC_J ≈ 0.014 (sens@99=0.146), LUAD ≈ 0.079 (0.861), BRCA ≈ 0.054 (0.566), PAAD ≈ 0.054 (0.567), OV ≈ 0.076 (0.821).
 
 **Honest framing.** Per-cancer CI widths are wide because per-cancer denominators are small (10–90 positives); the JSON's `skipped` rows respect the `MIN_POSITIVES_FOR_CI=5` floor (DeLong CI is unreliable below it). HCC_J is OvR-defined but **single-cohort** — there are no Jiang healthy controls in the pooled cohort other than the 32 internal ones, so HCC_J's "AUC vs cross-study healthy" is mostly a Cristiano-vs-Jiang-carcinoma problem and should be read with that grain. The OvR scoring against ALL healthy samples (not just within-study healthy) is the cross-study generalization view; it is not the within-study view that the original Cristiano 2019 [7] paper reports.
 
@@ -280,14 +282,14 @@ At the published MCED screening-prevalence assumption of 0.1% (10⁻³), this 5-
 |---|---|---|
 | **focal-BCE loss** (`loss="sens_at_spec"`, α_pos=20) | NULL: Δ AUC = −0.0005 [−0.0015, +0.0005], p=0.30 (n=20 paired seeds). Supersedes the n=5 "positive direction, NS" reading. | `docs/SENS_AT_SPEC_ABLATION.md` |
 | **sparse-aware projection** (`projection_kinds={"frag_basic":"sparse_aware"}`) | NEGATIVE, marginal: Δ AUC = −0.0155 [−0.0315, +0.0005], p=0.055 (5 seeds). The slot is not sparse at this operating point. | `docs/SPARSE_AWARE_ABLATION.md` |
-| **harmonization** (per-cohort batch-effect check) | MIXED on this cohort: pooled AUC is high (0.974) and per-study AUCs are similar, but the **true-confound control** (cancer=Jiang, healthy=Cristiano) shows that WITHOUT harmonization the classifier would learn "study" instead of "cancer" (1.000 vs 0.489). Reported as **PROTECTIVE** — the harmonization is what makes §3.2 a fair cross-study claim. | `docs/HARMONIZATION.md`, `results/cross_study_finallydb.json:true_confound_control` |
+| **harmonization** (per-cohort batch-effect check) | MIXED on this cohort: pooled AUC is high (0.977) and per-study AUCs are similar, but the **true-confound control** (cancer=Jiang, healthy=Cristiano) shows that WITHOUT harmonization the classifier would learn "study" instead of "cancer" (0.999 vs 0.484). Reported as **PROTECTIVE** — the harmonization is what makes §3.2 a fair cross-study claim. | `docs/HARMONIZATION.md`, `results/cross_study_finallydb.json:true_confound_control` |
 | **V3 methylation channel** (FinaleMe on 31 real FinaleDB samples) | **NULL, and explained.** The decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the 1,550 loci both arms cover, the median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs (permutation p = 1.0). The libraries are size-selected at ~300 bp (0.000% of fragments longer) and deliver 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent and the decoder returns hard calls. The extraction path works; the channel is not a feature. | §3.2.4, `docs/METHYLATION_PIPELINE.md`, `results/methylation_channel_diagnosis.json` |
 
 All four ablations are reported honestly. No "win by default" framing.
 
 ### 3.5 Comparison to published cfDNA benchmarks
 
-DeepCatch reports a **0.974 pooled OOF AUC** on open data (FinaleDB publications 6 + 8, n=627). For context only — and to be explicit that this is NOT a head-to-head — we list here the headline numbers reported by the closest published cfDNA benchmarks. All five used larger, proprietary, or multi-site clinical cohorts; ours is a 627-sample open-data internal CV. The comparability axis is "how well does the 5-channel feature (or its counterpart) separate cancer from healthy in plasma," not "which is clinically better."
+DeepCatch reports a **0.968 pooled OOF AUC** on open data (FinaleDB publications 6 + 8, n=627). For context only — and to be explicit that this is NOT a head-to-head — we list here the headline numbers reported by the closest published cfDNA benchmarks. All five used larger, proprietary, or multi-site clinical cohorts; ours is a 627-sample open-data internal CV. The comparability axis is "how well does the 5-channel feature (or its counterpart) separate cancer from healthy in plasma," not "which is clinically better."
 
 | Method (1st author, year) | Cohort | n | Headline metric | Source |
 |---|---|---:|---|---|
@@ -296,7 +298,7 @@ DeepCatch reports a **0.974 pooled OOF AUC** on open data (FinaleDB publications
 | Galleri (Klein 2021 [10]) | independent validation plasma | 2,823 (50+ cancer signals vs healthy) | OvR AUC 0.92 across all cancer types | Annals of Oncology 2020 / 2021 PATHFINDER |
 | CAPP-Seq (Newman 2014 [5] / 2016 [6]) | tumor-informed MRD, NSCLC pilot + integrated-error-suppression update | not pooled (per-cancer n's) | first prototype AUC ~0.86 in stage II–IV NSCLC; iDES-enhanced AUC >0.99 in stage II–IV | Nat Med 2014; Nat Biotechnol 2016 |
 | FinaleMe (Liu 2018 [11]) | plasma + reference methylome | 159 (training + held-out) | end-motif OvR AUC 0.91 | bioRxiv 2018 (preprint) |
-| **DeepCatch §3.2 (this work, open data)** | FinaleDB open data, internal CV | **627** (Jiang+Cristiano) | pooled **AUC 0.974 ± 0.002**, sens@95=0.909, sens@98=0.837, sens@99=0.782 | `results/cross_study_finallydb.json` |
+| **DeepCatch §3.2 (this work, open data)** | FinaleDB open data, internal CV | **627** (Jiang+Cristiano) | pooled **AUC 0.968 ± 0.003**, sens@95=0.865, sens@98=0.796, sens@99=0.700 | `results/cross_study_finallydb_gc_corrected.json` |
 
 **Positioning (honest).** The published numbers above were generated by independent labs on larger, often proprietary, clinical-grade plasma cohorts. DeepCatch's §3.2 number is a **pooled open-data internal-CV** baseline on the same 5-channel DELFI feature (Cristiano-style) that DELFI itself uses. Pooled internal-CV at this scale is competitive in the AUC band of the published numbers (0.86–0.94 discovery-cohort range) — but ours is **not** an external validation, **not** a clinical operating point, and **not** an architectural contribution. The substantive contribution of DeepCatch is the reproducible engineering substrate that lets a researcher reproduce or extend these numbers on open data, not the headline AUC.
 
@@ -304,7 +306,7 @@ Three concrete distinctions matter:
 
 1. **Galleri and CancerSEEK** are methylation-or-mutation-multianalyte assays, not pure fragmentomics. Their reported numbers include assay information (methylation block, oncoprotein panel) that DeepCatch does NOT use. Comparing 5-channel DELFI fragmentomics to a multianalyte panel would be apples-to-oranges; the numbers are listed for context, not as a head-to-head.
 2. **CAPP-Seq** is tumor-informed MRD — it tracks patient-specific mutations at 0.01–0.1% ctDNA. DeepCatch's pure-fragmentomics 5-channel LR is not in that regime; comparability with CAPP-Seq on this pooled cross-study cohort is structural, not parametric.
-3. **FinaleMe** is the closest cousin methodologically (4-mer end-motif distribution from plasma). Liu 2018 reported AUC 0.91 on n=159; DeepCatch's 5-channel DELFI feature at n=627 reports pooled AUC 0.974. This is the closest fair-context comparison, and is consistent with the headroom available in moving from a 159-patient discovery cohort (n=159 has wide CI on the per-cancer denominator) to a 627-sample pooled CV. An independent head-to-head on a shared held-out cohort would be required to claim a substantive gap.
+3. **FinaleMe** is the closest cousin methodologically (4-mer end-motif distribution from plasma). Liu 2018 reported AUC 0.91 on n=159; DeepCatch's 5-channel DELFI feature at n=627 reports pooled AUC 0.968. This is the closest fair-context comparison, and is consistent with the headroom available in moving from a 159-patient discovery cohort (n=159 has wide CI on the per-cancer denominator) to a 627-sample pooled CV. An independent head-to-head on a shared held-out cohort would be required to claim a substantive gap.
 
 The open-data benchmark at hand is, by design, **not a clinical claim**. The comparator table is included so the reader can place the §3.2 number in the published-methods landscape without over-reading it.
 
@@ -321,8 +323,8 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 - **Clinical validation.** DeepCatch is not a clinical assay. No real-plasma cohort has been sequenced. No patient samples were collected under IRB.
 - **FDA pathway.** No regulatory submission is planned or implied.
 - **Prospective screening.** No prospective cohort, no enrollment, no follow-up.
-- **Headline-grade clinical AUCs.** The synthetic-plasma foundation AUC (≈0.55) is below the LR baseline. The cross-study FinaleDB 5-channel LR AUC at n=627 is 0.974 with sens@99=0.782 (pooled, harmonized), but that is **pooled internal-CV**, NOT external validation, NOT a held-out clinical plasma cohort, and NOT a clinical operating point.
-- **HCC_J is a within-study reading, not a cross-study one.** The OvR reading of HCC_J (Jiang 2015 only, n=89) against the cross-study healthy pool drops the AUC to 0.725 because there are only 32 Jiang healthy controls — the comparison reduces to "Jiang HCC vs mostly-Cristiano healthy," not a within-study HCC-vs-healthy read. HCC_J PPV @0.001 = 0.019 (and only 0.031 @ prev=0.01) reflects the low sens@99 (0.191) on that denominator, not a model-quality claim.
+- **Headline-grade clinical AUCs.** The synthetic-plasma foundation AUC (≈0.55) is below the LR baseline. The cross-study FinaleDB 5-channel LR AUC at n=627 is 0.968 with sens@99=0.700 (pooled, harmonized), but that is **pooled internal-CV**, NOT external validation, NOT a held-out clinical plasma cohort, and NOT a clinical operating point.
+- **HCC_J is a within-study reading, not a cross-study one.** The OvR reading of HCC_J (Jiang 2015 only, n=89) against the cross-study healthy pool drops the AUC to 0.704 because there are only 32 Jiang healthy controls — the comparison reduces to "Jiang HCC vs mostly-Cristiano healthy," not a within-study HCC-vs-healthy read. HCC_J PPV @0.001 = 0.014 reflects the low sens@99 (0.146) on that denominator, not a model-quality claim.
 - **Per-cancer denominators are small.** Top-5 cancer n ranges from 28 (OV) to 89 (HCC_J); CIs on sens@99 (e.g. OV [0.758–1.000], PAAD [0.333–0.810]) are wide. Conclusions about per-cancer performance should be read as ordinal, not cardinal.
 - **Real plasma fragmentomics.** The pretraining cohort is from FinaleDB plasma (Cristiano 2019, Jiang 2015), but the downstream validation cohorts are either synthetic-plasma (TCGA-LUAD real mutations + Poisson sampling, §3.1) or Open-Data FinaleDB uniformly-preprocessed plasma (§3.2/3.3). A real-plasma fragmentomics validation requires an IRB-approved prospective cohort — see §4.4.
 

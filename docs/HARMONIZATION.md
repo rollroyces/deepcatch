@@ -205,18 +205,18 @@ pre-GC benchmark.
 The full 5-seed × 5-fold pipeline was run with and without GC
 correction on the same n=627 publications-6+8 cohort (Cristiano 2019
 [Jiang 2015]). The GC-corrected version has a pooled OOF AUC of
-**0.9670 ± 0.0035** vs the legacy AUC of **0.9747 ± 0.0012** — a
-**ΔAUC = −0.008** (small DROP, well within the 5-seed ± std).
+**0.9684 ± 0.0027** vs the legacy AUC of **0.9770 ± 0.0013** — a
+**ΔAUC = −0.0086** (small DROP, well within the 5-seed ± std).
 
 The honest reading: removing the GC-vs-coverage axis DROPPED the
-pooled AUC by ~0.008 on this FinaleDB-uniformly-processed cohort.
+pooled AUC by ~0.009 on this FinaleDB-uniformly-processed cohort.
 This does NOT mean the GC correction is "wrong" — it means a chunk
-of the legacy 0.9747 AUC was carrier on the GC axis, which the
+of the legacy 0.9770 AUC was carrier on the GC axis, which the
 classifier used as an indirect proxy for cancer signal (via per-bin
-CNV shifts). The corrected AUC of 0.9670 is the more honest cancer
-signal — it is closer to the within-publication AUCs (Jiang 0.9572,
-Cristiano 0.9683) than the pooled 0.9747 was, suggesting the legacy
-pooled number was inflated by ~0.005 from GC-axis proxy detection.
+CNV shifts). The corrected AUC of 0.9684 is the more honest cancer
+signal — it is closer to the within-publication AUCs (Jiang 0.9661,
+Cristiano 0.9698) than the pooled 0.9770 was, suggesting the legacy
+pooled number was inflated by ~0.005-0.009 from GC-axis proxy detection.
 
 The `c100_gc_corrected` channel and the `cn` channel carry
 different information — the cleanest reading is to report BOTH

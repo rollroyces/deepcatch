@@ -11,7 +11,7 @@
 
 | Layer | Status | Honest scope |
 |---|---|---|
-| **Fragmentomics 5-channel cross-study pooled AUC** (FinaleDB pubs 6+8, n=627) | **Ready** | AUC 0.967 ± 0.004 with GC correction; shuffled-label null 0.466; true-confound control collapses to 0.499. |
+| **Fragmentomics 5-channel cross-study pooled AUC** (FinaleDB pubs 6+8, n=627) | **Ready** | AUC 0.9684 ± 0.0027 with GC correction; shuffled-label null 0.446; true-confound control collapses to 0.484. |
 | **Per-cancer sens@99% spec on the same cohort** | **Ready** | Pooled sens@99% = 0.669 (DeLong CI logged in `results/per_cancer_sens_at_spec.json`); per-cancer types: LUAD 0.71, OV 0.90, PAAD 0.69, CRC 0.83, HCC (Jiang) 0.78, BRCA 0.30, OTHER_C 0.61. |
 | **Screening-grade sens@99.5% / @99.9% spec** | **Ready** *(offline computation)* | New CLI `--specificities 0.95 0.98 0.99 0.995 0.999` (see `scripts/per_cancer_sens_at_spec.py`) emits the full screening-grade grid; pooled sens@99.5% = 0.582. |
 | **Stage I vs late-stage breakdown** | **Ready** *(computable, n=0 in open-data)* | New `build_stage_breakdown_table` in `src/per_cancer_sens_at_spec.py`. The open-data FinaleDB cohort **does not carry stage labels**, so the breakdown is omitted by default and only fires when an input TSV has a `stage` column. |
@@ -32,8 +32,8 @@ The auditable ground-truth numbers below are all reproducible from `bash paper/R
 
 | Setting | Pooled AUC | sens@99% spec | Notes |
 |---|---:|---:|---|
-| Baseline (5-channel, no GC) | 0.9747 ± 0.0012 | 0.793 | legacy; **inflated ~0.008 by GC-axis proxy** |
-| **+ GC correction (default)** | **0.9670 ± 0.0035** | **0.669** | honest, removes batch proxy |
+| Baseline (5-channel, no GC) | 0.9770 ± 0.0013 | 0.785 | legacy; **inflated ~0.009 by GC-axis proxy** |
+| **+ GC correction (default)** | **0.9684 ± 0.0027** | **0.700** | honest, removes batch proxy |
 | + 4-mer motifs (`--include-motifs`) | 0.9768 ± 0.0024 | — | small lift on baseline; below GC-corrected AUC in some seeds |
 | **Shuffled-label null** | **0.4657** | 0.0 | passes the <0.55 gate (5 seeds; 0.46–0.51 range) |
 | **True-confound (cancer=A, healthy=B)** | **0.499** | — | signal is cancer-vs-healthy, not batch |
@@ -226,7 +226,7 @@ The 5-channel fragmentomics + per-cancer sens@spec pipeline is **cancer-agnostic
 
 ### Notable gap: **small cell lung cancer (SCLC) is NOT in the cohort**
 
-DeepCatch's pooled 0.967 AUC and per-cancer sens@spec numbers do **not** cover SCLC. Reasons + impact:
+DeepCatch's pooled 0.968 AUC and per-cancer sens@spec numbers do **not** cover SCLC. Reasons + impact:
 
 - **Biologically distinct**: SCLC has different driver mutations (TP53 / RB1 / NOTCH), higher ctDNA shedding at diagnosis (high VAF, easier late-stage), and different fragmentomics signatures (shorter fragments, distinct chromatin) than NSCLC/LUAD. A pooled "lung cancer" AUC that mixes SCLC + NSCLC would be misleading.
 - **High clinical value of ultra-early detection**: SCLC 5-yr survival jumps from <5% (Stage IV) to ~40% (Stage I) — the largest absolute swing of any cancer. LDCT-only screening at ~95% specificity is too low for population SCLC screening.
@@ -240,7 +240,7 @@ Until an SCLC cohort is added, **do not cite DeepCatch's headline numbers for SC
 
 ## 5. Honest limitations (do not claim beyond them)
 
-1. **Open-data scope, not clinical plasma.** The 0.967 pooled AUC is on FinaleDB pre-processed cfDNA features, not on raw plasma reads from a clinical lab. Every clinical number degrades from simulation.
+1. **Open-data scope, not clinical plasma.** The 0.968 pooled AUC is on FinaleDB pre-processed cfDNA features, not on raw plasma reads from a clinical lab. Every clinical number degrades from simulation.
 2. **Not FDA-approved, not clinically validated, not a medical device.** See the WARNING block at the top of `README.md`.
 3. **Panel-LLR is tumor-informed.** MCED-style screening cannot use it; the fragmentomics pipeline (1.1) is what carries that case.
 4. **Stage I coverage is 0% on the open-data headline.** Until a real cohort with stage labels is added, we cannot honestly claim Stage I sensitivity.

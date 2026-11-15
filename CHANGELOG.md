@@ -54,6 +54,20 @@ cohort size.
 
 ### Fixed
 
+- **The benchmark is now reproducible.** The cross-study benchmark fitted PCA
+  without `random_state`. sklearn picks the randomised solver when
+  `n_components < 0.8 * min(n_samples, n_features)` — true for every fold
+  here — and that solver is seeded from `random_state`, so re-running the
+  benchmark produced a slightly different number every time (one
+  publication's AUC moved 0.9789 → 0.9821 between two runs of the same
+  command). Four call sites are now seeded:
+  `scripts/cross_study_finallydb.py`, `src/fragmentomics/decision_curve_cli.py`
+  (which also fitted the PCA twice per fold), `src/fragmentomics/train_tumor_naive.py`
+  and `src/fragmentomics/fusion_ablation.py`.
+  `test/test_benchmark_reproducibility.py` installs an AST guard that fails
+  on any unseeded `PCA(...)` in `scripts/` or `src/`, plus a behavioural test
+  that requires two runs of the fold fit to agree exactly and a different
+  seed to still give a different answer.
 - The FinaleDB readiness probe reported the S3 bucket as "private" because it
   probed a single inaccessible key; the bucket is partially public and the
   fragment objects are reachable.
@@ -71,11 +85,26 @@ cohort size.
 
 ### Changed
 
+- **The benchmark artifacts were regenerated from the seeded pipeline**, and every
+  document now quotes that one run. The committed set was internally
+  inconsistent before this: `results/cross_study_finallydb.json` came from a
+  PCA-200 run (pooled 0.9747) while `docs/CROSS_STUDY_BENCHMARK.md` and
+  `results/per_cancer_sens_at_spec.json` came from a PCA-20 run (pooled
+  0.9225), and the paper quoted numbers from both. The canonical numbers are
+  now: **pooled harmonized 0.9684 ± 0.0027** with GC correction (the
+  headline) and **0.9770 ± 0.0013** legacy without it — a GC-axis effect of
+  −0.0086, the same finding as before, now measured on one reproducible
+  footing. Per-cancer, sens@spec, the true-confound control and the
+  shuffled-label null were regenerated from the same runs
+  (`scripts/benchmark_numbers.py` prints all of them).
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out
   numbers alongside the pooled one, and describe the methylation channel as
   *extraction on real data, not yet a validated feature*.
+- `USAGE.md` pointed at `scripts/honest_benchmark.py`, which does not exist in
+  this repository; it now gives this repo's benchmark command and its expected
+  output.
 
 ## [2.2.0] — 2026-08-21
 
