@@ -1,6 +1,6 @@
 # Leave-One-Study-Out (LOSO) Cross-Publication Benchmark
 > **Scope**: open-data cross-publication transfer on FinaleDB publications 6 (jiang) + 8 (cristiano). **NOT** clinical validation. **NOT** external cohort validation. The test publication is fully held out of training.
-- Generated: `2026-11-15T04:28:53.252470+00:00`
+- Generated: `2026-11-15T10:04:59.991965+00:00`
 - Features: `5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)`
 - PCA n_components: `200` (capped at min(pca_n, n_train) per direction)
 - Classifier: `LogisticRegression(max_iter=2000)`
@@ -16,7 +16,7 @@
 ## 2. In-domain references (within-publication CV)
 | Publication | n (ca/hea) | 5-seed x 5-fold OOF AUC |
 |---|---|---|
-| cristiano | 506 (274/232) | 0.9701 +/- 0.0031 |
+| cristiano | 506 (274/232) | 0.969 +/- 0.0021 |
 | jiang | 121 (89/32) | 0.9789 +/- 0.0027 |
 
 ## 3. Per-cancer one-vs-rest AUC on the held-out publication
@@ -66,3 +66,7 @@ Leave one cancer type out of a single publication; train on the remaining types 
 - The pooled cross-study benchmark in scripts/cross_study_finallydb.py never holds a publication out, so it cannot answer this question; these numbers are the transfer measurement the pooled number is often read as.
 - Reverse direction (train-Cristiano / test-Jiang) pooled test AUC = 0.9361 (DeLong 95% CI 0.8909-0.9813).
 - self_zscore lets the held-out publication normalize itself using its own feature statistics (unsupervised, no labels). train_global applies the training publication's scaler to the test publication with no test-set statistics; it is reported as a sensitivity check because the two publications were pre-processed differently.
+
+## Reproducibility
+- **transfer_numbers**: deterministic: the LOSO directions use a seeded PCA (random_state=0) and a fixed train/test split by publication, so the transfer AUCs reproduce exactly
+- **in_domain_reference**: computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA is unseeded, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much

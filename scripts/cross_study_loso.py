@@ -44,7 +44,18 @@ held-out type. This separates "transfers to an unseen STUDY" from
 alone cannot, because Jiang is HCC-only while Cristiano contains no HCC.
 
 Also reported: in-domain (within-publication) 5-seed x 5-fold CV
-references, computed through the same code path as the headline.
+references (seeded, so the artifact reproduces exactly), and a
+within-study leave-one-cancer-type-out control.
+
+Implementation note
+-------------------
+The sibling-pipeline import (``honest_benchmark``) and this repo's
+``cross_study_finallydb`` helpers are imported lazily, inside
+``_external()``. ``cross_study_finallydb`` imports the sibling checkout
+at module import time, so importing it eagerly would make this module
+unimportable without that checkout -- and
+``test/test_cross_study_loso.py`` would then fail at collection on CI
+rather than at run time.
 
 Outputs:
   results/cross_study_loso.json
@@ -61,7 +72,8 @@ from datetime import datetime, timezone
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -69,27 +81,42 @@ sys.path.insert(0, _REPO_ROOT)
 sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts"))
 
 # Sister pipeline (cfdna-fragmentomics-pipeline): 5-channel loader +
-# per-study harmonizer. Same imports as the headline benchmark.
-PIPELINE = os.environ.get(
-    "DEEPCATCH_SISTER_PIPELINE", "/Users/hermes/cfdna-fragmentomics-pipeline"
-)
-sys.path.insert(0, PIPELINE)
-sys.path.insert(0, os.path.join(PIPELINE, "scripts"))
-from honest_benchmark import load5  # noqa: E402
-
-from cross_study_finallydb import (  # noqa: E402
-    DEFAULT_PCA_N,
-    DEFAULT_SEEDS,
-    PUBLICATION_REGISTRY,
-    apply_cell_line_filter,
-    load_labels_multiclass,
-    pooled_oof,
-)
+# per-study harmonizer. Same imports as the headline benchmark --
+# but deferred, because that checkout is absent from a fresh clone and
+# from CI (see _external below).
 from src.per_cancer_sens_at_spec import (  # noqa: E402
     DEFAULT_SPECIFICITIES,
     SCREENING_SPECIFICITIES,
     delong_auc_ci,
 )
+
+
+def _external():
+    """Import the sibling pipeline and this repo's cross-study helpers.
+
+    ``scripts/cross_study_finallydb.py`` imports the sibling
+    ``cfdna-fragmentomics-pipeline`` checkout at module import time, and
+    that checkout is not present in a fresh clone or on a CI runner.
+    Importing it eagerly would make this module unimportable there, and
+    the unit tests in ``test/test_cross_study_loso.py`` would then fail
+    at collection rather than at run time. Both imports are therefore
+    deferred to the call sites that actually need the data.
+
+    Returns (load5, helpers) where helpers is the
+    ``cross_study_finallydb`` module.
+    """
+    import importlib
+
+    pipeline = os.environ.get(
+        "DEEPCATCH_SISTER_PIPELINE",
+        "/Users/hermes/cfdna-fragmentomics-pipeline",
+    )
+    for path in (pipeline, os.path.join(pipeline, "scripts")):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    load5 = importlib.import_module("honest_benchmark").load5
+    helpers = importlib.import_module("cross_study_finallydb")
+    return load5, helpers
 
 FEATURE_SUFFIXES = (
     "delfi_5mb_ratio.npy",
@@ -119,10 +146,13 @@ def feature_order(labels: dict, feat_dir: str) -> list[str]:
 
 
 def load_cohort(features_dir: str, labels_path: str, publications: set[str]):
-    labels, studies, disease_class, publication = load_labels_multiclass(
+    load5, helpers = _external()
+    labels, studies, disease_class, publication = helpers.load_labels_multiclass(
         labels_path, publications
     )
-    dropped = apply_cell_line_filter(labels, studies, disease_class, publication)
+    dropped = helpers.apply_cell_line_filter(
+        labels, studies, disease_class, publication
+    )
     X, y, st = load5(labels, studies, feat_dir=features_dir)
     order = feature_order(labels, features_dir)
     if len(order) != X.shape[0]:
@@ -272,20 +302,48 @@ def loso_direction(cohort, train_study: str, test_study: str, pca_n: int,
     return res
 
 
+def in_domain_cv(X, y, seeds, pca_n: int):
+    """5-seed x 5-fold OOF inside a single publication.
+
+    Mirrors ``scripts/cross_study_finallydb.py:pooled_oof`` -- same
+    folds, same per-study z-score harmonization fit on the train fold
+    only -- but with a SEEDED PCA. The headline benchmark's PCA is
+    unseeded, which makes the 506-sample publication's in-domain AUC
+    drift by ~0.003 between runs; seeding it keeps this artifact
+    reproducible.
+
+    Returns (auc_mean, auc_std, per_seed_aucs).
+    """
+    seed_aucs = []
+    for i, sd in enumerate(seeds):
+        cv = StratifiedKFold(5, shuffle=True, random_state=sd)
+        oof = np.zeros(len(y), dtype=float)
+        for tr, te in cv.split(X, y):
+            Xtr, Xte = harmonize(X[tr].copy(), X[te].copy(), "train_global")
+            n_components = int(min(pca_n, Xtr.shape[0], Xtr.shape[1]))
+            pca = PCA(n_components=n_components,
+                      random_state=1000 + i).fit(Xtr)
+            model = LogisticRegression(max_iter=2000).fit(pca.transform(Xtr),
+                                                           y[tr])
+            oof[te] = model.predict_proba(pca.transform(Xte))[:, 1]
+        seed_aucs.append(float(roc_auc_score(y, oof)))
+    return (float(np.mean(seed_aucs)), float(np.std(seed_aucs)), seed_aucs)
+
+
 def in_domain_reference(cohort, study: str, seeds, pca_n: int) -> dict:
-    """5-seed x 5-fold CV within a single publication (same code path)."""
+    """Within-publication CV reference for one study."""
     st = cohort["study"]
     m = st == study
-    _, _, seed_aucs = pooled_oof(
-        cohort["X"][m], cohort["y"][m], st[m], seeds, pca_n, harmonize=True
+    auc_mean, auc_std, seed_aucs = in_domain_cv(
+        cohort["X"][m], cohort["y"][m], seeds, pca_n
     )
     return {
         "study": study,
         "n": int(m.sum()),
         "n_cancer": int((cohort["y"][m] == 1).sum()),
         "n_healthy": int((cohort["y"][m] == 0).sum()),
-        "cv_auc_mean": round(float(np.mean(seed_aucs)), 4),
-        "cv_auc_std": round(float(np.std(seed_aucs)), 4),
+        "cv_auc_mean": round(auc_mean, 4),
+        "cv_auc_std": round(auc_std, 4),
         "per_seed_auc": [round(float(a), 4) for a in seed_aucs],
     }
 
@@ -421,6 +479,12 @@ def write_markdown(payload: dict, md_path: str) -> None:
     for line in payload["interpretation"]:
         L.append(f"- {line}\n")
 
+    repro = payload.get("reproducibility", {})
+    if repro:
+        L.append("\n## Reproducibility\n")
+        for key, text in repro.items():
+            L.append(f"- **{key}**: {text}\n")
+
     # Every element is one line; joining with "\n" (after stripping any
     # trailing newline) keeps the markdown tables well-formed regardless
     # of whether an individual append already carried a newline.
@@ -430,14 +494,16 @@ def write_markdown(payload: dict, md_path: str) -> None:
 
 
 def main():
+    _, helpers = _external()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--features-dir",
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
     ap.add_argument("--labels-multiclass",
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
     ap.add_argument("--publications", nargs="+", default=["6", "8"])
-    ap.add_argument("--pca", type=int, default=DEFAULT_PCA_N)
-    ap.add_argument("--seeds", type=int, nargs="+", default=DEFAULT_SEEDS)
+    ap.add_argument("--pca", type=int, default=helpers.DEFAULT_PCA_N)
+    ap.add_argument("--seeds", type=int, nargs="+",
+                    default=list(helpers.DEFAULT_SEEDS))
     ap.add_argument("--out-json", default="results/cross_study_loso.json")
     ap.add_argument("--out-md", default="docs/CROSS_STUDY_LOSO.md")
     args = ap.parse_args()
@@ -522,6 +588,24 @@ def main():
             "features_dir": args.features_dir,
             "labels_multiclass": args.labels_multiclass,
             "publications": sorted(pubs),
+        },
+        "reproducibility": {
+            "transfer_numbers": "deterministic: the LOSO directions use a "
+                                "seeded PCA (random_state=0) and a fixed "
+                                "train/test split by publication, so the "
+                                "transfer AUCs reproduce exactly",
+            "in_domain_reference": "computed by scripts/cross_study_loso.py:"
+                                   "in_domain_cv, which mirrors "
+                                   "cross_study_finallydb.py:pooled_oof (same "
+                                   "folds, same per-study z-score "
+                                   "harmonization fit on the train fold) but "
+                                   "with a SEEDED PCA. The headline "
+                                   "benchmark's PCA is unseeded, so its own "
+                                   "per-publication AUC drifts ~0.003 "
+                                   "run-to-run on the 506-sample publication; "
+                                   "these references can therefore differ "
+                                   "from results/cross_study_finallydb.json's "
+                                   "per_cohort values by that much",
         },
         "cohort": {
             "n_samples_with_features": int(cohort["X"].shape[0]),

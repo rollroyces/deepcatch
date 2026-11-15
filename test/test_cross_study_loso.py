@@ -31,13 +31,84 @@ sys.path.insert(0, str(_REPO_ROOT / "scripts"))
 from scripts.cross_study_loso import (  # noqa: E402
     auc_with_ci,
     component_sweep,
+    fit_pca_lr,
     harmonize,
+    in_domain_cv,
     per_cancer_ovr,
     sens_at_spec,
     spec_grid,
 )
 
 ARTIFACT = _REPO_ROOT / "results" / "cross_study_loso.json"
+SCRIPT = _REPO_ROOT / "scripts" / "cross_study_loso.py"
+
+
+# --------------------------------------------------------------------------- #
+# Import safety (guards the CI collection failure)
+# --------------------------------------------------------------------------- #
+def test_sister_pipeline_is_not_imported_at_module_level():
+    """The sibling checkout is absent on CI, so it must not be imported
+    at module scope -- otherwise collection of this file fails there."""
+    for lineno, line in enumerate(SCRIPT.read_text().splitlines(), 1):
+        if "from honest_benchmark import" in line:
+            assert line[:1].isspace(), (
+                f"line {lineno}: module-level import of the sibling "
+                "pipeline breaks collection where the sibling repo is absent"
+            )
+        if "from cross_study_finallydb import" in line:
+            raise AssertionError(
+                f"line {lineno}: cross_study_finallydb imports the sibling "
+                "pipeline at its own module level and must be imported "
+                "lazily via importlib"
+            )
+
+
+def test_module_imports_without_the_sibling_pipeline():
+    """Importing the script must not require the sibling checkout."""
+    import subprocess
+    import sys
+    code = (
+        "import sys; sys.path.insert(0, %r); sys.path.insert(0, %r); "
+        "import scripts.cross_study_loso as m; print(m.in_domain_cv.__name__)"
+        % (str(_REPO_ROOT), str(_REPO_ROOT / "scripts"))
+    )
+    env = {"PATH": "/usr/bin:/bin", "DEEPCATCH_SISTER_PIPELINE": "/nonexistent"}
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True,
+                         text=True, env=env)
+    assert out.returncode == 0, out.stderr
+    assert "in_domain_cv" in out.stdout
+
+
+# --------------------------------------------------------------------------- #
+# Determinism
+# --------------------------------------------------------------------------- #
+def test_in_domain_cv_is_deterministic():
+    """The in-domain reference must reproduce run-to-run.
+
+    The headline benchmark's PCA is unseeded and its per-publication AUC
+    drifts ~0.003 between runs; this reference is seeded, so it must not.
+    """
+    rng = np.random.default_rng(7)
+    n = 80
+    y = np.r_[np.zeros(40, int), np.ones(40, int)]
+    X = np.vstack([
+        rng.normal(0, 1, (40, 30)),
+        rng.normal(1.2, 1, (40, 30)),
+    ])
+    a = in_domain_cv(X, y, [42, 13], 10)
+    b = in_domain_cv(X, y, [42, 13], 10)
+    assert a == b
+
+
+def test_fit_pca_lr_is_deterministic():
+    rng = np.random.default_rng(8)
+    X = rng.normal(size=(50, 15))
+    y = np.r_[np.zeros(25, int), np.ones(25, int)]
+    p1, m1 = fit_pca_lr(X, y, 8)
+    p2, m2 = fit_pca_lr(X, y, 8)
+    assert np.allclose(p1.transform(X), p2.transform(X))
+    assert np.allclose(m1.predict_proba(p1.transform(X)),
+                       m2.predict_proba(p2.transform(X)))
 
 
 # --------------------------------------------------------------------------- #

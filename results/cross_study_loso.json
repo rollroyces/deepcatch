@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T04:28:53.252470+00:00",
+  "generated_at": "2026-11-15T10:04:59.991965+00:00",
   "config": {
     "feature_set": "5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)",
     "pca_n": 200,
@@ -18,6 +18,10 @@
       "6",
       "8"
     ]
+  },
+  "reproducibility": {
+    "transfer_numbers": "deterministic: the LOSO directions use a seeded PCA (random_state=0) and a fixed train/test split by publication, so the transfer AUCs reproduce exactly",
+    "in_domain_reference": "computed by scripts/cross_study_loso.py:in_domain_cv, which mirrors cross_study_finallydb.py:pooled_oof (same folds, same per-study z-score harmonization fit on the train fold) but with a SEEDED PCA. The headline benchmark's PCA is unseeded, so its own per-publication AUC drifts ~0.003 run-to-run on the 506-sample publication; these references can therefore differ from results/cross_study_finallydb.json's per_cohort values by that much"
   },
   "cohort": {
     "n_samples_with_features": 627,
@@ -295,14 +299,14 @@
       "n": 506,
       "n_cancer": 274,
       "n_healthy": 232,
-      "cv_auc_mean": 0.9701,
-      "cv_auc_std": 0.0031,
+      "cv_auc_mean": 0.969,
+      "cv_auc_std": 0.0021,
       "per_seed_auc": [
-        0.9708,
-        0.9687,
-        0.9666,
-        0.9688,
-        0.9756
+        0.9726,
+        0.9692,
+        0.9691,
+        0.9674,
+        0.9666
       ]
     },
     {
