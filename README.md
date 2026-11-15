@@ -154,7 +154,7 @@ flowchart LR
     class LR,OOF clf
 ```
 
-**Two-stage CET** (Capture → Enhance → Triage) is the architectural proposal: Stage 1 fuses modalities through a Transformer; Stage 2 applies a Bayesian Kalman filter across serial draws; Triage compares the posterior to τ. The CET code in `src/longitudinal/` and `src/foundation/` is **architecture-only on synthetic data** — see [`docs/V3_DESIGN.md`](docs/V3_DESIGN.md) for the methylation β-value extension plan (Apple MPS GPU).
+**Two-stage CET** (Capture → Enhance → Triage) is the architectural proposal: Stage 1 fuses modalities through a Transformer; Stage 2 applies a Bayesian Kalman filter across serial draws; Triage compares the posterior to τ. The Stage-1 fusion layer now runs on real data (late fusion and Bayesian model averaging, §3.1.1 of the manuscript), and the methylation β values can be imputed from real public fragment files — but the CET Stage-2 tracker in `src/longitudinal/` is still **architecture-only on synthetic data** (see [`docs/V3_DESIGN.md`](docs/V3_DESIGN.md)), and no serial clinical draws are available to evaluate it on.
 
 ---
 
@@ -310,7 +310,7 @@ Deep details live in each module's docstrings (e.g. `python -c "import src.fragm
 | Path | One-line | Deep docs |
 |---|---|---|
 | `src/fragmentomics/` | DELFI / MFS / nucleosome / THEMIS / FSD / tumor-naive adapter / fusion ablation | `src/fragmentomics/README.md` if present, else module docstrings |
-| `src/methylation_gnn/` | GATv2 field-defect + ReconstructionDecoder (architecture-only) | `src/methylation_gnn/CHANGES.md` (FinaleMe wiring roadmap) |
+| `src/methylation_gnn/` | GATv2 field-defect + ReconstructionDecoder — **real** β input (FinaleMe on public fragments), **synthetic** graph topology | `docs/METHYLATION_PIPELINE.md`, `src/methylation_gnn/CHANGES.md` |
 | `src/tissue_deconv/` | cfSort-style 4-layer MLP, 29 tissues | module docstrings |
 | `src/foundation/` | MultiModalEncoder + PretrainHead + FoundationDownstream + losses | `src/foundation/test_integration.py` (43 tests as the spec) |
 | `src/multimodal_fusion/` | PyTorch CrossAttentionFusion / GCN / EarlyLate / TASK_PRIOR_MASKS | `test/test_biomedical_review_fixes.py` |
@@ -371,7 +371,7 @@ The 12 deselected tests are the slow real-data foundation smoke and per-study ha
 | 4-mer end motifs (`--include-motifs`) | End 5-mer counts from .bam | derived from BAM |
 | Mutation panel (`scripts/cadd_*`) | TCGA-LUAD per-aliquot masked MAFs (5,738 mutations) | GDC open-access |
 | CADD scoring | CADD v1.7 PHRED TSV | [Kircher 2014](https://doi.org/10.1038/ng.2892), CC BY-NC-SA 4.0 |
-| GNN methylation | β-value methylation array (synthetic in repo) | TCGA, GEO, FinaleMe-imputed |
+| GNN methylation | per-CpG β values | FinaleMe-imputed from FinaleDB fragments (real); TCGA/GEO arrays not yet wired |
 | Tissue deconvolution | `cfSort` tissue atlas | [stephenrcraig/cfSort](https://github.com/stephenrcraig/cfSort) |
 
 If you don't have real cfDNA data, `MultiModalDataGenerator` (foundation) and `TissueAtlas` (deconv) ship synthetic fallbacks so the whole pipeline runs offline. **Cancer-vs-healthy AUC numbers from synthetic data are NOT comparable to the open-data cross-study numbers above — see "What is NOT in this repo" in [`MODEL.md`](MODEL.md).**
@@ -389,7 +389,7 @@ deepcatch/
 ├── Dockerfile
 ├── src/                          # Core library
 │   ├── fragmentomics/            # DELFI / MFS / nucleosome / THEMIS / FSD
-│   ├── methylation_gnn/          # GATv2 graph attention (arch-only)
+│   ├── methylation_gnn/          # GATv2 graph attention (real beta, synthetic topology)
 │   ├── tissue_deconv/            # cfSort-style DNN
 │   ├── foundation/               # MultiModalEncoder + FoundationDownstream
 │   ├── multimodal_fusion/        # CrossAttention / EarlyLate / GCN (PyTorch)
