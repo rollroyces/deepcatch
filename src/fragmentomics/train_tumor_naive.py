@@ -93,7 +93,11 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
             Xtr = sc.transform(X[tr]); Xte = sc.transform(X[te])
         # PCA inside fold → no test leakage
         max_pca = min(Xtr.shape[0], Xtr.shape[1])
-        pca = PCA(n_components=min(pca_n, max_pca)).fit(Xtr)
+        # random_state: the randomised solver is what sklearn picks at
+        # this component count, so an unseeded fit made the whole
+        # benchmark irreproducible. It shares the fold-split seed.
+        pca = PCA(n_components=min(pca_n, max_pca),
+                  random_state=seed).fit(Xtr)
         model = LogisticRegression(max_iter=2000).fit(
             pca.transform(Xtr), y[tr])
         ys.extend(model.predict_proba(pca.transform(Xte))[:, 1].tolist())

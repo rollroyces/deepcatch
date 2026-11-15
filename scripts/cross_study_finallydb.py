@@ -288,7 +288,17 @@ def pooled_oof(X, y, st, seeds, pca_n, harmonize):
                 Xtr = sc.transform(Xtr)
                 Xte = sc.transform(Xte)
             max_pca = min(Xtr.shape[0], Xtr.shape[1])
-            pca = PCA(n_components=min(pca_n, max_pca)).fit(Xtr)
+            # random_state is REQUIRED for reproducibility here. sklearn's
+            # PCA picks the randomised solver when n_components < 0.8 *
+            # min(n_samples, n_features) -- true for every fold of this
+            # pipeline (n_components=200 or 20 against ~500 training
+            # samples) -- and the randomised solver is seeded from
+            # random_state. Left unseeded, every re-run produced a
+            # slightly different benchmark, so the committed artifact
+            # could not be reproduced. The PCA shares the fold-split
+            # seed, so the whole fit is a pure function of (seed, fold).
+            pca = PCA(n_components=min(pca_n, max_pca),
+                      random_state=sd).fit(Xtr)
             Xtr_p = pca.transform(Xtr)
             Xte_p = pca.transform(Xte)
             m = LogisticRegression(max_iter=2000).fit(Xtr_p, y[tr])

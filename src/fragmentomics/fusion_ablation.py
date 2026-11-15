@@ -165,7 +165,10 @@ def _tumor_naive_score(X_tr: np.ndarray, y_tr: np.ndarray,
         sc = StandardScaler().fit(X_tr)
         Xtr = sc.transform(X_tr); Xte = sc.transform(X_te)
     max_pca = min(Xtr.shape[0], Xtr.shape[1])
-    pca = PCA(n_components=min(pca_n, max_pca)).fit(Xtr)
+    # Seeded: at this component count sklearn fits PCA with the
+    # randomised solver, whose output depends on random_state. Left
+    # unseeded, two runs of the same ablation disagreed.
+    pca = PCA(n_components=min(pca_n, max_pca), random_state=0).fit(Xtr)
     return LogisticRegression(max_iter=2000).fit(
         pca.transform(Xtr), y_tr).predict_proba(pca.transform(Xte))[:, 1]
 

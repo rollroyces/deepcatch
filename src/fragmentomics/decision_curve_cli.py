@@ -73,11 +73,16 @@ def _tumor_naive_score_oof(X: np.ndarray, y: np.ndarray,
             Xtr, sc = _harmonize(X[tr], study[tr], None)
             Xte, _ = _harmonize(X[te], study[te], sc)
             max_pca = min(Xtr.shape[0], Xtr.shape[1])
+            # Seeded: sklearn picks the randomised solver here (the
+            # component count is well under 0.8 * min(n_samples,
+            # n_features)), and without random_state every re-run
+            # produced a slightly different curve. Fit once and reuse
+            # the transform for the test fold.
+            pca = PCA(n_components=min(pca_n, max_pca),
+                      random_state=s).fit(Xtr)
             m = LogisticRegression(max_iter=2000).fit(
-                PCA(n_components=min(pca_n, max_pca)).fit(Xtr).transform(Xtr), y[tr])
-            per_seed[te] = m.predict_proba(
-                PCA(n_components=min(pca_n, max_pca)).fit(Xtr).transform(Xte)
-            )[:, 1]
+                pca.transform(Xtr), y[tr])
+            per_seed[te] = m.predict_proba(pca.transform(Xte))[:, 1]
         out.append(per_seed)
     return np.concatenate(out)
 
