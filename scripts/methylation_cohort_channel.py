@@ -66,9 +66,18 @@ def attach_prior(matrix_path: str, out_path: str) -> dict:
                              "baseQ", "Offset_frag", "Dist_frag_end",
                              "methyPrior"]) + "\n")
         for matrix_path_i in matrix_path:
-            with gzip.open(matrix_path_i, "rt") as fi:
-                header = fi.readline()
-                for line in fi:
+            # Read the whole matrix first: a file that is still being
+            # written raises EOFError mid-iteration, which a per-line
+            # guard would not catch.
+            try:
+                with gzip.open(matrix_path_i, "rt") as fi:
+                    matrix_lines = fi.readlines()
+            except (OSError, EOFError) as exc:
+                print(f"skipping unreadable matrix {matrix_path_i}: {exc}",
+                      file=sys.stderr)
+                continue
+            if True:
+                for line in matrix_lines[1:]:
                     parts = line.rstrip("\n").split("\t")
                     if len(parts) < 11:
                         continue
@@ -103,24 +112,42 @@ def decode(model: str, matrix: str, out: str, decode_only: bool) -> int:
     return proc.returncode
 
 
-def summarise(decoded_path: str) -> dict:
+def summarise(decoded_path: str, max_cpgs: int | None = None) -> dict:
+    """Summarise one sample's decoded beta values.
+
+    ``max_cpgs`` depth-matches the sample: if it has more CpGs than the
+    cap, every k-th CpG is kept, so the retained set still spans the
+    genome. This is how the coverage confound is removed -- two samples
+    with 10,000 and 50,000 covered CpGs are not comparable otherwise.
+    """
     betas = []
-    with gzip.open(decoded_path, "rt") as f:
-        for line in f:
-            if line.startswith("#"):
-                continue
-            parts = line.rstrip("\n").split("\t")
-            if len(parts) < 4:
-                continue
-            try:
-                betas.append(float(parts[3]) / 100.0)
-            except ValueError:
-                continue
+    try:
+        with gzip.open(decoded_path, "rt") as f:
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 4:
+                    continue
+                try:
+                    betas.append(float(parts[3]) / 100.0)
+                except ValueError:
+                    continue
+    except (OSError, EOFError) as exc:
+        # a truncated gz means the file is still being written
+        print(f"skipping unreadable decode {decoded_path}: {exc}",
+              file=sys.stderr)
+        return {"n_cpgs": 0}
     a = np.asarray(betas, dtype=float)
     if a.size == 0:
         return {"n_cpgs": 0}
+    n_total = int(a.size)
+    if max_cpgs and a.size > max_cpgs:
+        stride = -(-a.size // max_cpgs)
+        a = a[::stride][:max_cpgs]
     return {
         "n_cpgs": int(a.size),
+        "n_cpgs_before_match": n_total,
         "beta_mean": round(float(a.mean()), 4),
         "beta_median": round(float(np.median(a)), 4),
         "beta_std": round(float(a.std()), 4),
@@ -187,6 +214,21 @@ def main() -> int:
             s["disease"] = dis
             per_sample[name] = s
 
+    # Depth-matched pass: cap every sample at the smallest CpG count
+    # seen, so the two arms are compared on the same number of loci.
+    counts = [v["n_cpgs"] for v in per_sample.values()]
+    cap = min(counts) if counts else 0
+    matched = {}
+    if cap >= 100:
+        for name in list(per_sample):
+            out = os.path.join(work, f"{name}.decoded.txt.gz")
+            if not os.path.exists(out):
+                continue
+            m = summarise(out, max_cpgs=cap)
+            m["label"] = per_sample[name].get("label")
+            m["disease"] = per_sample[name].get("disease")
+            matched[name] = m
+
     print("[4/4] scoring the beta summary against the labels ...", flush=True)
     names = sorted(per_sample)
     y = np.array([per_sample[n]["label"] if per_sample[n]["label"] is not None
@@ -229,6 +271,19 @@ def main() -> int:
     except Exception:
         auc_beta_mean_only = None
 
+    auc_matched = None
+    if matched:
+        ym = np.array([matched[n]["label"] if matched[n]["label"] is not None
+                        else 0 for n in sorted(matched)])
+        fm = np.array([[matched[n]["beta_mean"], matched[n]["beta_median"],
+                        matched[n]["fraction_methylated"],
+                        matched[n]["fraction_fully_methylated"]]
+                       for n in sorted(matched)], dtype=float)
+        nm = np.array([matched[n]["n_cpgs"] for n in sorted(matched)],
+                       dtype=float)
+        auc_matched = _loo_auc(fm)
+        auc_matched_depth = _loo_auc(nm.reshape(-1, 1))
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -241,6 +296,12 @@ def main() -> int:
         "beta_summary_auc_loo": auc,
         "beta_mean_only_auc": auc_beta_mean_only,
         "cpgs_covered_only_auc_loo": auc_depth_only,
+        "depth_matched": {
+            "cpgs_cap": int(cap),
+            "beta_summary_auc_loo": auc_matched,
+            "cpgs_covered_only_auc_loo": auc_matched_depth,
+            "per_sample": matched,
+        },
         "confound_note": (
             "cpgs_covered_only_auc_loo is the baseline: if the number of "
             "CpGs with coverage alone separates the classes as well as the "
@@ -274,6 +335,10 @@ def main() -> int:
         print(f"  beta_mean alone (no model)  : {auc_beta_mean_only}")
     if auc_depth_only is not None:
         print(f"  CpGs-covered only (confound): {auc_depth_only}")
+    if auc_matched is not None:
+        print(f"  depth-matched beta summary   : {auc_matched} "
+              f"(cap {cap} CpGs)")
+        print(f"  depth-matched CpGs-only      : {auc_matched_depth}")
     return 0
 
 
