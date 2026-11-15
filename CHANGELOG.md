@@ -143,6 +143,15 @@ cohort size.
   limit, so the upload would have been refused; it is now 2894 with every
   number intact. A test fails the build if the abstract exceeds 3000
   characters, or creeps within 50 of the limit.
+- **Eight tests that no workflow ever ran now run in CI.**
+  `test/test_foundation_smoke.py` needs torch, so the core job skipped
+  every test in it, and the deep-learning job does not collect `test/`
+  -- so its checks (the LR baseline must beat the naive average, the
+  foundation must stay inside the LR band, and the pipeline must not
+  fall back to synthetic data when no cache is present) were never
+  executed anywhere. The deep-learning job now runs that file, with its
+  timeout raised to 30 minutes to match the ~28 s per test it takes
+  locally.
 - The readiness gate is artifact-driven and now passes; all eight CI jobs are
   green.
 - README, MODEL.md and the manuscript state the external and leave-one-study-out

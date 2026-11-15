@@ -22,7 +22,7 @@ jobs:
   dl-tests:
     name: DL tests (foundation, GNN, tissue deconv, priming)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,6 +37,15 @@ jobs:
         run: |
           python -m pytest src/foundation src/tissue_deconv src/priming \
             src/methylation_gnn -q --no-header
+      # test/test_foundation_smoke.py needs torch, so the core job skips
+      # every test in it (each is skipif(not _HAS_TORCH)) and the DL job
+      # above did not collect test/ -- which left eight tests, including
+      # the "the pipeline must not fall back to synthetic data" guard,
+      # never executed by any workflow. They run here instead (~28 s per
+      # test locally).
+      - name: Run foundation smoke tests (torch required)
+        run: |
+          python -m pytest test/test_foundation_smoke.py -q --no-header
 
   # ── Real-data pipeline smoke test (no data download) ──────────────────
   # Verifies the real-TCGA validation fails LOUDLY (not silently) when no
