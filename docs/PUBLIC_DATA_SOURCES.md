@@ -113,4 +113,9 @@ population — but they are not IRB-free.
 - The **stage breakdown** remains the one readiness gap: FinaleDB
   carries no stage labels, and the only stage-annotated public
   fragment resources are either inside the CRAG re-packaging of
-  publication 6 (no stage column) or behind an EGA DAC.
+  publication 6 (no stage column) or behind an EGA DAC. Jiang 2015's
+  own supplementary table would carry the HCC stage, but the article is
+  not open access (Europe PMC refuses the supplementary bundle:
+  "Article with id PMC4372002 is not open access one") and PNAS blocks
+  automated downloads of `suppl_file` (HTTP 403), so the stage
+  annotation is only reachable through a publisher session.
