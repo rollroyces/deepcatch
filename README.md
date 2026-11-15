@@ -46,6 +46,8 @@ Scope that would be useful, in order of what unblocks the most:
 
 Everything is MIT-licensed and every number in the repository traces to a committed JSON artifact, so a collaborator can audit the analysis end to end before deciding anything. See [`TEAM.md`](TEAM.md) §2 for the contribution model and [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md) for the validation plan.
 
+**How to reach us**: open a *External cohort validation (collaboration)* issue — the template asks for cohort metadata only, so no patient data ever has to leave your institution. Questions about the analysis itself are better in [Discussions](https://github.com/rollroyces/deepcatch/discussions).
+
 ---
 
 ## Demo (3 real browser recordings)
