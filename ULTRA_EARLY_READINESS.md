@@ -34,9 +34,9 @@ The auditable ground-truth numbers below are all reproducible from `bash paper/R
 |---|---:|---:|---|
 | Baseline (5-channel, no GC) | 0.9770 ± 0.0013 | 0.785 | legacy; **inflated ~0.009 by GC-axis proxy** |
 | **+ GC correction (default)** | **0.9684 ± 0.0027** | **0.700** | honest, removes batch proxy |
-| + 4-mer motifs (`--include-motifs`) | 0.9768 ± 0.0024 | — | small lift on baseline; below GC-corrected AUC in some seeds |
-| **Shuffled-label null** | **0.4657** | 0.0 | passes the <0.55 gate (5 seeds; 0.46–0.51 range) |
-| **True-confound (cancer=A, healthy=B)** | **0.499** | — | signal is cancer-vs-healthy, not batch |
+| + 4-mer motifs (`--include-motifs`) | **0.9785 ± 0.0020** | — | +0.0101 over the GC-corrected baseline; the lift is larger once the GC-axis proxy is removed |
+| **Shuffled-label null** | **0.4460** | 0.0 | passes the <0.55 gate |
+| **True-confound (cancer=A, healthy=B)** | **0.484** | — | signal is cancer-vs-healthy, not batch |
 
 Source: `results/cross_study_finallydb_gc_corrected.json` and `results/cross_study_finallydb.json`.
 Reproduce: `bash paper/REPRODUCE.sh` or `python scripts/cross_study_finallydb.py --publications 6 8 --seeds 42 13 7 99 1234 --gc-correction`.
