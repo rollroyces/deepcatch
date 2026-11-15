@@ -251,7 +251,7 @@ def test_cross_study_pipeline_accepts_include_motifs_flag():
 # --------------------------------------------------------------------------- #
 
 @pytest.mark.slow
-def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir):
+def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir, tmp_path):
     """End-to-end: --include-motifs produces a different pooled AUC
     than the OFF-default baseline.
 
@@ -263,6 +263,10 @@ def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir):
     computed; the test reports the delta honestly. A delta of 0 is a
     real outcome ("motifs add zero value") that we record but do not
     treat as a failure.
+
+    Every output is written under tmp_path. The script's defaults point
+    at the published artifacts, so letting them default would overwrite
+    the numbers the paper cites with a fresh (slightly drifted) run.
     """
     labels_tsv = (
         feat_dir.parent / "labels_multiclass.tsv"
@@ -279,16 +283,23 @@ def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir):
         "--features-dir", str(feat_dir),
         "--labels-multiclass", str(labels_tsv),
         "--seeds", "42", "13", "7", "99", "1234",
-        "--out-per-cancer-json", "",
     ]
 
-    # Run WITHOUT --include-motifs (existing baseline)
-    base_json = _REPO_ROOT / "results" / "_test_load5_with_motifs_baseline.json"
+    # Run WITHOUT --include-motifs (existing baseline).
+    #
+    # Every output goes to tmp_path. The script's own defaults point at
+    # the PUBLISHED artifacts (results/cross_study_finallydb.json,
+    # results/per_cancer_sens_at_spec.json, docs/CROSS_STUDY_BENCHMARK.md),
+    # so a test that lets them default overwrites the numbers the paper
+    # cites with a fresh run -- which drifts, because the pipeline is not
+    # bit-reproducible.
+    base_json = tmp_path / "baseline.json"
     r1 = subprocess.run(
         [py, str(_SCRIPTS / "cross_study_finallydb.py"),
          *base_args,
          "--out-json", str(base_json),
-         "--out-md", str(_REPO_ROOT / "docs" / "_test_load5_with_motifs_baseline.md")],
+         "--out-per-cancer-json", str(tmp_path / "baseline_per_cancer.json"),
+         "--out-md", str(tmp_path / "baseline.md")],
         capture_output=True, text=True, timeout=1200,
         cwd=str(_REPO_ROOT),
         env={**os.environ, "PYTHONPATH": ""},
@@ -296,14 +307,15 @@ def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir):
     assert r1.returncode == 0, f"baseline run failed: {r1.stderr[-500:]}"
 
     # Run WITH --include-motifs (new flag)
-    motifs_json = _REPO_ROOT / "results" / "_test_load5_with_motifs_with_motifs.json"
+    motifs_json = tmp_path / "with_motifs.json"
     r2 = subprocess.run(
         [py, str(_SCRIPTS / "cross_study_finallydb.py"),
          *base_args,
          "--include-motifs",
          "--motif-cohort-mode", "zero_fill",
          "--out-json", str(motifs_json),
-         "--out-md", str(_REPO_ROOT / "docs" / "_test_load5_with_motifs_with_motifs.md")],
+         "--out-per-cancer-json", str(tmp_path / "with_motifs_per_cancer.json"),
+         "--out-md", str(tmp_path / "with_motifs.md")],
         capture_output=True, text=True, timeout=1200,
         cwd=str(_REPO_ROOT),
         env={**os.environ, "PYTHONPATH": ""},
@@ -333,10 +345,9 @@ def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir):
         f"({'POSITIVE: motifs help' if delta > 0 else 'NEGATIVE: motifs add noise' if delta < 0 else 'ZERO: motifs add no value'})"
     )
 
-    # Cleanup the intermediate test artifacts
-    for p in (base_json, motifs_json,
-              _REPO_ROOT / "docs" / "_test_load5_with_motifs_baseline.md",
-              _REPO_ROOT / "docs" / "_test_load5_with_motifs_with_motifs.md"):
+    # The intermediate outputs live under tmp_path, so there is nothing
+    # to clean up in the repository.
+    for p in (base_json, motifs_json):
         try:
             p.unlink()
         except FileNotFoundError:
