@@ -44,10 +44,11 @@ reported with the same prominence as the positive ones. A tumor-naive
 contributes no training data — but the same classifier collapses to 0.6805
 when a single-type training set is held out, and a held-out exome study
 does not transfer at all. The methylation channel, run end-to-end on real
-public fragment files, is a **null**: its AUC is exactly the AUC of the
-library-depth baseline, and at the loci both arms cover the median
-difference between cancer and control is 0.0. Both findings come with the
-mechanism and the control that make them interpretable.
+public fragment files, is a **null**: its AUC (0.9444) is exactly the AUC
+of the library-depth baseline, and at the loci both arms cover the median
+difference between cancer and control is 0.0 over 103,863 CpGs
+(permutation p = 1.0). Both findings come with the mechanism and the
+control that make them interpretable.
 
 # Statement of need
 
