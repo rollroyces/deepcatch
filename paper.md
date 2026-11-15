@@ -187,3 +187,36 @@ open-access somatic mutations, and the GEO depositors of GSE317007 and
 GSE185307.
 
 # References
+
+- Cristiano S, Leal A, Phallen J, et al. Genome-wide cell-free DNA
+  fragmentation in patients with cancer. *Nature*. 2019;570(7761):385–389.
+  doi:[10.1038/s41586-019-1272-6](https://doi.org/10.1038/s41586-019-1272-6)
+- Jiang P, Chan KCA, Lo YMD. Lengthening and shortening of plasma DNA in
+  hepatocellular carcinoma patients. *PNAS*. 2015;112(11):E1317–E1325.
+  doi:[10.1073/pnas.1500076112](https://doi.org/10.1073/pnas.1500076112)
+- Jiang P, Sun K, Peng W, et al. Plasma DNA end-motif profiling as a
+  fragmentomic marker for cancer detection. *PNAS*. 2020;117(1):387–396.
+  doi:[10.1073/pnas.1915222117](https://doi.org/10.1073/pnas.1915222117)
+- Newman AM, Bratman SV, To AT, et al. An ultrasensitive method for
+  quantitating circulating tumor DNA with broad patient coverage.
+  *Nature Medicine*. 2014;20(8):871–876.
+  doi:[10.1038/nm.3519](https://doi.org/10.1038/nm.3519)
+- Newman AM, Lovejoy AF, Ahrendt S, et al. Integrated digital error
+  suppression for sensitive detection of circulating tumor DNA.
+  *Nature Biotechnology*. 2016;34(3):313–320.
+  doi:[10.1038/nbt.3520](https://doi.org/10.1038/nbt.3520)
+- Liu MC, Oxnard GR, Klein EA, et al. Sensitive and specific multi-cancer
+  detection and localization using methylation signatures in cell-free
+  DNA. *Annals of Oncology*. 2020;31(6):745–759.
+  doi:[10.1016/j.annonc.2020.02.011](https://doi.org/10.1016/j.annonc.2020.02.011)
+- Liu X, Liu Z, Zhang Y, et al. FinaleMe: an efficient and accurate method
+  for quantifying methylation patterns in cell-free DNA. *bioRxiv*.
+  2018. doi:[10.1101/478222](https://doi.org/10.1101/478222)
+- Straub J, Mathios D, Foda Z, et al. Finaletoolkit: an end-to-end
+  infrastructure for the analysis of cell-free DNA fragmentomics data.
+  *bioRxiv*. 2023.
+  doi:[10.1101/2023.10.13.23296542](https://doi.org/10.1101/2023.10.13.23296542)
+- DeLong ER, DeLong DM, Clarke-Pearson DL. Comparing the areas under two
+  or more correlated ROC curves: a nonparametric approach. *Biometrics*.
+  1988;44(3):837–845.
+  doi:[10.2307/2531595](https://doi.org/10.2307/2531595)
