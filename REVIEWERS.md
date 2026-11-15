@@ -1,7 +1,11 @@
-# DeepCatch v2.2 — Seeking Expert Review
+# DeepCatch v2.3.0 — Seeking Expert Review
 
-**Open-source panel-based MRD detection benchmark. All data open-access.**
-**Repo: github.com/rollroyces/deepcatch | PR: github.com/rollroyces/deepcatch/pull/2**
+**Open-source cfDNA benchmark: panel-based MRD detection plus a
+tumor-naive fragmentomics channel with held-out external validation.
+All data open-access.**
+**Repo: github.com/rollroyces/deepcatch | Preprint PDF:
+`paper/biorxiv_submission_v2.3.0.pdf` | Venue map:
+`docs/JOURNAL_SUBMISSION.md`**
 
 ---
 
@@ -14,12 +18,26 @@ benchmarked at five ctDNA fractions (10% → 0.1%) with fixed-specificity
 metrics. Context-aware sequencing error model (CpG/homopolymer stranding).
 Fragmentomics cross-validated on independent real cfDNA (FLARE/GSE317007).
 
-**Key result:** panel LLR AUC 0.922 at 0.1% ctDNA using 20 real LUAD
-patients from TCGA GDC. Duplex-UMI (1e-4 error) + 50k× depth → sens@95%
-= 1.000.
+**Key results** (every number traceable to a committed artifact):
 
-All code open source. All data from GDC (TCGA-LUAD MAFs) and GEO
-(GSE317007, GSE185307).  581 tests green (395 core + 186 deep-learning).
+- **Panel LLR** AUC 0.921 at 0.1% ctDNA on 20 real TCGA-LUAD patients.
+  Duplex-UMI (1e-4 error) + 50k× depth → sens@95% = 1.000.
+- **Tumor-naive fragmentomics** (627 open FinaleDB samples): pooled OOF
+  AUC 0.9684 ± 0.0027, and **0.9915 [0.9712–1.0000]** on a held-out
+  publication that contributes no training data.
+- **Transfer, measured**: holding one publication out of *training* costs
+  most of the pooled AUC (0.681 in the single-type direction, 0.936 the
+  other way) — the boundary that a pooled cross-validation hides.
+- **The methylation channel is a null**, reported with its mechanism: its
+  AUC equals the library-depth baseline exactly, and at the loci both
+  arms cover the median cancer-vs-control difference is 0.0 over 103,863
+  CpGs (permutation p = 1.0).
+- **Reproducibility is enforced**: the benchmark's PCA is seeded, and a
+  regression test asserts that two runs agree exactly.
+
+All code open source. All data from GDC (TCGA-LUAD MAFs), GEO
+(GSE317007, GSE185307) and the public FinaleDB API/S3 (no IRB, no data-use
+agreement).  581 tests green (395 core + 186 deep-learning).
 
 ---
 
@@ -43,7 +61,7 @@ Cristian Tomasetti (City of Hope — DELFI fragmentomics)
 ### 2. Scoring methods
 
 - The Fisher-method panel score (-log₁₀ Poisson p-value per locus) is the
-  CAPP-Seq standard.  At 0.1% ctDNA it gives AUC 0.849 vs LLR's 0.922.
+  CAPP-Seq standard.  At 0.1% ctDNA it gives AUC 0.834 vs LLR's 0.921.
   Is this consistent with published CAPP-Seq performance at similar limits?
 - Strand-concordance scoring (biallelic signal validation): are we modeling
   strand asymmetry correctly?  Should the noise model be strand-partitioned
@@ -75,16 +93,39 @@ Richard Lanman (Guardant Health)
 **Suggested reviewers:** Loris De Cecco (IRCSS Milan — FLARE authors),
 Peiyong Jiang (CUHK — 4-mer end-motif HCC detection)
 
-### 5. Overall methodology
+### 5. External validation and transfer
 
-- Does the paper contribute to the methodology literature (Bioinformatics,
-  PLOS Computational Biology, BMC Genomics, JCO CCI)?
-- What is the strongest framing: "simulation benchmark with real mutations"
-  or "assay-design guidance for ultra-early MRD detection"?
-- Should we add multi-cancer validation (COADREAD, BRCA) before submission?
+- The tumor-naive classifier was trained on publications 6 + 8 and tested
+  on publications 1, 7 and 9 (never trained on, public API/S3, no IRB):
+  0.9915 on the held-out whole-genome study, 0.8819 pooled over the
+  studies carrying both classes.  The held-out **whole-exome** study does
+  not transfer (breast 0.412, prostate 0.319) — is the platform boundary
+  (whole-genome features vs an exome coverage profile) the right
+  explanation, or is it a cohort-composition artefact?
+- A case-only held-out study is reported as **sensitivity at a
+  training-fixed threshold** rather than an AUC.  Is that the most
+  defensible summary for a reviewer, or should such a study be excluded
+  from the headline entirely?
 
 **Suggested reviewers:** Y.M. Dennis Lo (CUHK — pioneered cfDNA),
 Victor Velculescu (Johns Hopkins — CancerSEEK/DELFI)
+
+### 6. The null results
+
+- The methylation channel measures library depth rather than methylation
+  on the reachable public libraries (size-selected at ~300 bp, ~1
+  observation per CpG).  We report that with a depth-ablation control on
+  a genuinely MspI-digested library.  Is that the right call, or should
+  the channel be withheld from the manuscript until an independent deep
+  MspI cohort exists?
+- The neural foundation encoder loses to a logistic baseline at n=40
+  (0.554 vs 0.904) and late fusion wins (0.9825).  We frame that as an
+  estimator-class result rather than an architecture result.  Would a
+  reviewer accept that framing, or expect the architecture comparison to
+  be run at a realistic n?
+
+**Suggested reviewers:** an ML/statistics reviewer for the estimator-class
+argument; a methylation reviewer for the null
 
 ---
 

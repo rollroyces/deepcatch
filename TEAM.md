@@ -326,15 +326,15 @@ in the next 6 months:
 
 | Quarter | Goal | Required collaboration |
 |---|---|---|
-| **Q1 (now)** | bioRxiv preprint (current state) | None — Yu Ching Lam is preparing |
-| **Q1 (active)** | **Methylation channel** (Phase 0-2, ~13 weeks; see `METHYLATION_PROJECT.md`) | None for Phases 0-2 |
+| **Q1 (now)** | bioRxiv preprint — `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; the upload needs the author's account, and the Zenodo DOI needs the GitHub integration (see `ZENODO_SETUP.md`) | None — Yu Ching Lam |
+| **Q1 (measured)** | **Methylation channel**: FinaleMe runs end-to-end on real public fragments and the channel is a **null** (its AUC equals the library-depth baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0). The blocker is a deep, size-unselected MspI cohort that is not publication 6 | §2.2 methylation expert, to review the mechanism and the null |
 | Q1 | ORCID + Zenodo deposit (manual) | None — Yu Ching Lam |
 | Q2 | Per-cancer-type AUC table | §2.4 software engineer (data prep) |
 | Q2 | Head-to-head vs Galleri (methylation) | §2.2 methylation expert |
 | Q2 (conditional) | Methylation GNN training on real data (Phase 4) | §2.2 methylation expert + GPU access |
 | Q3 | Held-out clinical validation | §2.1 clinical co-author |
 | Q3 | ComBat / limma harmonization comparison | §2.3 statistician |
-| Q4 | Methods-journal submission (Bioinformatics) | All of the above |
+| Q4 | Methods-journal submission — venue map in `docs/JOURNAL_SUBMISSION.md` (preprint first, then JOSS or PLOS Computational Biology) | All of the above |
 | Q4 (stretch) | Clinical-journal submission | §2.5 wet-lab collaborator |
 
 The roadmap is **aspirational, not committed**. If the
@@ -387,7 +387,7 @@ Bioinformatics or PLOS Computational Biology.
 |---|---|---|
 | Headline tumor-naive AUC 0.974-0.978 | ✓ Verified, 4 audit rounds | `RESULTS.md` |
 | Headline fusion AUC 0.989 | ✓ Verified, partly synthetic | `RESULTS.md` §3 |
-| bioRxiv preprint | ⏳ Awaiting user action (ORCID + email) | `paper/BIORXIV_SUBMISSION.md` |
+| bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
 | 581 tests passing (`pytest src test -q`) | ✓ | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✓ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
