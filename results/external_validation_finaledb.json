@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T17:51:13.438394+00:00",
+  "generated_at": "2026-11-15T17:57:39.119440+00:00",
   "design": {
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019) -- n=627",
     "test": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on",
@@ -16,67 +16,67 @@
       "n_healthy": 264
     },
     "external": {
-      "n": 77,
-      "n_cancer": 63,
+      "n": 278,
+      "n_cancer": 264,
       "n_non_cancer": 14,
       "per_publication": {
         "1": 9,
-        "7": 30,
-        "9": 38
+        "7": 31,
+        "9": 238
       }
     }
   },
   "pooled_external_auc": {
-    "auc": 0.6304,
-    "ci_lo": 0.514,
-    "ci_hi": 0.7468,
-    "n_pos": 63,
+    "auc": 0.4177,
+    "ci_lo": 0.3562,
+    "ci_hi": 0.4793,
+    "n_pos": 264,
     "n_neg": 14
   },
   "pooled_external_auc_matched_publications_only": {
-    "auc": 0.8743,
-    "ci_lo": 0.7595,
-    "ci_hi": 0.9891,
-    "n_pos": 25,
+    "auc": 0.8819,
+    "ci_lo": 0.7701,
+    "ci_hi": 0.9936,
+    "n_pos": 26,
     "n_neg": 14
   },
   "training_derived_threshold": {
     "specificity_target": 0.99,
-    "threshold": 0.994004,
+    "threshold": 0.988699,
     "train_specificity_at_threshold": 0.9924,
     "note": "threshold fitted on the training cohort's out-of-fold scores; used to score case-only external publications"
   },
   "sens_at_spec": {
-    "0.95": 0.5556,
-    "0.98": 0.5556,
-    "0.99": 0.5556,
-    "0.995": 0.5556,
-    "0.999": 0.5556
+    "0.95": 0.3674,
+    "0.98": 0.3674,
+    "0.99": 0.3674,
+    "0.995": 0.3674,
+    "0.999": 0.3674
   },
   "per_publication_auc": {
     "1": {
       "n": 9,
-      "auc": 1.0,
-      "ci_lo": 1.0,
+      "auc": 0.875,
+      "ci_lo": 0.63,
       "ci_hi": 1.0,
       "n_pos": 8,
       "n_neg": 1
     },
     "7": {
-      "n": 30,
-      "auc": 0.9864,
-      "ci_lo": 0.9564,
+      "n": 31,
+      "auc": 0.9915,
+      "ci_lo": 0.9712,
       "ci_hi": 1.0,
-      "n_pos": 17,
+      "n_pos": 18,
       "n_neg": 13
     },
     "9": {
-      "n": 38,
-      "n_cancer": 38,
+      "n": 238,
+      "n_cancer": 238,
       "n_non_cancer": 0,
       "auc": null,
       "reason": "case-only publication (no non-cancer controls in this study); reported as sensitivity at the training-derived threshold",
-      "sensitivity_at_train_threshold_99spec": 0.4211
+      "sensitivity_at_train_threshold_99spec": 0.4034
     }
   },
   "per_disease_auc": {
@@ -85,19 +85,19 @@
       "reason": "n=1"
     },
     "Breast cancer": {
-      "n": 20,
-      "auc": 0.4179,
-      "ci_lo": 0.2086,
-      "ci_hi": 0.6271,
-      "n_pos": 20,
+      "n": 120,
+      "auc": 0.4119,
+      "ci_lo": 0.3235,
+      "ci_hi": 0.5003,
+      "n_pos": 120,
       "n_neg": 14
     },
     "Colorectal cancer": {
-      "n": 18,
-      "auc": 0.9405,
-      "ci_lo": 0.8439,
+      "n": 19,
+      "auc": 0.9474,
+      "ci_lo": 0.8572,
       "ci_hi": 1.0,
-      "n_pos": 18,
+      "n_pos": 19,
       "n_neg": 14
     },
     "Esophageal cancer": {
@@ -133,11 +133,11 @@
       "reason": "n=1"
     },
     "Prostate cancer": {
-      "n": 19,
-      "auc": 0.5075,
-      "ci_lo": 0.2856,
-      "ci_hi": 0.7294,
-      "n_pos": 19,
+      "n": 119,
+      "auc": 0.3193,
+      "ci_lo": 0.2362,
+      "ci_hi": 0.4024,
+      "n_pos": 119,
       "n_neg": 14
     }
   },

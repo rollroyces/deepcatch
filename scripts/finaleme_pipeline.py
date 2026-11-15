@@ -93,8 +93,20 @@ REFERENCE_FILES: Dict[str, Path] = {
 }
 
 # FinaleMe Java classes
-FINALEME_STEP1_CLASS = "edu.northwestern.epifluidlab.finaleme.utils.CpgFeatureMatrixBuilder"
-FINALEME_STEP3_CLASS = "edu.northwestern.epifluidlab.finaleme.hmm.FinaleMe"
+# The real FinaleMe (github.com/epifluidlab/FinaleMe, v0.58) lives under
+# org.cchmc.epifluidlab.finaleme and has no CpgFeatureMatrixBuilder and no
+# -fragmentInputTabix / -fragStrandColumn / -inferMethyFromValueWig /
+# -useNoChrPrefixBam flags -- those belong to a different tool, so the
+# previous invocation could never run ("ClassNotFoundException"). The
+# fragment-file entry point is CpgMultiMetricsStatsNoBam:
+#
+#     CpgMultiMetricsStats [opts] hg19.2bit cpg_list.bed all_cpg.bed detail.txt.gz
+#
+# cpg_list.bed is a proper BED (chrom, start, end); all_cpg.bed is the
+# fragment file in the 6-column bedpe schema
+# (chrom, start, end, name, mapq, strand) with a "chr" chromosome prefix.
+FINALEME_STEP1_CLASS = "org.cchmc.epifluidlab.finaleme.utils.CpgMultiMetricsStatsNoBam"
+FINALEME_STEP3_CLASS = "org.cchmc.epifluidlab.finaleme.hmm.FinaleMe"
 
 REQUIRED_INPUTS: List[str] = [
     "java_runtime",            # `java` on PATH
@@ -274,6 +286,38 @@ def cmd_probe(args: argparse.Namespace) -> int:
     return 0
 
 
+
+def _to_finaleme_bedpe(path: Path, work_dir: Path) -> Path:
+    """Convert a FinaleDB fragment file to the schema FinaleMe expects.
+
+    FinaleDB serves 5 columns (chrom, start, end, mapq, strand) with bare
+    chromosome names ("1"), while ``CpgMultiMetricsStatsNoBam`` reads the
+    6-column bedpe schema (chrom, start, end, name, mapq, strand) and its
+    CpG references use the "chr" prefix. Passing the raw file makes the
+    tool fail with "Start cannot exceed end" (it reads MAPQ as the end
+    coordinate) or with an empty CpG set (the chromosome names do not
+    match the reference).
+
+    The conversion is streamed and gzip-compressed, because the files are
+    10-300 MB each.
+    """
+    import gzip
+
+    out = work_dir / (path.name.replace(".frag.tsv.bgz", "")
+                       .replace(".frag.tsv.gz", "") + ".bedpe.tsv.gz")
+    if out.exists():
+        return out
+    work_dir.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, "rt") as fi, gzip.open(out, "wt", compresslevel=6) as fo:
+        for line in fi:
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) < 5:
+                continue
+            chrom = parts[0] if parts[0].startswith("chr") else "chr" + parts[0]
+            fo.write(f"{chrom}\t{parts[1]}\t{parts[2]}\t.\t{parts[3]}\t{parts[4]}\n")
+    return out
+
+
 def cmd_features(args: argparse.Namespace) -> int:
     """Run FinaleMe Step 1 (CpgFeatureMatrixBuilder) — produces
     <prefix>.cpg_features.hg19.bed.gz.
@@ -292,6 +336,7 @@ def cmd_features(args: argparse.Namespace) -> int:
     input_path = Path(args.input)
     if not input_path.is_file():
         raise MissingInputError(f"input not found: {input_path}")
+    input_path = _to_finaleme_bedpe(input_path, Path(args.output_dir))
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / (input_path.stem.replace(".frag.bed.gz", "") + ".cpg_features.hg19.bed.gz")
@@ -306,16 +351,12 @@ def cmd_features(args: argparse.Namespace) -> int:
         FINALEME_STEP1_CLASS,
         str(REFERENCE_FILES["hg19.2bit"]),
         str(REFERENCE_FILES["cpg_motif_bedgraph"]),
-        str(REFERENCE_FILES["cpg_motif_bedgraph"]),
         str(input_path),
         str(output_path),
-        "-fragmentInputTabix",
-        "-fragStrandColumn", str(args.frag_strand_column),
-        "-valueWigs", f"methyPrior:0:{REFERENCE_FILES['methy_prior_bw']}",
-        "-inferMethyFromValueWig",
-        "-useNoChrPrefixBam",
-        "-t", str(args.parallel_gc_threads),
     ]
+    if args.use_value_wigs:
+        cmd += ["-valueWigs",
+                f"methyPrior:0:{REFERENCE_FILES['methy_prior_bw']}"]
     print(" ".join(cmd))
     rc = subprocess.run(cmd).returncode
     if rc != 0:
