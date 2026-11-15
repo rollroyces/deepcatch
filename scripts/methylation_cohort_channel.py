@@ -195,21 +195,39 @@ def main() -> int:
                         per_sample[n]["fraction_methylated"],
                         per_sample[n]["fraction_fully_methylated"]]
                        for n in names], dtype=float)
-    auc = None
-    if len(names) >= 8 and len(set(y.tolist())) > 1:
+    n_cpgs = np.array([per_sample[n]["n_cpgs"] for n in names], dtype=float)
+
+    def _loo_auc(X: np.ndarray) -> float | None:
+        """Leave-one-out AUC of a small logistic model on X."""
+        if len(names) < 5 or len(set(y.tolist())) < 2:
+            return None
         from sklearn.linear_model import LogisticRegression
         from sklearn.model_selection import LeaveOneOut
         from sklearn.metrics import roc_auc_score
         oof = np.zeros(len(names))
-        for tr, te in LeaveOneOut().split(feats):
+        for tr, te in LeaveOneOut().split(X):
             if len(set(y[tr].tolist())) < 2:
                 continue
-            mu, sd = feats[tr].mean(0), feats[tr].std(0)
+            mu, sd = X[tr].mean(0), X[tr].std(0)
             sd[sd == 0] = 1.0
-            clf = LogisticRegression(max_iter=1000).fit((feats[tr] - mu) / sd,
-                                                          y[tr])
-            oof[te] = clf.predict_proba((feats[te] - mu) / sd)[:, 1]
-        auc = round(float(roc_auc_score(y, oof)), 4)
+            clf = LogisticRegression(max_iter=1000).fit((X[tr] - mu) / sd, y[tr])
+            oof[te] = clf.predict_proba((X[te] - mu) / sd)[:, 1]
+        if not np.any(oof):
+            return None
+        return round(float(roc_auc_score(y, oof)), 4)
+
+    auc = _loo_auc(feats)
+    # Confound baseline: does the CpG-coverage count alone separate the
+    # classes? If it does, the beta summary is not adding anything over
+    # library complexity.
+    auc_depth_only = _loo_auc(n_cpgs.reshape(-1, 1))
+    # Single-feature AUC of beta_mean alone (no model, no shrinkage).
+    try:
+        from sklearn.metrics import roc_auc_score as _rauc
+        auc_beta_mean_only = (round(float(_rauc(y, feats[:, 0])), 4)
+                              if len(set(y.tolist())) > 1 else None)
+    except Exception:
+        auc_beta_mean_only = None
 
     payload = {
         "schema_version": "1.0",
@@ -221,6 +239,14 @@ def main() -> int:
         },
         "cohort_matrix": stats,
         "beta_summary_auc_loo": auc,
+        "beta_mean_only_auc": auc_beta_mean_only,
+        "cpgs_covered_only_auc_loo": auc_depth_only,
+        "confound_note": (
+            "cpgs_covered_only_auc_loo is the baseline: if the number of "
+            "CpGs with coverage alone separates the classes as well as the "
+            "beta summary does, then the beta summary is not adding "
+            "anything over library complexity, and the two must be "
+            "compared before the channel is claimed."),
         "honest_framing": (
             "The HMM was trained once across the cohort and each sample was "
             "decoded separately, so every beta value is derived from that "
@@ -229,7 +255,9 @@ def main() -> int:
             "of tens of samples: it is a feasibility measurement of the "
             "channel, not a validated feature. It will not survive a "
             "leave-one-study-out check, it uses no external cohort, and "
-            "the GNN that would consume it is still untrained. "
+            "the GNN that would consume it is still untrained. It also "
+            "has n=31 at most, so the leave-one-out AUC is unstable; read "
+            "it next to the CpG-coverage baseline in the same artifact. "
             "CONFOUND TO CHECK BEFORE BELIEVING IT: the number of CpGs with "
             "coverage differs between samples (library complexity and depth), "
             "and the beta summary is not depth-normalised -- a difference in "
@@ -241,7 +269,11 @@ def main() -> int:
         json.dump(payload, f, indent=2)
     print(f"wrote {args.out_json}")
     if auc is not None:
-        print(f"  beta-summary AUC (LOO): {auc}")
+        print(f"  beta-summary AUC (LOO)      : {auc}")
+    if auc_beta_mean_only is not None:
+        print(f"  beta_mean alone (no model)  : {auc_beta_mean_only}")
+    if auc_depth_only is not None:
+        print(f"  CpGs-covered only (confound): {auc_depth_only}")
     return 0
 
 
