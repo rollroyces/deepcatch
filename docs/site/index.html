@@ -26,7 +26,7 @@
 
     <header>
         <div class="hero">
-            <span class="badge">v2.2 · Panel-based MRD detection</span>
+            <span class="badge">v2.3.0 · Panel MRD + fragmentomics + external validation</span>
             <h1>Ultra-sensitive multi-cancer detection<br>from cell-free DNA.</h1>
             <p class="hero-sub">Open-source. Reproducible. Public data only.</p>
             <div class="hero-actions">
@@ -80,7 +80,7 @@ python scripts/real_tcga_validation.py --report</code></pre>
                 <div class="card">
                     <h3>Tumor-naive fragmentomics</h3>
                     <p>5-mer end motifs + fragment size distribution + DELFI/WPS coverage profiles. No tumor mutations required. Best at pan-cancer screening.</p>
-                    <p><strong>AUC 0.978 ± 0.002</strong> on 627 cross-study samples from FinaleDB.</p>
+                    <p><strong>AUC 0.9684 ± 0.0027</strong> on 627 cross-study samples from FinaleDB (GC-corrected; legacy no-GC baseline 0.9770 ± 0.0013). <strong>0.9915</strong> [0.9712&ndash;1.0000] on a held-out publication that contributes no training data.</p>
                 </div>
                 <div class="card">
                     <h3>Fusion (naive average)</h3>
@@ -96,7 +96,7 @@ python scripts/real_tcga_validation.py --report</code></pre>
                 </div>
                 <div class="card">
                     <h3>Methylation channel (separate repo)</h3>
-                    <p>CpG methylation channel being developed in <a href="https://github.com/rollroyces/deepcatch-methylation">deepcatch-methylation</a>. Phase 0 + Phase 1 complete; FinaleMe pretrained HMM decoder working (per-CpG β-values on BH01 chr22).</p>
+                    <p>FinaleMe runs end-to-end on real public fragment files here, and the channel was <strong>measured and reported as a null</strong>: its AUC equals the library-depth baseline exactly, and at the loci both arms cover the median cancer-vs-control difference is 0.0 over 103,863 CpGs (permutation p&nbsp;=&nbsp;1.0). The cause is measured too &mdash; the public libraries are size-selected at ~300&nbsp;bp and deliver ~1 observation per CpG. <a href="https://github.com/rollroyces/deepcatch/blob/main/docs/METHYLATION_PIPELINE.md">write-up &rarr;</a></p>
                 </div>
             </div>
         </div>
@@ -111,7 +111,9 @@ python scripts/real_tcga_validation.py --report</code></pre>
                     <tr><th>Cohort</th><th>Samples</th><th>Task</th><th>AUC (mean ± std)</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.978 ± 0.002</td></tr>
+                    <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.968 ± 0.003</td></tr>
+                    <tr><td>Held-out publications never trained on (Sun 2019 WGS)</td><td>31</td><td>Cancer vs control</td><td>0.9915 [0.9712&ndash;1.0000]</td></tr>
+                    <tr><td>Leave-one-study-out (train one publication, test the other)</td><td>627</td><td>Transfer</td><td>0.681 / 0.936</td></tr>
                     <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.989 ± 0.001</td></tr>
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
                     <tr><td>TCGA-LUAD panel LLR @ 0.1% ctDNA</td><td>20 patients</td><td>Ultra-low VAF</td><td>0.921 (Sens@95% = 0.770)</td></tr>
@@ -144,7 +146,9 @@ python scripts/real_tcga_validation.py --report</code></pre>
                     <h3>bioRxiv manuscript (in preparation)</h3>
                     <p>Markdown source: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/PAPER.md">paper/PAPER.md</a></p>
                     <p>LaTeX source: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/paper.tex">paper/paper.tex</a></p>
-                    <p>Pre-compiled PDF: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/biorxiv_submission_v2.2.0.pdf">paper/biorxiv_submission_v2.2.0.pdf</a></p>
+                    <p>Pre-compiled PDF: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/biorxiv_submission_v2.3.0.pdf">paper/biorxiv_submission_v2.3.0.pdf</a></p>
+                    <p>JOSS-format manuscript: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper.md">paper.md</a></p>
+                    <p>Long-form methods manuscript: <a href="https://github.com/rollroyces/deepcatch/blob/main/paper/METHODS_PAPER.md">paper/METHODS_PAPER.md</a></p>
                     <p>Author: Yu Ching Lam · ORCID <a href="https://orcid.org/0009-0008-9113-769X">0009-0008-9113-769X</a> · Independent Researcher, Hong Kong.</p>
                 </div>
                 <div class="card">
