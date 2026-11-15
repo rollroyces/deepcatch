@@ -149,9 +149,10 @@ cohort size.
   -- so its checks (the LR baseline must beat the naive average, the
   foundation must stay inside the LR band, and the pipeline must not
   fall back to synthetic data when no cache is present) were never
-  executed anywhere. The deep-learning job now runs that file, with its
-  timeout raised to 30 minutes to match the ~28 s per test it takes
-  locally.
+  executed anywhere. The deep-learning job now runs that file, and the
+  seven of its tests that use the default invocation share one smoke
+  run through a module-scoped fixture instead of each repeating the
+  ~27 s training run -- so the file costs 37 s rather than 3.5 minutes.
 - **The preprint's data-availability statement named the wrong datasets.**
   It listed TCGA-LUAD and FLARE but not FinaleDB -- which is where the
   cross-study benchmark (n=627) and the held-out external cohort
