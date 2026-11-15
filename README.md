@@ -108,6 +108,8 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 | **Shuffled-label null control** | **0.4657** | 0.0 | batch-and-fold-identity null floor (<0.55 = pass) — varies across seeds (0.46–0.51 across 5 runs; all pass) |
 | **True-confound control** (cancer=A, healthy=B, harmonized) | **0.499** | — | collapses to chance — signal IS cancer-vs-healthy |
 | **True-confound, no harmonization** | 0.999 | — | batch-effect ceiling (negative control) |
+| **External validation** (train 6+8 → test held-out pub 7, WGS) | **0.9915** [0.9712, 1.0] | 0.9712 | n=31, never trained on — [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md) |
+| *External, whole-exome publication* (train 6+8 → test pub 9) | *0.4119 / 0.3193* | — | case-only cohort; assay shift (WES≠WGS) breaks the transfer |
 
 All numbers from [`results/cross_study_finallydb*.json`](results/) and reproducible from [`scripts/cross_study_finallydb.py`](scripts/cross_study_finallydb.py). See also: [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md), [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md), [`docs/CROSS_STUDY_BENCHMARK_with_motifs.md`](docs/CROSS_STUDY_BENCHMARK_with_motifs.md).
 
