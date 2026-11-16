@@ -388,7 +388,7 @@ Bioinformatics or PLOS Computational Biology.
 | Headline tumor-naive AUC 0.974-0.978 | ✓ Verified, 4 audit rounds | `RESULTS.md` |
 | Headline fusion AUC 0.989 | ✓ Verified, partly synthetic | `RESULTS.md` §3 |
 | bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
-| 581 tests passing (`pytest src test -q`) | ✓ | `test/` + the per-module suites |
+| 650 tests collected (`pytest src test -q`) | ✓ | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✓ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |

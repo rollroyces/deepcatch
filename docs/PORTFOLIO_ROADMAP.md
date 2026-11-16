@@ -70,13 +70,15 @@ pretrained-model breakthrough.
 
 ### 1.3 What's still blocked
 
-🚫 **FinaleDB API HTTP 500** — Postgres broken, S3 403, GitHub dormant since 2024-01-03. The 627-sample fragmentomics cohort + 121 methylation samples remain publicly inaccessible.
+✅ **FinaleDB access** — the API answers on every probed endpoint (200) and the S3 **fragment objects** are reachable, so the held-out external cohort (publications 1, 7 and 9 — 278 samples) was fetched on 2026-11-16 with no IRB and no data-use agreement. The per-endpoint verdict is in `docs/PUBLICATION_READINESS.md`.
+
+🚫 **Stage labels** — the *clinical metadata* behind stage and treatment still needs the Postgres side of FinaleDB, which is down. This is why the external cohort reports per-disease AUCs but no stage breakdown.
 
 🚫 **Held-out clinical validation** — needs real plasma cfDNA from a clinical collaborator.
 
-🚫 **bioRxiv submission** — paper drafts done, blocked on production ORCID (currently sandbox `0009-0008-9113-769X`) and Zenodo DOI.
+🚫 **bioRxiv submission** — the PDF is compiled and current, and the ORCID (`0009-0008-9113-769X`) is registered, claimed and email-verified against the ORCID registry. What remains is the upload itself, the corresponding-author email, and the Zenodo DOI (see `ZENODO_SETUP.md`).
 
-🚫 **Clinical metadata** (Enhancement #5) — blocked on FinaleDB API.
+🚫 **Clinical metadata** (Enhancement #5) — blocked on the FinaleDB Postgres side; the fragment objects are reachable, the metadata is not.
 
 🚫 **FinaleMe Step 3 OOM** — v0.58.1 requires ~5.6 GB heap (Step 1 chr22-only worked at 14.31 min).
 
@@ -228,7 +230,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `760eb31` (**581 tests**, 4 CI workflows green), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch `760eb31` (**650 tests**, 4 CI workflows green), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
 | 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
 | 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_channel_diagnosis.json` |

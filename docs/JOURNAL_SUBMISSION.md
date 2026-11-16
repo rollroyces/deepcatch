@@ -66,6 +66,7 @@ independent researcher can produce.
 | Submission metadata | ✅ `paper/BIORXIV_SUBMISSION.md` (gitignored: it carries personal details) |
 | ORCID | ✅ `0009-0008-9113-769X`, also in `CITATION.cff` |
 | Code URL in the manuscript | ✅ |
+| **Affiliation consistent with the ORCID record** | ⚠️ **check before uploading** — the manuscript and `CITATION.cff` declare "Independent Researcher (no institutional affiliation)", but the public ORCID record carries an employment at the University of Michigan. bioRxiv asks for an affiliation, and a reviewer who clicks the ORCID sees the record. Make the two agree before the upload — either the ORCID entry is out of date, or the declared affiliation should say so. |
 | **Upload** | ⬜ author action — needs the bioRxiv account |
 | **Corresponding-author email** | ⬜ author action — deliberately not in the repo |
 
@@ -75,7 +76,7 @@ independent researcher can produce.
 |---|---|
 | Public, versioned repository | ✅ MIT-licensed, tagged releases |
 | Installable package | ✅ `pyproject.toml` |
-| Test suite | ✅ 581 tests (`pytest src test -q`), split across two CI jobs |
+| Test suite | ✅ 650 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
 | **DOI** | ⬜ requires Zenodo's GitHub integration + the `v2.3.0` tag |

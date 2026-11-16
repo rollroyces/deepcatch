@@ -1,5 +1,18 @@
 # Methods Paper Skeleton — Status Meta-Doc
 
+> **This is a dated snapshot (2026-09-23), not the current state.**
+> The methods paper is no longer a skeleton: it is written, its numbers
+> are regenerated from the seeded pipeline, and it is compiled to
+> `paper/biorxiv_submission_v2.3.0.pdf` (8 pages). The per-cohort and
+> pooled figures quoted below are the September values and have been
+> superseded — the current ones are in `paper/METHODS_PAPER.md` §3 and
+> `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`, each tied to the
+> artifact it comes from (`scripts/benchmark_numbers.py` prints them all).
+> The §3.2 rows below read Jiang 0.9791 ± 0.0028 / Cristiano 0.9693 ±
+> 0.0022 and a pooled 0.9738; the current GC-corrected figures are
+> **Jiang 0.9661 ± 0.0031 / Cristiano 0.9698 ± 0.0016, pooled 0.9684 ±
+> 0.0027**.
+
 **File:** `paper/METHODS_PAPER.md`
 **Date:** 2026-09-23 (HKT, UTC+08:00)
 **Commit:** `9f6662f` (HEAD of `main`)
