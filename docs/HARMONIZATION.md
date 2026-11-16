@@ -18,7 +18,7 @@ happen:
    sum and frag-channel proxy. This is a confound, not a signal.
 2. **Study-as-classifier trap**: if cancer labels happen to cluster in
    one study and healthy in another, the model learns the study, not
-   the cancer (cfdna-fragmentomics skill: AUC 0.999 → 0.497 collapse on
+   the cancer (cfdna-fragmentomics skill: AUC 0.9995 → 0.4958 collapse on
    the only-Jiang-cancer vs only-Cristiano-healthy confound).
 
 Per-study z-scoring (fit on TRAIN fold only, applied to test fold) is

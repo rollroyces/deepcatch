@@ -63,17 +63,51 @@ def _cases():
 @pytest.mark.parametrize("label,value,documents", list(_cases()))
 def test_quoted_number_is_present_wherever_it_is_cited(label, value,
                                                        documents):
-    rendered = f"{value:.4f}"
-    # A value the artifact stores to three decimals (0.708) is rendered as
-    # "0.7080" at four. Accept the zero-trimmed form as well, so a document
-    # can quote the number at the precision the artifact actually carries
-    # without being forced into "0.7080".
-    trimmed = rendered.rstrip("0").rstrip(".")
+    # A document may quote a number at the precision its table uses, so
+    # the check compares each written number against the artifact value
+    # at the precision it was written at. A bare substring search would
+    # not do: "0.970" cannot tell the GC-corrected publication-8 AUC
+    # (0.9698) from the legacy one (0.9704), and both round to it.
     for doc in documents:
         text = _read(doc)
-        assert rendered in text or trimmed in text, (
-            f"{doc} does not quote {rendered} (from {label}). Update the "
+        assert _numbers.quotes(text, value), (
+            f"{doc} does not quote {value:.6f} (from {label}). Update the "
             f"prose or the artifact.")
+
+
+@pytest.mark.parametrize("doc,anchor,required,forbidden,source",
+                         list(_numbers.table_row_values()))
+def test_table_row_quotes_one_run_only(doc, anchor, required, forbidden,
+                                       source):
+    """A table row must not mix numbers from two different runs.
+
+    Every number in a row can exist somewhere in the repository while the
+    row itself mixes two artifacts -- the document-level checks above
+    stay green because each number is present somewhere. This finds the
+    row that contains the anchor and requires it to quote the right
+    numbers, to not quote the same quantity from another run, and to
+    name that run's artifact in its source column.
+    """
+    text = _read(doc)
+    lines = [line for line in text.splitlines() if anchor in line]
+    assert lines, f"{doc} has no table row containing {anchor!r}"
+    assert len(lines) == 1, (
+        f"{doc} has {len(lines)} rows containing {anchor!r}; the guard "
+        f"cannot tell which one to check")
+    row = lines[0]
+    for artifact_name, value in required:
+        assert _numbers.quotes(row, value), (
+            f"{doc}: the row {anchor!r} does not quote {value:.6f} from "
+            f"{artifact_name}. It quotes: {row.strip()}")
+    for artifact_name, value in forbidden:
+        assert not _numbers.quotes(row, value), (
+            f"{doc}: the row {anchor!r} quotes {value:.6f} from "
+            f"{artifact_name}, a different run than the rest of the row. "
+            f"It quotes: {row.strip()}")
+    if source:
+        assert source in row, (
+            f"{doc}: the row {anchor!r} must name {source} as its source. "
+            f"It quotes: {row.strip()}")
 
 
 def test_methylation_null_is_quoted_with_its_permutation_p_value():
@@ -103,6 +137,11 @@ def test_paired_fusion_delta_matches_the_artifact():
 # in a current-facing document; the CHANGELOG and the dated audit records
 # are allowed to name them, because describing the old value is the
 # point of those files.
+#
+# The check is a literal one, so a value that merely shares a prefix
+# with a current figure does not trip it: the old GC-corrected pooled
+# AUC "0.9670" is banned, but the per-cancer PAAD AUC "0.967" and the
+# clean-panel LLR AUC "0.922" are different numbers and stay.
 SUPERSEDED = [
     "0.9670",   # the old GC-corrected pooled AUC
     "0.9747",   # the old legacy pooled AUC
@@ -114,6 +153,18 @@ SUPERSEDED = [
     "0.4657",   # the old shuffled-label null
     "0.9225",   # the old PCA-20 pooled AUC
     "0.9458",   # the old PCA-20 per-publication AUC
+    # Superseded by the v2.3.0 correction of the external validation:
+    # the first fetch took 9 of publication 1's 60 samples, and the
+    # harmonisation was a single pooled z-score rather than the
+    # per-publication one the script documents.
+    "0.9915",   # the old publication-7 external AUC
+    "0.8819",   # the old pooled external AUC
+    "0.4454",   # the old publication-9 external sensitivity
+    # Superseded by the seeded LOSO run.
+    "0.9701",   # the old in-domain Cristiano AUC
+    # Superseded by the GC-corrected true-confound control. It was still
+    # hard-coded in the readiness generator until this release.
+    "0.499",
 ]
 CURRENT_DOCS = [
     "README.md",
@@ -147,7 +198,13 @@ CURRENT_DOCS = [
 
 @pytest.mark.parametrize("value", SUPERSEDED)
 def test_superseded_figures_do_not_reappear(value):
-    """A regenerated number must not leave its predecessor behind."""
+    """A regenerated number must not leave its predecessor behind.
+
+    The check is a literal one. It has to be: the superseded values are
+    recorded at four decimals, and a current figure that merely shares
+    their first three ("0.967" for the per-cancer PAAD AUC, "0.922" for
+    the clean-panel LLR AUC) is a different number, not the old one.
+    """
     for doc in CURRENT_DOCS:
         path = _REPO_ROOT / doc
         if not path.exists():

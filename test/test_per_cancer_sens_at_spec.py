@@ -685,6 +685,57 @@ def test_ultraearly_readiness_cli_writes_json_and_md(tmp_path):
     assert (tmp_path / "r.md").read_text().count("#") >= 5
 
 
+def test_readiness_true_confound_comes_from_the_artifact(tmp_path):
+    """The readiness report must not carry a hard-coded true-confound AUC.
+
+    It did once: the generator wrote the literal "0.499" into the note
+    while the committed artifact said 0.4836, so the generated report
+    and the artifact it describes disagreed and nothing noticed. The
+    number is now read from the artifact, and this test writes an
+    artifact with a deliberately distinctive true-confound value and
+    asserts the report quotes THAT value -- a hard-coded one would not
+    follow the change.
+    """
+    results_dir = tmp_path / "results"
+    results_dir.mkdir()
+    artifact = json.loads(
+        (_REPO_ROOT / "results" / "cross_study_finallydb_gc_corrected.json")
+        .read_text()
+    )
+    marker = 0.4123
+    artifact["true_confound_control"]["cancer_jiang_healthy_cristiano"][
+        "harmonized"]["auc_mean"] = marker
+    (results_dir / "cross_study_finallydb_gc_corrected.json").write_text(
+        json.dumps(artifact))
+
+    # The other artifacts the CLI reads are copied unchanged so the run
+    # produces the same verdicts as the committed one.
+    for name in ("per_cancer_sens_at_spec.json", "real_tcga_validation.json"):
+        src = _REPO_ROOT / "results" / name
+        if src.exists():
+            (results_dir / name).write_text(src.read_text())
+
+    out_json = tmp_path / "r.json"
+    out_md = tmp_path / "r.md"
+    r = subprocess.run(
+        [sys.executable, str(_REPO_ROOT / "scripts" / "ultraearly_readiness.py"),
+         "--results-dir", str(results_dir),
+         "--out-json", str(out_json),
+         "--out-md", str(out_md)],
+        capture_output=True, text=True, timeout=300,
+    )
+    assert r.returncode == 0, f"readiness CLI failed: {r.stderr[-800:]}"
+    data = json.loads(out_json.read_text())
+    check = next(c for c in data["checks"]
+                 if c["name"] == "cross_study_pooled_auc_gc_corrected")
+    assert f"{marker:.4f}" in check["notes"], (
+        "the readiness note does not quote the true-confound value from "
+        f"the artifact; it says: {check['notes']}")
+    assert f"{marker:.4f}" in out_md.read_text(), (
+        "the generated Markdown does not quote the artifact's "
+        "true-confound value")
+
+
 def test_cross_study_script_has_include_screening_flag():
     """The cross_study_finallydb.py CLI accepts --include-screening
     (verified by source inspection — running --help requires the sibling

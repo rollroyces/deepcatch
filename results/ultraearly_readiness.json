@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-16T07:04:55.089280+00:00",
-  "repo_commit": "8fb8ec1",
+  "generated_at": "2026-11-16T10:23:35.932880+00:00",
+  "repo_commit": "f1e975e",
   "summary_counts": {
     "ready": 5,
     "not_ready": 0,
@@ -16,7 +16,7 @@
       "verdict": "ready",
       "value": 0.9684259954921112,
       "threshold": ">=0.950 (floor=0.800)",
-      "notes": "AUC 0.9684 \u00b1 0.0027 across 5 seeds \u00d7 5 folds. True-confound control collapsed to 0.499 (signal IS cancer-vs-healthy, not batch). See open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model."
+      "notes": "AUC 0.9684 \u00b1 0.0027 across 5 seeds \u00d7 5 folds. True-confound control collapsed to 0.4836 (signal IS cancer-vs-healthy, not batch). See open-data cross-publication benchmark on FinaleDB publications: ['6', '8'] (['jiang', 'cristiano']). NOT clinical validation. NOT external cohort validation. Pooled OOF on the same cohort that trained the model."
     },
     {
       "name": "pooled_sens_at_99_spec",

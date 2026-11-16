@@ -38,7 +38,7 @@ cohort size.
   `scripts/external_validation_finaledb.py`.
 - **Leave-one-study-out transfer measurement.** Train on one publication, test
   on the other: 0.6805 (Jiang → Cristiano) and 0.9361 (Cristiano → Jiang)
-  against in-domain 0.9789 / 0.9701, with a within-study leave-one-cancer-type
+  against in-domain 0.9789 / 0.969, with a within-study leave-one-cancer-type
   control showing that an unseen cancer type transfers at 0.857–1.000.
   `scripts/cross_study_loso.py`.
 - **Regularized late fusion and Bayesian model averaging** for the Stage-1
@@ -91,6 +91,64 @@ cohort size.
 
 ### Fixed
 
+- **A stated limitation was not true.** The repository said twice that the
+  cross-study benchmark's healthy arm was "FinaleDB TF=0 arms (modeled
+  cancer-at-TF=0 read depth), not real healthy-donor plasma". Checked
+  against FinaleDB's own metadata (2026-11-16), every one of the 294
+  training-cohort control samples is recorded as `disease: Healthy`,
+  `tissue: blood plasma` — 262 Cristiano donors and 32 Jiang donors. The
+  control arm is real donor plasma, and the limitation has been replaced
+  with the one that IS true: the per-study z-score uses a class-mixed
+  per-study mean, and the two training studies have very different case
+  mixes (Jiang is ~70% HCC, Cristiano mostly healthy), so a study's mean
+  partly encodes its case mix.
+  `MODEL.md`, `docs/PUBLIC_DATA_SOURCES.md`.
+- **Three more stale numbers in the methods paper, caught by widening the
+  drift guard.** The §3.2 honest-framing paragraph still quoted the
+  pooled harmonised AUC as 0.9738 and the per-cohort rows as Jiang 0.9791
+  / Cristiano 0.9693 — all from an unseeded run; the current values are
+  0.9684, 0.9661 and 0.9698. The true-confound table also MIXED two
+  artifacts: one row from the GC-corrected artifact (0.484) and one from
+  the legacy (0.496). All now come from the GC-corrected artifact, at the
+  artifact's own precision, and the guard covers the per-cohort rows, the
+  true-confound value and the top-5 per-cancer AUCs and sens@99 as well,
+  so they cannot drift again. `paper/METHODS_PAPER.md`,
+  `docs/HARMONIZATION.md`, `scripts/benchmark_numbers.py`.
+- **The readiness report carried a number no artifact contained.**
+  `scripts/ultraearly_readiness.py` wrote the literal `0.499` into the
+  true-confound note of the generated report, while the artifact it
+  describes says 0.4836 — the 0.499 was the value of an older,
+  unseeded run. So `docs/ULTRA_EARLY_READINESS_AUTO.md` and
+  `results/ultraearly_readiness.json` contradicted the artifact they
+  report on, and nothing noticed, because the generator wrote the
+  number itself rather than reading it. It is now read from the
+  artifact, and a test writes an artifact with a distinctive value and
+  asserts the report follows it.
+- **The methods paper's summary table still quoted the external
+  validation as it was BEFORE the v2.3.0 correction** — 0.986 (WGS),
+  0.87 pooled, 0.42 sensitivity (WES) — the figures from the 9-sample
+  publication-1 cohort and the single-pooled harmonisation. The row now
+  quotes the corrected 0.9444 / 0.708 / 0.7385 / 0.6569. The README
+  carried the old publication-7 AUC 0.9915 in the same way.
+- **A "~80× shift" claim with no artifact behind it.** The methods
+  paper described the true-confound collapse as a drop "from 1.000 to
+  0.49 (~80× shift across the operating-point flip)". No committed
+  artifact contains a sensitivity for the true-confound control — it
+  has only ever carried AUC fields — so the ratio was not derived from
+  anything. The sentence now states the collapse the artifact does
+  support: 0.9989 → 0.4836, near-perfect study separation to chance.
+- **The drift guard could not see a table row that mixed two runs.**
+  Every number in a row can exist somewhere in the repository while the
+  row itself quotes two different artifacts, and the document-level
+  check stays green because each number is present somewhere. The
+  methods paper's harmonization row did exactly that — the legacy
+  pooled AUC beside the GC-corrected true-confound value, citing the
+  legacy artifact. The guard now pins the rows that carry the headline
+  numbers: each must quote the right values, must not quote the same
+  quantity from another run, and must name that run's artifact. It
+  matches numbers at the precision they are written at, so "0.970"
+  no longer stands in for both the GC-corrected 0.9698 and the legacy
+  0.9704.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

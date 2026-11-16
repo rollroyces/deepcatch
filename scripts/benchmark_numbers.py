@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -54,6 +55,28 @@ QUOTED_NUMBERS = [
      ("pooled", "harmonized", "auc_mean"),
      ["paper/METHODS_PAPER.md", "paper.md", "README.md", "MODEL.md",
       "ULTRA_EARLY_READINESS.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
+    # The per-cohort rows of the same table. They were quoted from an
+    # earlier, unseeded run for a long time, so they are on the list too.
+    ("cross_study_finallydb_gc_corrected.json",
+     ("per_publication", "6", "auc_mean"),
+     ["paper/METHODS_PAPER.md", "paper/REPRODUCE.md", "docs/HARMONIZATION.md",
+      "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
+    ("cross_study_finallydb_gc_corrected.json",
+     ("per_publication", "8", "auc_mean"),
+     ["paper/METHODS_PAPER.md", "paper/REPRODUCE.md", "docs/HARMONIZATION.md",
+      "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
+    # The true-confound control, which the manuscript quotes to argue the
+    # pooled AUC is a cancer signal and not a study batch.
+    ("cross_study_finallydb_gc_corrected.json",
+     ("true_confound_control", "cancer_jiang_healthy_cristiano",
+      "harmonized", "auc_mean"),
+     ["paper/METHODS_PAPER.md"]),
+    # The legacy (no-GC) artifact carries the same control; the
+    # harmonisation narrative quotes that one.
+    ("cross_study_finallydb.json",
+     ("true_confound_control", "cancer_jiang_healthy_cristiano",
+      "harmonized", "auc_mean"),
+     ["docs/HARMONIZATION.md"]),
     ("cross_study_finallydb.json",
      ("pooled", "harmonized", "auc_mean"),
      ["paper/METHODS_PAPER.md", "README.md", "ULTRA_EARLY_READINESS.md",
@@ -63,6 +86,21 @@ QUOTED_NUMBERS = [
      ["paper/paper.tex", "paper.md", "README.md", "MODEL.md",
       "ULTRA_EARLY_READINESS.md", "docs/METHYLATION_PIPELINE.md"]),
 ]
+
+# The top-5 per-cancer rows of the §3.3 table. Generated rather than
+# written out, so a new cancer type joins the guard automatically.
+_TOP5_CANCERS = ("LUAD", "BRCA", "OV", "PAAD", "HCC_J")
+for _cancer in _TOP5_CANCERS:
+    QUOTED_NUMBERS.append((
+        "cross_study_finallydb_gc_corrected.json",
+        ("per_cancer", _cancer, "auc_mean"),
+        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"],
+    ))
+    QUOTED_NUMBERS.append((
+        "per_cancer_sens_at_spec.json",
+        ("per_cancer", _cancer, "sens_at_99"),
+        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"],
+    ))
 
 # Numbers that need a lookup rather than a plain path.
 QUOTED_SPECIAL = [
@@ -74,6 +112,172 @@ QUOTED_SPECIAL = [
      "paper/paper.tex"),
 ]
 
+# The legacy (no-GC) per-publication rows. They are a separate benchmark
+# from the GC-corrected one and are quoted by the legacy narrative, so
+# they are guarded separately -- otherwise a document could satisfy the
+# guard with the GC row while quoting the legacy one.
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb.json",
+     ("per_publication", "6", "auc_mean"),
+     ["docs/CROSS_STUDY_BENCHMARK.md", "paper/REPRODUCE.md"]))
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb.json",
+     ("per_publication", "8", "auc_mean"),
+     ["docs/CROSS_STUDY_BENCHMARK.md", "paper/REPRODUCE.md"]))
+
+# The in-domain references of the leave-one-study-out benchmark. They
+# are the within-publication CV the transfer numbers are compared
+# against, and they live in their own artifact.
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain jiang",
+     "paper/METHODS_PAPER.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain cristiano",
+     "paper/METHODS_PAPER.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain jiang",
+     "docs/CROSS_STUDY_LOSO.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain cristiano",
+     "docs/CROSS_STUDY_LOSO.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain jiang",
+     "MODEL.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain cristiano",
+     "MODEL.md"))
+
+# Documents that quote the true-confound control. The GC-corrected
+# value is the one the headline benchmark uses; the legacy value is
+# quoted by the legacy narrative. Both are guarded, because a document
+# that quotes the wrong one is mixing artifacts.
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb_gc_corrected.json",
+     ("true_confound_control", "cancer_jiang_healthy_cristiano",
+      "harmonized", "auc_mean"),
+     ["README.md", "ULTRA_EARLY_READINESS.md",
+      "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
+      "docs/ULTRA_EARLY_READINESS_AUTO.md"]))
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb.json",
+     ("true_confound_control", "cancer_jiang_healthy_cristiano",
+      "harmonized", "auc_mean"),
+     ["docs/CROSS_STUDY_BENCHMARK.md"]))
+
+# ─────────────────────────────────────────────────────────────────────
+# Table rows that must be internally consistent
+# ─────────────────────────────────────────────────────────────────────
+# A document can satisfy the document-level checks above and still be
+# wrong: if a table row quotes numbers from two different runs, every
+# number in it exists somewhere in the repo and the guard stays green.
+# That is exactly what happened in the methods paper's ablation table,
+# where the harmonization row mixed the legacy pooled AUC with the
+# GC-corrected true-confound value and pointed at the legacy artifact.
+#
+# Each case below pins one table row: the row that contains ``anchor``
+# must quote every required number, must NOT quote any forbidden one
+# (the same quantity from a different run), and -- when ``source`` is
+# given -- must name that artifact in its source column.
+TABLE_ROWS = [
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "Can the features separate cancer from healthy",
+        "required": [("cross_study_finallydb_gc_corrected.json",
+                       ("pooled", "harmonized", "auc_mean"))],
+        "forbidden": [("cross_study_finallydb.json",
+                       ("pooled", "harmonized", "auc_mean"))],
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "Is that signal cancer rather than study identity?",
+        "required": [("cross_study_finallydb_gc_corrected.json",
+                       ("true_confound_control",
+                        "cancer_jiang_healthy_cristiano",
+                        "harmonized", "auc_mean"))],
+        "forbidden": [("cross_study_finallydb.json",
+                       ("true_confound_control",
+                        "cancer_jiang_healthy_cristiano",
+                        "harmonized", "auc_mean"))],
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "Does the classifier transfer to an unseen publication?",
+        "required": [
+            ("external_validation_finaledb.json",
+             ("per_publication_auc", "7", "auc")),
+            ("external_validation_finaledb.json",
+             ("pooled_external_auc_matched_publications_only", "auc")),
+            ("external_validation_finaledb.json",
+             ("per_publication_auc", "9",
+              "sensitivity_at_train_threshold_99spec")),
+        ],
+        "forbidden": [],
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "Does it transfer to an unseen publication in the "
+                  "single-type direction?",
+        "required": [("cross_study_loso.json", "loso jiang -> cristiano")],
+        "forbidden": [],
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "**harmonization** (per-cohort batch-effect check)",
+        "required": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("pooled", "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "no_harmonize", "auc_mean")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "auc_mean")),
+            ("cross_study_finallydb.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+        ],
+        "source": "cross_study_finallydb_gc_corrected.json",
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| cancer=Jiang, healthy=Cristiano |",
+        "required": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "no_harmonize", "auc_mean")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+        ],
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| cancer=Cristiano, healthy=Jiang |",
+        "required": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_cristiano_healthy_jiang",
+              "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_cristiano_healthy_jiang",
+              "no_harmonize", "auc_mean")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("true_confound_control", "cancer_cristiano_healthy_jiang",
+              "harmonized", "auc_mean")),
+        ],
+    },
+]
+
 
 def load(name: str, results_dir: str | None = None):
     path = os.path.join(results_dir or RESULTS_DIR, name)
@@ -81,6 +285,50 @@ def load(name: str, results_dir: str | None = None):
         return None
     with open(path) as f:
         return json.load(f)
+
+
+# Every decimal number in a text, with the precision it was written at.
+_NUMBER_RE = re.compile(r"(?<![\d.])\d+\.\d+(?![\d])")
+
+
+def numbers_in(text: str):
+    """Yield (value, decimals_written) for each decimal number in ``text``.
+
+    A document may quote a benchmark value at the precision its table
+    uses, so a bare substring search is too blunt: "0.970" cannot
+    distinguish the GC-corrected publication-8 AUC (0.9698) from the
+    legacy one (0.9704), because both round to it. Comparing each
+    written number against the target at the precision it was written
+    at separates them: "0.9698" and "0.9704" are distinct, and only
+    the exact rendering matches.
+    """
+    for match in _NUMBER_RE.finditer(text):
+        raw = match.group(0)
+        decimals = len(raw.split(".")[1])
+        yield (float(raw), decimals)
+
+
+def quotes(text: str, value: float, tol: float = 1e-9) -> bool:
+    """Whether ``text`` quotes ``value``, at the precision it was written.
+
+    A written number matches when it is the target rounded to the
+    written precision -- i.e. within half a unit of the last written
+    digit. A number written to more digits than the target carries is
+    accepted only if it rounds to the target at that precision, so
+    "0.48360" matches 0.4836 but "0.9704" does not match 0.9698.
+
+    At least three decimals are required (the repository's convention
+    for quoting a benchmark figure). With fewer, the rendering is too
+    coarse to identify a value: "0.50" cannot tell 0.4958 from 0.5033,
+    so accepting it would make both the presence check and the
+    forbidden-value check unreliable.
+    """
+    for written, decimals in numbers_in(text):
+        if decimals < 3:
+            continue
+        if abs(written - value) <= 0.5 * (10.0 ** -decimals) + tol:
+            return True
+    return False
 
 
 def line(label, value, source):
@@ -109,6 +357,27 @@ def fusion_auc(artifact, strategy):
     raise KeyError(f"no auc row for {strategy}")
 
 
+def loso_in_domain(artifact, study):
+    """The within-publication CV AUC for one study, from the LOSO artifact."""
+    for row in artifact["in_domain"]:
+        if row["study"] == study:
+            return float(row["cv_auc_mean"])
+    raise KeyError(f"no in_domain row for {study}")
+
+
+def special_value(artifact_name, artifact, what):
+    """Resolve one ``QUOTED_SPECIAL`` entry to (value, label)."""
+    if what.startswith("loso "):
+        train, test = (part.strip() for part in what[5:].split("->"))
+        return (loso_direction(artifact, train, test),
+                f"{artifact_name} {train} -> {test}")
+    if what.startswith("in_domain "):
+        study = what[len("in_domain "):].strip()
+        return (loso_in_domain(artifact, study),
+                f"{artifact_name} in_domain {study}")
+    return fusion_auc(artifact, what), what
+
+
 def quoted_artifacts():
     """The artifact file names the documents quote numbers from.
 
@@ -134,14 +403,36 @@ def quoted_values(results_dir: str | None = None):
         artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
-        if what.startswith("loso "):
-            train, test = (part.strip() for part in what[5:].split("->"))
-            value = loso_direction(artifact, train, test)
-            label = f"{artifact_name} {train} -> {test}"
-        else:
-            value = fusion_auc(artifact, what)
-            label = f"{artifact_name} {what}"
+        value, label = special_value(artifact_name, artifact, what)
         yield (label, value, artifact_name, [document])
+
+
+def table_row_values(results_dir: str | None = None):
+    """Yield (doc, anchor, required, forbidden, source) for each table row.
+
+    ``required`` and ``forbidden`` are lists of (artifact_name, value)
+    pairs: the numbers the row must quote, and the numbers it must not
+    (the same quantity measured by a different run).
+    """
+    for case in TABLE_ROWS:
+        required = []
+        for artifact_name, path in case["required"]:
+            artifact = load(artifact_name, results_dir)
+            if artifact is None:
+                continue
+            if isinstance(path, str) and path.startswith("loso "):
+                value, _ = special_value(artifact_name, artifact, path)
+            else:
+                value = float(dig(artifact, path))
+            required.append((artifact_name, value))
+        forbidden = []
+        for artifact_name, path in case["forbidden"]:
+            artifact = load(artifact_name, results_dir)
+            if artifact is None:
+                continue
+            forbidden.append((artifact_name, float(dig(artifact, path))))
+        yield (case["doc"], case["anchor"], required, forbidden,
+               case.get("source"))
 
 
 def main() -> int:

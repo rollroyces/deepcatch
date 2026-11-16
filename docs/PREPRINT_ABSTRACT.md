@@ -36,7 +36,7 @@ aware methylation module was validated against GSE185307 (ONT methylation,
 (AUC 0.738 vs 0.357 genome-wide).
 
 **Conclusions.**  DeepCatch provides a reproducible, honest panel-benchmark
-for ultra-sensitive MRD detection using open-access data.  All code (672
+for ultra-sensitive MRD detection using open-access data.  All code (709
 tests), all data (TCGA GDC, GEO), and all results are freely available.
 The assay sweep identifies actionable production specifications: duplex-UMI
 error suppression and 50,000× depth are sufficient for AUC 1.000 at 0.1%

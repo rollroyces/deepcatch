@@ -184,6 +184,25 @@ def check_cross_study_pooled_auc(
             notes="Artifact present but 'pooled.harmonized.auc_mean' missing.",
         )
     verdict = _verdict(auc, threshold_floor, threshold_target)
+    # The true-confound control is READ from the same artifact, never
+    # hard-coded: it was a literal 0.499 here, which was the value of an
+    # older run (the unseeded artifact of 2026-11-16T05:15). The current
+    # GC-corrected artifact puts it at 0.4836, so the generated report and
+    # docs/ULTRA_EARLY_READINESS_AUTO.md were quoting a number that no
+    # committed artifact contains. A number in a generated report must
+    # come from the artifact it describes.
+    confound = (
+        d.get("true_confound_control", {})
+        .get("cancer_jiang_healthy_cristiano", {})
+        .get("harmonized", {})
+        .get("auc_mean")
+    )
+    confound_text = (
+        f"True-confound control collapsed to {confound:.4f} (signal IS "
+        f"cancer-vs-healthy, not batch)."
+        if isinstance(confound, (int, float))
+        else "True-confound control not present in this artifact."
+    )
     return Check(
         name="cross_study_pooled_auc_gc_corrected",
         description=(
@@ -196,8 +215,7 @@ def check_cross_study_pooled_auc(
         threshold=f">={threshold_target:.3f} (floor={threshold_floor:.3f})",
         notes=(
             f"AUC {auc:.4f} ± {auc_std:.4f} across 5 seeds × 5 folds. "
-            f"True-confound control collapsed to 0.499 (signal IS cancer-vs-healthy, "
-            f"not batch). See {d.get('scope', '')}"
+            f"{confound_text} See {d.get('scope', '')}"
         ),
     )
 

@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-672%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-709%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -100,7 +100,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 
 ## Why it matters
 
-- **The open-data MCED benchmark with two independent confound controls *and* a real external cohort.** [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md) shows the pooled 0.97 AUC survives per-study harmonization (true-confound AUC 0.50 vs no-harmonize AUC 0.999) — the signal is cancer, not batch. [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md) then goes further: the model is trained on publications 6+8 and tested on publications it has never seen, reaching **0.9915** [0.9712, 1.0] on the held-out whole-genome publication — and, just as importantly, *failing* (0.41 / 0.32) on the held-out whole-exome one, which no internal cross-validation could have shown.
+- **The open-data MCED benchmark with two independent confound controls *and* a real external cohort.** [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md) shows the pooled 0.97 AUC survives per-study harmonization (true-confound AUC 0.50 vs no-harmonize AUC 0.999) — the signal is cancer, not batch. [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md) then goes further: the model is trained on publications 6+8 and tested on publications it has never seen, reaching **0.9444** [0.8731, 1.0] on one held-out whole-genome publication and 0.708 [0.5148, 0.9012] on a second — and, just as importantly, *failing* (0.6569 sensitivity at the training threshold) on the held-out whole-exome one, which no internal cross-validation could have shown.
 - **GC-axis discovery in this commit (c782efc).** Legacy baseline 0.9770 was inflated ~0.009 by GC / mappability noise; adding `--gc-correction` (now default) yields the honest 0.9684 ± 0.003. [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md) and `ablation.cast` walk through it.
 - **Reproducible from one shell script, and the script checks itself.** `paper/REPRODUCE.sh` regenerates every §3 artifact and then *proves* the regenerated numbers match the committed ones (`scripts/reproduce_check.py` compares number by number, not file by file). Ablation artifacts are already committed as `results/cross_study_finallydb_*.json`. See [`paper/REPRODUCE.md`](paper/REPRODUCE.md) for the data the driver needs and how to point it at your own feature cache.
 
@@ -341,7 +341,7 @@ env -u PYTHONPATH ./.venv/bin/python -m pytest \
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
-# → 672 tests across all modules
+# → 709 tests across all modules
 
 # Biomedical-review regression tests
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_biomedical_review_fixes.py -v

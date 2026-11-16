@@ -96,9 +96,13 @@ single n=627 cohort with per-study z-score harmonization. There is
 **no held-out second cohort**; pooled OOF on the same cohort is the
 honest validation surface.
 
-The healthy controls in the cross-study benchmark are FinaleDB
-TF=0 arms (modeled cancer-at-TF=0 read depth), **not real
-healthy-donor plasma**.
+The healthy controls in the cross-study benchmark are **real
+healthy-donor plasma**: FinaleDB records every training-cohort control
+as `disease: Healthy`, `tissue: blood plasma` (262 Cristiano + 32
+Jiang donors). What the harmonisation does *not* fix is the class mix:
+the per-study z-score uses a class-mixed per-study mean, and the two
+training studies have very different class proportions (Jiang is ~70%
+HCC, Cristiano is mostly healthy).
 
 ## Performance metrics
 
@@ -234,7 +238,7 @@ training-fixed threshold rather than folded into an AUC denominator.
 Holding a publication out of the *training* cohort is a different
 measurement: `scripts/cross_study_loso.py` gives 0.6805
 [0.6344, 0.7267] for train-Jiang → test-Cristiano against in-domain
-0.9789 / 0.9701. The asymmetry is informative — Jiang is HCC-only, so
+0.9789 / 0.969. The asymmetry is informative — Jiang is HCC-only, so
 training on it yields an HCC-specific boundary, while a pan-cancer
 training set yields a generic one (train-Cristiano → test-Jiang
 0.9361). The pooled 0.9684 does **not** survive a publication
@@ -276,9 +280,14 @@ holdout and must not be read as a generalisation claim.
    These are appropriate for methods research but are far below the
    cohort sizes typical of clinical validation (1,000+).
 
-2. **Healthy controls in the cross-study benchmark are FinaleDB TF=0
-   arms (modeled cancer-at-TF=0 read depth), not real healthy-donor
-   plasma.**
+2. **The harmonisation is not class-balanced.** The per-study z-score
+   uses a class-mixed per-study mean, and the two training studies have
+   very different class proportions (Jiang is ~70% HCC, Cristiano is
+   mostly healthy), so a study's mean partly encodes its case mix. A
+   per-study-per-class scaler would be more rigorous. The control arm
+   itself is sound: FinaleDB records every training-cohort control as
+   `disease: Healthy`, `tissue: blood plasma` (262 Cristiano + 32 Jiang
+   donors), i.e. real healthy-donor plasma.
 
 3. **No IRB approval, no prospective collection, no clinical
    outcomes.** The validation is on open-data WGS fragments from
@@ -289,8 +298,8 @@ holdout and must not be read as a generalisation claim.
    trained on and give AUC 0.9444 (pub 7, WGS), 0.708 (pub 1, WGS),
    0.7385 pooled over the publications carrying both classes, and 0.6569
    sensitivity on the whole-exome publication. What it still lacks: prospective follow-up,
-   stage labels, and real healthy-donor controls — the non-cancer arm is
-   14 public samples. A leave-one-study-out run inside the training
+   stage labels, and a large control arm — the held-out non-cancer arm
+   is 22 public samples. A leave-one-study-out run inside the training
    cohort gives 0.6805, so the pooled 0.9684 is a within-cohort
    separation number, not a generalisation claim.
 

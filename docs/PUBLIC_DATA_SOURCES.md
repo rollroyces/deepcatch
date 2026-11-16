@@ -22,7 +22,7 @@ data already in FinaleDB.
 | Cohort | 2,579 seqruns / 2,505 samples, 8 publications, 1994-2024 |
 | Labels | per sample: tissue, disease, publication |
 | Publications | 1 Snyder 2016 · 3 Burnham 2018 (urine) · 4 Rabinowitz 2019 (no disease labels) · 5 Viswanathan 2018 · 6 Jiang 2015 · 7 Sun 2019 · 8 Cristiano 2019 · 9 Adalsteinsson 2017 |
-| Caveat | the *healthy* arm of the training cohort is a modelled TF=0 arm, not real donor plasma |
+| Caveat | the training cohort's control arm is real donor plasma (FinaleDB: `disease: Healthy`, `tissue: blood plasma`), but the per-study z-score is class-mixed and the two training studies have very different case mixes |
 
 **Object availability is partial.** Fragment files (`.frag.tsv.bgz`),
 insert-size metrics and the `.bigWig` coverage objects return 200;
