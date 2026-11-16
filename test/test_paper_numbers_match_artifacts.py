@@ -48,6 +48,7 @@ def _load_numbers_module():
 
 
 _numbers = _load_numbers_module()
+SUPERSEDED = _numbers.SUPERSEDED
 
 
 def _read(rel: str) -> str:
@@ -142,36 +143,6 @@ def test_paired_fusion_delta_matches_the_artifact():
 # with a current figure does not trip it: the old GC-corrected pooled
 # AUC "0.9670" is banned, but the per-cancer PAAD AUC "0.967" and the
 # clean-panel LLR AUC "0.922" are different numbers and stay.
-SUPERSEDED = [
-    "0.9670",   # the old GC-corrected pooled AUC
-    "0.9747",   # the old legacy pooled AUC
-    "0.9753",   # the companion pipeline's unseeded tumor-naive figure
-    # 0.9886 is deliberately absent: it was the old naive-average fusion
-    # AUC, but it is also the CURRENT per-cancer OV AUC, so a string check
-    # cannot distinguish them. The presence check covers the fusion
-    # number instead (the documents must quote 0.9884).
-    "0.4657",   # the old shuffled-label null
-    "0.9225",   # the old PCA-20 pooled AUC
-    "0.9458",   # the old PCA-20 per-publication AUC
-    # Superseded by the v2.3.0 correction of the external validation:
-    # the first fetch took 9 of publication 1's 60 samples, and the
-    # harmonisation was a single pooled z-score rather than the
-    # per-publication one the script documents.
-    "0.9915",   # the old publication-7 external AUC
-    "0.8819",   # the old pooled external AUC
-    "0.4454",   # the old publication-9 external sensitivity
-    # Superseded by the seeded LOSO run.
-    "0.9701",   # the old in-domain Cristiano AUC
-    # Superseded by the GC-corrected true-confound control. It was still
-    # hard-coded in the readiness generator until this release.
-    "0.499",
-    # The old mutation-only fusion AUC, from the pre-regeneration
-    # fusion artifact. It is the only one of the stale fusion figures
-    # that can be banned literally: the others ("0.9887", "0.937",
-    # "0.845") are prefixes of legitimate current numbers, so they are
-    # pinned by the table-row checks below instead.
-    "0.9242",
-]
 CURRENT_DOCS = [
     "README.md",
     "MODEL.md",
@@ -395,3 +366,37 @@ def test_biorxiv_form_agrees_with_the_manuscript():
     assert proc.returncode == 0, (
         f"the bioRxiv submission form has drifted from the manuscript:\n"
         f"{proc.stdout}\n{proc.stderr}")
+
+
+def test_the_methylation_cohort_split_is_the_artifacts_split():
+    """The documents must state the cohort's case/control split it has.
+
+    Six documents said the 31 real samples were "17 colorectal cancer
+    and 14 liver-transplant controls"; the artifact holds 18 and 13.
+    The composition is a pair of integers, which the number guard cannot
+    see (it matches decimals), so it is checked here.
+    """
+    artifact = _numbers.load("methylation_cohort_channel.json")
+    if artifact is None:
+        pytest.skip("methylation artifact not present")
+    per_sample = artifact["cohort"]["per_sample"]
+    cases = sum(1 for row in per_sample.values() if row.get("label") == 1)
+    controls = sum(1 for row in per_sample.values() if row.get("label") == 0)
+    assert cases and controls, "the artifact carries no labelled samples"
+
+    for doc in ("paper/paper.tex", "paper/METHODS_PAPER.md", "README.md",
+                "ULTRA_EARLY_READINESS.md", "docs/METHYLATION_PIPELINE.md"):
+        text = _read(doc)
+        assert f"{cases} colorectal" in text, (
+            f"{doc} does not state the artifact's case count ({cases} "
+            f"colorectal cancer)")
+        assert f"{controls} liver-transplant" in text, (
+            f"{doc} does not state the artifact's control count ({controls} "
+            f"liver-transplant controls)")
+
+    chinese = _read("README.zh-CN.md")
+    assert f"{cases} 例结直肠癌" in chinese, (
+        f"README.zh-CN.md does not state the artifact's case count ({cases})")
+    assert f"{controls} 例肝移植" in chinese, (
+        f"README.zh-CN.md does not state the artifact's control count "
+        f"({controls})")

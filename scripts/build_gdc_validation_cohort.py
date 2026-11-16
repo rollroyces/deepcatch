@@ -15,9 +15,12 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-CACHE_DIR = '/Users/hermes/deepcatch/validation/tcga/tcga_cache/'
-OUTPUT = '/Users/hermes/deepcatch/results/cadd_mutations_gdc_validation.json'
-REFERENCE = '/Users/hermes/deepcatch/results/cadd_mutations_full_BAK.json'
+# The repository root is derived from this file, not hard-coded, so the
+# script runs from any checkout. Every path can still be overridden on
+# the command line (see main()).
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+CACHE_DIR = str(_REPO_ROOT / "validation" / "tcga" / "tcga_cache")
+OUTPUT = str(_REPO_ROOT / "results" / "cadd_mutations_gdc_validation.json")
 
 # Threshold for inclusion (only patients with this many mutations)
 MIN_MUTS = 30
@@ -72,9 +75,25 @@ def parse_maf(path):
 
 
 def main():
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--cache-dir", default=CACHE_DIR,
+                    help="directory holding gdc_TCGA-LUAD_*.maf.gz files")
+    ap.add_argument("--out", default=OUTPUT,
+                    help="where to write the cohort JSON")
+    args = ap.parse_args()
+    cache_dir = args.cache_dir
+    out_path = args.out
+
     rng = random.Random(42)
 
-    files = sorted([f for f in os.listdir(CACHE_DIR)
+    if not os.path.isdir(cache_dir):
+        raise SystemExit(
+            f"the GDC MAF cache is not at {cache_dir}. Download it first "
+            f"(see docs/CADD_GDC_VALIDATION.md) or pass --cache-dir.")
+
+    files = sorted([f for f in os.listdir(cache_dir)
                     if f.startswith('gdc_TCGA-LUAD_') and f.endswith('.maf.gz')])
     print(f'Cache files: {len(files)}')
 
@@ -82,7 +101,7 @@ def main():
     patient_to_muts = defaultdict(dict)  # patient -> {(chrom, pos, ref, alt): mut_info}
     file_patient_map = {}
     for fn in files:
-        path = os.path.join(CACHE_DIR, fn)
+        path = os.path.join(cache_dir, fn)
         rows = parse_maf(path)
         for r in rows:
             key = (r['chrom'], r['pos'], r['ref'], r['alt'])
@@ -144,11 +163,11 @@ def main():
         ),
     }
 
-    Path(OUTPUT).parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT, 'w') as f:
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, 'w') as f:
         json.dump(out, f, indent=2)
 
-    print(f'\nWrote {OUTPUT}')
+    print(f'\nWrote {out_path}')
     print(f'  Patients: {out["n_patients"]}')
     print(f'  Mutations: {out["n_mutations_total"]}')
     print(f'  Per-patient: median={sorted([len(v) for v in cohort_out.values()])[len(cohort_out)//2]}, '

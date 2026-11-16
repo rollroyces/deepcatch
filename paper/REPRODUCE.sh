@@ -37,6 +37,19 @@
 #   DEEPCATCH_LABELS          path to labels_multiclass.tsv
 #   DEEPCATCH_EXTERNAL_DIR    directory holding the held-out external cohort
 #   DEEPCATCH_METHYLATION_DIR directory holding matrices/ + cohort_labels.tsv
+#   DEEPCATCH_SISTER_PIPELINE checkout of cfdna-fragmentomics-pipeline
+#
+# The sister-pipeline checkout is a REAL prerequisite, not a convenience:
+# the cross-study, LOSO and external-validation steps all import the
+# sibling's `honest_benchmark.load5` and `train_classifier._harmonize`, so
+# that the training and external features are assembled by exactly the
+# same code path. Clone it next to this repository:
+#
+#   git clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline
+#
+# and point the driver at it if it is not in the default place:
+#
+#   export DEEPCATCH_SISTER_PIPELINE=/path/to/cfdna-fragmentomics-pipeline
 #
 # Runtime (measured on the development machine, full mode): ~20 minutes, of
 # which the two cross-study sweeps are ~12 minutes.
@@ -140,13 +153,16 @@ SEED_ARGS=(--seeds "${SEEDS[@]}")
 ARTIFACTS=(
     cross_study_finallydb.json
     cross_study_finallydb_gc_corrected.json
+    cross_study_finallydb_with_motifs.json
     per_cancer_sens_at_spec.json
     cross_study_finallydb_shuffled_control.json
     cross_study_loso.json
     external_validation_finaledb.json
     fusion_ablation_isotonic.json
+    fusion_regularized_smoke.json
     decision_curve.json
     methylation_cohort_channel.json
+    ultraearly_readiness.json
 )
 
 # Cleanup: only ever remove the temp root this script created, and only
@@ -174,9 +190,22 @@ if [[ ! -d "${FEATURES_DIR}" ]]; then
     exit 4
 fi
 
+# The sister-pipeline checkout is a hard prerequisite: the cross-study,
+# LOSO and external-validation steps import its load5 and _harmonize.
+# Without the check below, step 1 dies with "No module named
+# 'honest_benchmark'" -- which reads like a broken repo rather than a
+# missing prerequisite.
+SISTER_PIPELINE="${DEEPCATCH_SISTER_PIPELINE:-/Users/hermes/cfdna-fragmentomics-pipeline}"
+if [[ ! -f "${SISTER_PIPELINE}/scripts/honest_benchmark.py" ]]; then
+    echo "[REPRODUCE] !! sister-pipeline checkout not found: ${SISTER_PIPELINE}" >&2
+    echo "[REPRODUCE]    clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline" >&2
+    echo "[REPRODUCE]    and set DEEPCATCH_SISTER_PIPELINE to its path." >&2
+    exit 4
+fi
+
 echo
 echo "================================================================"
-echo "[1/10] Cross-study FinaleDB sweep — legacy (no GC correction)"
+echo "[1/12] Cross-study FinaleDB sweep — legacy (no GC correction)"
 echo "================================================================"
 # `--gc-correction` DEFAULTS TO ON, so a driver that passes no flag writes
 # the GC-corrected run into the legacy path. That silently replaced the
@@ -204,7 +233,7 @@ echo "      seeds: ${SEEDS[*]}"
 
 echo
 echo "================================================================"
-echo "[2/10] Cross-study FinaleDB sweep — GC-corrected (headline)"
+echo "[2/12] Cross-study FinaleDB sweep — GC-corrected (headline)"
 echo "================================================================"
 # `--include-screening` is deliberately OFF here. The committed
 # `results/per_cancer_sens_at_spec.json` was produced on the legacy
@@ -228,7 +257,25 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[3/10] Shuffled-label null control"
+echo "[3/12] Cross-study FinaleDB sweep — with 4-mer end motifs"
+echo "================================================================"
+# The third tumor-naive benchmark: the same pipeline with the 256-dim
+# 4-mer end-motif vector added. Eight documents quote its pooled AUC,
+# so the driver regenerates it like the other two sweeps.
+"${PYTHON}" scripts/cross_study_finallydb.py \
+    --features-dir "${FEATURES_DIR}" \
+    --labels-multiclass "${LABELS_TSV}" \
+    --include-motifs \
+    --out-json    "${RESULTS_DIR}/cross_study_finallydb_with_motifs.json" \
+    --out-md      "${DOCS_DIR}/CROSS_STUDY_BENCHMARK_with_motifs.md" \
+    --out-per-cancer-json "" \
+    --shuffled-label-control-out "" \
+    --top-cancer-n 5 \
+    "${SEED_ARGS[@]}"
+
+echo
+echo "================================================================"
+echo "[4/12] Shuffled-label null control"
 echo "================================================================"
 # Single seed (2), matching the committed artifact: the control is a sanity
 # check, and a second seed adds minutes without adding evidence.
@@ -240,7 +287,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[4/10] Leave-one-study-out transfer (train on one publication)"
+echo "[5/12] Leave-one-study-out transfer (train on one publication)"
 echo "================================================================"
 "${PYTHON}" scripts/cross_study_loso.py \
     --features-dir "${FEATURES_DIR}" \
@@ -253,7 +300,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[5/10] External validation on held-out public publications"
+echo "[6/12] External validation on held-out public publications"
 echo "================================================================"
 if [[ ! -d "${EXTERNAL_DIR}" ]]; then
     echo "[REPRODUCE] !! external cohort not found: ${EXTERNAL_DIR}" >&2
@@ -270,7 +317,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[6/10] Fusion ablation (tumor-naive + mutation-informed)"
+echo "[7/12] Fusion ablation (tumor-naive + mutation-informed)"
 echo "================================================================"
 PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
     --features-dir "${FEATURES_DIR}" \
@@ -282,7 +329,17 @@ PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
 
 echo
 echo "================================================================"
-echo "[7/10] Decision curve (clinician-facing operating points)"
+echo "[8/12] Regularized late fusion / Bayesian model averaging"
+echo "================================================================"
+# The estimator that replaced the neural encoder, with the permuted-
+# label and arm-swap controls it is reported with. Ten documents quote
+# its 0.9825, so the driver regenerates it like the other benchmarks.
+"${PYTHON}" scripts/fusion_regularized_smoke.py \
+    --out-json "${RESULTS_DIR}/fusion_regularized_smoke.json"
+
+echo
+echo "================================================================"
+echo "[9/12] Decision curve (clinician-facing operating points)"
 echo "================================================================"
 # The operating points RESULTS.md section 4 quotes. Same cohort, same
 # PCA (200 components) and the same five seeds as the decision curve
@@ -297,7 +354,7 @@ PYTHONPATH=src "${PYTHON}" src/fragmentomics/decision_curve_cli.py \
 
 echo
 echo "================================================================"
-echo "[8/10] Methylation channel (FinaleMe on real public fragments)"
+echo "[10/12] Methylation channel (FinaleMe on real public fragments)"
 echo "================================================================"
 # This step needs java, the FinaleMe 0.58 jar and the cached per-sample CpG
 # matrices. When any of those is missing the step is skipped and reported
@@ -327,7 +384,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[9/10] Figures"
+echo "[11/12] Figures"
 echo "================================================================"
 "${PYTHON}" scripts/plot_figures.py \
     --results-dir "${RESULTS_DIR}" \
@@ -335,7 +392,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[10/10] Acceptance floors"
+echo "[12/12] Acceptance floors"
 echo "================================================================"
 read_harm() {
     "${PYTHON}" -c "
@@ -368,6 +425,25 @@ if [[ "${LEGACY_OK}" != "1" || "${CONF_OK}" != "1" || "${GC_OK}" != "1" ]]; then
     echo "[REPRODUCE] !! acceptance floor failed; the §3 numbers are not cite-able yet." >&2
     exit 3
 fi
+
+# ---------------------------------------------- derived readouts ---------
+# Re-emit the ultra-early readiness verdict from the freshly refreshed
+# JSON artifacts so docs/ULTRA_EARLY_READINESS_AUTO.md is always in
+# lock-step with results/*.json. This is offline (no model weights, no
+# network) and reads only cached JSON.
+#
+# It runs BEFORE the proof step on purpose: the readiness verdict is
+# derived from the artifacts the run just regenerated, so it belongs in
+# the comparison rather than after it.
+echo
+echo "================================================================"
+echo "[READOUT] Ultra-early readiness verdict"
+echo "================================================================"
+"${PYTHON}" scripts/ultraearly_readiness.py \
+    --results-dir "${RESULTS_DIR}" \
+    --out-json "${RESULTS_DIR}/ultraearly_readiness.json" \
+    --out-md "${DOCS_DIR}/ULTRA_EARLY_READINESS_AUTO.md" \
+    || echo "[REPRODUCE] !! ultra-early readiness CLI failed (non-fatal)"
 
 # ---------------------------------------------------------- the proof -----
 # Compare the freshly generated artifacts against the committed ones. This
@@ -416,19 +492,6 @@ else
     # array under `set -u` raises "unbound variable" and kills the run.
     "${PYTHON}" -m pytest "${GATE_TESTS[@]}" ${GATE_ARGS[@]+"${GATE_ARGS[@]}"} -q
 fi
-
-# ---------------------------------------------- derived readouts ---------
-# Re-emit the ultra-early readiness verdict from the freshly refreshed
-# JSON artifacts so docs/ULTRA_EARLY_READINESS_AUTO.md is always in
-# lock-step with results/*.json. This is offline (no model weights, no
-# network) and reads only cached JSON.
-echo
-echo "[REPRODUCE] Refreshing ultra-early readiness artifacts"
-"${PYTHON}" scripts/ultraearly_readiness.py \
-    --results-dir "${RESULTS_DIR}" \
-    --out-json "${RESULTS_DIR}/ultraearly_readiness.json" \
-    --out-md "${DOCS_DIR}/ULTRA_EARLY_READINESS_AUTO.md" \
-    || echo "[REPRODUCE] !! ultra-early readiness CLI failed (non-fatal)"
 
 echo
 echo "================================================================"

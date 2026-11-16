@@ -47,7 +47,9 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-ROOT = Path("/Users/hermes/deepcatch")
+# The repository root is derived from this file so the script runs from
+# any checkout, not only from the machine that produced the artifact.
+ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 

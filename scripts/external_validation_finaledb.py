@@ -76,6 +76,14 @@ SISTER = os.environ.get(
     "DEEPCATCH_SISTER_PIPELINE", "/Users/hermes/cfdna-fragmentomics-pipeline")
 TRAIN_PUBLICATIONS = {"6", "8"}
 
+# The canonical label vocabulary lives in the package, so every reader of
+# a labels file in this repository resolves labels the same way.
+_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "src")
+if _SRC not in sys.path:
+    sys.path.insert(0, _SRC)
+from fragmentomics.labels import resolve_label  # noqa: E402
+
 
 def _load_cohort(features_dir: str, labels_path: str, publications: set[str]):
     """Load the 5-channel features + labels for the given publications.
@@ -106,7 +114,7 @@ def _load_cohort(features_dir: str, labels_path: str, publications: set[str]):
                 else {"jiang": "6", "cristiano": "8"}.get(parts[3], "")
             if pub not in publications:
                 continue
-            labels[s] = 1 if parts[2] == "cancer" else 0
+            labels[s] = resolve_label(parts[2], s)
             studies[s] = parts[3]
             disease_class[s] = parts[1]
             publication[s] = pub

@@ -83,6 +83,14 @@ PIPELINE = os.environ.get(
 )
 _SISTER = None
 
+# The canonical label vocabulary lives in the package, so every reader of
+# a labels file in this repository resolves labels the same way.
+_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "src")
+if _SRC not in sys.path:
+    sys.path.insert(0, _SRC)
+from fragmentomics.labels import resolve_label  # noqa: E402
+
 
 def _sister_pipeline():
     """Return (load5, _harmonize) from the sibling pipeline (cached)."""
@@ -238,7 +246,7 @@ def load_labels_multiclass(path: str, requested_publications: set[str]):
             if pub not in requested_publications:
                 skipped_outside_request.append((s, p[3], pub))
                 continue
-            labels[s] = 1 if p[2] == "cancer" else 0
+            labels[s] = resolve_label(p[2], s)
             studies[s] = p[3]
             disease_class[s] = p[1]
             publication[s] = pub

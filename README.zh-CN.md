@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-757%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-786%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -100,7 +100,7 @@
 - **肿瘤盲 + 突变融合**——片段组学 + 突变通道的朴素平均在 627 队列上达到 AUC 0.988（一个 what-if 配对——突变通道是校准到 AUC 0.92 的，并未配对）。
 - **在这个样本量下真正有效的晚期融合**——神经编码器在诚实的配对队列上只有 0.554，而 LR 基线是 0.910；正则化晚期融合在同样的折上达到 **0.9825 ± 0.0094**，贝叶斯模型平均达到 **0.9650 ± 0.0089**（`src/foundation/regularized_fusion.py`）。
 - **纵向贝叶斯卡尔曼**——仅有架构（合成数据，未经血浆验证）；CET 流水线（Capture → Enhance → Triage）为系列季度采样而设计。
-- **在真实公开数据上做甲基化提取——并且是一个被实测出来的零结果**——FinaleMe 在 FinaleDB 片段文件上端到端运行（片段 → BAM → 每 CpG 矩阵 → WGBS prior → HMM 解码）。在 31 个真实样本（出版物 7，17 例结直肠癌 / 14 例肝移植）上，解码 β 汇总达到 LOO AUC 0.9444——*恰好*等于覆盖 CpG 计数本身的 AUC，也等于每 CpG 观测数本身的 AUC；在两组都有覆盖的 103,863 个位点上，每个位点只用覆盖它的样本检验，癌症与对照的中位差恰好为 0.0（置换 p = 1.0）。公开文库在约 300 bp 处做了大小选择，每 CpG 只给出 1.09 个观测，因此 FinaleMe 读取的消化特征并不存在。提取路径是通的；**该通道不是一个经过验证的特征**——见 [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md)。
+- **在真实公开数据上做甲基化提取——并且是一个被实测出来的零结果**——FinaleMe 在 FinaleDB 片段文件上端到端运行（片段 → BAM → 每 CpG 矩阵 → WGBS prior → HMM 解码）。在 31 个真实样本（出版物 7，18 例结直肠癌 / 13 例肝移植）上，解码 β 汇总达到 LOO AUC 0.9444——*恰好*等于覆盖 CpG 计数本身的 AUC，也等于每 CpG 观测数本身的 AUC；在两组都有覆盖的 103,863 个位点上，每个位点只用覆盖它的样本检验，癌症与对照的中位差恰好为 0.0（置换 p = 1.0）。公开文库在约 300 bp 处做了大小选择，每 CpG 只给出 1.09 个观测，因此 FinaleMe 读取的消化特征并不存在。提取路径是通的；**该通道不是一个经过验证的特征**——见 [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md)。
 
 ## 为什么重要
 
@@ -341,7 +341,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 536 passed, 23 skipped, 13 deselected (slow real-data smoke)
+# → 565 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -364,7 +364,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_foundation_smoke.py` | 8 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 572** | **536 通过 + 23 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 601** | **565 通过 + 23 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 
@@ -413,7 +413,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 42 test files (559 fast-path tests)
+├── test/                         # 42 test files (588 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts

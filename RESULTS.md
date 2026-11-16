@@ -18,7 +18,7 @@
 > | held-out external cohort (never trained on) | **0.9444** [0.8731–1.0000] (pub 7), 0.708 (pub 1), pooled 0.7385 | `results/external_validation_finaledb.json` |
 > | leave-one-study-out transfer | **0.6805** / **0.9361** | `results/cross_study_loso.json` |
 > | naive-average fusion | **0.9884 ± 0.0010** | `results/fusion_ablation_isotonic.json` |
-> | methylation channel | **a null** (0.9444 = the coverage baseline) | `results/methylation_channel_diagnosis.json` |
+> | methylation channel | **a null** (0.9444 = the coverage baseline) | `results/methylation_cohort_channel.json` |
 >
 > `scripts/benchmark_numbers.py` prints every number the documents quote,
 > and `test/test_paper_numbers_match_artifacts.py` fails the build if the
@@ -179,6 +179,14 @@ artifact:
 
 This is the strongest piece of evidence that the 0.9745 number is
 real signal, not a study-batch effect.
+
+**Current equivalents** (v2.3.0, from `results/cross_study_finallydb_gc_corrected.json`):
+the pooled harmonised AUC is **0.9684 ± 0.0027** (legacy no-GC
+**0.9770 ± 0.0013**), and the same true-confound control reads
+**0.9989** without harmonisation and **0.4836** with it. The
+conclusion is unchanged — harmonisation removes the study confound
+entirely — but the August numbers above are the snapshot's, not the
+current ones.
 
 ### Negative results (documented honestly)
 

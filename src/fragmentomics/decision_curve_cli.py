@@ -4,7 +4,8 @@ cross-study cohort, using the same per-seed OOF predictions as the fusion
 ablation. Self-contained: re-runs the tumor-naive LR-on-PCA inside CV folds,
 then writes a JSON summary a clinician can read.
 
-Outputs results/decision_curve_627.json with:
+Outputs the JSON written to --out (the committed artifact is
+results/decision_curve.json), with:
     {
       "per_strategy": {
         "tumor_naive": {

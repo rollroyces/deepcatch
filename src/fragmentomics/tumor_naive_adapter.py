@@ -4,8 +4,9 @@ cfdna-fragmentomics-pipeline pre-computed artifacts.
 
 This module reads the pipeline's per-sample `.npy` / `.fsd.json` outputs
 and assembles the same 5-channel tumor-naive profile used by the
-standalone pipeline's classifier (AUC 0.9753 ± 0.002 on 627 cross-study
-pan-cancer samples, 5-seed CV).
+standalone pipeline's classifier (pooled AUC 0.9684 ± 0.0027 on the 627
+cross-study samples, GC-corrected, 5-seed CV; the legacy no-GC run gives
+0.9770 ± 0.0013).
 
 Channels assembled per sample:
     1. 5Mb short/long ratio (631 bins)            — DELFI ratio profile

@@ -6,12 +6,19 @@
 > `results/cadd_matches_gdc_validation.json` and
 > `results/cadd_per_subgroup_llr_GDC_VALIDATION.json` — **are not
 > committed to this repository**: the GDC masked-MAF cache (400 files)
-> and the CADD v1.7 matching cache are large and gitignored, and the
-> cohort builder resolves its cache directory from an absolute path, so
-> the run cannot be repeated from a clean checkout as it stands.
+> and the CADD v1.6 matching cache are large and gitignored.
 > **The numbers below therefore come from that dated run and cannot be
 > verified from this repository.** Treat them as a historical report, not
 > as a current, reproducible result.
+>
+> What *is* fixed: `scripts/build_gdc_validation_cohort.py` now resolves
+> its paths relative to the repository and takes `--cache-dir` / `--out`,
+> so it runs from any checkout that has the MAF cache. What is still
+> missing is the input: the cohort builder needs the GDC MAF cache (the
+> 150-patient subsample uses 400 files; a partial cache yields a smaller
+> cohort), and `scripts/match_cadd_parallel.py` needs
+> `data/cadd/cadd_v1.6_gnomad_r3_snv.tsv.gz` plus `tabix`, neither of
+> which is in this repository.
 >
 > The committed, reproducible counterpart is the original 20-patient
 > experiment: `results/cadd_per_subgroup_llr.json`, produced by
@@ -184,10 +191,12 @@ The original cohort was 20 patients — small enough that subgroup effects were 
 ## Reproducibility
 
 ```bash
-cd /Users/hermes/deepcatch
+cd /path/to/deepcatch
 
 # 1. Build cohort from GDC cache (already done; results cached in results/)
-env -u PYTHONPATH ./.venv/bin/python scripts/build_gdc_validation_cohort.py
+env -u PYTHONPATH ./.venv/bin/python scripts/build_gdc_validation_cohort.py \
+    --cache-dir validation/tcga/tcga_cache \
+    --out results/cadd_mutations_gdc_validation.json
 
 # 2. CADD-match via parallel tabix (already done; results cached in results/)
 env -u PYTHONPATH ./.venv/bin/python scripts/match_cadd_parallel.py

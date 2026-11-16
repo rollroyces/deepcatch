@@ -2,7 +2,8 @@
 """FinaleDB 5-channel feature loader used by the cross-platform validator.
 
 The fragmentomics baseline reads samples from
-``/Users/hermes/cfdna-fragmentomics-pipeline/data/features/<sid>.<chan>.npy``
+``<features-dir>/<sid>.<chan>.npy`` (the features directory of the
+cfdna-fragmentomics-pipeline checkout)
 where each ``.npy`` carries the per-channel values for one sample.
 Channel naming matches the deepcatch / cfdna-fragmentomics convention:
 

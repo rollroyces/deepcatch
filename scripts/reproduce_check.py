@@ -90,6 +90,12 @@ EXTRA_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "9",
       "sensitivity_at_train_threshold_99spec")),
+    # The readiness verdict, which ~20 documents quote. It is derived
+    # from the artifacts above, so it has to be compared too -- it used
+    # to be regenerated after the proof step and never checked.
+    ("ultraearly_readiness.json", ("checks", 0, "value")),
+    ("ultraearly_readiness.json", ("checks", 1, "value")),
+    ("ultraearly_readiness.json", ("checks", 3, "value")),
 ]
 
 # Numbers whose reproduction is expected to be exact to the digit rather

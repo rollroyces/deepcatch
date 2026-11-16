@@ -30,8 +30,9 @@ WHY THE MUTATION SCORE IS SYNTHETIC:
   the tumor-naive result unchanged?"
 
 OUTPUTS:
-  results/fusion_ablation.json with per-strategy AUC, Sens@95, Sens@99
-  (mean +/- std across 5 seeds).
+  A JSON summary with per-strategy AUC, Sens@95, Sens@99 (mean +/- std
+  across the seeds), written to --out (stdout by default). The committed
+  artifact is results/fusion_ablation_isotonic.json.
 
 USAGE:
   python -m src.fragmentomics.fusion_ablation --features-dir ... --labels ...

@@ -131,6 +131,46 @@ QUOTED_SPECIAL = [
      "paper/paper.tex"),
 ]
 
+# Figures that the v2.3.0 regeneration superseded. They must not reappear
+# in a current-facing document; the CHANGELOG and the dated audit records
+# are allowed to name them, because describing the old value is the
+# point of those files.
+#
+# The check is a literal one, so a value that merely shares a prefix
+# with a current figure does not trip it: the old GC-corrected pooled
+# AUC "0.9670" is banned, but the per-cancer PAAD AUC "0.967" and the
+# clean-panel LLR AUC "0.922" are different numbers and stay.
+SUPERSEDED = [
+    "0.9670",   # the old GC-corrected pooled AUC
+    "0.9747",   # the old legacy pooled AUC
+    "0.9753",   # the companion pipeline's unseeded tumor-naive figure
+    # 0.9886 is deliberately absent: it was the old naive-average fusion
+    # AUC, but it is also the CURRENT per-cancer OV AUC, so a string check
+    # cannot distinguish them. The presence check covers the fusion
+    # number instead (the documents must quote 0.9884).
+    "0.4657",   # the old shuffled-label null
+    "0.9225",   # the old PCA-20 pooled AUC
+    "0.9458",   # the old PCA-20 per-publication AUC
+    # Superseded by the v2.3.0 correction of the external validation:
+    # the first fetch took 9 of publication 1's 60 samples, and the
+    # harmonisation was a single pooled z-score rather than the
+    # per-publication one the script documents.
+    "0.9915",   # the old publication-7 external AUC
+    "0.8819",   # the old pooled external AUC
+    "0.4454",   # the old publication-9 external sensitivity
+    # Superseded by the seeded LOSO run.
+    "0.9701",   # the old in-domain Cristiano AUC
+    # Superseded by the GC-corrected true-confound control. It was still
+    # hard-coded in the readiness generator until this release.
+    "0.499",
+    # The old mutation-only fusion AUC, from the pre-regeneration
+    # fusion artifact. It is the only one of the stale fusion figures
+    # that can be banned literally: the others ("0.9887", "0.937",
+    # "0.845") are prefixes of legitimate current numbers, so they are
+    # pinned by the table-row checks below instead.
+    "0.9242",
+]
+
 # The legacy (no-GC) per-publication rows. They are a separate benchmark
 # from the GC-corrected one and are quoted by the legacy narrative, so
 # they are guarded separately -- otherwise a document could satisfy the
@@ -196,6 +236,39 @@ QUOTED_NUMBERS.append(
      ("true_confound_control", "cancer_jiang_healthy_cristiano",
       "harmonized", "auc_mean"),
      ["docs/CROSS_STUDY_BENCHMARK.md"]))
+
+# The goal-2 headline: the regularized late fusion and the Bayesian
+# model average that replaced the overfitting neural encoder. It was
+# quoted by ten documents and pinned by none, and the driver did not
+# regenerate it -- so the central claim of the release was both
+# unguarded and unreproducible.
+QUOTED_NUMBERS.append(
+    ("fusion_regularized_smoke.json",
+     ("summary", "regularized_late_fusion", "auc_mean"),
+     ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
+      "docs/ULTRA_EARLY_READINESS_AUTO.md", "paper/METHODS_PAPER.md",
+      "paper/README.md", "results/README.md", "TEAM.md", "REVIEWERS.md"]))
+QUOTED_NUMBERS.append(
+    ("fusion_regularized_smoke.json",
+     ("summary", "bayesian_model_average", "auc_mean"),
+     ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
+      "paper/METHODS_PAPER.md", "paper/METHODS_PAPER_STATUS.md",
+      "paper/REPRODUCE.md"]))
+# The shuffled-label null. Six documents quote 0.4460 as "the signal is
+# not in the labels"; nothing pinned it.
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb_shuffled_control.json",
+     ("pooled_auc_mean",),
+     ["README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
+      "paper/METHODS_PAPER.md"]))
+# The with-motifs benchmark: a third tumor-naive run, quoted by eight
+# documents as "the same pipeline with 4-mer end motifs".
+QUOTED_NUMBERS.append(
+    ("cross_study_finallydb_with_motifs.json",
+     ("pooled", "harmonized", "auc_mean"),
+     ["README.md", "README.zh-CN.md", "RESULTS.md", "TEAM.md",
+      "ULTRA_EARLY_READINESS.md", "paper/METHODS_PAPER.md",
+      "results/README.md", "docs/CROSS_STUDY_BENCHMARK_with_motifs.md"]))
 
 # The decision-curve operating points of RESULTS.md §4. They are a
 # separate benchmark from the fusion one -- the decision curve averages
@@ -705,9 +778,17 @@ def quoted_artifacts():
     ``test/test_paper_reproduce_driver.py`` asserts the driver keeps up
     with this list, so a newly quoted artifact cannot be left behind by
     the reproduction driver.
+
+    The table-row pins count too: an artifact pinned only by a row
+    (the with-motifs benchmark was) is quoted by the documents just as
+    much as one pinned by number, and the driver has to regenerate it
+    either way.
     """
     names = [name for name, _path, _docs in QUOTED_NUMBERS]
     names += [name for name, _what, _doc in QUOTED_SPECIAL]
+    for row in TABLE_ROWS:
+        for artifact_name, _path in list(row["required"]) + list(row["forbidden"]):
+            names.append(artifact_name)
     return names
 
 

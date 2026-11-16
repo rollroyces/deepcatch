@@ -15,16 +15,56 @@ It is a development helper, not part of the published package.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.join(ROOT, "scripts") not in sys.path:
+    sys.path.insert(0, os.path.join(ROOT, "scripts"))
+import benchmark_numbers as _numbers  # noqa: E402
+
 TEX = os.path.join(ROOT, "paper", "paper.tex")
 FORM = os.path.join(ROOT, "paper", "BIORXIV_SUBMISSION.md")
 
 LIMIT = 3000
 MARGIN = 2950
+
+
+def artifact_value(artifact: str, path) -> float | None:
+    """The value an artifact holds at ``path`` (None if it does not)."""
+    full = os.path.join(ROOT, "results", artifact)
+    if not os.path.isfile(full):
+        return None
+    with open(full, encoding="utf-8") as fh:
+        node = json.load(fh)
+    for key in path:
+        if isinstance(node, list):
+            node = node[int(key)]
+        elif isinstance(node, dict):
+            node = node.get(key)
+        else:
+            return None
+        if node is None:
+            return None
+    try:
+        return float(node)
+    except (TypeError, ValueError):
+        return None
+
+
+def matches(written: str, value: float) -> bool:
+    """Does the written number equal the artifact value at its precision?
+
+    "0.9444" and 0.94444... match; "0.944" does not, because the
+    artifact was rounded to a different precision than the form used.
+    """
+    clean = written.replace(",", "")
+    if "." not in clean:
+        return abs(float(clean) - value) < 0.5
+    decimals = len(clean.split(".")[1])
+    return abs(round(value, decimals) - float(clean)) < 1e-12
 
 
 def abstract_text(tex: str) -> str:
@@ -44,6 +84,11 @@ def abstract_text(tex: str) -> str:
 
 
 def main() -> int:
+    if not os.path.isfile(FORM):
+        print(f"the submission form is not present at {FORM} "
+              f"(it is gitignored: it carries the author's details). "
+              f"Nothing to check.")
+        return 0
     tex = open(TEX, encoding="utf-8").read()
     form = open(FORM, encoding="utf-8").read()
     flat_form = re.sub(r"\s+", " ", form)
@@ -71,18 +116,51 @@ def main() -> int:
                 f"characters; it is {length}")
 
     # The form's headline table repeats numbers that live in artifacts.
-    # If one of them has moved, the form would put a stale number on the
-    # bioRxiv page.
-    for number, artifact, key in (
-        ("0.9915", "external_validation_finaledb.json",
-         "per_publication_auc.7.auc"),
-        ("0.8819", "external_validation_finaledb.json", "pooled"),
-        ("0.9825", "fusion_regularized_smoke.json", "regularized_late_fusion"),
-        ("0.9444", "methylation_channel_diagnosis.json", "beta_summary_auc_loo"),
-        ("103,863", "methylation_channel_diagnosis.json", "n_cpgs_tested"),
+    # Each one is RESOLVED against the artifact it claims to come from: a
+    # form that quotes a number the artifact no longer holds would put a
+    # stale figure on the bioRxiv page. The previous version of this
+    # script only reported which numbers the form contained, and its
+    # pairs still named the superseded external AUCs (0.9915, 0.8819),
+    # so a stale form would have passed unnoticed.
+    for number, artifact, path in (
+        ("0.9444", "external_validation_finaledb.json",
+         ("per_publication_auc", "7", "auc")),
+        ("0.708", "external_validation_finaledb.json",
+         ("per_publication_auc", "1", "auc")),
+        ("0.7385", "external_validation_finaledb.json",
+         ("pooled_external_auc_matched_publications_only", "auc")),
+        ("0.9825", "fusion_regularized_smoke.json",
+         ("summary", "regularized_late_fusion", "auc_mean")),
+        ("0.9444", "methylation_cohort_channel.json",
+         ("beta_summary_auc_loo",)),
+        ("103,863", "methylation_channel_diagnosis.json",
+         ("matched_locus_hmm_beta", "n_cpgs_tested")),
     ):
-        if number in flat_form:
-            print(f"  form quotes {number} ({artifact}:{key})")
+        if number not in flat_form:
+            continue
+        where = f"{artifact}:{'.'.join(str(p) for p in path)}"
+        value = artifact_value(artifact, path)
+        if value is None:
+            problems.append(
+                f"the form quotes {number}, but {artifact} holds no value "
+                f"at {where}")
+            continue
+        if not matches(number, value):
+            problems.append(
+                f"the form quotes {number} as {where}, but that artifact "
+                f"holds {value}")
+            continue
+        print(f"  form quotes {number} ({where})")
+
+    # A form that quotes a figure the v2.3.0 regeneration superseded would
+    # put a stale number on the bioRxiv page. The list of superseded
+    # figures lives with the other quotable numbers, so the form and the
+    # drift guard cannot disagree about what is stale.
+    for value in _numbers.SUPERSEDED:
+        if value in flat_form:
+            problems.append(
+                f"the form quotes {value}, which the v2.3.0 regeneration "
+                f"superseded")
 
     if problems:
         print()

@@ -173,7 +173,7 @@ The path forward is documented in `docs/PRODUCTION_ROADMAP.md` §6.3 and `NEXT_S
 
 The V3 methylation path was run end-to-end on real public fragments and scored. It is reported here as a **null**, with the number and the mechanism.
 
-| Quantity (31 real samples: 17 colorectal cancer, 14 liver-transplant controls) | LOO AUC |
+| Quantity (31 real samples: 18 colorectal cancer, 13 liver-transplant controls) | LOO AUC |
 |---|---|
 | decoded β summary | **0.9444** |
 | number of covered CpGs alone | **0.9444** |

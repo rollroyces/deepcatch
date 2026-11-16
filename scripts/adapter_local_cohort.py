@@ -119,6 +119,19 @@ class SchemaError(ValueError):
     """
 
 
+# The canonical label vocabulary lives in the package, so every reader of
+# a labels file in this repository resolves labels the same way. A label
+# that is not a case or a control word is a schema error, not a control
+# to be invented.
+_SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "src")
+if _SRC not in sys.path:
+    sys.path.insert(0, _SRC)
+from fragmentomics.labels import (  # noqa: E402
+    LabelVocabularyError, resolve_label,
+)
+
+
 # ──────────────────────────────────────────────────────────────────────
 # Validation
 # ──────────────────────────────────────────────────────────────────────
@@ -277,8 +290,12 @@ def load_labels_tsv(path: str) -> List[dict]:
             row = {
                 "sample_id": parts[0],
                 "disease_class": parts[1],
-                "label": parts[2].lower(),
             }
+            try:
+                row["label"] = "cancer" if resolve_label(parts[2],
+                                                         parts[0]) else "healthy"
+            except LabelVocabularyError as exc:
+                raise SchemaError(str(exc)) from exc
             if len(parts) > 3:
                 row["study_id"] = parts[3]
             if len(parts) > 4:

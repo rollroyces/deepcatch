@@ -156,7 +156,7 @@ UCSC:
 ## 5. The channel was measured, and it is a null
 
 The pipeline was run over a **31-sample cohort** — FinaleDB publication 7
-(Sun 2019), blood plasma, 17 colorectal cancer and 14 liver-transplant
+(Sun 2019), blood plasma, 18 colorectal cancer and 13 liver-transplant
 controls, hg19 fragments, chr22 CpGs. The HMM was trained once on the
 cohort and each sample decoded with that model.
 
