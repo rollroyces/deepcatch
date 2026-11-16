@@ -193,14 +193,14 @@ The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 an
 |---|---|---|---|
 | 1 — Snyder 2016 | WGS | 9 (8/1) | 0.875 [0.630, 1.000] — n too small to interpret |
 | 7 — Sun 2019 | WGS | 31 (18/13) | **0.9915** [0.9712, 1.0000] |
-| 9 — Adalsteinsson 2017 | WES | 238 (238/0) | case-only: sensitivity 0.403 at the training-derived 99%-specificity threshold |
+| 9 — Adalsteinsson 2017 | WES | 238 (238/0) | case-only: sensitivity 0.4454 at the training-derived 99%-specificity threshold |
 | **pooled over publications carrying both classes** | — | 40 (26/14) | **0.8819** [0.7701, 0.9936] |
 
 (The held-out cohort is 278 samples in total: 264 cancer and only 14 non-cancer, because FinaleDB's held-out publications publish almost no controls -- publication 9 ships 1,508 cancer samples and zero controls. Four samples whose fragment files exceed 400 MB and one unreachable object were skipped.)
 
 **The assay platform, not the study, is the binding constraint.** Publication 7 is a *whole-genome* study, like the training publications, and the classifier transfers to it essentially intact (colorectal one-vs-rest AUC 0.9474). Publication 9 is *whole-exome* and does not transfer at all: breast cancer 0.4119 [0.324, 0.500] and prostate cancer 0.3193 [0.236, 0.402] against the same non-cancer controls -- both *below* chance, i.e. anti-correlated rather than merely uninformative. The DELFI 5 Mb / 100 kb profile is a whole-genome coverage signal, and an exome-targeted assay has a different coverage shape altogether; per-publication z-score harmonization cannot repair that. This is the kind of boundary that an internal pooled cross-validation cannot reveal, and it is the reason the external set is reported per publication and per disease rather than as a single pooled number.
 
-**Scope.** Publication 9 contributes cases without controls, so it is reported as sensitivity at the threshold fixed in training (0.9887, the training cohort's 99%-specificity operating point) rather than folded into an AUC; pooling it with the matched publications would put a case-only cohort into an AUC denominator and produce a number that means nothing (0.4177 for the naive pooled figure, against 0.8819 for the publications that carry both classes). The non-cancer arm is small (14 samples) and is drawn from different publications than most of the cancer arm, so the confidence intervals are wide and the per-disease rows carry the weight. This is external validation on *public* data — a different study, a different institution, a different assay — and not a clinical validation: no prospective follow-up, no stage labels, and no real healthy-donor controls.
+**Scope.** Publication 9 contributes cases without controls, so it is reported as sensitivity at the threshold fixed in training (0.9766, the training cohort's 99%-specificity operating point) rather than folded into an AUC; pooling it with the matched publications would put a case-only cohort into an AUC denominator and produce a number that means nothing (0.4177 for the naive pooled figure, against 0.8819 for the publications that carry both classes). The non-cancer arm is small (14 samples) and is drawn from different publications than most of the cancer arm, so the confidence intervals are wide and the per-disease rows carry the weight. This is external validation on *public* data — a different study, a different institution, a different assay — and not a clinical validation: no prospective follow-up, no stage labels, and no real healthy-donor controls.
 
 #### 3.2.3 What the three cross-study numbers together say
 
@@ -223,12 +223,14 @@ The V3 pipeline was run end-to-end on real public fragments: FinaleDB publicatio
 | decoded β summary (4 features) | **0.9444** |
 | number of covered CpGs alone | **0.9444** |
 | observations per CpG alone | **0.9444** |
-| β summary restricted to the 1,550 CpGs both arms cover | 0.8120 |
+| β summary restricted to the 1,550 CpGs both arms cover | 0.803–0.829 across repeats — not reproducible, see note |
 | β summary, depth-matched to 11,003 CpGs | 0.9444 (coverage-only 0.8034) |
 
 Three unrelated quantities — the decoded methylome, how many CpGs the library reached, and how many times each CpG was observed — return the **identical** leave-one-out AUC of 0.9444. The channel's discrimination is library complexity.
 
-The matched-locus test cannot be explained that way, because it compares the two arms only on the loci both of them cover: over **103,863 CpGs** the median cancer-minus-control difference in decoded β is **exactly 0.0**, with a permutation null of exactly 0.0 (p = 1.0), and only 2.4% of CpGs are higher in cancer.
+> **One row of that table is not reproducible, and the reason is upstream.** FinaleMe's HMM training is not deterministic: on byte-identical decoder inputs the trained model differs between runs, which flips 16–20 of ~51,000 CpG calls per sample, and the shared-locus AUC moves with it (0.803–0.829 over five runs of this cohort). Every other row in the table was identical on every run, as were the median difference and the permutation p-value quoted below; the share of CpGs higher in cancer moves only in its third digit (2.4–2.5%). The shared-locus row is therefore reported as a range. It does not carry the argument either way: every observed value in that range is far below the 0.9444 headline, which is the point the row makes.
+
+The matched-locus test cannot be explained that way, because it compares the two arms only on the loci both of them cover: over **103,863 CpGs** the median cancer-minus-control difference in decoded β is **exactly 0.0**, with a permutation null of exactly 0.0 (p = 1.0), and only 2.4–2.5% of CpGs are higher in cancer.
 
 The mechanism is visible in the libraries themselves (`scripts/methylation_library_check.py`, artifact `results/methylation_library_check.json`). FinaleMe infers methylation from the *digestion pattern* — an unmethylated CpG is cut out of the library and sits at a fragment end, a methylated one stays interior — and the released decoder reads `Offset_frag`, `Dist_frag_end`, `FragLen`, `Norm_Frag_cov` and the prior, never the base calls. Two properties of the reachable public libraries remove that signal:
 

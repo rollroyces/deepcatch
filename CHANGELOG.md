@@ -51,9 +51,82 @@ cohort size.
   `scripts/methylation_library_check.py`,
   `scripts/methylation_cohort_channel.py` (depth instrumentation),
   `docs/METHYLATION_PIPELINE.md` §5.
+- **A reproduction driver that checks itself.** `paper/REPRODUCE.sh` now
+  regenerates *every* artifact the manuscript quotes — the two cross-study
+  sweeps, the shuffled-label null, the LOSO transfer, the external
+  validation, the fusion ablation, the methylation channel and the figures —
+  not just the two cross-study sweeps it covered before. It then compares
+  the regenerated numbers against the committed ones, number by number
+  (`scripts/reproduce_check.py`), so a run that succeeds but writes a
+  different number fails instead of passing quietly. `--quick` runs the
+  same pipeline with fewer seeds into a scratch directory and leaves the
+  repository untouched. The data paths are environment-overridable
+  (`DEEPCATCH_FEATURES_DIR`, `DEEPCATCH_LABELS`, `DEEPCATCH_EXTERNAL_DIR`,
+  `DEEPCATCH_METHYLATION_DIR`). `paper/REPRODUCE.sh`,
+  `scripts/reproduce_check.py`, `paper/REPRODUCE.md`.
+  The driver's pytest gate now runs on macOS's bash 3.2 as well (expanding
+  an empty array under `set -u` raised "unbound variable" there), and the
+  `--timeout` flag is only passed when the `pytest-timeout` plugin is
+  actually installed — it was never declared as a dependency, so on a
+  clean checkout pytest rejected the unknown argument and the gate
+  failed.
 
 ### Fixed
 
+- **The methylation channel's shared-locus number is not reproducible, and
+  the cause is upstream.** FinaleMe's HMM training is not deterministic: on
+  byte-identical decoder inputs the trained model differs between runs,
+  which flips 16–20 of ~51,000 CpG calls per sample, and the shared-locus
+  ("common CpG set") AUC moves with it — 0.8034 / 0.8120 / 0.812 /
+  0.8162 / 0.8291 over five runs of the same cohort. Every headline
+  number was unaffected: the decoded-β AUC (0.9444), the covered-CpG
+  baseline (0.9444), the observations-per-CpG baseline (0.9444), the
+  depth-matched pair (0.9444 / 0.8034) and the per-CpG median difference
+  (exactly 0.0 over 103,863 CpGs, permutation p = 1.0) were identical on
+  every run. The shared-locus row is now reported as a range in the
+  documents that quote it, and the artifact carries a
+  `reproducibility_note` saying so. A secondary order-dependence in the
+  scoring code — the shared loci were read straight out of a `set`, so the
+  float summation behind `np.mean` depended on `PYTHONHASHSEED` — was
+  fixed at the same time: the loci are now read in sorted order, and two
+  hash seeds on the same decoded files return the same value.
+  `scripts/methylation_cohort_channel.py`,
+  `test/test_methylation_hashseed_stability.py`.
+- **The external-validation artifact predated the PCA-seeding fix.**
+  `results/external_validation_finaledb.json` was generated before the
+  PCA was seeded and was never regenerated, so the training-derived
+  99%-specificity threshold it recorded (0.9887) came from an unseeded
+  run. The seeded pipeline gives **0.9766**, and the sensitivity of the
+  case-only publication 9 at that threshold moves from 0.4034 to
+  **0.4454**. The external AUCs the paper quotes (publication 7 at
+  **0.9915**, pooled over the publications carrying both classes at
+  **0.8819**) are unchanged. The artifact, the narrative and the two
+  numbers in `paper/METHODS_PAPER.md` §3.2.2 have been corrected, the
+  threshold is now quoted in `docs/EXTERNAL_VALIDATION.md`, and both
+  numbers are on the quotable-number list so the drift guard covers
+  them.
+- **`--include-screening` crashed the per-cancer writer.** `SCREENING_SPEC_GRID`
+  was defined with a trailing comma, which made it a one-element tuple
+  *containing* the grid rather than the grid. The per-cancer standalone
+  writer then passed that tuple where a float specificity was expected and
+  died with `TypeError: unsupported operand type(s) for -: 'float' and
+  'tuple'` — an error naming neither the flag nor the grid. It broke exactly
+  the combination the reproduction driver needs (`--include-screening` +
+  `--out-per-cancer-json`). The grid is flat again, the normaliser now
+  rejects a nested grid with a message that names both, and the artifact's
+  own `provenance.specificities` reports the grid that was actually used
+  instead of always claiming the legacy three.
+  `scripts/cross_study_finallydb.py`, `test/test_screening_spec_grid.py`.
+- **The reproduction driver could overwrite a published artifact.**
+  `cross_study_finallydb.py` defaults `--out-per-cancer-json` to
+  `results/per_cancer_sens_at_spec.json`, which belongs to the GC-corrected
+  run. The driver ran the legacy (no-GC) sweep without naming that flag, so
+  the legacy run overwrote the committed GC-corrected artifact with legacy
+  numbers (BRCA 0.9738 → 0.9794) — a silent drift of a number the paper
+  quotes. Every published-path output flag is now named explicitly on every
+  invocation, and a test walks each script's argparse defaults and fails if
+  the driver leaves one unset.
+  `paper/REPRODUCE.sh`, `test/test_paper_reproduce_driver.py`.
 - **The benchmark is now reproducible.** The cross-study benchmark fitted PCA
   without `random_state`. sklearn picks the randomised solver when
   `n_components < 0.8 * min(n_samples, n_features)` — true for every fold

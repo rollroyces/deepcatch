@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T17:57:39.119440+00:00",
+  "generated_at": "2026-11-16T03:19:50.694947+00:00",
   "design": {
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019) -- n=627",
     "test": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on",
@@ -42,7 +42,7 @@
   },
   "training_derived_threshold": {
     "specificity_target": 0.99,
-    "threshold": 0.988699,
+    "threshold": 0.976602,
     "train_specificity_at_threshold": 0.9924,
     "note": "threshold fitted on the training cohort's out-of-fold scores; used to score case-only external publications"
   },
@@ -76,7 +76,7 @@
       "n_non_cancer": 0,
       "auc": null,
       "reason": "case-only publication (no non-cancer controls in this study); reported as sensitivity at the training-derived threshold",
-      "sensitivity_at_train_threshold_99spec": 0.4034
+      "sensitivity_at_train_threshold_99spec": 0.4454
     }
   },
   "per_disease_auc": {

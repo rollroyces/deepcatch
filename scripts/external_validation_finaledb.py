@@ -330,6 +330,15 @@ def main() -> int:
         f"External n={len(yte)} (cancer {int((yte==1).sum())}, "
         f"non-cancer {int((yte==0).sum())})\n",
         f"- Classifier: {payload['design']['classifier']}\n",
+        # The threshold the case-only publications are scored at is a
+        # quoted number (the methods paper names it), so it has to appear
+        # in this narrative too -- otherwise a reader cannot connect the
+        # sensitivity below to an operating point.
+        f"- Training-derived threshold "
+        f"(99% specificity on the training OOF): "
+        f"{payload['training_derived_threshold']['threshold']} "
+        f"(train specificity at that threshold: "
+        f"{payload['training_derived_threshold']['train_specificity_at_threshold']})\n",
         "\n## Pooled external AUC\n",
         f"**{pooled['auc']}** (DeLong 95% CI {pooled['ci_lo']}-{pooled['ci_hi']}), "
         f"n_pos={pooled['n_pos']}, n_neg={pooled['n_neg']}\n",

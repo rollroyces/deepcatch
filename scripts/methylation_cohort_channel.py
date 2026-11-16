@@ -156,6 +156,21 @@ def load_decoded_cpg_betas(decoded_path: str) -> dict:
     return out
 
 
+def _ordered_common_values(common, decoded_map):
+    """Values for the shared loci, in a deterministic order.
+
+    `common` is a SET of "chr:pos" strings, and Python randomises string
+    hashing per process (PYTHONHASHSEED), so iterating the set directly
+    yields the loci in a different order on every run. That order reaches
+    the numbers: the float sum behind `np.mean` is not associative, so the
+    last bits of beta_mean move, and the leave-one-out AUC that consumes
+    them moves with it (observed: 0.8120 / 0.8162 / 0.8291 for the same
+    cohort under three hash seeds). Sorting makes the summation order --
+    and therefore the artifact -- reproducible.
+    """
+    return [decoded_map[k] for k in sorted(common) if k in decoded_map]
+
+
 def summarise(decoded_path: str, max_cpgs: int | None = None) -> dict:
     """Summarise one sample's decoded beta values.
 
@@ -366,7 +381,7 @@ def main() -> int:
         common_size = len(common)
         if common_size >= 50:
             for name, m in decoded_maps.items():
-                vals = [m[k] for k in common if k in m]
+                vals = _ordered_common_values(common, m)
                 if vals:
                     a = np.asarray(vals, dtype=float)
                     common_summary[name] = {
@@ -506,6 +521,21 @@ def main() -> int:
             "beta summary does, then the beta summary is not adding "
             "anything over library complexity, and the two must be "
             "compared before the channel is claimed."),
+        "reproducibility_note": (
+            "The headline numbers here are reproducible (decoded-beta AUC, "
+            "the covered-CpG and observations-per-CpG baselines, the "
+            "depth-matched pair, and the per-CpG median difference of "
+            "exactly 0.0 over 103,863 CpGs with permutation p = 1.0 -- all "
+            "identical across repeated runs). The shared-locus "
+            "(common_cpg_set) AUC is NOT: FinaleMe's HMM training is not "
+            "deterministic. On byte-identical decoder inputs the trained "
+            "model differs between runs, which flips 16-20 of ~51,000 CpG "
+            "calls per sample, and the shared-locus AUC moves with it "
+            "(0.803-0.829 observed over five runs). Read that row as a "
+            "range, not a value. The scoring code itself is deterministic "
+            "given the decoded files: the shared loci are read in sorted "
+            "order, so the float summation does not depend on "
+            "PYTHONHASHSEED."),
         "what_the_channel_actually_computes": (
             "The decoder emits HARD 0/1 state assignments, not fractional "
             "beta: ~91% of the covered loci come back exactly 1.0 and the "

@@ -19,12 +19,27 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Where the artifacts live. Overridable so that a reproduction run writing
+# into a scratch directory can be checked against the committed artifacts
+# (see ``scripts/reproduce_check.py``) without touching the repo.
+RESULTS_DIR = os.environ.get("DEEPCATCH_RESULTS_DIR") or os.path.join(
+    ROOT, "results")
+
 # (artifact file, path into the artifact, documents that must quote it)
 QUOTED_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "7", "auc"),
      ["paper/paper.tex", "paper.md", "README.md",
       "docs/EXTERNAL_VALIDATION.md"]),
+    # The case-only publication is reported as a sensitivity at the
+    # threshold fixed in training, so the threshold and that sensitivity
+    # are quoted numbers too.
+    ("external_validation_finaledb.json",
+     ("training_derived_threshold", "threshold"),
+     ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
+    ("external_validation_finaledb.json",
+     ("per_publication_auc", "9", "sensitivity_at_train_threshold_99spec"),
+     ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
     ("cross_study_finallydb_gc_corrected.json",
      ("pooled", "harmonized", "auc_mean"),
      ["paper/METHODS_PAPER.md", "paper.md", "README.md", "MODEL.md",
@@ -50,8 +65,8 @@ QUOTED_SPECIAL = [
 ]
 
 
-def load(name: str):
-    path = os.path.join(ROOT, "results", name)
+def load(name: str, results_dir: str | None = None):
+    path = os.path.join(results_dir or RESULTS_DIR, name)
     if not os.path.exists(path):
         return None
     with open(path) as f:
@@ -84,16 +99,29 @@ def fusion_auc(artifact, strategy):
     raise KeyError(f"no auc row for {strategy}")
 
 
-def quoted_values():
+def quoted_artifacts():
+    """The artifact file names the documents quote numbers from.
+
+    ``paper/REPRODUCE.sh`` regenerates every one of these; the test
+    ``test/test_paper_reproduce_driver.py`` asserts the driver keeps up
+    with this list, so a newly quoted artifact cannot be left behind by
+    the reproduction driver.
+    """
+    names = [name for name, _path, _docs in QUOTED_NUMBERS]
+    names += [name for name, _what, _doc in QUOTED_SPECIAL]
+    return names
+
+
+def quoted_values(results_dir: str | None = None):
     """Yield (label, value, artifact, documents) for every quoted number."""
     for artifact_name, path, documents in QUOTED_NUMBERS:
-        artifact = load(artifact_name)
+        artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
-        yield (f"{artifact_name}{'.'.join(map(str, path))}",
+        yield (f"{artifact_name}:{'.'.join(map(str, path))}",
                float(dig(artifact, path)), artifact_name, documents)
     for artifact_name, what, document in QUOTED_SPECIAL:
-        artifact = load(artifact_name)
+        artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
         if what.startswith("loso "):

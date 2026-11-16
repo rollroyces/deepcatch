@@ -128,7 +128,7 @@ python scripts/methylation_cohort_channel.py \
 | number of covered CpGs alone | **0.9444** |
 | observations per CpG alone | **0.9444** |
 | `beta_mean` alone, no model | 0.9530 |
-| β summary, 1,550 CpGs covered by *both* arms | 0.8120 |
+| β summary, 1,550 CpGs covered by *both* arms | 0.803–0.829 across repeats — not reproducible (§5.4) |
 | β summary, depth-matched to 11,003 CpGs | 0.9444 (coverage-only 0.8034) |
 
 Three different quantities — the decoded methylome, the number of CpGs
@@ -152,6 +152,10 @@ The median cancer-minus-control difference is **exactly zero** over
 103,863 CpGs, and the permutation null is also exactly zero, so the
 observed value is unremarkable (p = 1.0). At the loci both arms cover,
 the two groups carry the same methylation calls.
+
+The median difference and the permutation p-value are identical on every
+run. `fraction_of_cpgs_higher_in_cancer` moves only in its third digit
+(0.0245–0.0248 over six runs) for the reason given in §5.4.
 
 ### 5.1 Why: the libraries do not carry the signal FinaleMe reads
 
@@ -251,6 +255,38 @@ python scripts/methylation_channel_diagnosis.py \
 ```
 
 and read `depth.resolution_by_depth`.
+
+### 5.4 One row of the §5 table is not reproducible — FinaleMe's HMM is not deterministic
+
+The table in §5 is reproducible except for one row: the β summary
+restricted to the 1,550 CpGs both arms cover. Over five runs of the same
+cohort that row came back as **0.8034 / 0.8120 / 0.812 / 0.8162 /
+0.8291**.
+
+The cause is upstream, in FinaleMe. On byte-identical decoder inputs
+(the per-sample matrices and the WGBS prior), the **trained HMM model
+differs between runs** — the decoded calls then flip for 16–20 of ~51,000
+CpGs per sample, and the shared-locus AUC moves with them. This was
+isolated by re-scoring the *same* decoded files under two different
+`PYTHONHASHSEED` values: with the shared loci read in sorted order both
+seeds return the identical value, so the scoring code is deterministic
+and the HMM is not.
+
+Everything else in §5 was identical on every run: the decoded-β AUC
+(0.9444), the covered-CpG baseline (0.9444), the observations-per-CpG
+baseline (0.9444), the depth-matched pair (0.9444 / 0.8034), and the
+per-CpG median difference of exactly 0.0 over 103,863 CpGs with
+permutation p = 1.0. The share of CpGs higher in cancer moves only in
+its third digit (0.0245–0.0248). The null rests on the median
+difference and the p-value, not on the shared-locus row — and the
+shared-locus row does not carry the argument in either direction, since
+every value in its range is far below the 0.9444 headline.
+
+The artifact records this in its `reproducibility_note` field. A
+secondary order-dependence in the scoring code (the shared loci were
+read straight out of a `set`, so the float summation behind `np.mean`
+depended on `PYTHONHASHSEED`) was fixed at the same time;
+`test/test_methylation_hashseed_stability.py` pins it.
 
 ## 6. What is still missing for a methylation *channel*
 

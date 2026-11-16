@@ -137,8 +137,14 @@ SPECS_FOR_PER_CANCER = [0.95, 0.98, 0.99]
 # Backward-compatible: was [0.95, 0.98, 0.99] until the screening-grade
 # (NHS-Galleri / CancerSEEK 99.5%/99.9% spec) grid was added.
 DEFAULT_SPEC_GRID: tuple[float, ...] = tuple(DEFAULT_SPECIFICITIES)
+# NOTE: no trailing comma. A trailing comma here makes this a 1-tuple
+# *containing* the grid, and every consumer then iterates over one
+# element that is itself a tuple -- which crashed the per-cancer
+# standalone writer with "unsupported operand type(s) for -: 'float'
+# and 'tuple'" as soon as --include-screening was combined with
+# --out-per-cancer-json. See test/test_screening_spec_grid.py.
 SCREENING_SPEC_GRID: tuple[float, ...] = (
-    tuple(DEFAULT_SPECIFICITIES) + tuple(SCREENING_SPECIFICITIES),
+    tuple(DEFAULT_SPECIFICITIES) + tuple(SCREENING_SPECIFICITIES)
 )
 N_BOOTSTRAP = 1000
 BOOTSTRAP_SEED = 2026
@@ -676,6 +682,32 @@ def _per_cancer_ci_bundle(y_true, score, n_cancer):
     }
 
 
+def _normalise_spec_grid(specificities_grid):
+    """Return a flat tuple of specificity floats, or the default grid.
+
+    The grid must be a flat sequence of floats. A nested grid (a
+    one-element tuple that itself holds the grid) used to reach
+    ``delong_sens_at_spec_ci`` as ``target_spec`` and fail there with
+    "unsupported operand type(s) for -: 'float' and 'tuple'" — an
+    error that named neither the flag nor the grid. Flattening here,
+    and raising a message that names both, keeps the failure at the
+    boundary where it can be understood.
+    """
+    if not specificities_grid:
+        return DEFAULT_SPEC_GRID
+    flat = []
+    for item in specificities_grid:
+        if isinstance(item, (tuple, list)):
+            raise TypeError(
+                "specificities_grid must be a flat sequence of floats, but "
+                f"it contains the nested sequence {item!r}. "
+                "(A trailing comma after the grid expression turns it into "
+                "a one-element tuple holding the grid.)"
+            )
+        flat.append(float(item))
+    return tuple(flat)
+
+
 def build_per_cancer_standalone_payload(
     ovr_artifacts, out_path,
     pooled_harmonized=None,
@@ -714,8 +746,7 @@ def build_per_cancer_standalone_payload(
     Writes the JSON to `out_path` and returns the payload dict.
     """
     rows = {}
-    specificities = (tuple(specificities_grid) if specificities_grid
-                     else DEFAULT_SPEC_GRID)
+    specificities = _normalise_spec_grid(specificities_grid)
     for cancer, art in ovr_artifacts.items():
         if art.get("skipped"):
             # Match the canonical cfDNA schema even when skipped (n=0
@@ -861,7 +892,7 @@ def build_per_cancer_standalone_payload(
         "per_cancer": rows,
         "pooled": pooled_row,
         "config": {
-            "specificities": list(DEFAULT_SPECIFICITIES),
+            "specificities": list(specificities),
             "prevalences": list(DEFAULT_PREVALENCES),
             "ppv_at_spec": PPV_AT_SPEC,
             "min_positives_for_ci": MIN_POSITIVES_FOR_CI,
@@ -875,7 +906,7 @@ def build_per_cancer_standalone_payload(
             if not art.get("skipped")
         ),
         "n_cancer_types": len([1 for r in rows.values() if not r.get("skipped")]),
-        "specificities": list(DEFAULT_SPECIFICITIES),
+        "specificities": list(specificities),
         "prevalences": list(DEFAULT_PREVALENCES),
         "ppv_at_spec": PPV_AT_SPEC,
         "min_positives_for_ci": MIN_POSITIVES_FOR_CI,

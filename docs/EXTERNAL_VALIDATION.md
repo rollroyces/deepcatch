@@ -2,11 +2,13 @@
 
 > Train: FinaleDB 6 + 8 (the cross-study cohort). Test: publications 1, 7, 9 -- never trained on. Public data, no IRB required.
 
-- Generated: `2026-11-15T17:57:39.119440+00:00`
+- Generated: `2026-11-16T03:19:50.694947+00:00`
 
 - Train n=627 (cancer 363) | External n=278 (cancer 264, non-cancer 14)
 
 - Classifier: PCA(n_components=200) + LogisticRegression(max_iter=2000), fitted on the training cohort only
+
+- Training-derived threshold (99% specificity on the training OOF): 0.976602 (train specificity at that threshold: 0.9924)
 
 
 ## Pooled external AUC
@@ -24,7 +26,7 @@
 |---|---:|---|
 | 1 | 9 | 0.875 [0.63, 1.0] |
 | 7 | 31 | 0.9915 [0.9712, 1.0] |
-| 9 | 238 (case-only) | sensitivity at the training threshold = 0.4034 |
+| 9 | 238 (case-only) | sensitivity at the training threshold = 0.4454 |
 
 ## Per-disease AUC (vs the external non-cancer controls)
 

@@ -178,7 +178,7 @@ The V3 methylation path was run end-to-end on real public fragments and scored. 
 | decoded β summary | **0.9444** |
 | number of covered CpGs alone | **0.9444** |
 | observations per CpG alone | **0.9444** |
-| β summary on the 1,550 loci both arms cover | 0.8120 |
+| β summary on the 1,550 loci both arms cover | 0.803–0.829 across repeats — not reproducible (`docs/METHYLATION_PIPELINE.md` §5.4) |
 
 Three unrelated quantities give the *identical* AUC, so the channel's discrimination is library complexity. The matched-locus test is the one that composition cannot manufacture: over **103,863 CpGs** the median cancer-minus-control difference in decoded β is **exactly 0.0**, with a permutation null of exactly 0.0 (p = 1.0), and only 0.035% of the decoder's calls carry a value strictly between 0 and 1.
 

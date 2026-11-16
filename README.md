@@ -102,7 +102,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 
 - **The open-data MCED benchmark with two independent confound controls *and* a real external cohort.** [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md) shows the pooled 0.97 AUC survives per-study harmonization (true-confound AUC 0.50 vs no-harmonize AUC 0.999) — the signal is cancer, not batch. [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md) then goes further: the model is trained on publications 6+8 and tested on publications it has never seen, reaching **0.9915** [0.9712, 1.0] on the held-out whole-genome publication — and, just as importantly, *failing* (0.41 / 0.32) on the held-out whole-exome one, which no internal cross-validation could have shown.
 - **GC-axis discovery in this commit (c782efc).** Legacy baseline 0.9770 was inflated ~0.009 by GC / mappability noise; adding `--gc-correction` (now default) yields the honest 0.9684 ± 0.003. [`docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`](docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md) and `ablation.cast` walk through it.
-- **Reproducible from one shell script.** `paper/REPRODUCE.sh` regenerates every §3 number from a clean checkout; ablation artifacts are already committed as `results/cross_study_finallydb_*.json`.
+- **Reproducible from one shell script, and the script checks itself.** `paper/REPRODUCE.sh` regenerates every §3 artifact and then *proves* the regenerated numbers match the committed ones (`scripts/reproduce_check.py` compares number by number, not file by file). Ablation artifacts are already committed as `results/cross_study_finallydb_*.json`. See [`paper/REPRODUCE.md`](paper/REPRODUCE.md) for the data the driver needs and how to point it at your own feature cache.
 
 ---
 
@@ -265,6 +265,7 @@ See [`docs/TUMOR_NAIVE.md`](docs/TUMOR_NAIVE.md) for the cross-repo adapter and 
 
 ```bash
 bash paper/REPRODUCE.sh    # re-runs every §3 artifact, regenerates all docs/*.md
+bash paper/REPRODUCE.sh --quick   # 3 seeds, scratch output, the repo is untouched
 ```
 
 ---

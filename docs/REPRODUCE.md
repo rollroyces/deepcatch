@@ -8,6 +8,14 @@
 > `docs/HARMONIZATION.md`, and the foundation smoke's per-seed JSON.
 > It is **NOT** clinical validation, **NOT** external cohort
 > validation, and **NOT** a regulatory pipeline.
+>
+> **For the manuscript numbers specifically, use
+> [`paper/REPRODUCE.sh`](../paper/REPRODUCE.sh)** — it regenerates every
+> artifact `paper/METHODS_PAPER.md` §3 quotes (including the external
+> cohort validation and the LOSO transfer, which this pipeline does not
+> cover) and then compares the regenerated numbers against the committed
+> ones so a drift fails the run. See
+> [`paper/REPRODUCE.md`](../paper/REPRODUCE.md).
 
 ---
 

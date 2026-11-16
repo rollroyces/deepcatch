@@ -90,9 +90,12 @@ def _load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def load_pooled() -> dict:
+def load_pooled(results_dir: Path | None = None) -> dict:
     """Load pooled per-seed AUC + sens@spec from the headline artifact."""
-    path = POOLED_JSON if POOLED_JSON.exists() else POOLED_JSON_FALLBACK
+    base = Path(results_dir) if results_dir else RESULTS_DIR
+    pooled_json = base / "cross_study_finallydb_gc_corrected.json"
+    fallback_json = base / "cross_study_finallydb.json"
+    path = pooled_json if pooled_json.exists() else fallback_json
     blob = _load_json(path)
     pooled = blob["pooled"]
     harmonized = pooled["harmonized"]
@@ -128,7 +131,7 @@ def load_pooled() -> dict:
     }
 
 
-def load_per_cancer() -> dict:
+def load_per_cancer(results_dir: Path | None = None) -> dict:
     """Load per-cancer per-seed AUC and sens@spec from both JSONs.
 
     Returns a dict keyed by cancer name with the union of fields needed
@@ -138,9 +141,12 @@ def load_per_cancer() -> dict:
       - sens_at_95/98/99 (from per_cancer_sens_at_spec.json:per_cancer)
       - n_pos, n_total (from per_cancer_sens_at_spec.json:per_cancer)
     """
-    cs = _load_json(POOLED_JSON if POOLED_JSON.exists()
-                    else POOLED_JSON_FALLBACK)
-    pc = _load_json(PER_CANCER_JSON)
+    base = Path(results_dir) if results_dir else RESULTS_DIR
+    pooled_json = base / "cross_study_finallydb_gc_corrected.json"
+    fallback_json = base / "cross_study_finallydb.json"
+    per_cancer_json = base / "per_cancer_sens_at_spec.json"
+    cs = _load_json(pooled_json if pooled_json.exists() else fallback_json)
+    pc = _load_json(per_cancer_json)
 
     out: dict = {}
     for cancer, row in cs["per_cancer"].items():
@@ -473,14 +479,15 @@ def figure4_sens_operating(per_cancer: dict, out_path: Path) -> None:
 def make_all_figures(
     fig_dir: Path = FIG_DIR,
     validate_only: bool = False,
+    results_dir: Path | None = None,
 ) -> dict:
     """Build all 4 figures. Returns a manifest dict {fig_name: path}.
 
     If `validate_only` is True, save to a temp directory and discard
     after returning the manifest (used by the test harness).
     """
-    pooled = load_pooled()
-    per_cancer = load_per_cancer()
+    pooled = load_pooled(results_dir)
+    per_cancer = load_per_cancer(results_dir)
 
     # Required-source check — fail loud if a top-5 cancer is missing.
     missing = [c for c in TOP5_CANCERS if c not in per_cancer]
@@ -546,6 +553,17 @@ def main() -> int:
         help=f"Output directory for the 4 PNG figures (default: {FIG_DIR})",
     )
     ap.add_argument(
+        "--results-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Directory holding the JSON artifacts to plot from "
+            "(default: the repo's results/). Point this at a scratch "
+            "directory to render figures from a reproduction run without "
+            "touching the committed artifacts."
+        ),
+    )
+    ap.add_argument(
         "--validate-only",
         action="store_true",
         help="Build figures in a temp dir, validate no exceptions, "
@@ -554,14 +572,16 @@ def main() -> int:
     args = ap.parse_args()
 
     if args.validate_only:
-        result = make_all_figures(fig_dir=args.out_dir, validate_only=True)
+        result = make_all_figures(fig_dir=args.out_dir, validate_only=True,
+                                  results_dir=args.results_dir)
         print("validate-only: built all 4 figures in temp dir, no files saved.")
         print("manifest (canonical paths):")
         for k, v in result["manifest"].items():
             print(f"  {k}: {v}")
         return 0
 
-    result = make_all_figures(fig_dir=args.out_dir, validate_only=False)
+    result = make_all_figures(fig_dir=args.out_dir, validate_only=False,
+                              results_dir=args.results_dir)
     print(f"Wrote 4 figures to {args.out_dir}/:")
     for k, v in result["manifest"].items():
         p = Path(v)
