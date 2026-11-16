@@ -1,13 +1,20 @@
-# 🧬 DeepCatch v2.2 — 基于检测 Panel 的超灵敏 MRD 检测
+# 🧬 DeepCatch — 基于检测 Panel 的超灵敏 MRD 检测
 
 > ⚠️ **简体中文翻译 / Simplified Chinese Translation**
 > 本文档是 [README.md](README.md) 的简体中文译版。**如与英文原版存在任何不一致，以英文原版为准。**
 > 翻译者注：技术术语（API、AUC、OOF、LLR、CADD、AlphaMissense、BAM、FASTQ、cfDNA、ctDNA 等）保留英文原文。
 
+> ⚠️ **本译版落后于英文原版，止于 v2.2。** 英文 README 已是 **v2.3.0**，其头条结果
+> （外部验证 0.9444 / 0.708 / 0.7385、留一研究外推 0.6805、GC 校正后的 pooled AUC 0.9684、
+> 融合 0.9884、甲基化通道的零结果、以及 723 项测试）**尚未译入本文件**。本文件中的融合表
+> 数字已更新为当前 artifact 的取值，但其余章节描述的仍是 v2.2 的状态（例如开头的
+> Transformer 基础模型叙述，而英文原版已改为 regularized late fusion 0.9825）。
+> 引用请以英文原版为准。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-70%2F70%20passing-brightgreen)()
+![Tests](https://img.shields.io/badge/Tests-723%20collected-blue)()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)
@@ -895,13 +902,13 @@ python -m src.fragmentomics.train_tumor_naive \
 
 | 策略 | AUC（10 种子均值 ± std） | Sens@95% | Sens@99% |
 |---|---|---|---|
-| 仅 Tumor-naive | 0.9734 ± 0.002 | 0.885 | 0.766 |
+| 仅 Tumor-naive | 0.9740 ± 0.0013 | 0.880 | 0.742 |
 | 仅 Mutation（校准 AUC 0.92） | 0.9020 | 0.595 | 0.267 |
-| 朴素分数平均 | **0.9882** | **0.924** | **0.856** |
-| LR 融合（学习权重） | **0.9883** | **0.930** | 0.850 |
-| LR 融合（isotonic 校准） | 0.9848 | 0.928 | 0.764 |
+| 朴素分数平均 | **0.9884** | **0.927** | **0.841** |
+| LR 融合（学习权重） | **0.9884** | **0.932** | 0.833 |
+| LR 融合（isotonic 校准） | 0.9849 | 0.928 | 0.646 |
 
-**配对 t 检验（10 种子）**：LR-fusion AUC − tumor-naive AUC = **+0.0143**（t = 31.96, p < 0.0001, bootstrap 95% CI = [0.0135, 0.0152]）。朴素平均与学习到的 LR-fusion 本质相当（0.9882 vs 0.9883），因此 **推荐方案为简单平均**——两个良好校准分数的等权融合在该区间内已经是最优的。
+**配对 t 检验（10 种子）**：LR-fusion AUC − tumor-naive AUC = **+0.0143**（t = 49.22, p < 0.0001, 95% CI = [0.0138, 0.0149]）。朴素平均与学习到的 LR-fusion 本质相当（0.9884 vs 0.9884），因此 **推荐方案为简单平均**——两个良好校准分数的等权融合在该区间内已经是最优的。
 
 **Isotonic 后置校准已测试并被拒绝。** `lr_fusion_isotonic` 在每一个种子都出现回退（相对未校准 LR 融合：均值 Δ AUC = −0.0035，Δ Sens@99 = −0.086），并在某个种子中 Sens@99 = 0，因为 isotonic 阶梯函数将测试折分数压缩到单一值。LR 融合的输出在 [0,1] 概率尺度上已经校准良好（两个输入都是 `predict_proba` 或 sigmoid 映射的 LLR），因此在单一训练折上重新拟合单调映射只会去掉信息而非增加。完整结果：[`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md)。
 

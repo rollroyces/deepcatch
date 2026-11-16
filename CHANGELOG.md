@@ -171,6 +171,16 @@ cohort size.
   the manuscript's own title, the current pooled AUC, and the
   affiliation the manuscript declares, and a test holds the three in
   agreement.
+- **The Simplified-Chinese README carried the same stale generation as
+  the English one.** Its fusion table still quoted a pre-regeneration
+  run (tumor-naive 0.9734, naive average 0.9882, LR fusion 0.9883, and
+  the older t-statistic 31.96), its test badge said "70/70 passing"
+  when the suite has 720 tests, and it still described the neural
+  foundation encoder as the fusion layer — it is a v2.2 document that
+  predates the whole v2.3.0 release, and nothing checked it. The fusion
+  table and the badge now carry the current figures, and a banner says
+  plainly which parts of the translation lag the English original
+  rather than leaving the reader to find the discrepancy.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

@@ -203,6 +203,10 @@ CURRENT_DOCS = [
     # reader, and it was still quoting the superseded pooled AUC (0.9670)
     # because no check covered a .cff file at all.
     "CITATION.cff",
+    # The Simplified-Chinese README carried the same stale generation as
+    # the English one (the fusion table from a pre-regeneration run) with
+    # no check covering it at all.
+    "README.zh-CN.md",
 ]
 
 
