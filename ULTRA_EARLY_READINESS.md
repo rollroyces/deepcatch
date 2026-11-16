@@ -42,7 +42,7 @@ Source: `results/cross_study_finallydb_gc_corrected.json` and `results/cross_stu
 Reproduce: `bash paper/REPRODUCE.sh` or `python scripts/cross_study_finallydb.py --publications 6 8 --seeds 42 13 7 99 1234 --gc-correction`.
 
 **Why this is ultra-early-grade evidence**:
-- n=627 samples with 364 cancer + 263 healthy (FinaleDB pubs 6 + 8; **Jiang 2015 PNAS** + **Cristiano 2019 Nature**).
+- n=627 samples with 363 cancer + 264 healthy (FinaleDB pubs 6 + 8; **Jiang 2015 PNAS** + **Cristiano 2019 Nature**). The labels file offers 658 candidates (364 cancer + 294 healthy); 31 are dropped for missing features.
 - Pooled OOF, 5-seed × 5-fold StratifiedKFold, per-publication z-score harmonization inside each train fold.
 - Two confound controls (shuffled-label null + true-confound control) prove the signal is cancer-vs-healthy, not batch, not fold identity.
 - Per-publication z-score harmonization is the published standard (Cristiano 2019 used a comparable pooled classifier).

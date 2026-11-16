@@ -91,6 +91,12 @@ cohort size.
 
 ### Fixed
 
+- **A cohort count mixed two different numbers.** The readiness
+  document said "n=627 samples with 364 cancer + 263 healthy"; 627 is
+  363 + 264, and 364 + 294 is the *candidate* count the labels file
+  holds before 31 samples are dropped for missing features. Both numbers
+  are now stated, and each in its place.
+  `ULTRA_EARLY_READINESS.md`.
 - **The results directory's index described the v1 simulation
   benchmark.** `results/README.md` was last updated on 2026-04-28: its
   headline table was the old simulation sweep (AUC 0.9610 at 1% ctDNA
