@@ -15,7 +15,7 @@
 > |---|---|---|
 > | pooled cross-study, GC-corrected | **0.9684 ± 0.0027** | `results/cross_study_finallydb_gc_corrected.json` |
 > | pooled cross-study, legacy no-GC | **0.9770 ± 0.0013** | `results/cross_study_finallydb.json` |
-> | held-out external cohort (never trained on) | **0.9915** [0.9712–1.0000] | `results/external_validation_finaledb.json` |
+> | held-out external cohort (never trained on) | **0.9444** [0.8731–1.0000] (pub 7), 0.708 (pub 1), pooled 0.7385 | `results/external_validation_finaledb.json` |
 > | leave-one-study-out transfer | **0.6805** / **0.9361** | `results/cross_study_loso.json` |
 > | naive-average fusion | **0.9884 ± 0.0010** | `results/fusion_ablation_isotonic.json` |
 > | methylation channel | **a null** (0.9444 = the coverage baseline) | `results/methylation_channel_diagnosis.json` |

@@ -155,7 +155,7 @@ same numbers, to the last digit.
 | §3.2 pooled rows | `results/cross_study_finallydb_gc_corrected.json:pooled` (headline) / `results/cross_study_finallydb.json:pooled` (legacy) | GC-corrected harmonized 0.9684 ± 0.0027, sens@99 = 0.700; legacy 0.9770 ± 0.0013, sens@99 = 0.785 |
 | §3.2 true-confound control | `results/cross_study_finallydb.json:true_confound_control` | harmonized 0.49 vs no_harmonize 1.00 |
 | §3.2.1 LOSO transfer | `results/cross_study_loso.json` | jiang → cristiano 0.6805, cristiano → jiang 0.9361 |
-| §3.2.2 external validation | `results/external_validation_finaledb.json` | pub 7 (Sun 2019) AUC 0.9915 [0.9712–1.0000]; case-only pub 9 reported as sensitivity 0.4454 at the training-derived threshold 0.9766 |
+| §3.2.2 external validation | `results/external_validation_finaledb.json` | pub 7 (Sun 2019) AUC 0.9444 [0.8731–1.0000]; pub 1 (Snyder 2016) 0.708 [0.5148, 0.9012]; pooled 0.7385 [0.6281, 0.8488]; case-only pub 9 reported as sensitivity 0.6569 at the training-derived threshold 0.9766 |
 | §3.2.4 methylation channel | `results/methylation_cohort_channel.json` | **null**: decoded β AUC 0.9444 = coverage baseline 0.9444 || §3.3 per-cancer (bootstrap CIs) | `results/cross_study_finallydb_gc_corrected.json:per_cancer` | top-5 OvR AUC + sens@spec |
 | §3.3 per-cancer (DeLong CIs + PPV) | `results/per_cancer_sens_at_spec.json` | top-5 OvR with DeLong 95% CIs + ppv_at_prevalence |
 | §3.4 ablations | `results/sens_at_spec_ablation_n20.json`, `results/sparse_aware_ablation.json`, `results/cross_study_finallydb.json:true_confound_control` | see §3.4 of the paper |

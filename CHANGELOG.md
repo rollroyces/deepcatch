@@ -31,9 +31,10 @@ cohort size.
 - **External validation on held-out public cohorts.** FinaleDB publications 1
   (Snyder 2016), 7 (Sun 2019) and 9 (Adalsteinsson 2017) are fetched from the
   public API + S3 — no IRB, no data-use agreement — and scored by a model
-  trained only on publications 6 + 8. External AUC **0.9915** [0.9712, 1.0]
-  on publication 7 (WGS, n=31); **0.8819** [0.7701, 0.9936] pooled over the
-  publications carrying both classes. `scripts/fetch_external_cohort.py`,
+  trained only on publications 6 + 8. External AUC **0.9444** [0.8731, 1.0]
+  on publication 7 (WGS, n=31); **0.708** [0.5148, 0.9012] on publication 1
+  (WGS, n=52); **0.7385** [0.6281, 0.8488] pooled over the publications
+  carrying both classes. `scripts/fetch_external_cohort.py`,
   `scripts/external_validation_finaledb.py`.
 - **Leave-one-study-out transfer measurement.** Train on one publication, test
   on the other: 0.6805 (Jiang → Cristiano) and 0.9361 (Cristiano → Jiang)
@@ -90,6 +91,49 @@ cohort size.
 
 ### Fixed
 
+- **The external validation was measured on a cohort that was too small,
+  and on a harmonisation the code did not implement.** Two independent
+  problems, both of which moved the headline numbers down, and both now
+  corrected:
+  - *The cohort.* The first fetch applied a per-publication download
+    budget that took only 9 of publication 1's 60 plasma samples (8 cancer
+    and 1 control) and reported that publication's external AUC as
+    **0.875** from those nine. The cohort now carries all 52 of
+    publication 1's labelled plasma samples, and its AUC is **0.708**
+    [0.5148, 0.9012]. The held-out cohort is 322 samples (300 cancer, 22
+    controls), and the fetcher gained a `--skip-existing` flag so a
+    re-run only pays for the samples it is missing.
+  - *The harmonisation.* `scripts/external_validation_finaledb.py`
+    documents "per-study z-score harmonization, each publication
+    normalized by its own feature statistics" and claims to be
+    "identical to the LOSO benchmark" -- but it z-scored the held-out
+    cohort as a **single pool**. With 239 case-only publication-9 samples
+    in that pool, publications 1 and 7 were scored against publication 9's
+    mean and variance. The harmonisation is now per study on the training
+    side and per publication on the held-out side, as documented, and the
+    artifact records all three harmonisations under
+    `harmonization_sensitivity` because the difference is not small.
+
+  The corrected numbers: publication 7 (Sun 2019, whole-genome) **0.9444**
+  [0.8731, 1.0000], publication 1 (Snyder 2016, whole-genome) **0.708**
+  [0.5148, 0.9012], pooled over the publications carrying both classes
+  **0.7385** [0.6281, 0.8488] on n=83, and the case-only publication 9
+  as sensitivity **0.6569** at the training-derived threshold 0.9766. The
+  previous 0.9915 / 0.8819 are gone, and with them the claim that the
+  assay platform was the only binding constraint: transfer between
+  whole-genome studies is real but far from uniform (0.9444 against
+  0.708), and the whole-exome publication transfers only partly rather
+  than not at all. The manuscript, the abstract, the README, MODEL.md,
+  CITATION.cff, the landing page and the readiness documents have been
+  updated to the corrected numbers, and the drift guard now covers the
+  per-publication and pooled external figures.
+
+  The held-out cohort is also now demonstrably the **complete set**: of
+  the eight studies FinaleDB publishes, the three that are not plasma
+  cancer studies are excluded for properties of the data (publication 3 is
+  urine, publication 4 has no disease labels, publication 5 has no
+  plasma seqruns at all), so publications 1, 7 and 9 are every plasma
+  cfDNA study FinaleDB serves that the model never trained on.
 - **`import src.methylation_gnn` needed torch, which silenced the whole
   "Core tests" CI job.** The package imported the model, the trainer and
   the inference module eagerly, and those subclass `torch.nn.Module` at
@@ -149,15 +193,13 @@ cohort size.
   `results/external_validation_finaledb.json` was generated before the
   PCA was seeded and was never regenerated, so the training-derived
   99%-specificity threshold it recorded (0.9887) came from an unseeded
-  run. The seeded pipeline gives **0.9766**, and the sensitivity of the
-  case-only publication 9 at that threshold moves from 0.4034 to
-  **0.4454**. The external AUCs the paper quotes (publication 7 at
-  **0.9915**, pooled over the publications carrying both classes at
-  **0.8819**) are unchanged. The artifact, the narrative and the two
-  numbers in `paper/METHODS_PAPER.md` §3.2.2 have been corrected, the
-  threshold is now quoted in `docs/EXTERNAL_VALIDATION.md`, and both
-  numbers are on the quotable-number list so the drift guard covers
-  them.
+  run. The seeded pipeline gives **0.9766**. The artifact, the narrative
+  and the two numbers in `paper/METHODS_PAPER.md` §3.2.2 have been
+  corrected, the threshold is now quoted in `docs/EXTERNAL_VALIDATION.md`,
+  and both numbers are on the quotable-number list so the drift guard
+  covers them. (The external AUCs themselves were superseded later the
+  same day, when the held-out cohort was enlarged and the harmonisation
+  was corrected -- see the entry above.)
 - **`--include-screening` crashed the per-cancer writer.** `SCREENING_SPEC_GRID`
   was defined with a trailing comma, which made it a one-element tuple
   *containing* the grid rather than the grid. The per-cancer standalone
@@ -266,7 +308,7 @@ cohort size.
   cannot come back through the images.
 - **The abstract fitted bioRxiv's character limit again.** It grew with the
   v2.3.0 results to 3119 plain-text characters against bioRxiv's 3000
-  limit, so the upload would have been refused; it is now 2897 with every
+  limit, so the upload would have been refused; it is now 2937 with every
   number intact. A test fails the build if the abstract exceeds 3000
   characters, or creeps within 50 of the limit, and
   `scripts/check_biorxiv_form.py` fails if the upload form quotes a

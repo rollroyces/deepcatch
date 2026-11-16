@@ -40,10 +40,10 @@ documents cannot drift away from those files.
 The measured results are deliberately mixed, and the negative ones are
 reported with the same prominence as the positive ones. A tumor-naive
 5-channel fragmentomics classifier reaches 0.9684 ± 0.0027 pooled AUC on
-627 open-data samples and 0.9915 [0.9712–1.0000] on a publication that
+627 open-data samples and 0.9444 [0.8731–1.0000] on a publication that
 contributes no training data — but the same classifier collapses to 0.6805
-when a single-type training set is held out, and a held-out exome study
-does not transfer at all. The methylation channel, run end-to-end on real
+when a single-type training set is held out, a second held-out publication
+reaches only 0.708, and a held-out exome study transfers only partly. The methylation channel, run end-to-end on real
 public fragment files, is a **null**: its AUC (0.9444) is exactly the AUC
 of the library-depth baseline, and at the 103,863 loci where both arms have
 coverage the median difference between cancer and control is 0.0 (each

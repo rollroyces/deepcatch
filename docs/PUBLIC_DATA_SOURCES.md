@@ -34,8 +34,10 @@ kinds and reports `partial`.
 **Two usable axes of independence** were found:
 
 - *Study*: publications 1, 7 and 9 were never trained on. Publication
-  7 is whole-genome and transfers (0.9915); publication 9 is
-  whole-exome and does not (breast 0.4119, prostate 0.3193).
+  7 is whole-genome and transfers (0.9444); publication 1 is also
+  whole-genome and transfers less well (0.708, thirteen tumour types
+  against nine controls); publication 9 is whole-exome and transfers
+  only partly (breast 0.6938, prostate 0.7127).
 - *Assay*: publication 9 is whole-exome, everything else is
   whole-genome, so the assay shift is measurable rather than assumed.
 
@@ -130,9 +132,10 @@ population — but they are not IRB-free.
   manifest), which is the strongest available substitute for a clinical
   cohort.
 - The **assay-platform boundary** is now an explicit, measured
-  result rather than a caveat: cross-study transfer holds when the
-  assay is comparable (0.8819–0.9915) and fails when it is not
-  (0.4119 / 0.3193).
+  result rather than a caveat: cross-study transfer is strongest when
+  the assay is comparable (0.9444 on the matched whole-genome
+  publication) and blunted when it is not (0.6938 / 0.7127 on the
+  whole-exome one).
 - The **stage breakdown** remains the one readiness gap: FinaleDB
   carries no stage labels, and the only stage-annotated public
   fragment resources are either inside the CRAG re-packaging of

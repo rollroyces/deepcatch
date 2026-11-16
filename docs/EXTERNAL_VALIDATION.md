@@ -2,9 +2,9 @@
 
 > Train: FinaleDB 6 + 8 (the cross-study cohort). Test: publications 1, 7, 9 -- never trained on. Public data, no IRB required.
 
-- Generated: `2026-11-16T03:19:50.694947+00:00`
+- Generated: `2026-11-16T06:55:53.473661+00:00`
 
-- Train n=627 (cancer 363) | External n=278 (cancer 264, non-cancer 14)
+- Train n=627 (cancer 363) | External n=322 (cancer 300, non-cancer 22)
 
 - Classifier: PCA(n_components=200) + LogisticRegression(max_iter=2000), fitted on the training cohort only
 
@@ -13,36 +13,46 @@
 
 ## Pooled external AUC
 
-**0.4177** (DeLong 95% CI 0.3562-0.4793), n_pos=264, n_neg=14
+**0.7097** (DeLong 95% CI 0.604-0.8154), n_pos=300, n_neg=22
+
+
+**Pooled over the publications carrying both classes**: **0.7385** (DeLong 95% CI 0.6281-0.8488), n_pos=61, n_neg=22
 
 
 | Sens@spec | 0.95 | 0.98 | 0.99 | 0.995 | 0.999 |
 |---|---:|---:|---:|---:|---:|
-| Sensitivity | 0.3674 | 0.3674 | 0.3674 | 0.3674 | 0.3674 |
+| Sensitivity | 0.3967 | 0.1267 | 0.1267 | 0.1267 | 0.1267 |
 
 ## Per-publication AUC
 
 | Publication | n | AUC [DeLong 95% CI] |
 |---|---:|---|
-| 1 | 9 | 0.875 [0.63, 1.0] |
-| 7 | 31 | 0.9915 [0.9712, 1.0] |
-| 9 | 238 (case-only) | sensitivity at the training threshold = 0.4454 |
+| 1 | 52 | 0.708 [0.5148, 0.9012] |
+| 7 | 31 | 0.9444 [0.8731, 1.0] |
+| 9 | 239 (case-only) | sensitivity at the training threshold = 0.6569 |
 
 ## Per-disease AUC (vs the external non-cancer controls)
 
 | Disease | n | AUC [DeLong 95% CI] |
 |---|---:|---|
-| Bladder cancer | - | skipped (n=1) |
-| Breast cancer | 120 | 0.4119 [0.3235, 0.5003] |
-| Colorectal cancer | 19 | 0.9474 [0.8572, 1.0] |
-| Esophageal cancer | - | skipped (n=1) |
-| Head and neck cancer | - | skipped (n=1) |
-| Inflammatory bowel disease | - | skipped (n=1) |
-| Kidney cancer | - | skipped (n=1) |
-| Liver transplant | 13 | 0.5302 [0.305, 0.7554] |
-| Lung cancer | - | skipped (n=1) |
-| Ovarian cancer | - | skipped (n=1) |
-| Prostate cancer | 119 | 0.3193 [0.2362, 0.4024] |
+| Bladder cancer | - | skipped (n=2) |
+| Breast cancer | 125 | 0.6938 [0.5823, 0.8054] |
+| Colorectal cancer | 20 | 0.9182 [0.8295, 1.0] |
+| Esophageal cancer | - | skipped (n=2) |
+| Head and neck cancer | - | skipped (n=2) |
+| Healthy | - | skipped (n=1) |
+| Inflammatory bowel disease | - | skipped (n=4) |
+| Kidney cancer | - | skipped (n=2) |
+| Liver cancer | - | skipped (n=2) |
+| Liver transplant | 13 | 0.5542 [0.3579, 0.7504] |
+| Lung cancer | 7 | 0.7403 [0.4389, 1.0] |
+| Ovarian cancer | - | skipped (n=2) |
+| Pancreatic cancer | 8 | 0.6023 [0.3327, 0.8718] |
+| Prostate cancer | 122 | 0.7127 [0.59, 0.8355] |
+| Skin cancer | - | skipped (n=2) |
+| Systemic lupus erythematosus | - | skipped (n=4) |
+| Testicular cancer | - | skipped (n=2) |
+| Uterine cancer | - | skipped (n=2) |
 
 ## Honest framing
 

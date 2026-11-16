@@ -214,17 +214,18 @@ from the public FinaleDB API and S3 (no IRB, no data-use agreement);
 
 | Publication | Assay | n (ca/non-ca) | External AUC [DeLong 95% CI] |
 |---|---|---|---|
-| 1 — Snyder 2016 | WGS | 9 (8/1) | 0.875 [0.630, 1.000] |
-| 7 — Sun 2019 | WGS | 31 (18/13) | **0.9915** [0.9712, 1.0000] |
-| 9 — Adalsteinsson 2017 | WES | 238 (238/0) | case-only: sensitivity 0.403 at the training-derived 99%-specificity threshold |
-| **pooled over publications carrying both classes** | — | 40 (26/14) | **0.8819** [0.7701, 0.9936] |
+| 1 — Snyder 2016 | WGS | 52 (43/9) | 0.708 [0.5148, 0.9012] |
+| 7 — Sun 2019 | WGS | 31 (18/13) | **0.9444** [0.8731, 1.0000] |
+| 9 — Adalsteinsson 2017 | WES | 239 (239/0) | case-only: sensitivity 0.6569 at the training-derived 99%-specificity threshold |
+| **pooled over publications carrying both classes** | — | 83 (61/22) | **0.7385** [0.6281, 0.8488] |
 
-The assay platform, not the study, is the binding constraint: the
-whole-genome held-out publication transfers essentially intact
-(colorectal one-vs-rest 0.9474) while the whole-exome one does not
-(breast 0.4119, prostate 0.3193 — below chance). Per-publication
-z-score harmonization removes a study's location/scale shift but not
-a change of assay platform. Publication 9 ships 1,508 cancer samples
+Transfer between whole-genome studies is real but far from uniform: the
+held-out colorectal publication transfers well (0.9444; colorectal
+one-vs-rest 0.9182), a second whole-genome publication covering thirteen
+tumour types transfers less well (0.708), and the whole-exome one only
+partly (breast 0.6938, prostate 0.7127 — above chance but well below the
+whole-genome studies). Per-publication z-score harmonization removes a
+study's location/scale shift but not a change of assay platform. Publication 9 ships 1,508 cancer samples
 and zero controls, so it is reported as sensitivity at a
 training-fixed threshold rather than folded into an AUC denominator.
 
@@ -285,9 +286,9 @@ holdout and must not be read as a generalisation claim.
 
 4. **External validation exists, but it is public-data external
    validation, not clinical validation.** Publications 1/7/9 were never
-   trained on and give AUC 0.9915 (pub 7, WGS), 0.8819 pooled over the
-   publications carrying both classes, and 0.403 sensitivity on the
-   whole-exome publication. What it still lacks: prospective follow-up,
+   trained on and give AUC 0.9444 (pub 7, WGS), 0.708 (pub 1, WGS),
+   0.7385 pooled over the publications carrying both classes, and 0.6569
+   sensitivity on the whole-exome publication. What it still lacks: prospective follow-up,
    stage labels, and real healthy-donor controls — the non-cancer arm is
    14 public samples. A leave-one-study-out run inside the training
    cohort gives 0.6805, so the pooled 0.9684 is a within-cohort

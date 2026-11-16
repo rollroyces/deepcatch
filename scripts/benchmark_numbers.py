@@ -31,6 +31,16 @@ QUOTED_NUMBERS = [
      ("per_publication_auc", "7", "auc"),
      ["paper/paper.tex", "paper.md", "README.md",
       "docs/EXTERNAL_VALIDATION.md"]),
+    # The second held-out whole-genome publication, and the case-only
+    # one reported as sensitivity at the training threshold.
+    ("external_validation_finaledb.json",
+     ("per_publication_auc", "1", "auc"),
+     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md",
+      "docs/EXTERNAL_VALIDATION.md"]),
+    ("external_validation_finaledb.json",
+     ("pooled_external_auc_matched_publications_only", "auc"),
+     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md",
+      "docs/EXTERNAL_VALIDATION.md"]),
     # The case-only publication is reported as a sensitivity at the
     # threshold fixed in training, so the threshold and that sensitivity
     # are quoted numbers too.

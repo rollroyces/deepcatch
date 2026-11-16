@@ -23,6 +23,21 @@ Identical to the LOSO benchmark, so the numbers are comparable:
 - LogisticRegression(max_iter=2000) fit on the training fold only;
 - the held-out publication is scored once, never fitted on.
 
+The harmonization is applied on BOTH sides, and the two sides are not
+interchangeable. On the training side it is per study, because the
+training cohort pools two studies (6 and 8) and the in-cohort benchmark
+harmonises per study inside every fold -- the true-confound control
+shows what happens otherwise (without it the classifier learns "which
+study is this from" at AUC 0.999). On the held-out side it is per
+publication, because the held-out cohort pools several studies and
+z-scoring it as one pool lets the largest of them anchor the others.
+
+This code used to z-score the held-out cohort as a SINGLE pool, which
+contradicted the protocol above and the LOSO benchmark it claims to
+mirror. It is recorded in the artifact's ``harmonization_sensitivity``
+block, together with the two other harmonisations, because the
+difference is not small.
+
 Reported: pooled external AUC with a DeLong 95% CI, sensitivity at the
 screening-grade specificity grid, per-publication AUC, and a
 per-cancer/disease breakdown.
@@ -141,12 +156,34 @@ def _load5_from(feat_dir: str, labels: dict, studies: dict):
 
 
 def _zscore(X: np.ndarray) -> np.ndarray:
-    """Per-matrix z-score: each publication is normalized by its own
-    feature statistics (the site-wise normalization assumption)."""
-    med = np.median(X[:, :0]) if X.shape[1] == 0 else None
+    """Z-score each feature column of one matrix."""
     mu = X.mean(axis=0)
     sd = X.std(axis=0)
     return (X - mu) / np.maximum(sd, 1e-12)
+
+
+def _zscore_by_group(X: np.ndarray, groups: np.ndarray) -> np.ndarray:
+    """Z-score each matrix within its own group.
+
+    The harmonisation assumption is "a new site normalises itself": each
+    publication is centred and scaled by ITS OWN feature statistics, so
+    no publication's distribution anchors another's. Z-scoring the whole
+    held-out cohort as one pool instead lets the largest publication
+    anchor the others -- with 238 case-only samples from publication 9 in
+    the pool, publications 1 and 7 are scored against publication 9's
+    mean and variance, which is not what the protocol says and not what
+    the LOSO benchmark does.
+
+    The same applies to the training cohort, which pools two studies:
+    the in-cohort benchmark harmonises per study inside every fold, and
+    the true-confound control shows why (without it, the classifier
+    learns "which study is this from" at AUC 0.999).
+    """
+    out = np.empty_like(X, dtype=float)
+    for g in np.unique(groups):
+        m = groups == g
+        out[m] = _zscore(X[m])
+    return out
 
 
 def _sens_at_spec(y, s, spec: float) -> float:
@@ -191,8 +228,10 @@ def main() -> int:
           f"non-cancer {int((yte==0).sum())}), from {sorted(set(stte.tolist()))}")
 
     # ---- harmonize each publication by its own statistics ----
-    Xtr_z = _zscore(Xtr)
-    Xte_z = _zscore(Xte)
+    # Per study on the training side (two studies pooled), per publication
+    # on the held-out side. See _zscore_by_group.
+    Xtr_z = _zscore_by_group(Xtr, sttr)
+    Xte_z = _zscore_by_group(Xte, stte)
 
     print("[3/4] fitting on the training cohort and scoring the external one ...",
           flush=True)
@@ -247,6 +286,37 @@ def main() -> int:
     else:
         pooled_matched = None
 
+    # ---- harmonisation sensitivity -------------------------------------
+    # The protocol says each publication is normalised by its own
+    # statistics. It is worth showing what the other two harmonisations
+    # give, because the difference is not small: z-scoring the held-out
+    # cohort as ONE pool lets publication 9 (238 case-only samples)
+    # anchor publications 1 and 7.
+    harmonization_sensitivity = {}
+    for tag, tr_z, te_z in (
+        ("train_global_test_global",
+         _zscore(Xtr), _zscore(Xte)),
+        ("train_global_test_per_publication",
+         _zscore(Xtr), _zscore_by_group(Xte, stte)),
+        ("train_per_study_test_per_publication",
+         _zscore_by_group(Xtr, sttr), _zscore_by_group(Xte, stte)),
+    ):
+        pca_s = PCA(n_components=n_components, random_state=0).fit(tr_z)
+        lr_s = LogisticRegression(max_iter=2000).fit(pca_s.transform(tr_z), ytr)
+        sc_s = lr_s.predict_proba(pca_s.transform(te_z))[:, 1]
+        mm = np.zeros(len(yte), dtype=bool)
+        per_pub_s = {}
+        for pub in sorted(set(stte.tolist())):
+            m = stte == pub
+            if len(set(yte[m].tolist())) > 1:
+                per_pub_s[pub] = _auc_ci(yte[m], sc_s[m])
+                mm |= m
+        harmonization_sensitivity[tag] = {
+            "per_publication": per_pub_s,
+            "pooled_matched": (_auc_ci(yte[mm], sc_s[mm]) if mm.any()
+                               else None),
+        }
+
     # ---- per-disease breakdown (vs the external non-cancer controls) ----
     per_dis = {}
     healthy = yte == 0
@@ -271,8 +341,11 @@ def main() -> int:
             "trained on",
             "data_source": "public FinaleDB REST API + public S3 fragment "
                            "objects; no IRB, no data-use agreement",
-            "harmonization": "per-matrix z-score (each publication normalized "
-                              "by its own feature statistics)",
+            "harmonization": "per-study z-score on the training side and "
+                              "per-publication z-score on the held-out side "
+                              "(each publication normalized by its own "
+                              "feature statistics -- the 'new site normalises "
+                              "itself' assumption, as in the LOSO benchmark)",
             "classifier": f"PCA(n_components={n_components}) + "
                           "LogisticRegression(max_iter=2000), fitted on the "
                           "training cohort only",
@@ -294,6 +367,7 @@ def main() -> int:
         },
         "pooled_external_auc": pooled,
         "pooled_external_auc_matched_publications_only": pooled_matched,
+        "harmonization_sensitivity": harmonization_sensitivity,
         "training_derived_threshold": {
             "specificity_target": thr_spec,
             "threshold": round(train_threshold, 6),
@@ -342,6 +416,15 @@ def main() -> int:
         "\n## Pooled external AUC\n",
         f"**{pooled['auc']}** (DeLong 95% CI {pooled['ci_lo']}-{pooled['ci_hi']}), "
         f"n_pos={pooled['n_pos']}, n_neg={pooled['n_neg']}\n",
+        # The number the manuscript quotes: the publications that carry BOTH
+        # classes. Pooling the case-only publication into an AUC denominator
+        # produces a figure that means nothing, so it is reported separately.
+        ("\n**Pooled over the publications carrying both classes**: "
+         f"**{pooled_matched['auc']}** (DeLong 95% CI {pooled_matched['ci_lo']}"
+         f"-{pooled_matched['ci_hi']}), n_pos={pooled_matched['n_pos']}, "
+         f"n_neg={pooled_matched['n_neg']}\n"
+         if pooled_matched else "\n_Only one held-out publication carries "
+         "both classes, so no matched pooled AUC is reported._\n"),
         "\n| Sens@spec | " + " | ".join(sens) + " |",
         "|---|" + "---:|" * len(sens),
         "| Sensitivity | " + " | ".join(str(sens[s]) for s in sens) + " |",

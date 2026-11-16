@@ -7,7 +7,7 @@ open and still blocked on one file. What is left before anything else is
 the preprint, and it is ready — section 0 is now that, not a branch push.
 
 Since this plan was written the repo gained: the held-out external
-validation (0.9915 on a whole-genome publication that contributes no
+validation (0.9444 on a whole-genome publication that contributes no
 training data), the leave-one-study-out transfer measurement (0.6805 /
 0.9361), regularized late fusion replacing the neural encoder (0.9825),
 the V3 methylation channel measured on 31 real samples (a **null**, with
@@ -31,7 +31,7 @@ need your browser session:
 # 2. Tag the release (the DOI is minted from the tag)
 cd /path/to/deepcatch
 git checkout main && git pull
-git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9915), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
+git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9444), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
 git push origin v2.3.0
 # then publish the release at
 # https://github.com/rollroyces/deepcatch/releases/new

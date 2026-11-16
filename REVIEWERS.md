@@ -23,8 +23,9 @@ Fragmentomics cross-validated on independent real cfDNA (FLARE/GSE317007).
 - **Panel LLR** AUC 0.921 at 0.1% ctDNA on 20 real TCGA-LUAD patients.
   Duplex-UMI (1e-4 error) + 50k× depth → sens@95% = 1.000.
 - **Tumor-naive fragmentomics** (627 open FinaleDB samples): pooled OOF
-  AUC 0.9684 ± 0.0027, and **0.9915 [0.9712–1.0000]** on a held-out
-  publication that contributes no training data.
+  AUC 0.9684 ± 0.0027, and **0.9444 [0.8731–1.0000]** on a held-out
+  publication that contributes no training data (0.708 on a second, 0.7385
+  pooled over the held-out studies carrying both classes).
 - **Transfer, measured**: holding one publication out of *training* costs
   most of the pooled AUC (0.681 in the single-type direction, 0.936 the
   other way) — the boundary that a pooled cross-validation hides.
@@ -97,9 +98,10 @@ Peiyong Jiang (CUHK — 4-mer end-motif HCC detection)
 
 - The tumor-naive classifier was trained on publications 6 + 8 and tested
   on publications 1, 7 and 9 (never trained on, public API/S3, no IRB):
-  0.9915 on the held-out whole-genome study, 0.8819 pooled over the
-  studies carrying both classes.  The held-out **whole-exome** study does
-  not transfer (breast 0.412, prostate 0.319) — is the platform boundary
+  0.9444 on the held-out whole-genome study, 0.708 on a second, 0.7385
+  pooled over the studies carrying both classes.  The held-out
+  **whole-exome** study transfers only partly (breast 0.694, prostate
+  0.713) — is the platform boundary
   (whole-genome features vs an exome coverage profile) the right
   explanation, or is it a cohort-composition artefact?
 - A case-only held-out study is reported as **sensitivity at a

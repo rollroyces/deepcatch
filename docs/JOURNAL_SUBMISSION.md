@@ -117,7 +117,7 @@ permanent identifier.
 
 | Likely objection | Where the answer is |
 |---|---|
-| "The pooled AUC is measured inside the cohort that trained it." | §3.2.1 and the external validation in §3.2.2: 0.9915 on a held-out whole-genome publication, 0.6805 in the single-type direction, with the reason spelled out. |
+| "The pooled AUC is measured inside the cohort that trained it." | §3.2.1 and the external validation in §3.2.2: 0.9444 on a held-out whole-genome publication, 0.708 on a second, 0.6805 in the single-type direction, with the reason spelled out. |
 | "Is the methylation channel real?" | §3.2.4: it is a **null**, with the mechanism (size selection at 300 bp, 1.09 observations per CpG) and a control (depth ablation on a genuine MspI library). |
 | "Are the numbers reproducible?" | §2.5: the PCA is seeded, and `test/test_benchmark_reproducibility.py` asserts that two runs agree exactly. |
 | "Do the artifacts match the text?" | `scripts/benchmark_numbers.py` prints every quoted figure straight from the committed JSON. |

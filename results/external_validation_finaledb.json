@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-16T03:19:50.694947+00:00",
+  "generated_at": "2026-11-16T06:55:53.473661+00:00",
   "design": {
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019) -- n=627",
     "test": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on",
     "data_source": "public FinaleDB REST API + public S3 fragment objects; no IRB, no data-use agreement",
-    "harmonization": "per-matrix z-score (each publication normalized by its own feature statistics)",
+    "harmonization": "per-study z-score on the training side and per-publication z-score on the held-out side (each publication normalized by its own feature statistics -- the 'new site normalises itself' assumption, as in the LOSO benchmark)",
     "classifier": "PCA(n_components=200) + LogisticRegression(max_iter=2000), fitted on the training cohort only",
     "labels": "FinaleDB disease field: a diagnosis ending in 'cancer' -> cancer; Healthy / Hepatitis B / Cirrhosis / inflammatory bowel disease / SLE / liver transplant -> non-cancer control"
   },
@@ -16,29 +16,106 @@
       "n_healthy": 264
     },
     "external": {
-      "n": 278,
-      "n_cancer": 264,
-      "n_non_cancer": 14,
+      "n": 322,
+      "n_cancer": 300,
+      "n_non_cancer": 22,
       "per_publication": {
-        "1": 9,
+        "1": 52,
         "7": 31,
-        "9": 238
+        "9": 239
       }
     }
   },
   "pooled_external_auc": {
-    "auc": 0.4177,
-    "ci_lo": 0.3562,
-    "ci_hi": 0.4793,
-    "n_pos": 264,
-    "n_neg": 14
+    "auc": 0.7097,
+    "ci_lo": 0.604,
+    "ci_hi": 0.8154,
+    "n_pos": 300,
+    "n_neg": 22
   },
   "pooled_external_auc_matched_publications_only": {
-    "auc": 0.8819,
-    "ci_lo": 0.7701,
-    "ci_hi": 0.9936,
-    "n_pos": 26,
-    "n_neg": 14
+    "auc": 0.7385,
+    "ci_lo": 0.6281,
+    "ci_hi": 0.8488,
+    "n_pos": 61,
+    "n_neg": 22
+  },
+  "harmonization_sensitivity": {
+    "train_global_test_global": {
+      "per_publication": {
+        "1": {
+          "auc": 0.584,
+          "ci_lo": 0.3749,
+          "ci_hi": 0.7931,
+          "n_pos": 43,
+          "n_neg": 9
+        },
+        "7": {
+          "auc": 0.9915,
+          "ci_lo": 0.9712,
+          "ci_hi": 1.0,
+          "n_pos": 18,
+          "n_neg": 13
+        }
+      },
+      "pooled_matched": {
+        "auc": 0.6423,
+        "ci_lo": 0.5253,
+        "ci_hi": 0.7594,
+        "n_pos": 61,
+        "n_neg": 22
+      }
+    },
+    "train_global_test_per_publication": {
+      "per_publication": {
+        "1": {
+          "auc": 0.7158,
+          "ci_lo": 0.5226,
+          "ci_hi": 0.9089,
+          "n_pos": 43,
+          "n_neg": 9
+        },
+        "7": {
+          "auc": 0.9915,
+          "ci_lo": 0.9712,
+          "ci_hi": 1.0,
+          "n_pos": 18,
+          "n_neg": 13
+        }
+      },
+      "pooled_matched": {
+        "auc": 0.7846,
+        "ci_lo": 0.6806,
+        "ci_hi": 0.8887,
+        "n_pos": 61,
+        "n_neg": 22
+      }
+    },
+    "train_per_study_test_per_publication": {
+      "per_publication": {
+        "1": {
+          "auc": 0.708,
+          "ci_lo": 0.5148,
+          "ci_hi": 0.9012,
+          "n_pos": 43,
+          "n_neg": 9
+        },
+        "7": {
+          "auc": 0.9444,
+          "ci_lo": 0.8731,
+          "ci_hi": 1.0,
+          "n_pos": 18,
+          "n_neg": 13
+        }
+      },
+      "pooled_matched": {
+        "auc": 0.7385,
+        "ci_lo": 0.6281,
+        "ci_hi": 0.8488,
+        "n_pos": 61,
+        "n_neg": 22
+      }
+    }
   },
   "training_derived_threshold": {
     "specificity_target": 0.99,
@@ -47,98 +124,134 @@
     "note": "threshold fitted on the training cohort's out-of-fold scores; used to score case-only external publications"
   },
   "sens_at_spec": {
-    "0.95": 0.3674,
-    "0.98": 0.3674,
-    "0.99": 0.3674,
-    "0.995": 0.3674,
-    "0.999": 0.3674
+    "0.95": 0.3967,
+    "0.98": 0.1267,
+    "0.99": 0.1267,
+    "0.995": 0.1267,
+    "0.999": 0.1267
   },
   "per_publication_auc": {
     "1": {
-      "n": 9,
-      "auc": 0.875,
-      "ci_lo": 0.63,
-      "ci_hi": 1.0,
-      "n_pos": 8,
-      "n_neg": 1
+      "n": 52,
+      "auc": 0.708,
+      "ci_lo": 0.5148,
+      "ci_hi": 0.9012,
+      "n_pos": 43,
+      "n_neg": 9
     },
     "7": {
       "n": 31,
-      "auc": 0.9915,
-      "ci_lo": 0.9712,
+      "auc": 0.9444,
+      "ci_lo": 0.8731,
       "ci_hi": 1.0,
       "n_pos": 18,
       "n_neg": 13
     },
     "9": {
-      "n": 238,
-      "n_cancer": 238,
+      "n": 239,
+      "n_cancer": 239,
       "n_non_cancer": 0,
       "auc": null,
       "reason": "case-only publication (no non-cancer controls in this study); reported as sensitivity at the training-derived threshold",
-      "sensitivity_at_train_threshold_99spec": 0.4454
+      "sensitivity_at_train_threshold_99spec": 0.6569
     }
   },
   "per_disease_auc": {
     "Bladder cancer": {
       "skipped": true,
-      "reason": "n=1"
+      "reason": "n=2"
     },
     "Breast cancer": {
-      "n": 120,
-      "auc": 0.4119,
-      "ci_lo": 0.3235,
-      "ci_hi": 0.5003,
-      "n_pos": 120,
-      "n_neg": 14
+      "n": 125,
+      "auc": 0.6938,
+      "ci_lo": 0.5823,
+      "ci_hi": 0.8054,
+      "n_pos": 125,
+      "n_neg": 22
     },
     "Colorectal cancer": {
-      "n": 19,
-      "auc": 0.9474,
-      "ci_lo": 0.8572,
+      "n": 20,
+      "auc": 0.9182,
+      "ci_lo": 0.8295,
       "ci_hi": 1.0,
-      "n_pos": 19,
-      "n_neg": 14
+      "n_pos": 20,
+      "n_neg": 22
     },
     "Esophageal cancer": {
       "skipped": true,
-      "reason": "n=1"
+      "reason": "n=2"
     },
     "Head and neck cancer": {
+      "skipped": true,
+      "reason": "n=2"
+    },
+    "Healthy": {
       "skipped": true,
       "reason": "n=1"
     },
     "Inflammatory bowel disease": {
       "skipped": true,
-      "reason": "n=1"
+      "reason": "n=4"
     },
     "Kidney cancer": {
       "skipped": true,
-      "reason": "n=1"
+      "reason": "n=2"
+    },
+    "Liver cancer": {
+      "skipped": true,
+      "reason": "n=2"
     },
     "Liver transplant": {
       "n": 13,
-      "auc": 0.5302,
-      "ci_lo": 0.305,
-      "ci_hi": 0.7554,
+      "auc": 0.5542,
+      "ci_lo": 0.3579,
+      "ci_hi": 0.7504,
       "n_pos": 13,
-      "n_neg": 14
+      "n_neg": 22
     },
     "Lung cancer": {
-      "skipped": true,
-      "reason": "n=1"
+      "n": 7,
+      "auc": 0.7403,
+      "ci_lo": 0.4389,
+      "ci_hi": 1.0,
+      "n_pos": 7,
+      "n_neg": 22
     },
     "Ovarian cancer": {
       "skipped": true,
-      "reason": "n=1"
+      "reason": "n=2"
+    },
+    "Pancreatic cancer": {
+      "n": 8,
+      "auc": 0.6023,
+      "ci_lo": 0.3327,
+      "ci_hi": 0.8718,
+      "n_pos": 8,
+      "n_neg": 22
     },
     "Prostate cancer": {
-      "n": 119,
-      "auc": 0.3193,
-      "ci_lo": 0.2362,
-      "ci_hi": 0.4024,
-      "n_pos": 119,
-      "n_neg": 14
+      "n": 122,
+      "auc": 0.7127,
+      "ci_lo": 0.59,
+      "ci_hi": 0.8355,
+      "n_pos": 122,
+      "n_neg": 22
+    },
+    "Skin cancer": {
+      "skipped": true,
+      "reason": "n=2"
+    },
+    "Systemic lupus erythematosus": {
+      "skipped": true,
+      "reason": "n=4"
+    },
+    "Testicular cancer": {
+      "skipped": true,
+      "reason": "n=2"
+    },
+    "Uterine cancer": {
+      "skipped": true,
+      "reason": "n=2"
     }
   },
   "honest_framing": "The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. Read the per-publication and per-disease rows before quoting the pooled number."

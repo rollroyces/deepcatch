@@ -80,7 +80,7 @@ python scripts/real_tcga_validation.py --report</code></pre>
                 <div class="card">
                     <h3>Tumor-naive fragmentomics</h3>
                     <p>5-mer end motifs + fragment size distribution + DELFI/WPS coverage profiles. No tumor mutations required. Best at pan-cancer screening.</p>
-                    <p><strong>AUC 0.9684 ± 0.0027</strong> on 627 cross-study samples from FinaleDB (GC-corrected; legacy no-GC baseline 0.9770 ± 0.0013). <strong>0.9915</strong> [0.9712&ndash;1.0000] on a held-out publication that contributes no training data.</p>
+                    <p><strong>AUC 0.9684 ± 0.0027</strong> on 627 cross-study samples from FinaleDB (GC-corrected; legacy no-GC baseline 0.9770 ± 0.0013). <strong>0.9444</strong> [0.8731&ndash;1.0000] on a held-out publication that contributes no training data, 0.708 on a second, 0.7385 pooled.</p>
                 </div>
                 <div class="card">
                     <h3>Fusion (naive average)</h3>
@@ -112,7 +112,8 @@ python scripts/real_tcga_validation.py --report</code></pre>
                 </thead>
                 <tbody>
                     <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.968 ± 0.003</td></tr>
-                    <tr><td>Held-out publications never trained on (Sun 2019 WGS)</td><td>31</td><td>Cancer vs control</td><td>0.9915 [0.9712&ndash;1.0000]</td></tr>
+                    <tr><td>Held-out publications never trained on (Sun 2019 WGS)</td><td>31</td><td>Cancer vs control</td><td>0.9444 [0.8731&ndash;1.0000]</td></tr>
+                    <tr><td>Held-out publication never trained on (Snyder 2016 WGS)</td><td>52</td><td>Cancer vs control</td><td>0.708 [0.5148&ndash;0.9012]</td></tr>
                     <tr><td>Leave-one-study-out (train one publication, test the other)</td><td>627</td><td>Transfer</td><td>0.681 / 0.936</td></tr>
                     <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.9884 ± 0.0010</td></tr>
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>

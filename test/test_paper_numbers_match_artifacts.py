@@ -64,9 +64,14 @@ def _cases():
 def test_quoted_number_is_present_wherever_it_is_cited(label, value,
                                                        documents):
     rendered = f"{value:.4f}"
+    # A value the artifact stores to three decimals (0.708) is rendered as
+    # "0.7080" at four. Accept the zero-trimmed form as well, so a document
+    # can quote the number at the precision the artifact actually carries
+    # without being forced into "0.7080".
+    trimmed = rendered.rstrip("0").rstrip(".")
     for doc in documents:
         text = _read(doc)
-        assert rendered in text, (
+        assert rendered in text or trimmed in text, (
             f"{doc} does not quote {rendered} (from {label}). Update the "
             f"prose or the artifact.")
 

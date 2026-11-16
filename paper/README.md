@@ -27,7 +27,7 @@ Everything below is backed by a committed artifact under `results/`:
 |---|---|---|
 | Panel LLR at 0.1% ctDNA | AUC 0.921 (Sens@95% 0.770) | `results/real_tcga_validation.json` |
 | Tumor-naive fragmentomics, pooled, GC-corrected | 0.9684 ± 0.0027 | `results/cross_study_finallydb_gc_corrected.json` |
-| Held-out external cohorts (never trained on) | 0.9915 [0.9712–1.0000], pooled 0.8819 | `results/external_validation_finaledb.json` |
+| Held-out external cohorts (never trained on) | 0.9444 [0.8731–1.0000] (pub 7), 0.708 (pub 1), pooled 0.7385 | `results/external_validation_finaledb.json` |
 | Leave-one-study-out transfer | 0.6805 / 0.9361 | `results/cross_study_loso.json` |
 | Late fusion vs the neural encoder | 0.9825 ± 0.0094 vs 0.554 | `results/fusion_regularized_smoke.json` |
 | Methylation channel | **null** (0.9444 = the coverage baseline) | `results/methylation_channel_diagnosis.json` |

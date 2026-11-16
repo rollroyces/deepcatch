@@ -31,11 +31,12 @@ abstract: >
   distribution) is extracted from publicly served FinaleDB fragment files and
   scored with a per-study harmonised PCA + logistic-regression pipeline.
   Training on FinaleDB publications 6 + 8 (n=627) and testing on held-out
-  publications 1, 7 and 9 gives an external AUC of 0.9915 [0.9712, 1.0000] on
-  the whole-genome publication (n=31) and 0.8819 [0.7701, 0.9936] pooled over
-  the publications carrying both classes; the whole-exome publication does not
-  transfer (breast 0.4119, prostate 0.3193), so the assay platform, not the
-  study, is the binding constraint. A leave-one-study-out run inside the
+  publications 1, 7 and 9 gives an external AUC of 0.9444 [0.8731, 1.0000] on
+  one whole-genome publication (n=31), 0.708 [0.5148, 0.9012] on a second
+  (n=52), and 0.7385 [0.6281, 0.8488] pooled over the publications carrying
+  both classes; the whole-exome publication transfers only partly (breast
+  0.6938, prostate 0.7127). Transfer between whole-genome studies is real but
+  far from uniform, and the assay platform blunts it further. A leave-one-study-out run inside the
   training cohort gives 0.6805, so the pooled 0.9670 is reported as a
   within-cohort separation number rather than a generalisation claim. The
   multi-modal stage is carried by a regularized late fusion (AUC 0.9825) and a

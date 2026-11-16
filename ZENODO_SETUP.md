@@ -36,7 +36,7 @@ the tip of `main`, not an older commit):
 # From the local repo
 cd /path/to/deepcatch
 git checkout main && git pull
-git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9915), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
+git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9444), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
 git push origin v2.3.0
 ```
 
