@@ -601,3 +601,152 @@ def test_verify_publication_readiness_runs_offline(tmp_path):
     assert sorted(payload["default_scope"]) == ["6", "8"]
     # Honest summary mentions the blocked publications.
     assert "1" in payload["honest_summary"] or "snyder" in payload["honest_summary"].lower()
+
+
+# ──────────────────────────────────────────────────────────────────────
+# The held-out external cohort must never read as "unusable"
+#
+# The readiness diagnostic only sees the *training* labels file and the
+# *training* feature cache, so the held-out publications come out as
+# `labels-missing` — which reads as "cannot be used". They can be used:
+# they are the external test set, fetched from the public API/S3 and
+# scored by the external validation. The document said otherwise
+# ("BLOCKED ... the API/S3 are not reachable to fetch them") while its
+# own API verdict read `ok`, and the correcting note had been
+# hand-edited into a *generated* file, so the next run of the generator
+# would have deleted it.
+# ──────────────────────────────────────────────────────────────────────
+
+def _minimal_readiness_fixture(tmp_path: Path) -> tuple[Path, Path]:
+    """A labels file with one study and an empty feature cache.
+
+    The held-out marking does not depend on the features, so the
+    fixture stays minimal: publication 6 has labels but no features,
+    publications 1, 7 and 9 have neither.
+    """
+    feat_dir = tmp_path / "features"
+    feat_dir.mkdir()
+    studies = {"JIC000": "jiang", "JIH000": "jiang"}
+    disease_class = {"JIC000": "HCC", "JIH000": "HEALTHY"}
+    labels = {"JIC000": 1, "JIH000": 0}
+    labels_path = tmp_path / "labels_multiclass.tsv"
+    _make_synthetic_labels_file(labels_path, studies, disease_class, labels)
+    return feat_dir, labels_path
+
+
+def _run_readiness(tmp_path: Path, feat_dir: Path, labels_path: Path,
+                   external_validation: Path) -> tuple[dict, str]:
+    out_json = tmp_path / "readiness.json"
+    out_md = tmp_path / "readiness.md"
+    cmd = [
+        sys.executable, "-u", "scripts/_verify_publication_readiness.py",
+        "--features-dir", str(feat_dir),
+        "--labels-multiclass", str(labels_path),
+        "--external-validation", str(external_validation),
+        "--skip-network",
+        "--out-json", str(out_json),
+        "--out-md", str(out_md),
+    ]
+    r = subprocess.run(cmd, capture_output=True, text=True,
+                       cwd=str(_REPO_ROOT), timeout=60)
+    assert r.returncode == 0, (
+        f"readiness script failed (rc={r.returncode}):\n"
+        f"stdout:\n{r.stdout[-2000:]}\nstderr:\n{r.stderr[-2000:]}"
+    )
+    return json.loads(out_json.read_text()), out_md.read_text()
+
+
+def test_the_generator_reads_the_held_out_cohort_from_the_artifact(tmp_path):
+    """The generator must take the held-out cohort from the artifact.
+
+    The artifact written here is deliberately NOT the real one: it
+    scores publication 6 only, while the committed external validation
+    scores 1, 7 and 9. If the generator hard-coded the cohort, the
+    output would still name 1, 7 and 9. If it reads the artifact, the
+    output names 6 and stops calling 1, 7 and 9 unusable.
+    """
+    feat_dir, labels_path = _minimal_readiness_fixture(tmp_path)
+    external = tmp_path / "external_validation.json"
+    external.write_text(json.dumps({
+        "per_publication_auc": {"6": {"auc": 0.5, "n": 2}},
+        "design": {"test": "publication 6 only"},
+    }))
+
+    payload, md = _run_readiness(tmp_path, feat_dir, labels_path, external)
+
+    # The cohort came from the artifact, not from a constant.
+    assert payload["held_out_external"]["publications"] == ["6"], (
+        "the generator did not read the held-out cohort from the artifact: "
+        f"{payload['held_out_external']}"
+    )
+    assert payload["per_publication"]["6"]["held_out_external"] is True
+    for pub in ("1", "7", "9"):
+        assert payload["per_publication"][pub]["held_out_external"] is False, (
+            f"publication {pub} was reported as held out without the artifact "
+            f"naming it"
+        )
+
+    # And the document follows: 6 is held out, 1/7/9 are not.
+    assert "Publications 6 are exactly the studies" in md, (
+        f"the document did not report the artifact's held-out cohort:\n{md}"
+    )
+    blocked_line = re.search(r"\*\*BLOCKED publications\*\*:[^\n]*", md)
+    blocked = set(re.findall(r"`(\d)`", blocked_line.group(0))) if blocked_line else set()
+    assert {"1", "7", "9"} <= blocked, (
+        "the document still hides the real cohort behind a blocked verdict, "
+        f"so it is not reading the artifact:\n{md}"
+    )
+
+
+def test_the_committed_readiness_document_does_not_call_the_held_out_cohort_blocked():
+    """The committed document must not contradict the external validation.
+
+    Every publication the external validation scores is, by definition,
+    usable — it was fetched and scored. If the readiness document lists
+    one of them as blocked, the repository is telling a reader that its
+    own headline external evidence is unusable.
+    """
+    external = json.loads(
+        (_REPO_ROOT / "results" / "external_validation_finaledb.json").read_text()
+    )
+    cohort = sorted(external["per_publication_auc"])
+    assert cohort, "the external validation artifact names no publication"
+
+    md = (_REPO_ROOT / "docs" / "PUBLICATION_READINESS.md").read_text()
+    blocked_line = re.search(r"\*\*BLOCKED publications\*\*:[^\n]*", md)
+    blocked = set(re.findall(r"`(\d)`", blocked_line.group(0))) if blocked_line else set()
+
+    assert not (set(cohort) & blocked), (
+        f"the readiness document calls publications {sorted(set(cohort) & blocked)} "
+        f"blocked, but the external validation scored them: {md}"
+    )
+
+    # Every held-out publication is marked as such in the table.
+    for pub in cohort:
+        row = re.search(rf"^\| {pub} \| [^|]+\| `[^`]+` \| (yes|no) \|",
+                        md, re.MULTILINE)
+        assert row, f"publication {pub} has no row in the readiness table"
+        assert row.group(1) == "yes", (
+            f"publication {pub} is scored by the external validation but the "
+            f"readiness table does not mark it as held-out external"
+        )
+
+
+def test_the_committed_readiness_artifact_agrees_with_the_external_validation():
+    """The readiness artifact's held-out cohort is the external one."""
+    external = json.loads(
+        (_REPO_ROOT / "results" / "external_validation_finaledb.json").read_text()
+    )
+    readiness = json.loads(
+        (_REPO_ROOT / "results" / "publication_readiness.json").read_text()
+    )
+    assert readiness["held_out_external"]["publications"] == sorted(
+        external["per_publication_auc"]
+    ), (
+        "the readiness artifact and the external validation disagree about "
+        "the held-out cohort"
+    )
+    for pub, entry in readiness["per_publication"].items():
+        assert entry["held_out_external"] == (
+            pub in external["per_publication_auc"]
+        ), f"publication {pub} is marked inconsistently between the artifacts"

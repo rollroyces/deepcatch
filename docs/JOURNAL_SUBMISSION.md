@@ -76,7 +76,7 @@ independent researcher can produce.
 |---|---|
 | Public, versioned repository | ✅ MIT-licensed, tagged releases |
 | Installable package | ✅ `pyproject.toml` |
-| Test suite | ✅ 725 tests (`pytest src test -q`), split across two CI jobs |
+| Test suite | ✅ 728 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
 | **DOI** | ⬜ requires Zenodo's GitHub integration + the `v2.3.0` tag |

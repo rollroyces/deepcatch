@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T16:54:53.394362+00:00",
+  "generated_at": "2026-11-16T14:40:29.983122+00:00",
   "labels_file": "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv",
   "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
   "finaledb_api": {
@@ -28,7 +28,7 @@
     },
     "verdict": "ok",
     "verdict_reason": "All probed endpoints respond. Features for publications missing locally can be re-fetched via the standard pipeline.",
-    "checked_at": "2026-11-15T16:54:49.994887+00:00"
+    "checked_at": "2026-11-16T14:40:25.488537+00:00"
   },
   "finaledb_s3": {
     "url": "https://s3.us-east-2.amazonaws.com/finaledb.epifluidlab.cchmc.org/",
@@ -60,16 +60,17 @@
         "status": 403
       }
     ],
-    "checked_at": "2026-11-15T16:54:53.390823+00:00"
+    "checked_at": "2026-11-16T14:40:29.981741+00:00"
   },
   "per_publication": {
     "1": {
       "verdict": "labels-missing",
-      "reason": "No samples in the labels file reference this publication.",
+      "reason": "Not in the training labels file BY DESIGN: this publication is the held-out external cohort. Its features are fetched from the public API/S3 and scored by the external validation; it contributes no training data.",
       "n_labels": 0,
       "n_cancer": 0,
       "n_healthy": 0,
       "n_features": false,
+      "held_out_external": true,
       "study_label": "snyder"
     },
     "6": {
@@ -79,15 +80,17 @@
       "n_cancer": 89,
       "n_healthy": 32,
       "n_features": true,
+      "held_out_external": false,
       "study_label": "jiang"
     },
     "7": {
       "verdict": "labels-missing",
-      "reason": "No samples in the labels file reference this publication.",
+      "reason": "Not in the training labels file BY DESIGN: this publication is the held-out external cohort. Its features are fetched from the public API/S3 and scored by the external validation; it contributes no training data.",
       "n_labels": 0,
       "n_cancer": 0,
       "n_healthy": 0,
       "n_features": false,
+      "held_out_external": true,
       "study_label": "sun"
     },
     "8": {
@@ -97,15 +100,17 @@
       "n_cancer": 275,
       "n_healthy": 262,
       "n_features": true,
+      "held_out_external": false,
       "study_label": "cristiano"
     },
     "9": {
       "verdict": "labels-missing",
-      "reason": "No samples in the labels file reference this publication.",
+      "reason": "Not in the training labels file BY DESIGN: this publication is the held-out external cohort. Its features are fetched from the public API/S3 and scored by the external validation; it contributes no training data.",
       "n_labels": 0,
       "n_cancer": 0,
       "n_healthy": 0,
       "n_features": false,
+      "held_out_external": true,
       "study_label": "adalsteinsson"
     }
   },
@@ -113,5 +118,15 @@
     "6",
     "8"
   ],
-  "honest_summary": "FinaleDB API verdict: `ok`. Blocked publications: 1 (snyder), 7 (sun), 9 (adalsteinsson). The cross-study benchmark uses the `ready` set (['6', '8']) until API/S3 are restored."
+  "held_out_external": {
+    "artifact": "results/external_validation_finaledb.json",
+    "present": true,
+    "publications": [
+      "1",
+      "7",
+      "9"
+    ],
+    "source": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on"
+  },
+  "honest_summary": "FinaleDB API verdict: `ok`. Held-out external cohort (scored, not blocked): 1 (snyder), 7 (sun), 9 (adalsteinsson) (from results/external_validation_finaledb.json). No publication is blocked on infrastructure. The cross-study benchmark uses the `ready` set (['6', '8']); the held-out cohort is scored separately by scripts/external_validation_finaledb.py."
 }

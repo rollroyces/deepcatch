@@ -91,6 +91,34 @@ cohort size.
 
 ### Fixed
 
+- **The readiness report called the external cohort unusable.** The
+  publication-readiness diagnostic only sees the *training* labels file
+  and the *training* feature cache, so the held-out publications come
+  out as `labels-missing` — and the document's "Honest reading" then
+  called them "**BLOCKED** ... blocked on **FinaleDB infrastructure** ...
+  the API/S3 are not reachable to fetch them", while the same document's
+  own API verdict read `ok` and its S3 verdict read `partial`. They are
+  not unusable: publications 1, 7 and 9 **are** the external test set,
+  fetched from the public API/S3 and scored by
+  `scripts/external_validation_finaledb.py`. The correcting note had also
+  been hand-edited into a *generated* file, so the next run of the
+  generator would have deleted it. The generator now reads the held-out
+  cohort from the external-validation artifact, emits the note itself,
+  separates "held out" from "blocked", and a test writes a deliberately
+  different cohort into a fixture artifact and asserts the document
+  follows it.
+  `scripts/_verify_publication_readiness.py`,
+  `docs/PUBLICATION_READINESS.md`.
+- **The Chinese README stated the fast-path gate from an older run.** Its
+  table said 541 collected / 505 passed and its file tree said 528
+  fast-path tests, while the English original said 540 collected / 504
+  passed and 527 fast-path tests — the translation was one test behind
+  and nothing compared the two. Both READMEs now state what the gate
+  actually produces (543 collected, 507 passed + 23 skipped + 13
+  deselected, 530 fast-path tests), and the suite-table guard checks the
+  English one against a real collection.
+  `README.md`, `README.zh-CN.md`.
+
 - **A stated limitation was not true.** The repository said twice that the
   cross-study benchmark's healthy arm was "FinaleDB TF=0 arms (modeled
   cancer-at-TF=0 read depth), not real healthy-donor plasma". Checked

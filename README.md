@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-725%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-728%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -190,7 +190,7 @@ docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 Validate the install:
 ```bash
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_publication_readiness.py -m "not slow" -q
-# → 12 passed
+# → 15 passed
 ```
 
 ---
@@ -337,7 +337,7 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 504 passed, 23 skipped, 13 deselected (slow real-data smoke)
+# → 507 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -355,12 +355,12 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 
 | Module | Tests | Status |
 |---|---:|---|
-| `test/test_publication_readiness.py` | 12 | ✅ all passing |
+| `test/test_publication_readiness.py` | 15 | ✅ all passing |
 | `test/test_biomedical_review_fixes.py` | 37 | ✅ all passing |
 | `test/test_foundation_smoke.py` | 8 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **540 collected** | **504 passed + 23 skipped + 13 deselected** |
+| **Combined fast-path gate** | **543 collected** | **507 passed + 23 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
 
@@ -409,7 +409,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 40 test files (527 fast-path tests)
+├── test/                         # 40 test files (530 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts

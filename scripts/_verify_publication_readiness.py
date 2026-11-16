@@ -263,16 +263,59 @@ def count_label_samples_per_publication(labels, studies, disease_class,
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Held-out external cohort
+# ──────────────────────────────────────────────────────────────────────
+def load_held_out_cohort(path):
+    """Read the publications the external validation actually scored.
+
+    This diagnostic only sees the *training* feature cache and the
+    *training* labels file, so the held-out publications look
+    `labels-missing` — as if they were unusable. They are not: they are
+    the external test set, fetched from the public FinaleDB API/S3 and
+    scored by `scripts/external_validation_finaledb.py`.
+
+    The fact is therefore READ from the artifact that records it rather
+    than hard-coded here. A generator that writes a number it did not
+    measure is how a document ends up contradicting its own artifact.
+    """
+    info = {
+        "artifact": path,
+        "present": False,
+        "publications": [],
+        "source": None,
+    }
+    try:
+        with open(path) as fh:
+            payload = json.load(fh)
+    except (OSError, ValueError):
+        return info
+    per_pub = payload.get("per_publication_auc") or {}
+    info["present"] = True
+    info["publications"] = sorted(per_pub.keys())
+    design = payload.get("design") or {}
+    info["source"] = design.get("test")
+    return info
+
+
+# ──────────────────────────────────────────────────────────────────────
 # Verdict per publication
 # ──────────────────────────────────────────────────────────────────────
-def classify_publication(api_verdict, n_label, n_features):
+def classify_publication(api_verdict, n_label, n_features, held_out=False):
     """Classify one publication as `ready` / `features-missing` /
     `labels-missing` / `api-down`.
 
     `n_label`    = # samples in labels file with this publication (post cell-line)
     `n_features` = bool — at least one label sample has all 5 features locally
+    `held_out`   = bool — the publication is scored by the external validation
     """
     if n_label == 0:
+        if held_out:
+            return "labels-missing", (
+                "Not in the training labels file BY DESIGN: this publication "
+                "is the held-out external cohort. Its features are fetched "
+                "from the public API/S3 and scored by the external "
+                "validation; it contributes no training data."
+            )
         return "labels-missing", (
             "No samples in the labels file reference this publication."
         )
@@ -314,15 +357,37 @@ def write_markdown(report, md_path):
             + (f" — {s3['verdict_reason']}" if s3.get("verdict_reason") else "")
             + "\n")
 
+    # The held-out cohort note is emitted from the artifact that records it,
+    # so re-running this generator cannot silently drop it (it was
+    # hand-edited into this file once and the next run would have deleted
+    # it).
+    held = report.get("held_out_external") or {}
+    training_pubs = [p for p in sorted(PUBLICATION_REGISTRY)
+                     if report["per_publication"][p]["n_labels"] > 0]
+    if held.get("present") and held.get("publications"):
+        L.append(
+            "\n**Read `labels-missing` as \"not in the training labels file\", "
+            "not \"unusable\".**\n"
+            f"Publications {', '.join(held['publications'])} are exactly the "
+            "studies used as the held-out external cohort "
+            f"(`{held['artifact']}`): they are fetched from the API and the "
+            "S3 bucket for scoring, and deliberately contribute no training "
+            f"data. The training labels file carries publications "
+            f"{', '.join(training_pubs)} only.\n"
+        )
+
     L.append("\n## Per-publication readiness\n\n")
-    L.append("| Publication | Study | Verdict | n_labels (cell-line filtered) | "
-            "n_features_present | Why |\n")
-    L.append("|---|---|---|---:|---:|---|\n")
+    L.append("| Publication | Study | Verdict | Held-out external | "
+            "n_labels (cell-line filtered) | "
+            "n_features_present (training cache) | Why |\n")
+    L.append("|---|---|---|---|---:|---:|---|\n")
     for pub in sorted(PUBLICATION_REGISTRY):
         s = report["per_publication"][pub]
         L.append(
             f"| {pub} | {PUBLICATION_REGISTRY[pub]} | "
-            f"`{s['verdict']}` | {s['n_labels']} | "
+            f"`{s['verdict']}` | "
+            f"{'yes' if s.get('held_out_external') else 'no'} | "
+            f"{s['n_labels']} | "
             f"{'yes' if s['n_features'] else 'no'} | {s['reason']} |\n"
         )
 
@@ -338,26 +403,44 @@ def write_markdown(report, md_path):
 
     # Honest reading.
     L.append("\n## Honest reading\n\n")
+    held_pubs = [pub for pub, s in report["per_publication"].items()
+                 if s.get("held_out_external")]
     blocked = [pub for pub, s in report["per_publication"].items()
-              if s["verdict"] != "ready"]
+               if s["verdict"] != "ready" and pub not in held_pubs]
+    if held_pubs:
+        L.append("**Held-out external cohort** (not blocked): "
+                 + ", ".join(f"`{pub}` ({PUBLICATION_REGISTRY[pub]})"
+                             for pub in held_pubs)
+                 + f" — scored in `{held.get('artifact')}`. They are absent "
+                   "from the training labels file *by design*: they are the "
+                   "external test set, fetched from the public API/S3 for "
+                   "scoring, contributing no training data. Their results "
+                   "are in `docs/EXTERNAL_VALIDATION.md`.\n\n")
     if not blocked:
-        L.append("All FinaleDB publications in the registry are `ready`. The "
-                "default `--publications 6 8` benchmark can be extended to "
-                "include 1 (Snyder) and 7 (Sun) without API changes.\n")
+        L.append("**No publication is blocked on FinaleDB infrastructure.**\n\n")
     else:
         L.append("**BLOCKED publications**: " +
                 ", ".join(f"`{pub}` ({PUBLICATION_REGISTRY[pub]})" for pub in blocked) +
                 "\n\n")
-        L.append("These are blocked on **FinaleDB infrastructure**, not on "
-                "this repo. The labels file references them, but no local "
-                "5-channel DELFI features exist (and the API/S3 are not "
-                "reachable to fetch them). Re-run this diagnostic after "
-                "FinaleDB authors restore API/S3 access.\n\n")
-        L.append("Until then, the cross-study benchmark uses `"
-                + " ".join(report["default_scope"]) +
-                "` (the only publications with `ready` status). "
-                "Numbers from the `--publications 6 8` run are the "
-                "honest open-data cross-study benchmark.\n")
+        if api["verdict"] in ("api-down", "unreachable", "degraded"):
+            L.append("These are blocked on **FinaleDB infrastructure**, not on "
+                     "this repo. The labels file references them, but no local "
+                     "5-channel DELFI features exist in the training cache "
+                     f"and the API/S3 were not usable to fetch them "
+                     f"(API verdict `{api['verdict']}`). Re-run this "
+                     "diagnostic after FinaleDB authors restore API/S3 "
+                     "access.\n\n")
+        else:
+            L.append("These are not in the training cache and not scored by "
+                     "the external validation, so they contribute no "
+                     "benchmark result today. The API reports as reachable "
+                     f"(verdict `{api['verdict']}`), so the standard fetch "
+                     "pipeline can populate them.\n\n")
+    L.append("The cross-study benchmark trains on the `ready` set (`"
+             + " ".join(report["default_scope"]) +
+             "`). The held-out cohort is scored separately by "
+             "`scripts/external_validation_finaledb.py`; its numbers are in "
+             "`docs/EXTERNAL_VALIDATION.md`.\n")
 
     os.makedirs(os.path.dirname(md_path) or ".", exist_ok=True)
     with open(md_path, "w") as f:
@@ -378,6 +461,11 @@ def main():
                     default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
     ap.add_argument("--out-json", default="results/publication_readiness.json")
     ap.add_argument("--out-md", default="docs/PUBLICATION_READINESS.md")
+    ap.add_argument("--external-validation",
+                    default="results/external_validation_finaledb.json",
+                    help="Artifact recording the held-out external cohort. "
+                         "The diagnostic reads it so that a publication "
+                         "scored there is never reported as unusable.")
     ap.add_argument("--skip-network", action="store_true",
                     help="Skip the API/S3 probes (useful for CI / offline runs).")
     args = ap.parse_args()
@@ -409,6 +497,18 @@ def main():
     print(f"      Loaded {len(labels)} samples")
 
     print(f"[3/3] Per-publication readiness")
+    held = load_held_out_cohort(args.external_validation)
+    # A sorted list, not a set: set iteration order over strings varies
+    # with the hash seed, so a set would make the artifact's wording
+    # differ between runs of the same input.
+    held_pubs = sorted(held["publications"])
+    if held["present"]:
+        print(f"      Held-out external cohort (from {args.external_validation}): "
+              f"{', '.join(held['publications']) or 'none'}")
+    else:
+        print(f"      Held-out external cohort: artifact not found at "
+              f"{args.external_validation} — publications may be reported "
+              f"as unusable when they are only held out")
     label_counts = count_label_samples_per_publication(
         labels, studies, disease_class, publication
     )
@@ -419,7 +519,8 @@ def main():
             labels, studies, publication, pub, args.features_dir
         )
         verdict, reason = classify_publication(
-            api_report["verdict"], n_label, n_feat
+            api_report["verdict"], n_label, n_feat,
+            held_out=pub in held_pubs,
         )
         per_pub[pub] = {
             "verdict": verdict,
@@ -428,11 +529,13 @@ def main():
             "n_cancer": label_counts[pub]["n_cancer"],
             "n_healthy": label_counts[pub]["n_healthy"],
             "n_features": bool(n_feat),
+            "held_out_external": pub in held_pubs,
             "study_label": PUBLICATION_REGISTRY[pub],
         }
-        flag = "✅" if verdict == "ready" else "❌"
+        flag = "✅" if verdict == "ready" else ("🧪" if pub in held_pubs else "❌")
         print(f"      {flag} {pub} ({PUBLICATION_REGISTRY[pub]}): {verdict} "
-              f"(n_labels={n_label}, features={'yes' if n_feat else 'no'})")
+              f"(n_labels={n_label}, features={'yes' if n_feat else 'no'}"
+              + (", held-out external" if pub in held_pubs else "") + ")")
 
     # Default scope = publications that are `ready`.
     default_scope = sorted(pub for pub, s in per_pub.items()
@@ -441,6 +544,29 @@ def main():
         # Fall back to the script's hardcoded default (pubs 6 + 8) so the
         # diagnostic doesn't lie when nothing is `ready`.
         default_scope = ["6", "8"]
+
+    blocked_pubs = sorted(p for p, s in per_pub.items()
+                          if s["verdict"] != "ready" and not s["held_out_external"])
+    summary_bits = [f"FinaleDB API verdict: `{api_report['verdict']}`."]
+    if held["present"] and held_pubs:
+        summary_bits.append(
+            "Held-out external cohort (scored, not blocked): "
+            + ", ".join(f"{p} ({per_pub[p]['study_label']})" for p in held_pubs)
+            + f" (from {args.external_validation})."
+        )
+    if blocked_pubs:
+        summary_bits.append(
+            "Blocked publications: "
+            + ", ".join(f"{p} ({per_pub[p]['study_label']})" for p in blocked_pubs)
+            + "."
+        )
+    else:
+        summary_bits.append("No publication is blocked on infrastructure.")
+    summary_bits.append(
+        "The cross-study benchmark uses the `ready` set "
+        f"({default_scope}); the held-out cohort is scored separately by "
+        "scripts/external_validation_finaledb.py."
+    )
 
     report = {
         "schema_version": "1.0",
@@ -451,18 +577,8 @@ def main():
         "finaledb_s3": s3_report,
         "per_publication": per_pub,
         "default_scope": default_scope,
-        "honest_summary": (
-            f"FinaleDB API verdict: `{api_report['verdict']}`. "
-            + ("" if not [p for p, s in per_pub.items() if s["verdict"] != "ready"]
-                else
-                f"Blocked publications: "
-                + ", ".join(f"{p} ({per_pub[p]['study_label']})"
-                            for p in sorted(per_pub)
-                            if per_pub[p]["verdict"] != "ready")
-                + ". The cross-study benchmark uses the `ready` set "
-                f"({default_scope}) until API/S3 are restored."
-            )
-        ),
+        "held_out_external": held,
+        "honest_summary": " ".join(summary_bits),
     }
 
     os.makedirs(os.path.dirname(args.out_json) or ".", exist_ok=True)
