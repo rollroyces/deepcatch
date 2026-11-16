@@ -60,7 +60,8 @@ QUOTED_NUMBERS = [
      ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
     ("cross_study_finallydb_gc_corrected.json",
      ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md", "paper.md", "README.md", "MODEL.md",
+     ["paper/METHODS_PAPER.md", "paper.md", "README.md", "README.zh-CN.md",
+      "MODEL.md", "RESULTS.md", "TEAM.md", "results/README.md",
       "ULTRA_EARLY_READINESS.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
     # The per-cohort rows of the same table. They were quoted from an
     # earlier, unseeded run for a long time, so they are on the list too.
@@ -86,8 +87,9 @@ QUOTED_NUMBERS = [
      ["docs/HARMONIZATION.md"]),
     ("cross_study_finallydb.json",
      ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md", "README.md", "ULTRA_EARLY_READINESS.md",
-      "docs/CROSS_STUDY_BENCHMARK.md"]),
+     ["paper/METHODS_PAPER.md", "README.md", "README.zh-CN.md",
+      "ULTRA_EARLY_READINESS.md", "MODEL.md", "RESULTS.md", "TEAM.md",
+      "results/README.md", "docs/CROSS_STUDY_BENCHMARK.md"]),
     ("methylation_cohort_channel.json",
      ("beta_summary_auc_loo",),
      ["paper/paper.tex", "paper.md", "README.md", "MODEL.md",
@@ -106,7 +108,8 @@ for _cancer in _TOP5_CANCERS:
     QUOTED_NUMBERS.append((
         "per_cancer_sens_at_spec.json",
         ("per_cancer", _cancer, "sens_at_99"),
-        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"],
+        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
+         "ULTRA_EARLY_READINESS.md", "docs/ULTRA_EARLY_READINESS_AUTO.md"],
     ))
 
 # Numbers that need a lookup rather than a plain path.
@@ -115,6 +118,15 @@ QUOTED_SPECIAL = [
      "paper/paper.tex"),
     ("cross_study_loso.json", "loso cristiano -> jiang",
      "paper/paper.tex"),
+    # The model card and the results index quote both transfer directions.
+    ("cross_study_loso.json", "loso jiang -> cristiano",
+     "MODEL.md"),
+    ("cross_study_loso.json", "loso cristiano -> jiang",
+     "MODEL.md"),
+    ("cross_study_loso.json", "loso jiang -> cristiano",
+     "RESULTS.md"),
+    ("cross_study_loso.json", "loso cristiano -> jiang",
+     "RESULTS.md"),
     ("fusion_ablation_isotonic.json", "naive_average",
      "paper/paper.tex"),
 ]
@@ -153,6 +165,20 @@ QUOTED_SPECIAL.append(
 QUOTED_SPECIAL.append(
     ("cross_study_loso.json", "in_domain cristiano",
      "MODEL.md"))
+# The team page and the results index quote the same in-domain pair
+# against the transfer numbers.
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain jiang",
+     "TEAM.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain cristiano",
+     "TEAM.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain jiang",
+     "results/README.md"))
+QUOTED_SPECIAL.append(
+    ("cross_study_loso.json", "in_domain cristiano",
+     "results/README.md"))
 
 # Documents that quote the true-confound control. The GC-corrected
 # value is the one the headline benchmark uses; the legacy value is
@@ -162,7 +188,7 @@ QUOTED_NUMBERS.append(
     ("cross_study_finallydb_gc_corrected.json",
      ("true_confound_control", "cancer_jiang_healthy_cristiano",
       "harmonized", "auc_mean"),
-     ["README.md", "ULTRA_EARLY_READINESS.md",
+     ["README.md", "README.zh-CN.md", "RESULTS.md", "ULTRA_EARLY_READINESS.md",
       "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
       "docs/ULTRA_EARLY_READINESS_AUTO.md"]))
 QUOTED_NUMBERS.append(

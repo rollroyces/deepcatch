@@ -91,6 +91,19 @@ cohort size.
 
 ### Fixed
 
+- **The drift guard covered fewer documents than quote the numbers.**
+  An audit that walks every quoted number and finds every document
+  quoting it showed that the legacy (no-GC) benchmark's pooled AUC was
+  quoted by nine documents while the guard named four, and that the
+  leave-one-study-out in-domain pair and both transfer directions, and
+  the true-confound control, were quoted by the team page, the model
+  card, the results index and the Simplified-Chinese README without
+  being named at all — so those copies could drift with nothing
+  failing. The legacy and GC-corrected pooled AUCs, the true-confound
+  control and the LOSO in-domain pair are now required of every
+  document that quotes them, and the per-cancer sens@99 row is required
+  of the readiness documents that print it.
+  `scripts/benchmark_numbers.py`.
 - **A cohort count mixed two different numbers.** The readiness
   document said "n=627 samples with 364 cancer + 263 healthy"; 627 is
   363 + 264, and 364 + 294 is the *candidate* count the labels file
