@@ -355,8 +355,8 @@ def test_cross_study_pipeline_gc_correction_off_unchanged(tmp_path):
     the load5 layer — see test_load5_with_gc_correction_produces_different_output
     for the loader contract. Here we verify that the `--no-gc-correction`
     flag still produces a reasonable pooled AUC (within ~0.005 of the
-    pre-GC baseline of 0.9747 — the only deviation allowed is platform
-    numpy drift / harness seeding).
+    pre-GC baseline the legacy artifact holds, 0.9770 — the only
+    deviation allowed is platform numpy drift / harness seeding).
 
     We use a single seed (`--seeds 42`) to keep the test under 5 minutes.
     """
@@ -367,7 +367,7 @@ def test_cross_study_pipeline_gc_correction_off_unchanged(tmp_path):
             "verify OFF produces a sensible AUC"
         )
     existing = json.loads(existing_json.read_text())
-    # The existing baseline (5 seeds x 5 fold x PCA=200) is 0.9747.
+    # The existing baseline (5 seeds x 5 fold x PCA=200) is 0.9770.
     # We use 1 seed x PCA=20 — the AUC may be lower (smaller PCA) but
     # should stay in [0.94, 0.99].
     baseline_auc = float(existing["pooled"]["harmonized"]["auc_mean"])
@@ -406,7 +406,7 @@ def test_cross_study_pipeline_gc_correction_off_unchanged(tmp_path):
     # The OFF path should keep the pooled AUC within the 0.92-0.99
     # band of the original benchmark. (We allow a wide band because a
     # single-seed PCA=20 run is noisier than the five-seed PCA=200
-    # baseline of 0.9747.)
+    # baseline of 0.9770.)
     assert 0.92 <= new_auc <= 0.99, (
         f"--no-gc-correction should produce a pooled AUC in the same "
         f"band as the pre-GC baseline ({baseline_auc:.4f}); got "

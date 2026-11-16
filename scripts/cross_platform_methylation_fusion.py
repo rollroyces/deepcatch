@@ -448,8 +448,8 @@ def main() -> int:
             "deepcatch-methylation/docs/METHYLATION_PROXY_RESULTS.md for "
             "the detailed honest caveats.",
             "The HCC_J per-cancer OvR AUC is 0.753 — the pooled cross-study "
-            "AUC is 0.9747 (see RESULTS.md). OvR is per-cancer-vs-all-healthy "
-            "and is harder than pooled.",
+            "AUC is 0.9684 (the GC-corrected headline; see RESULTS.md). "
+            "OvR is per-cancer-vs-all-healthy and is harder than pooled.",
         ],
     }
 

@@ -142,7 +142,11 @@ cohort size.
   shuffled-label null (0.4460) are pinned too, and the driver runs the
   with-motifs sweep; `quoted_artifacts()` now counts the table-row pins,
   so an artifact pinned only by a row is no longer invisible to the
-  driver's coverage test.
+  driver's coverage test. Both new steps were executed against the
+  committed artifacts: the with-motifs sweep reproduces all 483 numeric
+  fields of `cross_study_finallydb_with_motifs.json` exactly, and the
+  late-fusion smoke reproduces all 218 of
+  `fusion_regularized_smoke.json`.
   `scripts/benchmark_numbers.py`, `paper/REPRODUCE.sh`.
 - **The readiness verdict was regenerated after the proof step and
   never compared.** It is derived from the artifacts the run just
