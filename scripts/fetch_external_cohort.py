@@ -197,8 +197,38 @@ def select_cohort(rows: list[dict], publications: set[int],
     return selected
 
 
+def existing_stats(features_dir: str, sample: str) -> dict | None:
+    """The extraction stats for a sample already on disk, or None.
+
+    ``extract_sample`` returns these numbers; they are also recoverable
+    from the two summary files it writes, so a re-run can record a
+    previously fetched sample in the manifest without downloading it
+    again.
+    """
+    delfi_path = os.path.join(features_dir, f"{sample}.delfi.json")
+    fsd_path = os.path.join(features_dir, f"{sample}.fsd.json")
+    if not (os.path.exists(delfi_path) and os.path.exists(fsd_path)):
+        return None
+    try:
+        with open(delfi_path) as f:
+            delfi = json.load(f)
+        with open(fsd_path) as f:
+            fsd = json.load(f)
+    except (OSError, ValueError):
+        return None
+    return {
+        "sample": sample,
+        "genome_short_long_ratio": delfi.get("genome_short_long_ratio"),
+        "mean_short_frac": delfi.get("mean_short_frac"),
+        "fsd_fragment_count": fsd.get("fragment_count"),
+        "fsd_short_fraction": fsd.get("short_fraction_100_150"),
+        "fsd_short_long_ratio": fsd.get("short_long_ratio"),
+    }
+
+
 def download_and_extract(job: dict, out_dir: str, raw_dir: str,
-                         max_mb: float, keep_raw: bool) -> dict:
+                         max_mb: float, keep_raw: bool,
+                         skip_existing: bool = False) -> dict:
     """Download one sample's fragment file, extract its features, clean up."""
     sid = job["seqrun_id"]
     sample = job["sample"]
@@ -210,6 +240,14 @@ def download_and_extract(job: dict, out_dir: str, raw_dir: str,
             return {**job, "status": "s3-unavailable"}
         if size > max_mb:
             return {**job, "status": "too-large", "size_mb": round(size, 1)}
+        if skip_existing:
+            stats = existing_stats(os.path.join(out_dir, "features"), sample)
+            if stats is not None:
+                # Already extracted in an earlier run: record it without
+                # downloading the fragment file again.
+                return {**job, **stats, "status": "ok",
+                        "size_mb": round(size, 1), "seconds": 0.0,
+                        "reused_existing_features": True}
         urllib.request.urlretrieve(frag_url(sid), raw)
         stats = extract_sample(raw, os.path.join(out_dir, "features"), sample)
         if not keep_raw:
@@ -236,6 +274,14 @@ def main() -> int:
                     help="skip samples whose fragment file exceeds this size")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--keep-raw", action="store_true")
+    ap.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help=("reuse the features of samples already extracted into "
+              "--out-dir/features instead of downloading their fragment "
+              "files again. Use this to enlarge an existing cohort: the "
+              "manifest still describes every sample, and only the new "
+              "ones cost bandwidth."))
     args = ap.parse_args()
 
     out_dir = os.path.abspath(args.out_dir)
@@ -274,7 +320,7 @@ def main() -> int:
     with ThreadPoolExecutor(max_workers=args.workers) as ex:
         results = list(ex.map(
             lambda j: download_and_extract(j, out_dir, raw_dir, args.max_mb,
-                                           args.keep_raw),
+                                           args.keep_raw, args.skip_existing),
             cohort))
     ok = [r for r in results if r["status"] == "ok"]
     print(f"      extracted {len(ok)}/{len(cohort)} in {time.time() - t0:.0f}s")

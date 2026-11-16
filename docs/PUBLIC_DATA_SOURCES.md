@@ -39,6 +39,29 @@ kinds and reports `partial`.
 - *Assay*: publication 9 is whole-exome, everything else is
   whole-genome, so the assay shift is measurable rather than assumed.
 
+**The held-out cohort is the complete set, not a convenient subset.**
+FinaleDB publishes 8 studies. Six of them serve blood-plasma cfDNA;
+the other three are excluded for reasons that are properties of the
+data, not of our convenience (measured from the public API,
+2026-11-16):
+
+| Publication | Study | Plasma cfDNA? | Why it is not in the held-out cohort |
+|---|---|---|---|
+| 1 | Snyder 2016 (Cell) | yes — 60 samples | **used**: held-out, matched (46 cancer + 12 controls) |
+| 3 | Burnham 2018 | **no — urine** (141 seqruns, `tissue: urine`) | a different analyte; urinary cfDNA fragments are much shorter, so this is an assay-transfer study, not a plasma cancer cohort |
+| 4 | Rabinowitz 2019 | no disease labels (74 seqruns, prenatal NIPD) | a fetal monogenic-disorder study, not a cancer cohort |
+| 5 | Viswanathan 2018 (CRPC) | **no plasma seqruns** (0) | FinaleDB serves no plasma samples for it |
+| 6 | Jiang 2015 | yes | **training** cohort |
+| 7 | Sun 2019 (Genome Res) | yes — 31 samples | **used**: held-out, matched (18 cancer + 13 controls) |
+| 8 | Cristiano 2019 (DELFI) | yes — 540 samples | **training** cohort |
+| 9 | Adalsteinsson 2017 | yes — 1,508 samples, **all cancer, no controls** | **used**: held-out, case-only (reported as sensitivity at the training threshold) |
+
+So publications 1, 7 and 9 are *every* plasma cfDNA study FinaleDB serves
+that the model never trained on. The cohort cannot be enlarged by
+choosing differently: publication 9 has 1,508 samples but no controls
+at all, so it can only ever be reported case-only, and publication 1 has
+all 58 of its labelled plasma samples in the cohort.
+
 ## 2. Zenodo — the CRAG release (surveyed, not used)
 
 | Property | Value |
