@@ -44,7 +44,7 @@ detection from open-access data:
 
 The tumor-naive headline is the **GC-corrected** benchmark. Three
 different tumor-naive benchmarks exist and each lives in its own
-artifact: 0.9684 GC-corrected, 0.9770 legacy no-GC, 0.9785 with
+artifact: 0.9684 GC-corrected, 0.9770 legacy no-GC, 0.9761 with
 4-mer motifs. They are not interchangeable, and a figure quoted without
 its artifact is ambiguous.
 

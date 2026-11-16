@@ -262,16 +262,36 @@ echo "================================================================"
 # The third tumor-naive benchmark: the same pipeline with the 256-dim
 # 4-mer end-motif vector added. Eight documents quote its pooled AUC,
 # so the driver regenerates it like the other two sweeps.
-"${PYTHON}" scripts/cross_study_finallydb.py \
-    --features-dir "${FEATURES_DIR}" \
-    --labels-multiclass "${LABELS_TSV}" \
-    --include-motifs \
-    --out-json    "${RESULTS_DIR}/cross_study_finallydb_with_motifs.json" \
-    --out-md      "${DOCS_DIR}/CROSS_STUDY_BENCHMARK_with_motifs.md" \
-    --out-per-cancer-json "" \
-    --shuffled-label-control-out "" \
-    --top-cancer-n 5 \
-    "${SEED_ARGS[@]}"
+#
+# The motif features (`<sample>.motifs.npy`) are NOT part of the feature
+# cache that ships with the sibling checkout: they live in the author's
+# local feature directory and are tracked in neither repository. Without
+# them the motif block is zero-filled for every sample and the run
+# produces a DIFFERENT benchmark (the committed artifact was produced
+# with 98 cached motif files), so the step is skipped and says so rather
+# than writing a number that cannot match.
+MOTIF_COUNT=$(find "${FEATURES_DIR}" -maxdepth 1 -name '*.motifs.npy' 2>/dev/null | wc -l | tr -d ' ')
+if [[ "${MOTIF_COUNT}" == "0" ]]; then
+    echo "[REPRODUCE] SKIP: no *.motifs.npy in ${FEATURES_DIR}"
+    echo "[REPRODUCE]       the with-motifs benchmark cannot be regenerated"
+    echo "[REPRODUCE]       without the cached 4-mer end-motif features, and"
+    echo "[REPRODUCE]       the reproduction check below will report"
+    echo "[REPRODUCE]       results/cross_study_finallydb_with_motifs.json as"
+    echo "[REPRODUCE]       NOT regenerated and end with 'the reproduction"
+    echo "[REPRODUCE]       is incomplete' -- that is the correct verdict."
+else
+    echo "[REPRODUCE]       ${MOTIF_COUNT} motif feature file(s) found"
+    "${PYTHON}" scripts/cross_study_finallydb.py \
+        --features-dir "${FEATURES_DIR}" \
+        --labels-multiclass "${LABELS_TSV}" \
+        --include-motifs \
+        --out-json    "${RESULTS_DIR}/cross_study_finallydb_with_motifs.json" \
+        --out-md      "${DOCS_DIR}/CROSS_STUDY_BENCHMARK_with_motifs.md" \
+        --out-per-cancer-json "" \
+        --shuffled-label-control-out "" \
+        --top-cancer-n 5 \
+        "${SEED_ARGS[@]}"
+fi
 
 echo
 echo "================================================================"

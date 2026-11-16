@@ -128,7 +128,8 @@ _SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 from fragmentomics.labels import (  # noqa: E402
-    LabelVocabularyError, resolve_label,
+    LabelVocabularyError, looks_like_header, resolve_columns,
+    resolve_label,
 )
 
 
@@ -268,36 +269,36 @@ def load_labels_tsv(path: str) -> List[dict]:
     required = ("sample_id", "disease_class", "label")
     optional = ("study_id", "publication_id", "tissue_of_origin")
     with open(path) as f:
+        headered = None
+        label_col = study_col = None
         for line in f:
             parts = line.rstrip("\n").split("\t")
             if not parts or not parts[0]:
                 continue
-            # A header row is one whose cells are NAMED rather than
-            # populated. Detecting only "sample_id" missed the canonical
-            # FinaleDB header ("sample\tdisease_class\tlabel\tstudy"),
-            # and the header then became a data row: sample_id "sample",
-            # disease_class "disease_class", label "label" -- a phantom
-            # control that joins the cohort and is later counted as a
-            # non-cancer sample. Recognise a header by its columns
-            # rather than by one exact first-column name.
-            if (parts[0].lower() in ("sample", "sample_id", "id")
-                    or [p.lower() for p in parts[1:3]] == ["disease_class",
-                                                           "label"]):
-                # header row -- already known
-                continue
-            if len(parts) < 3:
+            if headered is None:
+                # The header is decided ONCE, from the first row, and the
+                # column indices come from it. Deciding per row dropped
+                # any sample whose id happened to be "sample"; asking a
+                # DATA row for its column names picked up its disease
+                # class as the label.
+                headered = looks_like_header(parts)
+                label_col, study_col = resolve_columns(parts,
+                                                       headered=headered)
+                if headered:
+                    continue
+            if label_col is None or label_col >= len(parts):
                 continue
             row = {
                 "sample_id": parts[0],
-                "disease_class": parts[1],
+                "disease_class": parts[1] if len(parts) > 1 else "",
             }
             try:
-                row["label"] = "cancer" if resolve_label(parts[2],
+                row["label"] = "cancer" if resolve_label(parts[label_col],
                                                          parts[0]) else "healthy"
             except LabelVocabularyError as exc:
                 raise SchemaError(str(exc)) from exc
-            if len(parts) > 3:
-                row["study_id"] = parts[3]
+            if study_col is not None and study_col < len(parts):
+                row["study_id"] = parts[study_col]
             if len(parts) > 4:
                 row["publication_id"] = parts[4]
             if len(parts) > 5:

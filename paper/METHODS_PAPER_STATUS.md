@@ -49,7 +49,7 @@
 
 ## What's filled (vs the previous skeleton)
 
-- **§3.2** — now has the per-cohort rows (Jiang 0.9791 ± 0.0028, Cristiano 0.9693 ± 0.0022), pooled rows (harmonized 0.9738 ± 0.0018, no_harmonize 0.9650 ± 0.0019), sens@spec at 95/98/99%, and the four-row **true-confound control** table. Source: `results/cross_study_finallydb.json`. Companion narrative: `docs/CROSS_STUDY_BENCHMARK.md`.
+- **§3.2** — now has the per-cohort rows (Jiang 0.9789 ± 0.0027, Cristiano 0.9704 ± 0.0023), pooled rows (harmonized 0.9770 ± 0.0013, no_harmonize 0.9678 ± 0.0011), sens@spec at 95/98/99%, and the four-row **true-confound control** table. Source: `results/cross_study_finallydb.json`. Companion narrative: `docs/CROSS_STUDY_BENCHMARK.md`.
 - **§3.3** — top-5 cancer OvR table (HCC_J, LUAD, BRCA, PAAD, OV) with AUC ± std, DeLong 95% CI on AUC, sens@95/98/99% with DeLong CI on sens@99, n_cancer + n_total. Followed by a **prevalence-floor PPV summary table** at spec=99% across the standard cfDNA grid {0.001, 0.004, 0.01, 0.05, 0.10, 0.20, 0.50}. Source: `results/per_cancer_sens_at_spec.json` (DeLong CIs; cross-references `results/cross_study_finallydb.json` for bootstrap CIs and for the cohort-size accounting).
 - **§3.5** (NEW) — comparator table for DELFI, CancerSEEK, Galleri, CAPP-Seq, FinaleMe, and DeepCatch — plus a three-point honest-positioning paragraph. **Not a clinical claim.**
 - **§4.2** — reclassified "harmonization" limitation from "NEGATIVE: signal is partly study-confounded" to "MIXED, but the true-confound control proves harmonization is **PROTECTIVE** for the cross-study claim".

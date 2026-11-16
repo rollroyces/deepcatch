@@ -91,6 +91,69 @@ cohort size.
 
 ### Fixed
 
+- **The with-motifs benchmark never applied the GC correction, and the
+  paper compared it against a GC-corrected headline anyway.** The
+  loader chain took the `--include-motifs` branch first, so
+  `--gc-correction` was silently unapplied on that path — the run was
+  legacy-footed underneath while its artifact recorded
+  `gc_correction: true` and a `c100_gc_corrected` feature set. The
+  methods paper therefore reported "+0.0101 over the GC-corrected
+  baseline", which was mostly the GC correction and not the motif
+  block: the like-for-like lift on the legacy set was +0.0015. The GC
+  correction and the motif block are independent feature blocks, so the
+  corrected matrix with the motif block appended IS that configuration;
+  it is now what the code runs, and the measured lift on the
+  GC-corrected set is **+0.0077** (0.9684 → 0.9761). The artifact
+  records the EFFECTIVE configuration (`gc_correction_applied`), and
+  `--motif-cohort-mode strict` now refuses to run with the correction
+  instead of silently ignoring it.
+  `scripts/load5_with_motifs.py`, `scripts/cross_study_finallydb.py`,
+  `results/cross_study_finallydb_with_motifs.json`, `paper/METHODS_PAPER.md`.
+- **Four readers of a labels file did not agree.** The vocabulary now
+  lives in one module (`src/fragmentomics/labels.py`) and every reader
+  resolves the label AND the column layout the same way: by the header
+  when there is one, by the width when there is not. They used to
+  disagree on the same file — the package's reader took the disease
+  class for a headerless four-column file, the two script readers
+  skipped a three-column file and returned an empty cohort, and the
+  package kept a private copy of the vocabulary the commit claimed was
+  shared. A test now reads the same file through all four readers and
+  requires one answer, and another test walks the collaborator's merge
+  path end to end.
+  `src/fragmentomics/labels.py`, `src/fragmentomics/tumor_naive_adapter.py`,
+  `scripts/cross_study_finallydb.py`,
+  `scripts/external_validation_finaledb.py`,
+  `scripts/adapter_local_cohort.py`, `test/test_label_vocabulary.py`.
+- **A superseded figure was banned globally although a current figure
+  renders the same digits.** 0.9915 is the old publication-7 external
+  AUC *and* the decision curve's naive-average AUC; 0.9670 is the OV
+  per-cancer DeLong CI upper bound; 0.9701 one of the pooled per-seed
+  AUCs; 0.9753 the OTHER_C per-cancer AUC. A global literal ban on
+  those would forbid a correct document, so each is now banned only
+  where it would be a regression — the documents that quote the
+  quantity it replaced.
+  `scripts/benchmark_numbers.py`,
+  `test/test_paper_numbers_match_artifacts.py`.
+- **Four stale figures in a status document, and a false requirement
+  that held it in place.** `paper/METHODS_PAPER_STATUS.md` quoted
+  Jiang 0.9791, Cristiano 0.9693, pooled 0.9738 and no-harmonize 0.9650
+  where the artifact holds 0.9789, 0.9704, 0.9770 and 0.9678. It also
+  satisfied a guard requirement for the Bayesian model average (0.9650)
+  only by that same stale number, so correcting it turned the guard red;
+  the requirement was dropped instead. `NEXT_STEPS.md`'s panel AUC
+  0.9215 became 0.921, and that headline — the first figure in the
+  preprint's abstract — is now pinned to every document that quotes it.
+  `paper/METHODS_PAPER_STATUS.md`, `NEXT_STEPS.md`,
+  `scripts/benchmark_numbers.py`.
+- **The with-motifs step could not be reproduced off this machine.** The
+  cached 4-mer motif features are tracked in neither repository, so
+  without them the step writes a *different* benchmark; it is now
+  skipped with an explanation, `paper/REPRODUCE.md` carries the twelve
+  steps and names the two that need inputs the repository does not
+  contain, and the readiness verdict is compared rather than merely
+  regenerated.
+  `paper/REPRODUCE.sh`, `paper/REPRODUCE.md`,
+  `scripts/reproduce_check.py`.
 - **The collaborator adapter could read a header row as data.** It
   detected a header only when the first column was spelled `sample_id`,
   so the canonical FinaleDB header (`sample`, `disease_class`, `label`,

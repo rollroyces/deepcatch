@@ -1,7 +1,7 @@
 # DeepCatch — Next Steps: From Research Simulation to Clinical Validation
 
 **Status (2026-11-16):** v2.3.0 is on `main` and the CI is green
-(786 tests, core + deep-learning + paper PDF + docs site). The P0 fixes
+(794 tests, core + deep-learning + paper PDF + docs site). The P0 fixes
 below were merged in August; section 1 (the Jiang nested CV) is still
 open and still blocked on one file. What is left before anything else is
 the preprint, and it is ready — section 0 is now that, not a branch push.
@@ -235,7 +235,7 @@ or JCO Clinical Cancer Informatics (if you add clinical validation).
 | `p0-fixes` branch (5 commits, merged Aug 2026) | All code fixes, panel detection, Fisher/Strand scoring, context-aware sim, CHIP wiring, nested CV |
 | `review/agent_review_2026-08-10.md` | Full external review + fix log |
 | `docs/PRODUCTION_ROADMAP.md` | Production validation plan with literature references |
-| `results/real_tcga_validation.json` | Panel AUC 0.9215 verified (20 LUAD patients) |
+| `results/real_tcga_validation.json` | Panel AUC 0.921 verified (20 LUAD patients) |
 | `/tmp/GSE317007_motifs.txt.gz` | Real cfDNA fragmentomics data (FLARE, downloaded & validated) |
 
 ---

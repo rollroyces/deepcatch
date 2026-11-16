@@ -89,7 +89,9 @@ _SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
-from fragmentomics.labels import resolve_label  # noqa: E402
+from fragmentomics.labels import (  # noqa: E402
+    looks_like_header, resolve_columns, resolve_label,
+)
 
 
 def _sister_pipeline():
@@ -114,6 +116,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _REPO_ROOT)
 sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts"))
 from load5_with_motifs import (  # noqa: E402
+    load5_gc_corrected_with_motifs_cv as _load5_with_motifs_gc_corrected_cv,
     MOTIF_DIM,
     load5_with_motifs as _load5_with_motifs,
     load5_with_motifs_optional as _load5_with_motifs_optional,
@@ -217,24 +220,26 @@ def load_labels_multiclass(path: str, requested_publications: set[str]):
     labels, studies, disease_class, publication = {}, {}, {}, {}
     skipped_outside_request = []
     with open(path) as f:
-        header_seen = False
-        header_cols = None
+        headered = None
+        label_col = study_col = None
         for line in f:
             p = line.strip().split("\t")
-            if len(p) < 4:
+            if len(p) < 2:
                 continue
-            if not header_seen:
-                if p[0] == "sample" and p[3] == "study":
-                    header_seen = True
-                    header_cols = p
+            if headered is None:
+                # The header is decided ONCE, from the first row, and the
+                # column indices come from it. A data row whose sample id
+                # happens to be "sample" must not be mistaken for a
+                # header and dropped, and a data row must never be asked
+                # for its column names.
+                headered = looks_like_header(p)
+                label_col, study_col = resolve_columns(p, headered=headered)
+                if headered:
                     continue
-                # No header row found yet — treat this as a data row.
-                header_seen = True
-            if p[0] == "sample" and p[3] == "study":
-                # Re-reading header on a different row (defensive)
-                header_cols = p
+            if label_col is None or label_col >= len(p):
                 continue
-            if p[3] in ("study", ""):
+            study = p[study_col] if study_col is not None and study_col < len(p) else ""
+            if not study or study in ("study", ""):
                 continue
             s = p[0]
             # Publication id: prefer an explicit 5th column if present.
@@ -242,13 +247,13 @@ def load_labels_multiclass(path: str, requested_publications: set[str]):
             if len(p) >= 5 and p[4] and p[4] not in ("publication",):
                 pub = p[4]
             else:
-                pub = STUDY_TO_PUBLICATION.get(p[3], "")
+                pub = STUDY_TO_PUBLICATION.get(study, "")
             if pub not in requested_publications:
-                skipped_outside_request.append((s, p[3], pub))
+                skipped_outside_request.append((s, study, pub))
                 continue
-            labels[s] = resolve_label(p[2], s)
-            studies[s] = p[3]
-            disease_class[s] = p[1]
+            labels[s] = resolve_label(p[label_col], s)
+            studies[s] = study
+            disease_class[s] = p[1] if len(p) > 1 else ""
             publication[s] = pub
     if skipped_outside_request:
         uniq = sorted({(st, pub) for _, st, pub in skipped_outside_request
@@ -1468,8 +1473,23 @@ def main():
         )
 
     print(f"[3/6] Loading 5-channel DELFI features from {args.features_dir}")
+    gc_correction_applied = bool(args.gc_correction)
     if args.include_motifs:
-        if args.motif_cohort_mode == "strict":
+        if args.gc_correction:
+            # The GC correction and the motif block are independent
+            # feature blocks: the correction rewrites the coverage
+            # channel and the motifs are appended. Taking the motifs
+            # branch alone left the correction silently unapplied, so
+            # the run was compared against a GC-corrected headline while
+            # being legacy-footed underneath.
+            print(f"      (with --include-motifs AND --gc-correction ON: the "
+                  f"100kb coverage channel is GC-corrected inside each fold "
+                  f"and the motif block is appended)")
+            X, y, st = _load5_with_motifs_gc_corrected_cv(
+                labels, studies, args.features_dir,
+                seeds=args.seeds, cohort_mode=args.motif_cohort_mode,
+            )
+        elif args.motif_cohort_mode == "strict":
             print(f"      (with --include-motifs=strict: drop samples missing motifs.npy)")
             X, y, st = _load5_with_motifs(labels, studies, args.features_dir)
         else:
@@ -1651,8 +1671,13 @@ def main():
             "seeds": args.seeds,
             "pca_n": args.pca,
             "classifier": "LogisticRegression(max_iter=2000)",
+            # The EFFECTIVE configuration, not the flags: the loader
+            # chain used to take the motifs branch first, so
+            # --gc-correction was silently unapplied there and the
+            # recorded feature set was wrong.
+            "gc_correction_applied": gc_correction_applied,
             "feature_set": ("5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio "
-                           + ("+ c100_gc_corrected" if args.gc_correction
+                           + ("+ c100_gc_corrected" if gc_correction_applied
                               else "+ 100kb_counts")
                            + " + FSD-196)"
                            + (f" + 256-dim 4-mer end motifs "

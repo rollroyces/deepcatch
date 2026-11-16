@@ -1,6 +1,6 @@
 # Cross-Study FinaleDB Benchmark (Open Data)
 > **Scope**: Open-data benchmark on FinaleDB publications: 6 (jiang) + 8 (cristiano). **NOT** clinical validation. **NOT** external cohort validation. Pooled OOF on the same cohort that trained the model.
-- Generated: `2026-11-15T21:19:11.790807+00:00`
+- Generated: `2026-11-16T19:43:28.044297+00:00`
 - Classifier: `LogisticRegression(max_iter=2000)`
 - Feature set: 5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + c100_gc_corrected + FSD-196) + 256-dim 4-mer end motifs (cohort mode: zero_fill)
 - PCA n_components: 200 (capped at `min(n_train, n_features)` per fold)
@@ -35,16 +35,16 @@ Each publication evaluated independently (no harmonization needed; one publicati
 
 | Publication | Study | n | n_cancer | n_healthy | AUC (5-seed mean ± std) |
 |---|---|---:|---:|---:|---|
-| 6 | jiang | 121 | 89 | 32 | 0.9848 ± 0.0021 |
-| 8 | cristiano | 506 | 274 | 232 | 0.9721 ± 0.0008 |
+| 6 | jiang | 121 | 89 | 32 | 0.9776 ± 0.0024 |
+| 8 | cristiano | 506 | 274 | 232 | 0.9739 ± 0.0015 |
 
 ## 3. Pooled cross-publication AUC (with/without per-publication harmonization)
 Harmonization = per-publication z-score StandardScaler fit on train fold only.
 
 | Setting | AUC mean ± std | Sens@95% | Sens@98% | Sens@99% |
 |---|---|---:|---:|---:|
-| harmonized | 0.9785 ± 0.0020 | 0.920 | 0.848 | 0.763 |
-| no_harmonize | 0.9777 ± 0.0014 | 0.931 | 0.860 | 0.780 |
+| harmonized | 0.9761 ± 0.0030 | 0.920 | 0.832 | 0.774 |
+| no_harmonize | 0.9687 ± 0.0040 | 0.904 | 0.857 | 0.799 |
 
 ## 4. Per-cancer Sens@Spec (top-5 cancers by sample count)
 One-vs-rest: each cancer vs ALL healthy samples in the pooled cross-study cohort. Per-publication harmonization inside each CV fold.
@@ -55,26 +55,26 @@ One-vs-rest: each cancer vs ALL healthy samples in the pooled cross-study cohort
 
 | Cancer | n_cancer | n_healthy | AUC mean ± std | AUC DeLong [95% CI] | Sens@95% DeLong [95% CI] | Sens@98% DeLong [95% CI] | Sens@99% DeLong [95% CI] |
 |---|---:|---:|---|---|---|---|---|
-| HCC_J | 89 | 264 | 0.7405 ± 0.0173 | 0.7674 [0.7026–0.8322] | 0.416 [0.314–0.518] | 0.281 [0.188–0.374] | 0.169 [0.092–0.245] |
-| LUAD | 79 | 264 | 0.9821 ± 0.0014 | 0.9837 [0.9724–0.9950] | 0.899 [0.831–0.966] | 0.861 [0.783–0.938] | 0.595 [0.486–0.703] |
-| PAAD | 60 | 264 | 0.9550 ± 0.0054 | 0.9549 [0.9210–0.9887] | 0.883 [0.801–0.966] | 0.833 [0.738–0.929] | 0.650 [0.529–0.771] |
-| BRCA | 53 | 264 | 0.9759 ± 0.0041 | 0.9773 [0.9561–0.9986] | 0.943 [0.879–1.000] | 0.868 [0.775–0.961] | 0.547 [0.413–0.681] |
-| OV | 28 | 264 | 0.9921 ± 0.0041 | 0.9968 [0.9925–1.0000] | 1.000 [0.965–1.000] | 0.929 [0.827–1.000] | 0.929 [0.827–1.000] |
+| HCC_J | 89 | 264 | 0.7410 ± 0.0176 | 0.7604 [0.6930–0.8278] | 0.449 [0.346–0.553] | 0.213 [0.129–0.298] | 0.146 [0.074–0.218] |
+| LUAD | 79 | 264 | 0.9840 ± 0.0025 | 0.9858 [0.9749–0.9966] | 0.911 [0.848–0.975] | 0.899 [0.831–0.966] | 0.873 [0.799–0.948] |
+| PAAD | 60 | 264 | 0.9784 ± 0.0019 | 0.9791 [0.9620–0.9962] | 0.917 [0.845–0.988] | 0.867 [0.779–0.954] | 0.750 [0.640–0.860] |
+| BRCA | 53 | 264 | 0.9757 ± 0.0012 | 0.9763 [0.9553–0.9972] | 0.906 [0.825–0.986] | 0.811 [0.705–0.918] | 0.698 [0.574–0.823] |
+| OV | 28 | 264 | 0.9901 ± 0.0061 | 0.9947 [0.9890–1.0000] | 1.000 [0.965–1.000] | 0.893 [0.773–1.000] | 0.857 [0.723–0.991] |
 
 ## 5. True-confound control
 Cancer = 100% from one publication, healthy = 100% from another. Without harmonization the classifier learns 'which publication is this from?' (AUC ~0.999). With per-publication z-score harmonization the publication-specific mean/variance is the only signal and is removed by design (AUC should collapse toward 0.50).
 
 | Orientation | n_cancer | n_healthy | AUC harmonized | AUC no_harmonize |
 |---|---:|---:|---:|---:|
-| cancer_jiang_healthy_cristiano | 121 | 506 | 0.493 ± 0.005 | 1.000 ± 0.000 |
-| cancer_cristiano_healthy_jiang | 506 | 121 | 0.493 ± 0.005 | 1.000 ± 0.000 |
+| cancer_jiang_healthy_cristiano | 121 | 506 | 0.484 ± 0.007 | 1.000 ± 0.000 |
+| cancer_cristiano_healthy_jiang | 506 | 121 | 0.484 ± 0.007 | 1.000 ± 0.000 |
 
 ## Verdict
-- Pooled harmonized cross-publication AUC: **0.9785 ± 0.0020** (n=627 with features, of 658 in labels file)
-- Pooled AUC without harmonization: **0.9777 ± 0.0014** (mild change confirms the per-publication batch effect is small on this FinaleDB-uniformly-processed cohort)
-- Per-publication AUC (sorted by AUC): 6 (jiang) **0.9848 ± 0.0021** (n=121), 8 (cristiano) **0.9721 ± 0.0008** (n=506)
-- True-confound control: cancer_jiang_healthy_cristiano: harmonized AUC **0.493** (should be ~0.50), no-harmonize AUC **1.000** (should be ~1.00 — proves the batch effect is removable)
-- True-confound control: cancer_cristiano_healthy_jiang: harmonized AUC **0.493** (should be ~0.50), no-harmonize AUC **1.000** (should be ~1.00 — proves the batch effect is removable)
+- Pooled harmonized cross-publication AUC: **0.9761 ± 0.0030** (n=627 with features, of 658 in labels file)
+- Pooled AUC without harmonization: **0.9687 ± 0.0040** (mild change confirms the per-publication batch effect is small on this FinaleDB-uniformly-processed cohort)
+- Per-publication AUC (sorted by AUC): 6 (jiang) **0.9776 ± 0.0024** (n=121), 8 (cristiano) **0.9739 ± 0.0015** (n=506)
+- True-confound control: cancer_jiang_healthy_cristiano: harmonized AUC **0.484** (should be ~0.50), no-harmonize AUC **1.000** (should be ~1.00 — proves the batch effect is removable)
+- True-confound control: cancer_cristiano_healthy_jiang: harmonized AUC **0.484** (should be ~0.50), no-harmonize AUC **1.000** (should be ~1.00 — proves the batch effect is removable)
 
 ## Honest framing
 These numbers are pooled out-of-fold AUC on the 627-sample cross-publication cohort (after load5's missing-artifact filter). Internal CV; no external validation. They measure how well the 5-channel DELFI features separate cancer from healthy when pooled across jiang, cristiano with per-publication z-score harmonization. They do NOT measure clinical-grade sensitivity at the Galleri / CancerSEEK operating points, which require independent held-out plasma cohorts.

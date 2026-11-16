@@ -140,29 +140,29 @@ QUOTED_SPECIAL = [
 # with a current figure does not trip it: the old GC-corrected pooled
 # AUC "0.9670" is banned, but the per-cancer PAAD AUC "0.967" and the
 # clean-panel LLR AUC "0.922" are different numbers and stay.
+# Figures that the v2.3.0 regeneration superseded.
+#
+# A global literal ban is only safe while no CURRENT artifact renders the
+# same digits -- and several of these do:
+#   0.9915 is the decision curve's naive-average AUC (0.991505968778696)
+#   0.9670 is the OV per-cancer DeLong CI upper bound
+#   0.9701 is one of the pooled per-seed AUCs
+#   0.9753 is the OTHER_C per-cancer AUC in the with-motifs artifact
+#   0.499  is a decision-curve net-benefit value
+#   0.9225, 0.9458, 0.9747 are rendered by other artifacts too
+# Banning those everywhere would forbid a correct document, so each is
+# banned only where it would be a regression: the documents that quote
+# the quantity it replaced. The four values below are rendered by no
+# current artifact and are banned everywhere.
+#
+# The check is a literal one, so a value that merely shares a prefix
+# with a current figure does not trip it: the old GC-corrected pooled
+# AUC "0.9670" is banned, but the per-cancer PAAD AUC "0.967" and the
+# clean-panel LLR AUC "0.922" are different numbers and stay.
 SUPERSEDED = [
-    "0.9670",   # the old GC-corrected pooled AUC
-    "0.9747",   # the old legacy pooled AUC
-    "0.9753",   # the companion pipeline's unseeded tumor-naive figure
-    # 0.9886 is deliberately absent: it was the old naive-average fusion
-    # AUC, but it is also the CURRENT per-cancer OV AUC, so a string check
-    # cannot distinguish them. The presence check covers the fusion
-    # number instead (the documents must quote 0.9884).
     "0.4657",   # the old shuffled-label null
-    "0.9225",   # the old PCA-20 pooled AUC
-    "0.9458",   # the old PCA-20 per-publication AUC
-    # Superseded by the v2.3.0 correction of the external validation:
-    # the first fetch took 9 of publication 1's 60 samples, and the
-    # harmonisation was a single pooled z-score rather than the
-    # per-publication one the script documents.
-    "0.9915",   # the old publication-7 external AUC
     "0.8819",   # the old pooled external AUC
     "0.4454",   # the old publication-9 external sensitivity
-    # Superseded by the seeded LOSO run.
-    "0.9701",   # the old in-domain Cristiano AUC
-    # Superseded by the GC-corrected true-confound control. It was still
-    # hard-coded in the readiness generator until this release.
-    "0.499",
     # The old mutation-only fusion AUC, from the pre-regeneration
     # fusion artifact. It is the only one of the stale fusion figures
     # that can be banned literally: the others ("0.9887", "0.937",
@@ -170,6 +170,73 @@ SUPERSEDED = [
     # pinned by the table-row checks below instead.
     "0.9242",
 ]
+
+# Superseded values that a current artifact also renders, and therefore
+# can only be banned where they would be a regression:
+# value -> (artifact, path/what) whose quoting documents may not carry it.
+SCOPED_SUPERSEDED = {
+    # The old publication-7 external AUC. Replaced by the corrected
+    # hold-out AUC.
+    "0.9915": ("external_validation_finaledb.json",
+               ("per_publication_auc", "7", "auc")),
+    # The old GC-corrected pooled AUC.
+    "0.9670": ("cross_study_finallydb_gc_corrected.json",
+               ("pooled", "harmonized", "auc_mean")),
+    # The old in-domain Cristiano AUC (the seeded LOSO run replaced it).
+    "0.9701": ("cross_study_loso.json", "in_domain cristiano"),
+    # The old legacy pooled AUC.
+    "0.9747": ("cross_study_finallydb.json",
+               ("pooled", "harmonized", "auc_mean")),
+    # The companion pipeline's unseeded tumor-naive figure.
+    "0.9753": ("cross_study_finallydb.json",
+               ("pooled", "harmonized", "auc_mean")),
+    # The old PCA-20 pooled AUC.
+    "0.9225": ("cross_study_finallydb_gc_corrected.json",
+               ("pooled", "harmonized", "auc_mean")),
+    # The old PCA-20 per-publication AUC.
+    "0.9458": ("cross_study_finallydb_gc_corrected.json",
+               ("per_publication", "6", "auc_mean")),
+    # The with-motifs pooled AUC of the LEGACY-footed run, superseded when
+    # the GC correction was actually applied to that path. Scoped: 0.9785
+    # is also the CADD Top-K=200 AUC in docs/ALPHAMISSENSE_REAL_LLR.md.
+    "0.9785": ("cross_study_finallydb_with_motifs.json",
+               ("pooled", "harmonized", "auc_mean")),
+    # The readiness generator's hard-coded true-confound value, superseded
+    # by the GC-corrected control.
+    "0.499": ("cross_study_finallydb_gc_corrected.json",
+              ("true_confound_control", "cancer_jiang_healthy_cristiano",
+               "harmonized", "auc_mean")),
+}
+
+# Documents where a scoped value is legitimate for another reason: the
+# decision curve's naive-average AUC renders as 0.9915, so that document
+# may quote it.
+SCOPED_ALLOWED = {
+    "0.9915": {"results/README.md"},
+}
+
+
+def documents_for(artifact: str, path) -> set[str]:
+    """The documents that quote a given (artifact, path) or (artifact, what)."""
+    docs: set[str] = set()
+    for name, quoted_path, documents in QUOTED_NUMBERS:
+        if name == artifact and tuple(quoted_path) == tuple(path):
+            docs.update(documents)
+    for name, what, document in QUOTED_SPECIAL:
+        if name == artifact and what == path:
+            docs.add(document)
+    return docs
+
+
+def scoped_superseded_documents() -> dict[str, list[str]]:
+    """{superseded value: the documents it may not reappear in}."""
+    out: dict[str, list[str]] = {}
+    for value, (artifact, target) in SCOPED_SUPERSEDED.items():
+        docs = documents_for(artifact, target)
+        docs -= SCOPED_ALLOWED.get(value, set())
+        out[value] = sorted(docs)
+    return out
+
 
 # The legacy (no-GC) per-publication rows. They are a separate benchmark
 # from the GC-corrected one and are quoted by the legacy narrative, so
@@ -237,6 +304,13 @@ QUOTED_NUMBERS.append(
       "harmonized", "auc_mean"),
      ["docs/CROSS_STUDY_BENCHMARK.md"]))
 
+# The panel-LLR headline of the mutation-informed pipeline -- the first
+# figure in the preprint's abstract -- is guarded by a dedicated test
+# (test_the_panel_llr_headline_is_quoted_wherever_it_is_pinned) rather
+# than here: the artifact is NOT regenerated by the driver (the panel
+# validation needs the GDC panel cache and a ten-minute run), and the
+# quotable-number list is the driver's coverage contract.
+
 # The goal-2 headline: the regularized late fusion and the Bayesian
 # model average that replaced the overfitting neural encoder. It was
 # quoted by ten documents and pinned by none, and the driver did not
@@ -251,9 +325,12 @@ QUOTED_NUMBERS.append(
 QUOTED_NUMBERS.append(
     ("fusion_regularized_smoke.json",
      ("summary", "bayesian_model_average", "auc_mean"),
+     # paper/METHODS_PAPER_STATUS.md was removed from this list: it quoted
+     # 0.9650 only as a superseded legacy no-harmonize figure, so the
+     # requirement was satisfied by a coincidence and would have blocked
+     # the correction of that stale number.
      ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
-      "paper/METHODS_PAPER.md", "paper/METHODS_PAPER_STATUS.md",
-      "paper/REPRODUCE.md"]))
+      "paper/METHODS_PAPER.md", "paper/REPRODUCE.md"]))
 # The shuffled-label null. Six documents quote 0.4460 as "the signal is
 # not in the labels"; nothing pinned it.
 QUOTED_NUMBERS.append(
@@ -269,6 +346,13 @@ QUOTED_NUMBERS.append(
      ["README.md", "README.zh-CN.md", "RESULTS.md", "TEAM.md",
       "ULTRA_EARLY_READINESS.md", "paper/METHODS_PAPER.md",
       "results/README.md", "docs/CROSS_STUDY_BENCHMARK_with_motifs.md"]))
+# The per-publication rows of the same run, which the methods paper
+# quotes as the "both publications improve" claim.
+for _pub in ("6", "8"):
+    QUOTED_NUMBERS.append(
+        ("cross_study_finallydb_with_motifs.json",
+         ("per_publication", _pub, "auc_mean"),
+         ["paper/METHODS_PAPER.md"]))
 
 # The decision-curve operating points of RESULTS.md §4. They are a
 # separate benchmark from the fusion one -- the decision curve averages

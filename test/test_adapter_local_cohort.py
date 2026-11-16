@@ -570,3 +570,44 @@ def test_load_labels_tsv_still_reads_a_headerless_file(tmp_path):
     rows = adapter.load_labels_tsv(str(path))
     assert [r["sample_id"] for r in rows] == ["C001", "H001"]
     assert rows[0]["study_id"] == "jiang"
+
+
+def test_the_merged_cohort_keeps_both_sides(tmp_path):
+    """The merge is the path a collaborator's cohort actually takes.
+
+    The adapter writes a six-column labels file; the cross-study
+    benchmark reads it back. If the two do not agree about the column
+    layout, one side of the merge is dropped without an error -- the
+    cohort looks fine and the collaborator's samples (or the existing
+    ones) are simply not in it.
+    """
+    import importlib.util as _importlib_util
+
+    spec = _importlib_util.spec_from_file_location(
+        "csf_for_merge", str(Path(__file__).resolve().parent.parent /
+                             "scripts" / "cross_study_finallydb.py"))
+    csf = _importlib_util.module_from_spec(spec)
+    spec.loader.exec_module(csf)
+
+    local = tmp_path / "local.tsv"
+    local.write_text(
+        "sample_id\tdisease_class\tlabel\tstudy_id\tpublication_id\ttissue_of_origin\n"
+        "EX_C1\tCRC\tcancer\tmy_lab\t99\tcolon\n"
+        "EX_H1\tHEALTHY\thealthy\tmy_lab\t99\tcolon\n"
+    )
+    existing = tmp_path / "existing.tsv"
+    existing.write_text(
+        "sample\tdisease_class\tlabel\tstudy\n"
+        "H342\tHCC_J\tcancer\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+    )
+    merged = tmp_path / "merged.tsv"
+    prov = adapter.merge_with_existing_labels(str(local), str(existing),
+                                              str(merged))
+    assert prov["n_merged"] == 4
+
+    labels, _studies, _disease, pubs = csf.load_labels_multiclass(
+        str(merged), requested_publications={"6", "8", "99"})
+    assert set(labels) == {"EX_C1", "EX_H1", "H342", "H001"}, (
+        f"the merge lost a side: {sorted(labels)}")
+    assert pubs["EX_C1"] == "99" and pubs["H342"] == "6"

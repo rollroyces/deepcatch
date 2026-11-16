@@ -82,7 +82,9 @@ _SRC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                     "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
-from fragmentomics.labels import resolve_label  # noqa: E402
+from fragmentomics.labels import (  # noqa: E402
+    looks_like_header, resolve_columns, resolve_label,
+)
 
 
 def _read_labels(labels_path: str, publications: set[str]):
@@ -95,26 +97,32 @@ def _read_labels(labels_path: str, publications: set[str]):
     """
     labels, studies, disease_class, publication = {}, {}, {}, {}
     with open(labels_path) as f:
-        header = None
+        headered = None
+        label_col = study_col = None
         for line in f:
             parts = line.rstrip("\n").split("\t")
-            if header is None:
-                if parts[0] == "sample" and len(parts) > 3 and parts[3] == "study":
-                    header = parts
+            if len(parts) < 2:
+                continue
+            if headered is None:
+                # The header is decided ONCE, from the first row, and the
+                # column indices come from it.
+                headered = looks_like_header(parts)
+                label_col, study_col = resolve_columns(parts, headered=headered)
+                if headered:
                     continue
-                header = parts
-            if len(parts) < 4:
+            if label_col is None or label_col >= len(parts):
+                continue
+            study = parts[study_col] if study_col is not None and study_col < len(parts) else ""
+            if not study or study in ("study", ""):
                 continue
             s = parts[0]
-            if parts[3] in ("study", ""):
-                continue
             pub = parts[4] if len(parts) >= 5 and parts[4] not in ("publication",) \
-                else {"jiang": "6", "cristiano": "8"}.get(parts[3], "")
+                else {"jiang": "6", "cristiano": "8"}.get(study, "")
             if pub not in publications:
                 continue
-            labels[s] = resolve_label(parts[2], s)
-            studies[s] = parts[3]
-            disease_class[s] = parts[1]
+            labels[s] = resolve_label(parts[label_col], s)
+            studies[s] = study
+            disease_class[s] = parts[1] if len(parts) > 1 else ""
             publication[s] = pub
     return labels, studies, disease_class, publication
 

@@ -282,3 +282,73 @@ def _main():
 
 if __name__ == "__main__":
     sys.exit(_main() or 0)
+
+
+def _motif_block(labels, feat_dir: str, cohort_mode: str = "zero_fill"):
+    """The 256-dim motif block, in the row order of the 5-channel loader.
+
+    The order is the same one the 5-channel loaders produce (samples
+    sorted by id, minus those missing a DELFI channel or the FSD JSON),
+    so it can be concatenated onto any matrix built over that cohort.
+    Missing motif files are zero-filled in `zero_fill` mode and the
+    sample is dropped in `strict` mode.
+    """
+    rows, order = [], []
+    for s in sorted(labels):
+        if not all(os.path.exists(os.path.join(
+                feat_dir, name.format(s=s))) for name in _DELFI_NPY_FILES):
+            continue
+        if _fsd_vec(s, feat_dir) is None:
+            continue
+        mot_path = os.path.join(feat_dir, _MOTIF_FILE.format(s=s))
+        if os.path.exists(mot_path):
+            rows.append(np.load(mot_path))
+        elif cohort_mode == "strict":
+            continue
+        else:
+            rows.append(np.zeros(MOTIF_DIM, dtype=float))
+        order.append(s)
+    return np.asarray(rows), order
+
+
+def load5_gc_corrected_with_motifs_cv(
+    labels, studies, feat_dir: str = DEFAULT_FEATURES_DIR, *,
+    seeds=(42,), cohort_mode: str = "zero_fill",
+):
+    """The GC-corrected 5-channel profile PLUS the motif block.
+
+    `--include-motifs` and `--gc-correction` are two INDEPENDENT
+    feature blocks: the GC correction rewrites the 100kb coverage
+    channel, and the motifs are appended. So the GC-corrected matrix
+    with the motif block concatenated IS that configuration.
+
+    It is also the configuration the documents describe and the one the
+    previous loader chain did NOT run: the chain took the motifs branch
+    first, so `--gc-correction` was silently ignored whenever motifs
+    were on, and the resulting benchmark was compared against a
+    GC-corrected headline.
+
+    `strict` mode (drop the samples with no cached motif file) cannot be
+    combined with the correction here: the GC-corrected matrix covers
+    the full cohort and the strict motif block is a subset, so the two
+    cannot be concatenated row-for-row. It raises instead of silently
+    misaligning them.
+    """
+    from load5_gc_corrected import load5_gc_corrected_cv
+
+    if cohort_mode == "strict":
+        raise ValueError(
+            "--include-motifs --motif-cohort-mode strict cannot be combined "
+            "with --gc-correction: the strict motif block is a subset of the "
+            "cohort the GC-corrected matrix covers, so the two cannot be "
+            "concatenated row-for-row. Use the default zero_fill mode, or "
+            "run the correction without motifs.")
+
+    X_gc, y, st = load5_gc_corrected_cv(labels, studies, feat_dir,
+                                        seeds=seeds)
+    motifs, order = _motif_block(labels, feat_dir, cohort_mode)
+    if motifs.shape[0] != X_gc.shape[0]:
+        raise RuntimeError(
+            f"row alignment failed: the GC-corrected matrix has "
+            f"{X_gc.shape[0]} rows and the motif block has {motifs.shape[0]}")
+    return np.hstack([X_gc, motifs]), y, st

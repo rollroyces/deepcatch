@@ -392,7 +392,7 @@ artifact no longer holds.
 
 | Asset | Status | Documented in |
 |---|---|---|
-| Tumor-naive fragmentomics, cross-study (public FinaleDB) | ✅ pooled AUC 0.9684 ± 0.0027 (GC-corrected); 0.9770 legacy; 0.9785 with motifs | `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` |
+| Tumor-naive fragmentomics, cross-study (public FinaleDB) | ✅ pooled AUC 0.9684 ± 0.0027 (GC-corrected); 0.9770 legacy; 0.9761 with motifs | `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` |
 | **Held-out external validation on public data** | ✅ **0.9444** (pub 7, WGS, n=31), **0.708** (pub 1, WGS, n=52), **0.7385** pooled over the publications carrying both classes; pub 9 (case-only) sensitivity 0.6569 | `docs/EXTERNAL_VALIDATION.md` |
 | Leave-one-study-out transfer | ✅ 0.6805 (Jiang→Cristiano) / 0.9361 (Cristiano→Jiang) against in-domain 0.9789 / 0.969 | `docs/CROSS_STUDY_LOSO.md` |
 | Cross-repo fusion | ✅ naive average **0.9884 ± 0.0010**, LR fusion 0.9884 ± 0.0009, isotonic 0.9849 ± 0.0014 (10 seeds, n=627; the mutation channel is synthetic, calibrated to AUC 0.92) | `RESULTS.md` §3 |
@@ -400,7 +400,7 @@ artifact no longer holds.
 | Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
 | Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
 | bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
-| 786 tests collected (`pytest src test -q`) | ✅ 600 core + 186 deep-learning, all green | `test/` + the per-module suites |
+| 794 tests collected (`pytest src test -q`) | ✅ 608 core + 186 deep-learning, all green | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |

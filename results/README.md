@@ -20,9 +20,9 @@ committed ones.
 | Methylation channel on real public fragments | **a null**: 103,863 loci, decoded-β AUC 0.9444 = its coverage baseline (difference 0.0, p = 1.0) | `methylation_cohort_channel.json` |
 | Mutation-informed panel (real TCGA-LUAD mutations, 5,738, + CADD v1.7) | LLR AUC 0.921 at 0.1% ctDNA, Sens@95% 0.770 — **the plasma reads are simulated** | `real_tcga_validation.json` |
 
-The legacy no-GC tumor-naive run (0.9770) and the with-motifs run
-(0.9785) are separate benchmarks in separate artifacts; the GC-corrected
-run is the headline.
+Three tumor-naive benchmarks exist, each in its own artifact and not
+interchangeable: 0.9684 GC-corrected (the headline), 0.9770 legacy
+no-GC, and 0.9761 GC-corrected with the 4-mer motif block.
 
 ---
 

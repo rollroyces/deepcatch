@@ -43,6 +43,15 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
+try:  # imported as part of the package
+    from .labels import (
+        looks_like_header, resolve_columns, resolve_label,
+    )
+except ImportError:  # loaded as a top-level module
+    from labels import (  # type: ignore[no-redef]
+        looks_like_header, resolve_columns, resolve_label,
+    )
+
 
 # Channel order is the contract between this adapter and any downstream
 # classifier. Don't reorder without updating every consumer.
@@ -200,41 +209,30 @@ def load_cohort(
 def labels_columns(labels_tsv: str) -> tuple[int, Optional[int]]:
     """Return the (label, study) column indices of a labels TSV.
 
-    Three layouts occur in this ecosystem and they are not
+    Four layouts occur in this ecosystem and they are not
     interchangeable:
 
     * ``sample / disease_class / label / study`` -- the canonical
       FinaleDB ``labels_multiclass.tsv`` (has a header row);
     * ``sample / label / study`` -- the per-study ``features/labels.tsv``
       (no header row);
+    * ``sample / disease_class / label / study`` (no header row) -- the
+      canonical layout with the header dropped;
     * ``sample / label`` -- the minimal two-column form.
 
-    Reading the label positionally breaks on the first layout (it picks up
-    ``disease_class``), and reading the study positionally breaks on the
-    second (it picks up the label). So both are resolved from the header
-    when there is one, and positionally only when there is not.
+    Reading the label positionally breaks on the first and third
+    layouts (it picks up ``disease_class``), and reading the study
+    positionally breaks on the second (it picks up the label). So both
+    are resolved from the header when there is one, and by the WIDTH
+    when there is not. The rules live in ``fragmentomics.labels`` so
+    every reader of a labels file resolves them the same way.
     """
     with open(labels_tsv) as f:
         first = f.readline().rstrip("\n").rstrip("\r")
     if not first:
         return 1, None
     parts = first.split("\t")
-    names = [p.strip().lower() for p in parts]
-    if names and names[0] in ("sample", "sample_id", "id"):
-        label_col = None
-        study_col = None
-        for i, name in enumerate(names):
-            if name in ("label", "class", "y", "target"):
-                label_col = i
-            elif name in ("study", "publication", "cohort", "dataset"):
-                study_col = i
-        if label_col is None:
-            label_col = 1 if len(parts) > 1 else 0
-        return label_col, study_col
-    # Headerless: sample, label, [study]
-    if len(parts) >= 3:
-        return 1, 2
-    return 1, None
+    return resolve_columns(parts, headered=looks_like_header(parts))
 
 
 def load_labels_and_studies(labels_tsv: str) -> Tuple[Dict[str, int], Dict[str, str]]:
@@ -243,8 +241,6 @@ def load_labels_and_studies(labels_tsv: str) -> Tuple[Dict[str, int], Dict[str, 
     Recognized labels (case-insensitive): cancer/positive/tumor/y/1/true
     → 1; healthy/control/normal/n/0/false → 0. Anything else raises.
     """
-    POS = {"cancer", "positive", "tumor", "y", "1", "true", "case"}
-    NEG = {"healthy", "control", "normal", "n", "0", "false"}
     label_col, study_col = labels_columns(labels_tsv)
     labels: Dict[str, int] = {}
     studies: Dict[str, str] = {}
@@ -262,15 +258,10 @@ def load_labels_and_studies(labels_tsv: str) -> Tuple[Dict[str, int], Dict[str, 
             if label_col >= len(parts):
                 continue
             lab = parts[label_col].strip().lower()
-            if lab in POS:
-                labels[s] = 1
-            elif lab in NEG:
-                labels[s] = 0
-            else:
-                raise ValueError(
-                    f"Unrecognized label {lab!r} for sample {s!r}; "
-                    f"expected one of {sorted(POS | NEG)}"
-                )
+            # The vocabulary lives in fragmentomics.labels, so every reader
+            # of a labels file in this repository resolves a label the same
+            # way and an unknown one raises the same error.
+            labels[s] = resolve_label(lab, s)
             if study_col is not None and study_col < len(parts):
                 studies[s] = parts[study_col].strip()
     return labels, studies

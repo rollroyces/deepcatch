@@ -100,7 +100,7 @@ H002	HEALTHY	healthy	my_lab_2026
 ### Critical rules
 
 1. **`sample_id` in `labels.tsv` MUST match a `features/<sample_id>.*.npy` prefix exactly.** If the prefix doesn't exist, the adapter rejects the cohort with a clear error listing every missing file.
-2. **`label` is case-insensitive but must be one of `cancer` or `healthy`.** Anything else triggers a schema error.
+2. **`label` says whether the sample is a case or a control, and it is case-insensitive.** The accepted words are `cancer` / `positive` / `tumor` / `case` / `y` / `1` / `true` for a case, and `healthy` / `control` / `normal` / `n` / `0` / `false` for a control. Anything else triggers a schema error — an unrecognised label is never silently filed as a control.
 3. **`disease_class` is free text** — we use it to group samples for per-cancer OvR analyses. Choose any consistent labels (e.g. `HCC`, `CRC`, `BRCA`, `HEALTHY`); avoid mixing `CRC` and `Colorectal` in the same cohort — pick one and stick with it.
 4. **Cell-line IDs are filtered out automatically.** Samples whose IDs match the cell-line regex (e.g. `GM1100`, `HeLa`, `HepG2`, `K562`) are dropped before the benchmark runs. If you have cell-line controls in your cohort, leave them in — the adapter will remove them.
 

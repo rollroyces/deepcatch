@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-786%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-794%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -112,7 +112,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 |---|---:|---:|---|
 | **Baseline** (5-channel, no GC, no motifs) | 0.9770 ± 0.0013 | 0.785 | legacy number; GC-noise-inflated |
 | **+ GC / mappability correction** (`--gc-correction`, default) | **0.9684 ± 0.0027** | 0.700 | honest baseline; removes known batch proxy |
-| **+ 4-mer end motifs** (`--include-motifs`) | **0.9785 ± 0.0020** | — | +0.0101 over the GC-corrected baseline; the lift is larger once the GC-axis proxy is removed |
+| **+ 4-mer end motifs** (`--include-motifs`) | **0.9761 ± 0.0030** | — | +0.0077 over the GC-corrected baseline; the lift is larger once the GC-axis proxy is removed |
 | **Shuffled-label null control** | **0.4460** | 0.0 | batch-and-fold-identity null floor (<0.55 = pass) |
 | **True-confound control** (cancer=A, healthy=B, harmonized) | **0.484** | — | collapses to chance — signal IS cancer-vs-healthy |
 | **True-confound, no harmonization** | 0.999 | — | batch-effect ceiling (negative control) |
@@ -337,7 +337,7 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 565 passed, 23 skipped, 13 deselected (slow real-data smoke)
+# → 573 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -360,7 +360,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_foundation_smoke.py` | 8 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **601 collected** | **565 passed + 23 skipped + 13 deselected** |
+| **Combined fast-path gate** | **609 collected** | **573 passed + 23 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
 
@@ -409,7 +409,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 42 test files (588 fast-path tests)
+├── test/                         # 42 test files (596 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts

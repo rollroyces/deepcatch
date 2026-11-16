@@ -31,17 +31,30 @@ The driver does three things, in this order:
 |---|---|---|---|
 | 1 | `scripts/cross_study_finallydb.py --no-gc-correction` | `results/cross_study_finallydb.json`, `docs/CROSS_STUDY_BENCHMARK.md` | §3.2 legacy pooled rows, true-confound control |
 | 2 | `scripts/cross_study_finallydb.py --gc-correction` | `results/cross_study_finallydb_gc_corrected.json`, `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`, `results/per_cancer_sens_at_spec.json` | §3.2 headline, §3.3 |
-| 3 | `scripts/cross_study_finallydb_shuffled_control.py` | `results/cross_study_finallydb_shuffled_control.json` | §3.2 shuffled-label null control |
-| 4 | `scripts/cross_study_loso.py` | `results/cross_study_loso.json`, `docs/CROSS_STUDY_LOSO.md` | §3.2.1 leave-one-study-out transfer |
-| 5 | `scripts/external_validation_finaledb.py` | `results/external_validation_finaledb.json`, `docs/EXTERNAL_VALIDATION.md` | §3.2.2 external validation on held-out public publications |
-| 6 | `src/fragmentomics/fusion_ablation.py` | `results/fusion_ablation_isotonic.json` | §3.1 / fusion ablation |
-| 7 | `src/fragmentomics/decision_curve_cli.py` | `results/decision_curve.json` | `RESULTS.md` §4 decision-curve operating points |
-| 8 | `scripts/methylation_cohort_channel.py` | `results/methylation_cohort_channel.json` | §3.2.4 the methylation channel (reported as a **null**) |
-| 9 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
-| 10 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
+| 3 | `scripts/cross_study_finallydb.py --include-motifs` | `results/cross_study_finallydb_with_motifs.json`, `docs/CROSS_STUDY_BENCHMARK_with_motifs.md` | §2.1 the with-motifs benchmark — **skipped without the cached motif features** (see below) |
+| 4 | `scripts/cross_study_finallydb_shuffled_control.py` | `results/cross_study_finallydb_shuffled_control.json` | §3.2 shuffled-label null control |
+| 5 | `scripts/cross_study_loso.py` | `results/cross_study_loso.json`, `docs/CROSS_STUDY_LOSO.md` | §3.2.1 leave-one-study-out transfer |
+| 6 | `scripts/external_validation_finaledb.py` | `results/external_validation_finaledb.json`, `docs/EXTERNAL_VALIDATION.md` | §3.2.2 external validation on held-out public publications |
+| 7 | `src/fragmentomics/fusion_ablation.py` | `results/fusion_ablation_isotonic.json` | §3.1 / fusion ablation |
+| 8 | `scripts/fusion_regularized_smoke.py` | `results/fusion_regularized_smoke.json` | §2.2 the regularized late fusion / Bayesian model average that replaced the neural encoder |
+| 9 | `src/fragmentomics/decision_curve_cli.py` | `results/decision_curve.json` | `RESULTS.md` §4 decision-curve operating points |
+| 10 | `scripts/methylation_cohort_channel.py` | `results/methylation_cohort_channel.json` | §3.2.4 the methylation channel (reported as a **null**) |
+| 11 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
+| 12 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
 
-Between 9 and the gate sit the two **acceptance floors** (see below) and the
+Between 12 and the gate sit the two **acceptance floors** (see below) and the
 **reproduction check**.
+
+> **Two steps need inputs that are not in the repository.**
+> Step 3 (the with-motifs sweep) needs the cached 4-mer end-motif features
+> (`<sample>.motifs.npy`), which live in the author's local feature
+> directory and are tracked in neither repository: without them the motif
+> block is zero-filled for every sample and the run produces a *different*
+> benchmark. The step is skipped and says so, and the reproduction check
+> then reports that artifact as NOT regenerated and ends with "the
+> reproduction is incomplete" — the correct verdict, not a silent pass.
+> Step 10 (the methylation channel) needs java, the FinaleMe 0.58 jar and
+> the cached per-sample CpG matrices, and is skipped the same way.
 
 > **Why two cross-study runs?** `--gc-correction` defaults to ON, so a driver
 > that passes no flag writes the GC-corrected run into the legacy path. That

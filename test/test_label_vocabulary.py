@@ -139,3 +139,73 @@ def test_the_collaborator_adapter_normalises_the_case_and_control_words(
         "C001": "cancer", "C002": "cancer", "C003": "cancer",
         "H001": "healthy", "H002": "healthy",
     }
+
+
+# The three documented layouts. Every reader must answer identically on
+# each of them.
+LAYOUTS = {
+    "canonical headered": (
+        "sample\tdisease_class\tlabel\tstudy\n"
+        "C001\tCRC\tcancer\tjiang\n"
+        "C002\tCRC\ttumor\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+        "H002\tHEALTHY\tcontrol\tcristiano\n"
+    ),
+    "headerless three-column": (
+        "C001\tcancer\tjiang\n"
+        "C002\ttumor\tjiang\n"
+        "H001\thealthy\tcristiano\n"
+        "H002\tcontrol\tcristiano\n"
+    ),
+    "headerless four-column": (
+        "C001\tCRC\tcancer\tjiang\n"
+        "C002\tCRC\ttumor\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+        "H002\tHEALTHY\tcontrol\tcristiano\n"
+    ),
+}
+
+EXPECTED = {"C001": 1, "C002": 1, "H001": 0, "H002": 0}
+
+
+def _read_with_every_reader(path):
+    """The label vector each reader produces for the same file."""
+    csf = _load("csf_agree", str(_REPO_ROOT / "scripts" /
+                                "cross_study_finallydb.py"))
+    ext = _load("ext_agree", str(_REPO_ROOT / "scripts" /
+                                 "external_validation_finaledb.py"))
+    adapter = _load("adapter_agree", str(_REPO_ROOT / "scripts" /
+                                        "adapter_local_cohort.py"))
+    from fragmentomics.tumor_naive_adapter import load_labels_and_studies
+
+    cross, _studies, _disease, _pub = csf.load_labels_multiclass(
+        str(path), requested_publications={"6", "8"})
+    external, _s, _d, _p = ext._read_labels(str(path), {"6", "8"})
+    collaborator = {r["sample_id"]: (1 if r["label"] == "cancer" else 0)
+                    for r in adapter.load_labels_tsv(str(path))}
+    package, _s = load_labels_and_studies(str(path))
+    return {
+        "cross_study_finallydb": cross,
+        "external_validation": external,
+        "adapter_local_cohort": collaborator,
+        "tumor_naive_adapter": package,
+    }
+
+
+@pytest.mark.parametrize("layout", sorted(LAYOUTS))
+def test_every_reader_resolves_the_same_file_identically(tmp_path, layout):
+    """Four readers, one file, one answer.
+
+    They used to disagree: the package's reader took the DISEASE CLASS
+    for a headerless four-column file, and the two script readers
+    skipped a three-column file entirely -- silently, returning an
+    empty cohort. Reading the same file through every reader and
+    comparing the OUTPUT is what exposes this class.
+    """
+    path = tmp_path / "labels.tsv"
+    path.write_text(LAYOUTS[layout])
+
+    vectors = _read_with_every_reader(path)
+    for reader, vector in vectors.items():
+        assert vector == EXPECTED, (
+            f"{reader} read the {layout} layout as {vector}, not {EXPECTED}")

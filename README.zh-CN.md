@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-786%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-794%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -116,7 +116,7 @@
 |---|---:|---:|---|
 | **基线**（5 通道，无 GC，无基序） | 0.9770 ± 0.0013 | 0.785 | 旧数字；被 GC 噪声抬高 |
 | **+ GC / mappability 校正**（`--gc-correction`，默认） | **0.9684 ± 0.0027** | 0.700 | 诚实的基线；移除已知的批次代理 |
-| **+ 4-mer 末端基序**（`--include-motifs`） | **0.9785 ± 0.0020** | — | 比 GC 校正基线高 +0.0101；去掉 GC 轴代理后提升更大 |
+| **+ 4-mer 末端基序**（`--include-motifs`） | **0.9761 ± 0.0030** | — | 比 GC 校正基线高 +0.0077；去掉 GC 轴代理后提升更大 |
 | **置换标签零假设对照** | **0.4460** | 0.0 | 批次与折身份的零假设地板（<0.55 为通过） |
 | **真实混杂对照**（癌症=A、健康=B，已 harmonize） | **0.484** | — | 塌缩到随机——信号确实是癌症 vs 健康 |
 | **真实混杂，不做 harmonization** | 0.999 | — | 批次效应上限（负对照） |
@@ -341,7 +341,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 565 passed, 23 skipped, 13 deselected (slow real-data smoke)
+# → 573 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -364,7 +364,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_foundation_smoke.py` | 8 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 601** | **565 通过 + 23 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 609** | **573 通过 + 23 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 
@@ -413,7 +413,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 42 test files (588 fast-path tests)
+├── test/                         # 42 test files (596 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
