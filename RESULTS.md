@@ -201,14 +201,14 @@ Naively average the two channels' P(cancer) scores:
 
 | Setup | AUC | Notes |
 |---|---|---|
-| Tumor-naive alone | 0.9743 ± 0.002 | |
-| Mutation-only (synthetic, AUC 0.92) | 0.9242 | |
-| Naive average | 0.9886 ± 0.001 | |
-| LR fusion (learned weights) | 0.9887 ± 0.001 | (same as naive) |
+| Tumor-naive alone | 0.9740 ± 0.0013 | |
+| Mutation-only (synthetic, AUC 0.92) | 0.9020 | |
+| Naive average | 0.9884 ± 0.0010 | |
+| LR fusion (learned weights) | 0.9884 ± 0.0009 | (same as naive) |
 
 **Paired t-test (10 seeds): LR-fusion AUC − tumor-naive AUC = +0.0143,
-t = 31.96, p < 0.0001. 95% CI (DeLong, single-seed pooled OOF): [+0.0135, +0.0152]. DeLong
-p < 0.0015 on every one of 5 individual seeds.**
+t = 49.22, p < 0.0001, 95% CI [0.0138, 0.0149]. DeLong
+p < 0.0029 on every one of the 10 individual seeds.**
 
 Recommended fusion recipe: **naive average** (no need for learned
 weights at this scale).

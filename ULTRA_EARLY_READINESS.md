@@ -12,7 +12,7 @@
 | Layer | Status | Honest scope |
 |---|---|---|
 | **Fragmentomics 5-channel cross-study pooled AUC** (FinaleDB pubs 6+8, n=627) | **Ready** | AUC 0.9684 ± 0.0027 with GC correction; shuffled-label null 0.446; true-confound control collapses to 0.484. |
-| **Per-cancer sens@99% spec on the same cohort** | **Ready** | Pooled sens@99% = 0.669 (DeLong CI logged in `results/per_cancer_sens_at_spec.json`); per-cancer types: LUAD 0.71, OV 0.90, PAAD 0.69, CRC 0.83, HCC (Jiang) 0.78, BRCA 0.30, OTHER_C 0.61. |
+| **Per-cancer sens@99% spec on the same cohort** | **Ready** | Pooled sens@99% = 0.700 (DeLong CI logged in `results/per_cancer_sens_at_spec.json`); per-cancer types: LUAD 0.861, OV 0.821, PAAD 0.567, CRC 0.815, HCC (Jiang) 0.146, BRCA 0.566, OTHER_C 0.630. |
 | **Screening-grade sens@99.5% / @99.9% spec** | **Ready** *(offline computation)* | New CLI `--specificities 0.95 0.98 0.99 0.995 0.999` (see `scripts/per_cancer_sens_at_spec.py`) emits the full screening-grade grid; pooled sens@99.5% = 0.582. |
 | **Stage I vs late-stage breakdown** | **Ready** *(computable, n=0 in open-data)* | New `build_stage_breakdown_table` in `src/per_cancer_sens_at_spec.py`. The open-data FinaleDB cohort **does not carry stage labels**, so the breakdown is omitted by default and only fires when an input TSV has a `stage` column. |
 | **Panel-LLR ultra-low-VAF sweep** (TCGA-LUAD 5,738 mutations, *spike-in simulation*) | **Ready (in silico only)** | At 0.1% ctDNA, AUC 0.921 / sens@99% = 0.49; at 0.05% the curve still passes the gate; at 0.01% the panel is information-limited. |

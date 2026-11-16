@@ -138,16 +138,18 @@ Source: `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py`.
 
 | Strategy | AUC | Sens@95% | Sens@99% |
 |---|---|---|---|
-| Tumor-naive only | 0.9743 ± 0.002 | 0.883 | 0.760 |
-| Mutation-only (synthetic, AUC 0.92) | 0.9242 | 0.656 | 0.336 |
+| Tumor-naive only | 0.9740 ± 0.0013 | 0.880 | 0.742 |
+| Mutation-only (synthetic, AUC 0.92) | 0.9020 | 0.595 | 0.267 |
 | **Naive average** | **0.9884** | **0.927** | **0.841** |
-| **LR fusion** | **0.9887** | **0.937** | **0.845** |
+| **LR fusion** | **0.9884** | **0.932** | **0.833** |
 
 **Paired t-test (10 seeds)**: LR-fusion AUC − tumor-naive AUC = **+0.0143**
-(t = 31.96, p < 0.0001, 95% bootstrap CI [0.0135, 0.0152]).
-**DeLong p < 0.0015 on every one of 5 individual seeds**.
+(t = 49.22, p < 0.0001, 95% CI [0.0138, 0.0149]).
+**DeLong p < 0.0029 on every one of the 10 individual seeds**.
 
-Source: `src/fragmentomics/fusion_ablation.py` (DeepCatch side).
+Source: `src/fragmentomics/fusion_ablation.py` (DeepCatch side); artifact
+`results/fusion_ablation_isotonic.json`; narrative
+[`docs/FUSION_ISOTONIC.md`](docs/FUSION_ISOTONIC.md).
 **Honest framing**: the "mutation channel" in this fusion is a
 **synthetic** score calibrated to AUC 0.92, not a measurement from
 the same plasma as the fragmentomics channel. This is a what-if

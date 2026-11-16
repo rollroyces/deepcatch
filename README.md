@@ -260,7 +260,7 @@ proba = fusion.predict_proba(modalities)   # shape (N, 2)
 
 ### D. Tumor-naive + mutation-informed fusion
 
-See [`docs/TUMOR_NAIVE.md`](docs/TUMOR_NAIVE.md) for the cross-repo adapter and `scripts/cross_study_finallydb.py --include-motifs`. Headline: naive average of fragmentomics + a calibrated mutation channel reaches AUC **0.9882** on the 627 cohort (paired-t p < 0.0001). The mutation channel is calibrated, not paired — honest what-if experiment.
+See [`docs/TUMOR_NAIVE.md`](docs/TUMOR_NAIVE.md) for the cross-repo adapter and `scripts/cross_study_finallydb.py --include-motifs`. Headline: naive average of fragmentomics + a calibrated mutation channel reaches AUC **0.9884 ± 0.0010** on the 627 cohort over 10 seeds (paired-t p < 0.0001). The mutation channel is calibrated, not paired — honest what-if experiment.
 
 ### E. Reproduce everything
 

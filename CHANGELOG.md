@@ -149,6 +149,21 @@ cohort size.
   matches numbers at the precision they are written at, so "0.970"
   no longer stands in for both the GC-corrected 0.9698 and the legacy
   0.9704.
+- **The fusion table had drifted to a mix of two runs.** MODEL.md and
+  RESULTS.md carried a pre-regeneration copy of it: a stale tumor-naive
+  AUC (0.9743), a stale mutation-only AUC (0.9242) and a stale LR-fusion
+  AUC (0.9887) beside the current naive-average figure, with the paired
+  t-statistic from the older run (t = 31.96 instead of 49.22), the CI
+  from it, and "5 individual seeds" for a 10-seed benchmark. Every place
+  that quotes the table now quotes the artifact's own numbers, and each
+  row of it is pinned by the drift guard. `docs/FUSION_ISOTONIC.md`
+  already had the right ones, which is how the drift was spotted.
+- **The readiness document's per-cancer sensitivity row was a whole
+  generation out of date.** It quoted pooled sens@99% = 0.669 with LUAD
+  0.71, OV 0.90, PAAD 0.69, CRC 0.83, HCC 0.78, BRCA 0.30 and OTHER_C
+  0.61 — figures from an older run of the per-cancer table, some of them
+  (HCC 0.78, BRCA 0.30) far from the current values. It now quotes
+  0.700 and the artifact's per-cancer figures.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

@@ -276,6 +276,76 @@ TABLE_ROWS = [
               "harmonized", "auc_mean")),
         ],
     },
+    # The fusion table. Every row comes from the same artifact, so each
+    # row is pinned individually: the table had drifted to a mix of two
+    # runs (a stale tumor-naive AUC, a stale mutation-only AUC and a
+    # stale LR-fusion AUC) while every one of those numbers still
+    # existed somewhere in the repository.
+    {
+        "doc": "MODEL.md",
+        "anchor": "| Tumor-naive only |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "tumor_naive", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "MODEL.md",
+        "anchor": "| Mutation-only (synthetic, AUC 0.92) |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "mutation_only", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "MODEL.md",
+        "anchor": "| **Naive average** |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "naive_average", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "MODEL.md",
+        "anchor": "| **LR fusion** |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "lr_fusion", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "docs/FUSION_ISOTONIC.md",
+        "anchor": "| Tumor-naive only |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "tumor_naive", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "docs/FUSION_ISOTONIC.md",
+        "anchor": "| Mutation-only (calibrated AUC 0.92) |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "mutation_only", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "docs/FUSION_ISOTONIC.md",
+        "anchor": "| Naive average | **",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "naive_average", "auc_mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "docs/FUSION_ISOTONIC.md",
+        "anchor": "| LR fusion (uncalibrated) |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "lr_fusion", "auc_mean"))],
+        "forbidden": [],
+    },
+    # The readiness document's per-cancer sens@99 row, which had been
+    # left quoting a pre-regeneration run of the per-cancer table.
+    {
+        "doc": "ULTRA_EARLY_READINESS.md",
+        "anchor": "Per-cancer sens@99% spec on the same cohort",
+        "required": [("per_cancer_sens_at_spec.json",
+                       ("pooled", "sens_at_99"))],
+        "forbidden": [],
+    },
 ]
 
 
@@ -342,6 +412,19 @@ def dig(artifact, path):
     return node
 
 
+def dig_number(artifact, path):
+    """Resolve a path to a number, including the fusion per_strategy shape.
+
+    A path of ``("per_strategy", "<strategy>", "auc_mean")`` reaches into
+    the fusion artifact's list-of-metric-rows shape, which a plain key
+    walk cannot do.
+    """
+    if (len(path) == 3 and path[0] == "per_strategy"
+            and path[2] == "auc_mean"):
+        return fusion_strategy_metric(artifact, path[1], "auc")
+    return float(dig(artifact, path))
+
+
 def loso_direction(artifact, train, test):
     for entry in artifact["loso"]:
         if (entry["train_study"] == train and entry["test_study"] == test
@@ -355,6 +438,19 @@ def fusion_auc(artifact, strategy):
         if row["metric"] == "auc":
             return float(row["mean"])
     raise KeyError(f"no auc row for {strategy}")
+
+
+def fusion_strategy_metric(artifact, strategy, metric):
+    """One metric of one fusion strategy, from the per_strategy list.
+
+    ``per_strategy`` maps a strategy name to a list of
+    ``{"metric": ..., "mean": ..., "std": ...}`` rows, so a plain
+    path lookup cannot reach into it.
+    """
+    for row in artifact["per_strategy"][strategy]:
+        if row["metric"] == metric:
+            return float(row["mean"])
+    raise KeyError(f"no {metric} row for {strategy}")
 
 
 def loso_in_domain(artifact, study):
@@ -398,7 +494,7 @@ def quoted_values(results_dir: str | None = None):
         if artifact is None:
             continue
         yield (f"{artifact_name}:{'.'.join(map(str, path))}",
-               float(dig(artifact, path)), artifact_name, documents)
+               dig_number(artifact, path), artifact_name, documents)
     for artifact_name, what, document in QUOTED_SPECIAL:
         artifact = load(artifact_name, results_dir)
         if artifact is None:
@@ -423,14 +519,14 @@ def table_row_values(results_dir: str | None = None):
             if isinstance(path, str) and path.startswith("loso "):
                 value, _ = special_value(artifact_name, artifact, path)
             else:
-                value = float(dig(artifact, path))
+                value = dig_number(artifact, path)
             required.append((artifact_name, value))
         forbidden = []
         for artifact_name, path in case["forbidden"]:
             artifact = load(artifact_name, results_dir)
             if artifact is None:
                 continue
-            forbidden.append((artifact_name, float(dig(artifact, path))))
+            forbidden.append((artifact_name, dig_number(artifact, path)))
         yield (case["doc"], case["anchor"], required, forbidden,
                case.get("source"))
 

@@ -165,6 +165,12 @@ SUPERSEDED = [
     # Superseded by the GC-corrected true-confound control. It was still
     # hard-coded in the readiness generator until this release.
     "0.499",
+    # The old mutation-only fusion AUC, from the pre-regeneration
+    # fusion artifact. It is the only one of the stale fusion figures
+    # that can be banned literally: the others ("0.9887", "0.937",
+    # "0.845") are prefixes of legitimate current numbers, so they are
+    # pinned by the table-row checks below instead.
+    "0.9242",
 ]
 CURRENT_DOCS = [
     "README.md",
