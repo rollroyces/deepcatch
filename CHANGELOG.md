@@ -120,7 +120,11 @@ cohort size.
   vocabulary now lives in one place (`src/fragmentomics/labels.py`), an
   unrecognised label is an error rather than an invented control, and
   the collaborator adapter raises the schema error its interface
-  promises. 24 tests cover it.
+  promises. 24 tests cover it. The fix is behaviour-preserving on the
+  real data: re-running the GC-corrected sweep reproduces all 483
+  numeric fields of the committed artifact (pooled AUC
+  0.9684259954921112) and all 329 of the per-cancer artifact, so only a
+  label that WAS mis-filed changes behaviour.
   `src/fragmentomics/labels.py`, `scripts/cross_study_finallydb.py`,
   `scripts/external_validation_finaledb.py`,
   `scripts/adapter_local_cohort.py`, `test/test_label_vocabulary.py`.
