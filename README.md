@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-709%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-720%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -341,7 +341,7 @@ env -u PYTHONPATH ./.venv/bin/python -m pytest \
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
-# → 709 tests across all modules
+# → 720 tests across all modules
 
 # Biomedical-review regression tests
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_biomedical_review_fixes.py -v

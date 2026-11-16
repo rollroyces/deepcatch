@@ -164,6 +164,13 @@ cohort size.
   0.61 — figures from an older run of the per-cancer table, some of them
   (HCC 0.78, BRCA 0.30) far from the current values. It now quotes
   0.700 and the artifact's per-cancer figures.
+- **The citation metadata was not checked at all.** `CITATION.cff` is
+  what GitHub's "Cite this repository" button hands a reader, and no
+  guard covered a `.cff` file. It still quoted the superseded pooled
+  AUC (0.9670) and a title the manuscript does not use. It now quotes
+  the manuscript's own title, the current pooled AUC, and the
+  affiliation the manuscript declares, and a test holds the three in
+  agreement.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

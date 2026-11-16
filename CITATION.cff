@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use DeepCatch in your research, please cite it as follows."
-title: "DeepCatch v2.3.0: An Open-Source Benchmark for cfDNA Fragmentomics with External Validation on Held-Out Public Cohorts"
+title: "An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations"
 authors:
   - given-names: "Yu Ching"
     family-names: "Lam"
@@ -37,7 +37,7 @@ abstract: >
   both classes; the whole-exome publication transfers only partly (breast
   0.6938, prostate 0.7127). Transfer between whole-genome studies is real but
   far from uniform, and the assay platform blunts it further. A leave-one-study-out run inside the
-  training cohort gives 0.6805, so the pooled 0.9670 is reported as a
+  training cohort gives 0.6805, so the pooled 0.9684 is reported as a
   within-cohort separation number rather than a generalisation claim. The
   multi-modal stage is carried by a regularized late fusion (AUC 0.9825) and a
   Bayesian model average (0.9650) rather than the neural encoder (0.554) at

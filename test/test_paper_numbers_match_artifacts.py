@@ -199,6 +199,10 @@ CURRENT_DOCS = [
     "docs/site/index.html",
     "ULTRA_EARLY_READINESS.md",
     "docs/PORTFOLIO_ROADMAP.md",
+    # CITATION.cff is what GitHub's "Cite this repository" button hands a
+    # reader, and it was still quoting the superseded pooled AUC (0.9670)
+    # because no check covered a .cff file at all.
+    "CITATION.cff",
 ]
 
 
@@ -293,6 +297,40 @@ def test_changelog_states_the_current_abstract_length():
     assert stated == length, (
         f"the CHANGELOG says the abstract is {stated} characters; "
         f"paper/paper.tex makes it {length}")
+
+
+def test_citation_metadata_agrees_with_the_manuscript():
+    """CITATION.cff must describe the paper that is actually being published.
+
+    GitHub's "Cite this repository" button hands this file to a reader,
+    and nothing checked it: it quoted a title the manuscript does not
+    use, and a pooled AUC (0.9670) that the v2.3.0 regeneration had
+    already superseded. The title is now the manuscript's own, and the
+    figures it quotes are checked against the artifacts by the
+    superseded list above.
+    """
+    tex = _read("paper/paper.tex")
+    match = re.search(r"\\title\{(.*?)\}\s*\n", tex, re.S)
+    assert match, "paper.tex has no title"
+    title = re.sub(r"\\textbf\{(.*)\}", r"\1", match.group(1)).strip()
+    title = " ".join(title.split())
+    cff = _read("CITATION.cff")
+    stated = re.search(r'^title:\s*"(.*?)"', cff, re.M)
+    assert stated, "CITATION.cff has no title"
+    assert stated.group(1) == title, (
+        "CITATION.cff quotes a different title from the manuscript:\n"
+        f"  CITATION.cff: {stated.group(1)}\n"
+        f"  paper.tex:     {title}")
+
+    # The affiliation the manuscript declares is the one the citation
+    # metadata must carry -- a reviewer clicks through from one to the
+    # other.
+    assert "Independent Researcher" in cff, (
+        "CITATION.cff no longer declares the affiliation the manuscript "
+        "declares")
+    assert "Independent Researcher" in tex, (
+        "paper.tex no longer declares an affiliation; CITATION.cff must "
+        "be updated to match")
 
 
 def test_biorxiv_form_agrees_with_the_manuscript():
