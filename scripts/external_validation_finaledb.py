@@ -85,16 +85,14 @@ if _SRC not in sys.path:
 from fragmentomics.labels import resolve_label  # noqa: E402
 
 
-def _load_cohort(features_dir: str, labels_path: str, publications: set[str]):
-    """Load the 5-channel features + labels for the given publications.
+def _read_labels(labels_path: str, publications: set[str]):
+    """Read the labels file into (labels, studies, disease_class, publication).
 
-    Uses the sibling pipeline's ``load5`` so the training and external
-    features are assembled by exactly the same code path.
+    Split out of `_load_cohort` so the label reading can be tested
+    WITHOUT the sibling pipeline's checkout: the cohort loader imports
+    `honest_benchmark.load5`, which is absent in CI and in a fresh
+    clone, while the label vocabulary is not.
     """
-    sys.path.insert(0, SISTER)
-    sys.path.insert(0, os.path.join(SISTER, "scripts"))
-    from honest_benchmark import load5
-
     labels, studies, disease_class, publication = {}, {}, {}, {}
     with open(labels_path) as f:
         header = None
@@ -118,6 +116,21 @@ def _load_cohort(features_dir: str, labels_path: str, publications: set[str]):
             studies[s] = parts[3]
             disease_class[s] = parts[1]
             publication[s] = pub
+    return labels, studies, disease_class, publication
+
+
+def _load_cohort(features_dir: str, labels_path: str, publications: set[str]):
+    """Load the 5-channel features + labels for the given publications.
+
+    Uses the sibling pipeline's ``load5`` so the training and external
+    features are assembled by exactly the same code path.
+    """
+    sys.path.insert(0, SISTER)
+    sys.path.insert(0, os.path.join(SISTER, "scripts"))
+    from honest_benchmark import load5
+
+    labels, studies, disease_class, publication = _read_labels(
+        labels_path, publications)
     X, y, st = load5(labels, studies, feat_dir=features_dir)
     order = [s for s in sorted(labels)
              if all(os.path.exists(os.path.join(

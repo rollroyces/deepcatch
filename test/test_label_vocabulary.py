@@ -108,8 +108,10 @@ def test_the_external_validation_reader_refuses_an_unknown_label(tmp_path):
     path = tmp_path / "labels.tsv"
     _write_labels(path, [("C001", "CRC", "CRC", "jiang")])
 
+    # The label reading is exercised on its own: the cohort loader
+    # imports the sibling pipeline, which is absent in CI.
     with pytest.raises(LabelVocabularyError):
-        ext._load_cohort(str(tmp_path), str(path), {"6", "8"})
+        ext._read_labels(str(path), {"6", "8"})
 
 
 def test_the_collaborator_adapter_reports_an_unknown_label_as_a_schema_error(
