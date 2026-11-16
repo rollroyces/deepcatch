@@ -45,9 +45,30 @@ tagging — that repository has its own release history):
 
 ```bash
 cd /path/to/cfdna-fragmentomics-pipeline
-git tag -a v0.2.0 -m "v0.2.0: cross-study AUC 0.9745, AUC gate, HEAD-size guard, 18 unit tests"
+git tag -a v0.2.0 -m "v0.2.0: cross-study AUC 0.9770, AUC gate, HEAD-size guard, 18 unit tests"
 git push origin v0.2.0
 ```
+
+> **Seed that repository's PCA before you tag it.** Its
+> `scripts/honest_benchmark.py` fits `PCA(...)` without `random_state`,
+> so its headline moves on every run: two runs of the same command on the
+> same data gave **0.975618** and **0.973906**, with a reported ±std that
+> also changed (0.000923 vs 0.002371). The fix is one line — give the PCA
+> the CV seed that is already in scope:
+>
+> ```python
+> pca = PCA(n_components=min(pca_n, max_pca),
+>           random_state=sd).fit(Xtr)
+> ```
+>
+> Measured with that one line, the same command returns **0.977018 ±
+> 0.001316** on every run — identical to DeepCatch's own legacy pooled
+> number (0.977018 ± 0.001316), which confirms the two repositories run
+> the same computation once both are seeded. The sibling's documents
+> (`BENCHMARK.md`, `docs/MULTICANCER_RESULTS.md`) still quote the
+> unseeded 0.9745 and need updating at the same time; a DOI minted on a
+> tag whose headline number is known to drift is exactly the failure
+> this file warns about.
 
 ### 3. Create the GitHub Release
 
