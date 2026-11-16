@@ -99,3 +99,46 @@ def test_the_ci_split_adds_up_to_the_total():
         assert core + deep == total, (
             f"the CI split {core} + {deep} does not add up to the stated "
             f"total {total}")
+
+
+def test_the_stated_count_matches_the_real_collection():
+    """The stated count must be the count, not a number that used to be.
+
+    Every document agreeing on a wrong number is still wrong, so this
+    test pins the AGREEMENT against reality: it collects the suite and
+    compares what the documents claim with what is actually collected.
+
+    It also protects the other direction. The count is updated by
+    replacing a string across the documents, and a raw replacement
+    silently rewrites any longer number that contains it -- that is how
+    the external-validation figure 0.7097 became 0.7237 in two
+    successive count updates. Collection is the ground truth, so this
+    test fails the moment the two diverge.
+    """
+    import subprocess
+    import sys
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "src", "test", "--collect-only", "-q",
+         "-o", "addopts="],
+        cwd=_REPO_ROOT, capture_output=True, text=True, timeout=600,
+    )
+    if proc.returncode != 0:
+        pytest.skip(f"collection failed here: {proc.stderr[-300:]}")
+    real = None
+    for line in proc.stdout.splitlines():
+        match = re.search(r"(\d+) tests? collected", line)
+        if match:
+            real = int(match.group(1))
+            break
+    assert real is not None, (
+        "could not read the collected count from pytest's output:\n"
+        f"{proc.stdout[-500:]}")
+
+    stated = set()
+    for path in COUNT_DOCS:
+        stated |= _stated_counts(path)
+    assert stated == {real}, (
+        f"the documents state {sorted(stated)} tests but the suite collects "
+        f"{real}. Update every place that states the count (and the CI "
+        f"split) together.")

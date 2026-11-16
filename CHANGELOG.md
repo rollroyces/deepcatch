@@ -181,6 +181,17 @@ cohort size.
   table and the badge now carry the current figures, and a banner says
   plainly which parts of the translation lag the English original
   rather than leaving the reader to find the discrepancy.
+- **A test-count update corrupted a benchmark figure, twice.** The stated
+  test count is updated by replacing a string across the documents, and
+  a raw replacement rewrites any longer number that contains it: the
+  external-validation figure 0.7097 became 0.7207 in one update and
+  0.7237 in the next, so the methods paper said "0.7237 for the naive
+  pooled figure" where the artifact says **0.7097**. The count updates
+  now match only standalone integers, the figure is quoted explicitly
+  in the guard's list so its exact rendering is checked, and a new test
+  compares the count the documents state against the count the suite
+  actually collects — so a count that drifts from reality fails the
+  build instead of being agreed upon unanimously.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

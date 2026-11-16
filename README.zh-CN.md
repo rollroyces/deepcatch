@@ -6,7 +6,7 @@
 
 > ⚠️ **本译版落后于英文原版，止于 v2.2。** 英文 README 已是 **v2.3.0**，其头条结果
 > （外部验证 0.9444 / 0.708 / 0.7385、留一研究外推 0.6805、GC 校正后的 pooled AUC 0.9684、
-> 融合 0.9884、甲基化通道的零结果、以及 723 项测试）**尚未译入本文件**。本文件中的融合表
+> 融合 0.9884、甲基化通道的零结果、以及 725 项测试）**尚未译入本文件**。本文件中的融合表
 > 数字已更新为当前 artifact 的取值，但其余章节描述的仍是 v2.2 的状态（例如开头的
 > Transformer 基础模型叙述，而英文原版已改为 regularized late fusion 0.9825）。
 > 引用请以英文原版为准。
@@ -14,7 +14,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-green.svg)](https://www.python.org/)
 [![Version: 2.2](https://img.shields.io/badge/Version-2.2-blue.svg)]()
-![Tests](https://img.shields.io/badge/Tests-723%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-725%20collected-blue)()
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![GitHub last commit](https://img.shields.io/github/last-commit/rollroyces/deepcatch)](https://github.com/rollroyces/deepcatch)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-red)](https://github.com/sponsors/rollroyces)

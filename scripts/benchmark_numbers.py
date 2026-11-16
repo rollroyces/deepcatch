@@ -51,6 +51,13 @@ QUOTED_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "9", "sensitivity_at_train_threshold_99spec"),
      ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
+    # The naive pooled external AUC -- the figure that shows what
+    # folding a case-only publication into an AUC denominator would
+    # produce. It was corrupted once by a test-count string replacement
+    # (0.7097 -> 0.7207 -> 0.7237), so it is quoted explicitly now.
+    ("external_validation_finaledb.json",
+     ("pooled_external_auc", "auc"),
+     ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
     ("cross_study_finallydb_gc_corrected.json",
      ("pooled", "harmonized", "auc_mean"),
      ["paper/METHODS_PAPER.md", "paper.md", "README.md", "MODEL.md",

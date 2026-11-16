@@ -141,7 +141,7 @@ Reproducibility is enforced rather than asserted:
   manuscript directly from the committed JSON, so the prose and the
   artifacts cannot drift apart.
 
-The suite is 723 tests (`pytest src test -q`), split across two CI jobs
+The suite is 725 tests (`pytest src test -q`), split across two CI jobs
 so that the core fragmentomics path stays installable without a deep
 learning stack.
 
