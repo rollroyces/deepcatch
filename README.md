@@ -93,7 +93,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 - **External validation on never-trained public data** — train on FinaleDB pubs 6+8 (n=627), test on pubs 1/7/9 fetched from the public API + S3 (no IRB): **AUC 0.9444** [0.8731, 1.0] on pub 7 (WGS, n=31), 0.708 on pub 1 (WGS, n=52), 0.7385 pooled over the publications carrying both classes; the whole-exome publication transfers only partly (breast 0.6938, prostate 0.7127) — an assay-platform shift on top of a study shift.
 - **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; the permuted-label null is 0.446 and its *measured* null on this paired design is 0.42 ± 0.12 (not 0.5), so the control is read against the measured null rather than against chance.
 - **Mutation-informed detection panel** — TCGA-derived panel of 5,738 LUAD mutations with CADD-PHRED-scored Top-K=20 selection; AUC 0.92 at 0.1% ctDNA on synthetic cfDNA dilution (spike-in, not clinical plasma).
-- **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.989 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
+- **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.988 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
 - **Late fusion that works at this sample size** — the neural encoder scores 0.554 on the honest paired cohort against an LR baseline of 0.910; a regularized late fusion reaches **0.9825 ± 0.0094** and a Bayesian model average **0.9650 ± 0.0089** on the same folds (`src/foundation/regularized_fusion.py`).
 - **Longitudinal Bayes Kalman** — architecture-only (synthetic data, not plasma-validated); CET pipeline (Capture → Enhance → Triage) designed for serial quarterly draws.
 - **Methylation extraction on real public data — and a measured null** — FinaleMe runs end-to-end on FinaleDB fragment files (frag → BAM → per-CpG matrix → WGBS prior → HMM decode). Scored on 31 real samples (pub 7, 17 colorectal / 14 liver-transplant) the decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the 103,863 loci where both arms have coverage, each tested on the samples that cover it, the median cancer-minus-control difference is exactly 0.0 (permutation p = 1.0). The public libraries are size-selected at ~300 bp and deliver 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent. The extraction path works; **the channel is not a validated feature** — see [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
@@ -289,7 +289,7 @@ The 5-channel + 4-mer pooled fragmentomics benchmark + the per-cancer sens@spec 
 
 ## Biomedical review fixes (passed; full history in git log)
 
-The post-v2.2.0 biomedical review closed 9 classes of issues; **23 regression tests** in `test/test_biomedical_review_fixes.py` guarantee they don't regress.
+The post-v2.2.0 biomedical review closed 9 classes of issues; **37 regression tests** in `test/test_biomedical_review_fixes.py` guarantee they don't regress.
 
 | # | Fix | Where |
 |---|---|---|
@@ -303,7 +303,7 @@ The post-v2.2.0 biomedical review closed 9 classes of issues; **23 regression te
 | 8 | `CAFFCalculator.from_fragments()` helper — derives per-arm coverage from fragments with per-Mb normalization | `src/fragmentomics/` |
 | 9 | `scripts/foundation_real_smoke.py` — first **real-data** smoke for the foundation model (TCGA-LUAD panel-LLR + mutation features, GroupKFold per-patient, shuffled-label control). Honest 3-seed 20-pair numbers: foundation 0.57 ± 0.01 vs lr_baseline 0.91 | `test/test_biomedical_review_fixes.py` |
 
-**New loss functions** (`src/foundation/losses.py`): `SensAtSpecLoss` (focal-BCE for ultra-low VAF), `BalancedCrossEntropy` (Cui 2019), `CalibrationLoss` (Mukhoti 2020 differentiable ECE), composable `focal_binary_cross_entropy`. Full regression suite: `pytest test/test_biomedical_review_fixes.py -v` → 24/24 passing.
+**New loss functions** (`src/foundation/losses.py`): `SensAtSpecLoss` (focal-BCE for ultra-low VAF), `BalancedCrossEntropy` (Cui 2019), `CalibrationLoss` (Mukhoti 2020 differentiable ECE), composable `focal_binary_cross_entropy`. Full regression suite: `pytest test/test_biomedical_review_fixes.py -v` → 37/37 passing.
 
 ---
 
@@ -337,11 +337,11 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 189 passed, 12 deselected (slow real-data smoke)
+# → 504 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
-# → 725 tests across all modules
+# → 228 collected (217 run, 11 deselected as slow)
 
 # Biomedical-review regression tests
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_biomedical_review_fixes.py -v
@@ -356,13 +356,13 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | Module | Tests | Status |
 |---|---:|---|
 | `test/test_publication_readiness.py` | 12 | ✅ all passing |
-| `test/test_biomedical_review_fixes.py` | 24 | ✅ all passing |
+| `test/test_biomedical_review_fixes.py` | 37 | ✅ all passing |
 | `test/test_foundation_smoke.py` | 8 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
-| Full `src/` discovery | 228 | ✅ all passing |
-| **Combined fast-path gate** | **233 collected** | **189 passed + 12 deselected** |
+| Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
+| **Combined fast-path gate** | **540 collected** | **504 passed + 23 skipped + 13 deselected** |
 
-The 12 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
+The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
 
 ---
 
@@ -409,7 +409,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 25+ test files (189 fast-path tests)
+├── test/                         # 40 test files (527 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
@@ -428,7 +428,7 @@ deepcatch/
 | `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |
 | `506e14a` | Update `cross_platform_readiness.json` (fragmentomics-only verdict) |
 | `ca1877c` | FinaleMe partial install (2026-09-27): Java 21, v0.58 JAR, pretrained models |
-| `64c5aeb`-`d5c62ac` | Biomedical-review fixes (24/24 regression tests passing) |
+| `64c5aeb`-`d5c62ac` | Biomedical-review fixes (37/37 regression tests passing) |
 | `0ce26db` (Audit-2) | Foundation smoke honest 3-seed 20-pair numbers; pair-broken shuffled control |
 | `0ad0033` | SensAtSpecLoss, BalancedCE, CalibrationLoss (`src/foundation/losses.py`) |
 | `ec16e0d` | REAL AlphaMissense fix (key construction bug, +0.057 AUC at K=200) |

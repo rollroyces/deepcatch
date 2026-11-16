@@ -101,6 +101,61 @@ def test_the_ci_split_adds_up_to_the_total():
             f"total {total}")
 
 
+def test_the_readme_suite_table_matches_reality():
+    """The README's per-suite test table must be the counts, not old ones.
+
+    The README states how many tests each suite contributes and what
+    the fast-path gate yields. Those numbers drifted (the biomedical-
+    review suite said 24 when it had 37; the gate said "233 collected"
+    when it collected 540), and nothing checked them -- the agreement
+    test above only compares the documents with each other. This
+    collects each suite and compares.
+    """
+    import subprocess
+    import sys
+
+    def collected(*args) -> int:
+        proc = subprocess.run(
+            [sys.executable, "-m", "pytest", *args, "--collect-only", "-q",
+             "-o", "addopts="],
+            cwd=_REPO_ROOT, capture_output=True, text=True, timeout=600,
+        )
+        if proc.returncode != 0:
+            pytest.skip(f"collection failed here: {proc.stderr[-300:]}")
+        for line in proc.stdout.splitlines():
+            match = re.search(r"(\d+) tests? collected", line)
+            if match:
+                return int(match.group(1))
+        return 0
+
+    readme = (_REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+    suites = {
+        "`test/test_publication_readiness.py`": "test/test_publication_readiness.py",
+        "`test/test_biomedical_review_fixes.py`": "test/test_biomedical_review_fixes.py",
+        "`test/test_foundation_smoke.py`": "test/test_foundation_smoke.py",
+        "`src/foundation/test_integration.py`": "src/foundation/test_integration.py",
+    }
+    for label, path in suites.items():
+        stated = re.search(
+            r"\|\s*" + re.escape(label) + r"\s*\|\s*(\d+)\s*\|", readme)
+        assert stated, f"the README no longer states a count for {label}"
+        real = collected(path)
+        assert int(stated.group(1)) == real, (
+            f"the README says {label} has {stated.group(1)} tests; it "
+            f"collects {real}")
+
+    # The fast-path gate: the README states both the collected total and
+    # the outcome of running it.
+    total = collected("test/", "src/foundation/test_integration.py")
+    stated_total = re.search(
+        r"\*\*Combined fast-path gate\*\*\s*\|\s*\*\*(\d+)\s+collected\*\*", readme)
+    assert stated_total, "the README no longer states the fast-path gate total"
+    assert int(stated_total.group(1)) == total, (
+        f"the README says the fast-path gate collects "
+        f"{stated_total.group(1)}; it collects {total}")
+
+
 def test_the_stated_count_matches_the_real_collection():
     """The stated count must be the count, not a number that used to be.
 

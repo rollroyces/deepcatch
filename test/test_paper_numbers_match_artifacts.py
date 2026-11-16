@@ -303,6 +303,36 @@ def test_changelog_states_the_current_abstract_length():
         f"paper/paper.tex makes it {length}")
 
 
+def test_the_chinese_readme_carries_every_figure_the_english_one_does():
+    """The translation must not omit a figure the original states.
+
+    README.zh-CN.md is a translation of README.md. It drifted a whole
+    generation once, quoting a pre-regeneration fusion table and a test
+    badge from two releases earlier, and nothing checked it. This
+    requires the translation to carry every number the English original
+    states, so a figure added to the original cannot be forgotten in
+    the translation.
+
+    Numbers are compared as written: a figure quoted at three decimals
+    in one file and four in the other is still the same figure, so the
+    check is on the value, not the string.
+    """
+    import re
+
+    def figures(text):
+        out = set()
+        for match in re.finditer(r"(?<![\d.])\d+\.\d{3,}(?![\d])", text):
+            out.add(round(float(match.group(0)), 4))
+        return out
+
+    english = _read("README.md")
+    chinese = _read("README.zh-CN.md")
+    missing = figures(english) - figures(chinese)
+    assert not missing, (
+        "README.zh-CN.md does not carry these figures from README.md: "
+        f"{sorted(missing)}")
+
+
 def test_citation_metadata_agrees_with_the_manuscript():
     """CITATION.cff must describe the paper that is actually being published.
 

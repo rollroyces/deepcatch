@@ -192,6 +192,27 @@ cohort size.
   compares the count the documents state against the count the suite
   actually collects — so a count that drifts from reality fails the
   build instead of being agreed upon unanimously.
+- **The English README's own test-coverage table was a generation out of
+  date.** It said the biomedical-review suite had 24 tests (it has 37)
+  and that the fast-path gate collects 233 (it collects 540, running 504
+  with 23 skipped and 13 deselected). A front-page claim that
+  contradicts the suite it describes. The table now carries the
+  measured numbers, and a test collects each suite and the gate and
+  compares — so the table cannot drift from the repository again.
+- **The Simplified-Chinese README was retranslated.** It had been a v2.2
+  document for several releases: it described the neural foundation
+  encoder as the fusion layer, omitted the external validation, the
+  leave-one-study-out measurement and the methylation null entirely, and
+  carried a pre-regeneration fusion table. It is now a faithful
+  translation of the current English README — the same figures, the same
+  tables, the same links — and a test requires it to carry every figure
+  the English original states, so a figure added to one cannot be
+  forgotten in the other. The English original remains authoritative.
+- **The English README contradicted itself on one figure.** The
+  "What it does" bullet gave the tumor-naive + mutation fusion AUC as
+  0.989 while the quick-start section gave 0.9884 ± 0.0010 for the
+  same quantity; the artifact's mean rounds to 0.988, so the bullet was
+  quoting the older run's 0.9886. Both are now 0.988.
 - **The external validation was measured on a cohort that was too small,
   and on a harmonisation the code did not implement.** Two independent
   problems, both of which moved the headline numbers down, and both now

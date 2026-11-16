@@ -344,26 +344,14 @@ TABLE_ROWS = [
                        ("per_strategy", "lr_fusion", "auc_mean"))],
         "forbidden": [],
     },
-    # The Simplified-Chinese README quotes the same fusion table.
+    # The Simplified-Chinese README quotes the same figures as the
+    # English one; the translation-drift check in the test file
+    # requires it to carry every figure the original states.
     {
         "doc": "README.zh-CN.md",
-        "anchor": "| 仅 Tumor-naive |",
-        "required": [("fusion_ablation_isotonic.json",
-                       ("per_strategy", "tumor_naive", "auc_mean"))],
-        "forbidden": [],
-    },
-    {
-        "doc": "README.zh-CN.md",
-        "anchor": "| 朴素分数平均 |",
-        "required": [("fusion_ablation_isotonic.json",
-                       ("per_strategy", "naive_average", "auc_mean"))],
-        "forbidden": [],
-    },
-    {
-        "doc": "README.zh-CN.md",
-        "anchor": "| LR 融合（学习权重） |",
-        "required": [("fusion_ablation_isotonic.json",
-                       ("per_strategy", "lr_fusion", "auc_mean"))],
+        "anchor": "| **+ 4-mer 末端基序**（`--include-motifs`） |",
+        "required": [("cross_study_finallydb_with_motifs.json",
+                       ("pooled", "harmonized", "auc_mean"))],
         "forbidden": [],
     },
     # The readiness document's per-cancer sens@99 row, which had been
