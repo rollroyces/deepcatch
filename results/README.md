@@ -1,115 +1,106 @@
-# DeepCatch Results Summary
+# DeepCatch Results — v2.3.0
 
-This directory contains the key results from DeepCatch validation runs.
-
----
-
-## Key Results at a Glance
-
-### Head-to-Head: AUC vs ctDNA Fraction
-
-| ctDNA Fraction | Bie (THEMIS) | CAPP-Seq | iDES | **DeepCatch Multi-Modal** | Δ vs Best |
-|---------------|-------------|----------|------|--------------------------|----------|
-| 1.000% | 0.8176 | 0.8474 | 0.5138 | **0.9610** ⭐ | +0.1136 |
-| 0.500% | 0.8259 | 0.7951 | 0.5067 | **0.9390** ⭐ | +0.1131 |
-| 0.250% | 0.8751 | 0.7179 | 0.5038 | **0.9334** ⭐ | +0.0583 |
-| 0.100% | 0.9214 | 0.5960 | 0.5008 | **0.9273** | +0.0059 |
-| 0.050% | 0.9172 | 0.5504 | 0.5025 | **0.9281** | +0.0109 |
-| 0.025% | 0.9170 | 0.5242 | 0.5004 | **0.9167** | -0.0003 |
-| 0.010% | 0.9150 | 0.5109 | 0.5004 | **0.9190** | +0.0040 |
-| 0.001% | 0.9197 | 0.5047 | 0.5000 | **0.9277** | +0.0080 |
-
-⭐ = Statistically significant over Bie (p < 0.05, DeLong test). Bie et al. 2023 *Nat Commun* achieved AUC 0.966 on their own data — Bie AUC values shown here are from our re-implementation on DeepCatch's simulation framework.
-
-### Comparison to Published Clinical Assays
-
-| Assay | Sensitivity | Specificity | LOD | Cancer Types | Clinical Validation |
-|-------|------------|-------------|-----|-------------|-------------------|
-| Guardant360 | 85.3% | 99.6% | 0.01% | 50 | ✅ >200K samples |
-| Grail Galleri | 51.5% | 99.5% | N/A | 50+ | ✅ NHS trial (140K) |
-| CancerSEEK | 70.0% | 99.0% | N/A | 8 | ✅ |
-| **DeepCatch multi-modal** | **71.0%*** | **99.0%*** | **≤0.001%*** | **8** | **❌ Sim only** |
-
-*\*Simulation-estimated. Cannot be directly compared to clinical results.*
-
-### Longitudinal CET Performance
-
-| Metric | Value |
-|--------|-------|
-| Sensitivity | 2.5% |
-| Specificity (Overall) | 97.0% |
-| AUC | 0.4926 |
-| Median Detection Time | 1077 days |
-| dual-target (sens≥70% + spec≥95%) | ❌ NOT MET |
+This directory holds the artifacts every reported number is read from.
+Each figure below names the file it comes from; `paper/REPRODUCE.sh`
+regenerates them and compares the regenerated numbers against the
+committed ones.
 
 ---
 
-## Honest Limitations
+## Headline results
 
-DeepCatch is **research-stage** software. Here's what you need to know:
+| Result | Figure | Artifact |
+|---|---|---|
+| Tumor-naive fragmentomics, cross-study (real public FinaleDB plasma, 627 samples) | **0.9684 ± 0.0027** | `cross_study_finallydb_gc_corrected.json` |
+| **Held-out external validation** (publications never trained on) | **0.9444** [0.8731, 1.0] on publication 7 (WGS, n=31); **0.708** [0.5148, 0.9012] on publication 1 (WGS, n=52); **0.7385** pooled over the publications carrying both classes; publication 9 is case-only and reported as sensitivity 0.6569 at the training threshold | `external_validation_finaledb.json` |
+| Leave-one-study-out transfer | 0.6805 (Jiang→Cristiano) / 0.9361 (Cristiano→Jiang) against in-domain 0.9789 / 0.969 | `cross_study_loso.json` |
+| Cross-repo fusion (10 seeds) | naive average **0.9884 ± 0.0010**; LR fusion 0.9884 ± 0.0009; isotonic 0.9849 ± 0.0014 | `fusion_ablation_isotonic.json` |
+| Per-cancer-type AUC | LUAD 0.9825 · OV 0.9930 · CRC 0.9754 · BRCA 0.9738 · HCC 0.7221 — the spread is real, and that is the interesting part | `per_cancer_sens_at_spec.json` |
+| Decision-curve operating points | tumor-naive AUC 0.9773; naive average 0.9915 | `decision_curve.json` |
+| Methylation channel on real public fragments | **a null**: 103,863 loci, decoded-β AUC 0.9444 = its coverage baseline (difference 0.0, p = 1.0) | `methylation_cohort_channel.json` |
+| Mutation-informed panel (real TCGA-LUAD mutations, 5,738, + CADD v1.7) | LLR AUC 0.921 at 0.1% ctDNA, Sens@95% 0.770 — **the plasma reads are simulated** | `real_tcga_validation.json` |
 
-### What's Honest
-- ✅ All AUC values come from reproducible simulations with fixed seeds (seed=42)
-- ✅ Real TCGA data used where possible (mutation frequencies from COSMIC v99)
-- ✅ 6 literature-parameterized confounders applied (CHIP, shedding variability, error rates, etc.)
-- ✅ Published methods re-implemented and benchmarked on the same data (fair comparison)
-
-### What's Not
-- ❌ **ZERO clinical samples** — all results are simulation-based
-- ❌ No head-to-head on the same plasma samples as Guardant360 or Grail
-- ❌ Standard PCR/GC/sample-degradation effects not modeled
-- ❌ No tissue-of-origin (TOO) prediction
-- ❌ Requires 50,000× sequencing depth (10× clinical standard)
-
-### What Would Prove Reality
-1. Partner with a clinical lab — run on real plasma from n≥50 cancer + 50 healthy
-2. Head-to-head vs Guardant360 on the same blood draws
-3. Independent validation at a second institution
-4. Pre-registered analysis plan
-
-**Bottom line**: DeepCatch's ideas are novel, but simulation ≠ clinical reality. The code is open; the clinical validation is the critical missing piece.
+The legacy no-GC tumor-naive run (0.9770) and the with-motifs run
+(0.9785) are separate benchmarks in separate artifacts; the GC-corrected
+run is the headline.
 
 ---
 
-## How to Reproduce
+## Honest limitations
 
-### Full Python Pipeline
+- ❌ **No clinical validation on a real patient plasma cohort.** The
+  external validation above is on *public* plasma cfDNA from FinaleDB —
+  a different kind of evidence. A wet-lab cohort is the missing piece,
+  and it is what the collaboration notice in the top-level `README.md`
+  asks for.
+- ❌ **The mutation-informed channel's plasma reads are simulated**
+  (Poisson-sampled at a target ctDNA fraction); only the mutations
+  themselves are real. The tumor-naive channel runs on real plasma.
+- ❌ **No validated tissue-of-origin result.** The module
+  (`src/tissue_deconv/`) exists and is wired into the fusion, but its
+  29-tissue reference atlas is synthetic because the real cfSort atlas
+  is not in this repository, and no tissue-of-origin artifact is
+  committed.
+- ❌ **No head-to-head against Guardant360 or Grail** on the same blood
+  draws.
+- ❌ **No ComBat / limma empirical-Bayes harmonization comparison** (the
+  `sva` / `pycombat` dependency is not taken).
+- ❌ Production and regulatory framing; single-source funding; no second
+  author.
+
+What *is* reproducible: every figure in the table above, from the
+artifacts named in it.
+
+---
+
+## How to reproduce
+
 ```bash
+# The paper's reproduction driver: regenerates every quoted artifact and
+# compares the regenerated numbers with the committed ones.
 cd /path/to/deepcatch
+bash paper/REPRODUCE.sh
+
+# Quick variant (fewer seeds, looser tolerances)
+bash paper/REPRODUCE.sh --quick
+
+# The older end-to-end pipeline
 bash RUN_ALL.sh
 ```
 
-### Quick Run (Reduced Data)
-```bash
-bash RUN_ALL.sh --quick
-```
-
-### Node.js Real-Data Validation
-```bash
-cd validation/node
-node runRealFinal.js
-```
-
-### Docker
-```bash
-docker build -t deepcatch:latest .
-docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
-```
-
-### Random Seeds
-All experiments use seed=42 with 5-fold stratified cross-validation and 2,000 bootstrap iterations for confidence intervals.
+`paper/REPRODUCE.sh` needs the extracted FinaleDB feature cache
+(`DEEPCATCH_FEATURES_DIR`) and the labels file (`DEEPCATCH_LABELS`); see
+`paper/REPRODUCE.md`.
 
 ---
 
-## File Index
+## File index
 
 | File | Description |
-|------|-------------|
-| `FINAL_REAL_DATA_REPORT.md` | Comprehensive real-data validation with 8 cancer types |
-| `literature_review.md` | Systematic review of 21 papers in cfDNA cancer screening |
-| `node/` | Node.js validation outputs (runAll, headToHead, CET, etc.) |
-| `*.json` | Raw validation results (ignored by git — regenerate with scripts) |
+|---|---|
+| `cross_study_finallydb_gc_corrected.json` | **Headline** tumor-naive cross-study benchmark (GC-corrected) |
+| `cross_study_finallydb.json` | Legacy tumor-naive benchmark, no GC correction |
+| `cross_study_finallydb_with_motifs.json` | The same benchmark with 4-mer end motifs |
+| `cross_study_finallydb_shuffled_control.json` | Shuffled-label null control |
+| `cross_study_loso.json` | Leave-one-study-out transfer |
+| `external_validation_finaledb.json` | Held-out external validation on publications 1 / 7 / 9 |
+| `per_cancer_sens_at_spec.json` | Per-cancer-type AUC, sens@spec and PPV |
+| `fusion_ablation_isotonic.json` | Cross-repo fusion ablation (10 seeds) |
+| `decision_curve.json` | Decision-curve operating points |
+| `methylation_cohort_channel.json` | Methylation channel measured on real public fragments (a null) |
+| `methylation_channel_diagnosis.json` | The depth/coverage diagnostics the null rests on |
+| `harmonization_check.json` | Harmonisation and true-confound controls |
+| `real_tcga_validation.json` | Mutation-informed panel validation |
+| `cadd_*.json` | CADD scoring and per-subgroup panel results |
+| `publication_readiness.json` | FinaleDB infrastructure and per-publication readiness |
+| `*.png`, `ensemble_waterfall.png` | Figures |
+| `REPRODUCE_REPORT.md` | The last reproduction run's report |
+
+`*.json` artifacts are gitignored by default and the ones this project
+quotes are force-added; the raw validation JSONs are regenerated by the
+scripts.
 
 ---
 
-*Last updated: 2026-04-28. Results generated with honest intent.*
+*Last updated: 2026-11-16 (v2.3.0). Every figure above is quoted from
+the artifact named beside it.*

@@ -1,5 +1,25 @@
 # CADD Per-Subgroup Top-K LLR — GDC TCGA-LUAD Validation
 
+> **Provenance, and what a reader can and cannot check.** This is a
+> dated one-off report (2026-09-17, branch `main @ fd1c3e3`). The three
+> artifacts it names — `results/cadd_mutations_gdc_validation.json`,
+> `results/cadd_matches_gdc_validation.json` and
+> `results/cadd_per_subgroup_llr_GDC_VALIDATION.json` — **are not
+> committed to this repository**: the GDC masked-MAF cache (400 files)
+> and the CADD v1.7 matching cache are large and gitignored, and the
+> cohort builder resolves its cache directory from an absolute path, so
+> the run cannot be repeated from a clean checkout as it stands.
+> **The numbers below therefore come from that dated run and cannot be
+> verified from this repository.** Treat them as a historical report, not
+> as a current, reproducible result.
+>
+> The committed, reproducible counterpart is the original 20-patient
+> experiment: `results/cadd_per_subgroup_llr.json`, produced by
+> `scripts/cadd_per_subgroup_llr.py` over the same 5,738 TCGA-LUAD
+> mutations (20 patients, 16 of them in the KRAS-wildtype subgroup —
+> note that its subgroups are `high_burden_top10` /
+> `low_burden_bottom10`, not the `_half` groups used below).
+
 **Date:** 2026-09-17
 **Author:** DeepCatch v2.2 subagent (CADD Top-K validation on GDC cohort)
 **Branch:** main @ fd1c3e3

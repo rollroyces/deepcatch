@@ -320,6 +320,54 @@ TABLE_ROWS = [
                        ("per_strategy", "tumor_naive", "auc_mean"))],
         "forbidden": [],
     },
+    # The model card's tumor-naive table. It used to carry the sibling
+    # repository's unseeded numbers (0.9716 and 0.9746 -- the second is
+    # one seed's value out of the legacy artifact's five, not the pooled
+    # mean), which no committed artifact held. Each row is now pinned to
+    # the artifact it comes from, and the two cross-study rows are kept
+    # apart because they are different benchmarks.
+    {
+        "doc": "MODEL.md",
+        "anchor": "| Single-study Jiang 2015 (121 samples) |",
+        "required": [("cross_study_finallydb_gc_corrected.json",
+                       ("per_publication", "6", "auc_mean"))],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("per_publication", "6", "auc_mean")),
+        ],
+    },
+    {
+        "doc": "MODEL.md",
+        "anchor": "| Cross-study pan-cancer (627 samples, harmonized) |",
+        "required": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("pooled", "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("pooled", "harmonized", "sens_at_spec_95")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("pooled", "harmonized", "sens_at_spec_99")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "auc_mean")),
+        ],
+    },
+    {
+        "doc": "MODEL.md",
+        "anchor": "| Cross-study pan-cancer, legacy no-GC correction |",
+        "required": [
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "auc_mean")),
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "sens_at_spec_95")),
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "sens_at_spec_99")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("pooled", "harmonized", "auc_mean")),
+        ],
+    },
     {
         "doc": "MODEL.md",
         "anchor": "| Mutation-only (synthetic, AUC 0.92) |",

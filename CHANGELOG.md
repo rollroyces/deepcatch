@@ -91,6 +91,42 @@ cohort size.
 
 ### Fixed
 
+- **The results directory's index described the v1 simulation
+  benchmark.** `results/README.md` was last updated on 2026-04-28: its
+  headline table was the old simulation sweep (AUC 0.9610 at 1% ctDNA
+  against re-implemented Bie/CAPP-Seq/iDES), its file index named three
+  files that are not in the repository, and its honest-limitations list
+  said there was no tissue-of-origin prediction — the module exists and
+  is wired into the fusion, though its 29-tissue reference atlas is
+  synthetic because the real cfSort atlas is not here, and no
+  tissue-of-origin artifact is committed. It is now a v2.3.0 index: the
+  real-data headline results, each figure naming the artifact it comes
+  from, the honest limitations as they now stand, and the file index
+  that matches what is actually committed.
+  `results/README.md`.
+- **The model card's tumor-naive table quoted numbers no artifact
+  holds.** Its two rows carried 0.9716 (Jiang, 121 samples) and 0.9746
+  (cross-study, 627 samples), taken from the sibling repository's
+  `scripts/honest_benchmark.py` before its PCA was seeded — and 0.9746
+  is one seed's value out of the legacy artifact's five, not the pooled
+  mean, so it did not describe the run it was labelled with. The table
+  is now written from this repository's own artifacts (0.9661 ± 0.0031
+  for Jiang, 0.9684 ± 0.0027 GC-corrected pooled, 0.9770 ± 0.0013
+  legacy pooled), the two cross-study rows are kept apart because they
+  are different benchmarks, and the per-publication row's sensitivity
+  cells are left empty rather than filled from another run. Each row is
+  pinned to its artifact by the drift guard.
+  `MODEL.md`, `scripts/benchmark_numbers.py`.
+- **A validation document named three artifacts that are not in the
+  repository.** `docs/CADD_GDC_VALIDATION.md` is a dated one-off report
+  (2026-09-17) whose per-subgroup table came from a 150-patient GDC run
+  whose cohort, CADD-match and results JSONs are gitignored and
+  uncommitted, and whose builder resolves its cache directory from an
+  absolute path — so the run cannot be repeated from a clean checkout
+  and a reader cannot verify a single figure in it. The document now
+  says so at the top, and points at the committed, reproducible
+  20-patient counterpart (`results/cadd_per_subgroup_llr.json`).
+  `docs/CADD_GDC_VALIDATION.md`.
 - **The decision-curve CLI read the study column positionally.** It
   resolved the *label* with the header-aware resolver but took the
   *study* from column 2 of each line. In the canonical FinaleDB layout

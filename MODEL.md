@@ -129,10 +129,23 @@ a clinical plasma validation.
 
 | Cohort | Headline AUC (5-seed) | Sens@95% | Sens@99% |
 |---|---|---|---|
-| Single-study Jiang 2015 (121 samples) | 0.9716 ± 0.003 | 0.894 | 0.811 |
-| Cross-study pan-cancer (627 samples, harmonized) | 0.9746 ± 0.002 | 0.888 | 0.774 |
+| Single-study Jiang 2015 (121 samples) | 0.9661 ± 0.0031 | — | — |
+| Cross-study pan-cancer (627 samples, harmonized) | 0.9684 ± 0.0027 | 0.865 | 0.700 |
+| Cross-study pan-cancer, legacy no-GC correction | 0.9770 ± 0.0013 | 0.912 | 0.785 |
 
-Source: `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py`.
+Source: `results/cross_study_finallydb_gc_corrected.json` (rows 1 and 2) and
+`results/cross_study_finallydb.json` (row 3). The per-publication row carries
+no sensitivity in the artifact, so those cells are left empty rather than
+filled from another run. The two cross-study rows are **different
+benchmarks** — the GC-corrected one is the headline, the legacy one is what
+the same pipeline gives without the GC correction — and they are not
+interchangeable.
+
+(The numbers this table used to carry, 0.9716 and 0.9746, came from the
+sibling repository's `scripts/honest_benchmark.py` before its PCA was
+seeded; 0.9746 is one seed's value out of the legacy artifact's five, not
+the pooled mean. The sibling's benchmark moves once it is seeded, so the
+table is now written from this repository's own artifacts.)
 
 ### Fusion (mutation-informed + tumor-naive, 10-seed cross-study)
 
