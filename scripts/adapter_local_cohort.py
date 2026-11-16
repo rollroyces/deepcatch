@@ -259,8 +259,18 @@ def load_labels_tsv(path: str) -> List[dict]:
             parts = line.rstrip("\n").split("\t")
             if not parts or not parts[0]:
                 continue
-            if parts[0] == "sample_id" and "disease_class" in parts:
-                # header row — already known
+            # A header row is one whose cells are NAMED rather than
+            # populated. Detecting only "sample_id" missed the canonical
+            # FinaleDB header ("sample\tdisease_class\tlabel\tstudy"),
+            # and the header then became a data row: sample_id "sample",
+            # disease_class "disease_class", label "label" -- a phantom
+            # control that joins the cohort and is later counted as a
+            # non-cancer sample. Recognise a header by its columns
+            # rather than by one exact first-column name.
+            if (parts[0].lower() in ("sample", "sample_id", "id")
+                    or [p.lower() for p in parts[1:3]] == ["disease_class",
+                                                           "label"]):
+                # header row -- already known
                 continue
             if len(parts) < 3:
                 continue

@@ -522,3 +522,51 @@ def test_full_pipeline_cli_synth_creates_normalized_cohort(tmp_path):
     fsd = np.load(target / "features" / "SYN_C001.fsd_histogram.npy")
     assert fsd.shape == (adapter.CHANNEL_DIMS["fsd_histogram"],)
     assert np.isclose(fsd.sum(), 1.0, atol=1e-3), "FSD should be normalized"
+
+# ──────────────────────────────────────────────────────────────────────
+# The header row must never become a data row
+# ──────────────────────────────────────────────────────────────────────
+
+def test_load_labels_tsv_skips_a_headered_file_in_either_layout(tmp_path):
+    """A header row is a header row, whatever its first column is called.
+
+    The adapter's own writer emits `sample_id\tdisease_class\tlabel\t...`,
+    and the canonical FinaleDB file uses `sample\tdisease_class\tlabel\t
+    study`. Detecting only the first spelling left the second one's
+    header parsed as data -- a phantom sample called "sample" whose
+    label was the literal string "label", which the cross-study
+    benchmark then counts as a non-cancer control.
+    """
+    adapter_layout = tmp_path / "adapter_header.tsv"
+    adapter_layout.write_text(
+        "sample_id\tdisease_class\tlabel\tstudy_id\n"
+        "C001\tHCC\tcancer\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+    )
+    rows = adapter.load_labels_tsv(str(adapter_layout))
+    assert [r["sample_id"] for r in rows] == ["C001", "H001"], (
+        f"the header row was parsed as data: {rows}")
+
+    finale_layout = tmp_path / "finale_header.tsv"
+    finale_layout.write_text(
+        "sample\tdisease_class\tlabel\tstudy\n"
+        "C001\tHCC\tcancer\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+    )
+    rows = adapter.load_labels_tsv(str(finale_layout))
+    assert [r["sample_id"] for r in rows] == ["C001", "H001"], (
+        f"the FinaleDB header row was parsed as data: {rows}")
+    assert rows[0]["label"] == "cancer"
+    assert rows[0]["study_id"] == "jiang"
+
+
+def test_load_labels_tsv_still_reads_a_headerless_file(tmp_path):
+    """Headerless files are tolerated and parsed positionally."""
+    path = tmp_path / "headerless.tsv"
+    path.write_text(
+        "C001\tHCC\tcancer\tjiang\n"
+        "H001\tHEALTHY\thealthy\tcristiano\n"
+    )
+    rows = adapter.load_labels_tsv(str(path))
+    assert [r["sample_id"] for r in rows] == ["C001", "H001"]
+    assert rows[0]["study_id"] == "jiang"

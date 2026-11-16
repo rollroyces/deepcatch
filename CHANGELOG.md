@@ -91,6 +91,16 @@ cohort size.
 
 ### Fixed
 
+- **The collaborator adapter could read a header row as data.** It
+  detected a header only when the first column was spelled `sample_id`,
+  so the canonical FinaleDB header (`sample`, `disease_class`, `label`,
+  `study`) fell through to the data branch and became a phantom sample:
+  `sample_id` "sample", `disease_class` "disease_class", `label`
+  "label" — which the cross-study loader then counts as a non-cancer
+  control. The header is now recognised by its column names rather than
+  by one exact first-column spelling, and a test covers both layouts
+  plus the headerless one.
+  `scripts/adapter_local_cohort.py`, `test/test_adapter_local_cohort.py`.
 - **The drift guard covered fewer documents than quote the numbers.**
   An audit that walks every quoted number and finds every document
   quoting it showed that the legacy (no-GC) benchmark's pooled AUC was
