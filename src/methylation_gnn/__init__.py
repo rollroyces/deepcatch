@@ -29,15 +29,21 @@ Detects pre-cancer epigenetic field defects through methylation network reconstr
 .. [5] Hu, W. et al. (2020) NeurIPS. Self-supervised graph pretraining.
 """
 
+from __future__ import annotations
+
+import importlib
+
 from .config import GNNConfig, DEFAULT_GNN_CONFIG
 from .graph_builder import (
     RegulatoryGraphBuilder,
     GenomicRegion,
     REGION_TYPES,
 )
-from .gnn_model import MethylationGNN
-from .gnn_trainer import GNNTrainer, GNNTrainerPhase
-from .gnn_inference import GNNInference, MethylationGNNPredictor
+from .integration import (
+    MethylationBranchAdapter,
+    ModularArmsBuilder,
+    extend_fusion_with_gnn,
+)
 from .data import (
     ReferenceDataCatalog,
     download_ucsc_cpg_islands,
@@ -46,11 +52,6 @@ from .data import (
     download_fantom5_enhancers,
     preprocess_methylation_betas,
 )
-from .integration import (
-    MethylationBranchAdapter,
-    ModularArmsBuilder,
-    extend_fusion_with_gnn,
-)
 from .real_data import (
     RealDataError,
     build_real_cohort_graphs,
@@ -58,6 +59,54 @@ from .real_data import (
     load_real_regions,
     per_sample_methylation_data,
 )
+
+# Names that need torch (or torch_geometric) are resolved lazily.
+#
+# ``gnn_model``, ``gnn_trainer`` and ``gnn_inference`` subclass
+# ``torch.nn.Module`` at import time, so importing them eagerly made
+# ``import src.methylation_gnn`` fail in any environment without torch --
+# including the "Core tests" CI job, which installs only
+# numpy/scipy/scikit-learn/pandas/matplotlib/seaborn/pytest. That
+# aborted the whole pytest session at collection, so one optional
+# dependency silenced every test in the job.
+#
+# PEP 562 module-level ``__getattr__`` keeps the public API identical
+# (``from src.methylation_gnn import MethylationGNN`` still works) while
+# importing each submodule only when one of its names is actually
+# requested. ``src.methylation_gnn.real_data`` is torch-free and is
+# importable without torch.
+
+# Public name -> submodule that defines it.
+_LAZY_EXPORTS = {
+    "MethylationGNN": ".gnn_model",
+    "GNNTrainer": ".gnn_trainer",
+    "GNNTrainerPhase": ".gnn_trainer",
+    "GNNInference": ".gnn_inference",
+    "MethylationGNNPredictor": ".gnn_inference",
+}
+
+
+def __getattr__(name: str):
+    """Resolve a torch-dependent public name to its submodule on first access.
+
+    Raises the import error from the submodule itself when torch is
+    missing, so the message names the missing dependency rather than
+    failing with "NoneType has no attribute Module" from deep inside a
+    class definition.
+    """
+    module_name = _LAZY_EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(
+            f"module 'src.methylation_gnn' has no attribute {name!r}")
+    module = importlib.import_module(module_name, __name__)
+    value = getattr(module, name)
+    globals()[name] = value  # cache, so this runs once per name
+    return value
+
+
+def __dir__():
+    return sorted(set(globals()) | set(_LAZY_EXPORTS))
+
 
 __all__ = [
     # Config

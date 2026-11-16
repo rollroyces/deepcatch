@@ -68,8 +68,31 @@ except ImportError:
     torch = None
 
 from .graph_builder import RegulatoryGraphBuilder
-from .gnn_model import MethylationGNN
-from .gnn_inference import GNNInference, MethylationGNNPredictor
+
+# ``gnn_model`` and ``gnn_inference`` subclass ``torch.nn.Module`` at
+# import time, so they cannot be imported in a torch-free environment --
+# and the "Core tests" CI job has no torch. They are resolved on first
+# use instead, so importing this module (and the package) never requires
+# torch. The names stay available as module attributes for anyone who
+# imports them from here.
+_LAZY_TORCH_MODULES = {
+    "MethylationGNN": ".gnn_model",
+    "GNNInference": ".gnn_inference",
+    "MethylationGNNPredictor": ".gnn_inference",
+}
+
+
+def __getattr__(name: str):
+    module_name = _LAZY_TORCH_MODULES.get(name)
+    if module_name is None:
+        raise AttributeError(
+            f"module 'src.methylation_gnn.integration' has no attribute "
+            f"{name!r}")
+    import importlib
+    module = importlib.import_module(module_name, __package__)
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +130,10 @@ class MethylationBranchAdapter:
                 "PyTorch is required for MethylationBranchAdapter. "
                 "Install with: pip install torch"
             )
+
+        # Imported here rather than at module level: the inference module
+        # needs torch, and this module must stay importable without it.
+        from .gnn_inference import MethylationGNNPredictor
 
         self.builder = RegulatoryGraphBuilder(
             n_nodes=n_regions,

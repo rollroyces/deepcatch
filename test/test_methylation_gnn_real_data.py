@@ -28,6 +28,8 @@ from __future__ import annotations
 
 import gzip
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -239,6 +241,54 @@ def test_real_cohort_builds_graphs(decoded_fixture):
         assert torch.isfinite(graph.x).all()
     # The node set is the real one, not the builder's synthetic default.
     assert all(r.chrom == "chr22" for r in builder._regions)
+
+
+def test_the_package_imports_without_torch():
+    """The "Core tests" CI job has no torch.
+
+    ``src/methylation_gnn/__init__.py`` used to import the model, the
+    trainer and the inference module eagerly, and those subclass
+    ``torch.nn.Module`` at import time -- so ``import
+    src.methylation_gnn`` raised, a test file that imported the package
+    failed at COLLECTION, and pytest aborted the whole job: zero tests
+    ran. The same class of defect that ``src/foundation`` had.
+
+    This test imports the package in a subprocess where ``import torch``
+    is blocked, so the guard is exercised in the same way CI exercises
+    it.
+    """
+    program = (
+        "import builtins, sys\n"
+        "real = builtins.__import__\n"
+        "def blocked(name, *a, **k):\n"
+        "    if name == 'torch' or name.startswith('torch.'):\n"
+        "        raise ImportError(\"No module named 'torch'\")\n"
+        "    return real(name, *a, **k)\n"
+        "builtins.__import__ = blocked\n"
+        "sys.path.insert(0, sys.argv[1])\n"
+        "import src.methylation_gnn as m\n"
+        "assert callable(m.load_finaleme_cohort)\n"
+        "assert m.RegulatoryGraphBuilder is not None\n"
+        "assert 'MethylationGNN' in dir(m)\n"
+        "try:\n"
+        "    m.MethylationGNN\n"
+        "except ImportError as exc:\n"
+        "    assert 'torch' in str(exc), str(exc)\n"
+        "except AttributeError as exc:\n"
+        "    raise AssertionError(\n"
+        "        'the error must name the missing dependency, got: ' "
+        "+ str(exc)) from exc\n"
+        "else:\n"
+        "    raise AssertionError('MethylationGNN resolved without torch')\n"
+        "print('ok')\n"
+    )
+    env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+    proc = subprocess.run(
+        [sys.executable, "-c", program, str(_REPO_ROOT)],
+        capture_output=True, text=True, env=env, timeout=120)
+    assert proc.returncode == 0, (
+        f"src.methylation_gnn must import without torch:\n"
+        f"{proc.stdout}\n{proc.stderr}")
 
 
 @pytest.mark.skipif(

@@ -90,6 +90,22 @@ cohort size.
 
 ### Fixed
 
+- **`import src.methylation_gnn` needed torch, which silenced the whole
+  "Core tests" CI job.** The package imported the model, the trainer and
+  the inference module eagerly, and those subclass `torch.nn.Module` at
+  import time — so the package raised in any environment without torch.
+  The "Core tests" job installs only numpy/scipy/scikit-learn/pandas/
+  matplotlib/seaborn/pytest, so a test file that imported the package
+  failed at **collection**, and pytest aborted the run: zero tests ran.
+  This is the same class of defect `src/foundation` had. The
+  torch-dependent names are now resolved lazily (PEP 562), the
+  torch-free modules (`graph_builder`, `config`, `integration`, `data`,
+  `real_data`) import eagerly as before, and asking for a torch-dependent
+  name without torch raises an ImportError that names the dependency
+  instead of "'NoneType' object has no attribute 'Module'".
+  `src/methylation_gnn/__init__.py`, `src/methylation_gnn/integration.py`,
+  `src/methylation_gnn/gnn_model.py`,
+  `test/test_methylation_gnn_real_data.py`.
 - **The manuscript conflated two different locus sets.** "At the 1,550
   CpGs that both arms cover ... over 103,863 CpGs" mixed two numbers that
   come from two different tests. The 1,550 are the *most widely covered*

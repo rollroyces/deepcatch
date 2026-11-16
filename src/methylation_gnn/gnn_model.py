@@ -83,7 +83,7 @@ try:
     from torch_geometric.nn import GATv2Conv, BatchNorm, global_mean_pool
 
     _HAS_PYG = True
-except ImportError:
+except ImportError as _exc:
     _HAS_PYG = False
     torch = None
     nn = None
@@ -91,8 +91,23 @@ except ImportError:
     GATv2Conv = None
     BatchNorm = None
     global_mean_pool = None
+    # The classes below subclass ``nn.Module`` at import time, so with
+    # torch absent the module cannot be imported at all. Say so plainly
+    # rather than letting the failure surface as
+    # "'NoneType' object has no attribute 'Module'" from a class
+    # definition.
+    _IMPORT_ERROR = _exc
+else:
+    _IMPORT_ERROR = None
 
 logger = logging.getLogger(__name__)
+
+if _IMPORT_ERROR is not None:
+    raise ImportError(
+        "src.methylation_gnn.gnn_model needs torch and torch_geometric. "
+        "Install them with `pip install torch torch_geometric`, or use "
+        "src.methylation_gnn.real_data, which is torch-free."
+    ) from _IMPORT_ERROR
 
 
 # ── Device helper ───────────────────────────────────────────────
