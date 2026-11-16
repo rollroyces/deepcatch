@@ -29,9 +29,9 @@ Fragmentomics cross-validated on independent real cfDNA (FLARE/GSE317007).
   most of the pooled AUC (0.681 in the single-type direction, 0.936 the
   other way) — the boundary that a pooled cross-validation hides.
 - **The methylation channel is a null**, reported with its mechanism: its
-  AUC equals the library-depth baseline exactly, and at the loci both
-  arms cover the median cancer-vs-control difference is 0.0 over 103,863
-  CpGs (permutation p = 1.0).
+  AUC equals the library-depth baseline exactly, and at the 103,863 loci
+  where both arms have coverage the median cancer-vs-control difference is
+  0.0 (each locus tested on the samples that cover it; permutation p = 1.0).
 - **Reproducibility is enforced**: the benchmark's PCA is seeded, and a
   regression test asserts that two runs agree exactly.
 

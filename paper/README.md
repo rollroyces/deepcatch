@@ -10,7 +10,7 @@ author's bioRxiv account and the Zenodo DOI.
 | File | What it is | State |
 |------|------------|-------|
 | `paper.tex` | **Primary manuscript** (preprint). Panel-based MRD detection, the tumor-naive fragmentomics channel, the held-out external validation, the leave-one-study-out transfer measurement and the methylation null. | ✓ compiles; `biorxiv_submission_v2.3.0.pdf` is the submission artefact |
-| `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (261 KB, 7 pages, 2 figures embedded) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
+| `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (264 KB, 8 pages, 2 figures embedded) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
 | `METHODS_PAPER.md` | The long-form methods manuscript (the JOSS / PLOS-style article). Same evidence, more detail, per-cancer tables and a reproducibility paragraph. | ✓ numbers regenerated from the seeded benchmark |
 | `BIORXIV_SUBMISSION.md` | Submission-form metadata: what the preprint claims, what it must not claim, and what still needs the author | ✓ (gitignored — it holds personal details) |
 | `METHODS_PAPER_STATUS.md` | Section-by-section status meta-doc for the methods manuscript | ✓ updated with the v2.3.0 numbers |

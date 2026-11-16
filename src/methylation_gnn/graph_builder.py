@@ -190,6 +190,11 @@ class RegulatoryGraphBuilder:
         self._hi_c_matrix: Optional[np.ndarray] = None
         self._chromosome_map: Dict[str, List[int]] = {}  # chrom → region indices
 
+        # When True, a missing region set is an error rather than a
+        # fallback to randomly generated regions. Set by
+        # ``src/methylation_gnn/real_data.load_real_regions``.
+        self.require_real_regions = False
+
         self._rng = np.random.RandomState(seed)
 
     # ── Region loading ──────────────────────────────────────────
@@ -260,8 +265,21 @@ class RegulatoryGraphBuilder:
         self.n_nodes = min(self.n_nodes, len(self._regions))
 
     def _ensure_regions(self) -> None:
-        """Create synthetic regions if none were loaded."""
+        """Create synthetic regions if none were loaded.
+
+        Unless ``require_real_regions`` is set, in which case this is an
+        error: a run that was pointed at real loci must never quietly
+        end up with randomly generated ones.
+        """
         if not self._regions:
+            if self.require_real_regions:
+                raise ValueError(
+                    "no reference regions loaded and require_real_regions is "
+                    "set; a real-data run must not fall back to synthetic "
+                    "regions. Call load_regions_from_list() with the real "
+                    "loci first (src/methylation_gnn/real_data.py does "
+                    "this)."
+                )
             logger.warning(
                 "No reference regions loaded; generating %d synthetic regions", self.n_nodes
             )

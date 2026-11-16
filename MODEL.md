@@ -258,9 +258,9 @@ holdout and must not be read as a generalisation claim.
 - **Methylation (V3) channel** — measured on 31 real FinaleDB samples and
   reported as a **null**: the decoded β summary reaches LOO AUC 0.9444,
   which is exactly the AUC of the covered-CpG count and of the
-  observations-per-CpG count alone, and at the loci both arms cover the
-  median cancer-minus-control difference is exactly 0.0 over 103,863 CpGs
-  (permutation p = 1.0). The libraries are size-selected at ~300 bp and
+  observations-per-CpG count alone, and at the 103,863 loci where both arms
+  have coverage the median cancer-minus-control difference is exactly 0.0
+  (each locus tested on the samples that cover it; permutation p = 1.0). The libraries are size-selected at ~300 bp and
   deliver 1.09 observations per CpG, so the digestion signature FinaleMe
   reads is absent. The extraction path runs on real public data; the
   channel is **not** a validated feature. See

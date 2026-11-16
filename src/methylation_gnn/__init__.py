@@ -51,6 +51,13 @@ from .integration import (
     ModularArmsBuilder,
     extend_fusion_with_gnn,
 )
+from .real_data import (
+    RealDataError,
+    build_real_cohort_graphs,
+    load_finaleme_cohort,
+    load_real_regions,
+    per_sample_methylation_data,
+)
 
 __all__ = [
     # Config
@@ -79,4 +86,10 @@ __all__ = [
     "MethylationBranchAdapter",
     "ModularArmsBuilder",
     "extend_fusion_with_gnn",
+    # Real (non-synthetic) cohorts
+    "RealDataError",
+    "load_finaleme_cohort",
+    "per_sample_methylation_data",
+    "load_real_regions",
+    "build_real_cohort_graphs",
 ]

@@ -61,7 +61,7 @@ independent researcher can produce.
 
 | Requirement | State |
 |---|---|
-| Compiled PDF | ✅ `paper/biorxiv_submission_v2.3.0.pdf` (7 pages, 2 figures embedded) |
+| Compiled PDF | ✅ `paper/biorxiv_submission_v2.3.0.pdf` (8 pages, 2 figures embedded) |
 | Abstract within limits | ✅ |
 | Submission metadata | ✅ `paper/BIORXIV_SUBMISSION.md` (gitignored: it carries personal details) |
 | ORCID | ✅ `0009-0008-9113-769X`, also in `CITATION.cff` |

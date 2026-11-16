@@ -19,7 +19,53 @@ FinaleDB .frag.tsv.bgz (hg19)
   -> scripts/finaleme_decoder_input.py     (matrix + WGBS prior bigwig -> decoder input)
   -> FinaleMe hmm.FinaleMe                 (HMM train + decode -> per-CpG beta values)
   -> scripts/finaleme_to_deepcatch_bridge.py (DeepCatch methylation JSON)
+  -> src/methylation_gnn/real_data.py      (real cohort -> the GNN's graph)
 ```
+
+### The GNN branch now runs on real data
+
+`src/methylation_gnn/` used to be architecture-only. Its graph builder
+filled the node set with randomly generated regions when none were loaded
+(`_ensure_regions`), and its data module filled the beta matrix with
+random values, so the "methylation" the GNN consumed had no relationship
+to any real sample.
+
+`src/methylation_gnn/real_data.py` is the seam. It reads the same
+decoded output the channel was measured on and returns the structure
+`RegulatoryGraphBuilder.build_graph` expects, with the real CpG
+coordinates as the graph's nodes:
+
+```python
+from src.methylation_gnn import (
+    RegulatoryGraphBuilder, load_finaleme_cohort, load_real_regions,
+    build_real_cohort_graphs,
+)
+
+cohort = load_finaleme_cohort("<final_work>", "<cohort_labels.tsv>")
+builder = RegulatoryGraphBuilder(n_nodes=len(cohort["regions"]))
+load_real_regions(builder, cohort)          # real loci, no synthetic fallback
+graphs = build_real_cohort_graphs(builder, cohort)
+```
+
+On the published cohort this loads the **31 real samples** over the
+**1,550 most widely covered loci** — the same locus pool the channel
+measured on, because the loader applies the same selection rule (and
+records which rule it used in `locus_selection`).
+
+Two things are deliberately *not* faked:
+
+* `cpg_density`, `gc_content` and `cpg_obs_exp` are absent from the
+  FinaleMe output, so they are absent from the returned dict and the
+  graph builder's documented zero-fill applies. The synthetic path used
+  to fill them with random numbers, which would make a real-data run look
+  better calibrated than it is.
+* A run pointed at real loci can no longer fall back to synthetic
+  regions: `require_real_regions` turns the old silent fallback into an
+  error.
+
+`test/test_methylation_gnn_real_data.py` covers the loader, the
+no-fallback rule and the end-to-end path, and runs the real cohort when
+the decoded output is present.
 
 ### Verified on a real sample
 
@@ -128,7 +174,7 @@ python scripts/methylation_cohort_channel.py \
 | number of covered CpGs alone | **0.9444** |
 | observations per CpG alone | **0.9444** |
 | `beta_mean` alone, no model | 0.9530 |
-| β summary, 1,550 CpGs covered by *both* arms | 0.803–0.829 across repeats — not reproducible (§5.4) |
+| β summary, 1,550 most widely covered loci | 0.803–0.829 across repeats — not reproducible (§5.4) |
 | β summary, depth-matched to 11,003 CpGs | 0.9444 (coverage-only 0.8034) |
 
 Three different quantities — the decoded methylome, the number of CpGs
@@ -259,7 +305,9 @@ and read `depth.resolution_by_depth`.
 ### 5.4 One row of the §5 table is not reproducible — FinaleMe's HMM is not deterministic
 
 The table in §5 is reproducible except for one row: the β summary
-restricted to the 1,550 CpGs both arms cover. Over five runs of the same
+restricted to the 1,550 most widely covered loci (they are not all
+covered by both arms, which is why the per-CpG test above is run on the
+103,863 loci where both arms have coverage). Over five runs of the same
 cohort that row came back as **0.8034 / 0.8120 / 0.812 / 0.8162 /
 0.8291**.
 

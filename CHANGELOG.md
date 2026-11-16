@@ -12,6 +12,22 @@ cohort size.
 
 ### Added
 
+- **The methylation GNN can run on real public data.**
+  `src/methylation_gnn/` was architecture-only: the graph builder filled
+  the node set with randomly generated regions when none were loaded, and
+  the data module filled the beta matrix with random values, so the
+  "methylation" the GNN consumed had no relationship to any real sample.
+  `src/methylation_gnn/real_data.py` reads the same FinaleMe decoded
+  output the channel was measured on and returns the structure the graph
+  builder expects, with the **real CpG coordinates** as the graph's nodes.
+  On the published cohort it loads the 31 real samples over the same
+  1,550 most widely covered loci the channel used, applying the same
+  selection rule and recording which rule it used. Region-level
+  annotations the FinaleMe output does not carry (GC content, CpG
+  density) are left absent rather than filled with random numbers, and a
+  run pointed at real loci can no longer fall back to synthetic regions.
+  `src/methylation_gnn/real_data.py`,
+  `test/test_methylation_gnn_real_data.py`.
 - **External validation on held-out public cohorts.** FinaleDB publications 1
   (Snyder 2016), 7 (Sun 2019) and 9 (Adalsteinsson 2017) are fetched from the
   public API + S3 — no IRB, no data-use agreement — and scored by a model
@@ -41,9 +57,10 @@ cohort size.
   measured on 31 real samples (FinaleDB publication 7; 17 colorectal cancer,
   14 liver-transplant controls) and it separates the arms with leave-one-out
   AUC **0.9444** — exactly the AUC of the covered-CpG count alone and of the
-  observations-per-CpG count alone. Restricted to the 1,550 loci both arms
-  cover, the median cancer-minus-control difference in decoded β is exactly
-  **0.0** over 103,863 CpGs (permutation p = 1.0), and only 0.035% of the
+  observations-per-CpG count alone. At the 103,863 loci where both arms have
+  coverage, each tested on the samples that cover it, the median
+  cancer-minus-control difference in decoded β is exactly **0.0** (permutation
+  p = 1.0), and only 0.035% of the
   decoder's calls carry a value strictly between 0 and 1. The cause is in the
   libraries: they are size-selected at ~300 bp (0.000% of fragments longer)
   and deliver 1.09 observations per CpG, so the digestion signature FinaleMe
@@ -73,6 +90,26 @@ cohort size.
 
 ### Fixed
 
+- **The manuscript conflated two different locus sets.** "At the 1,550
+  CpGs that both arms cover ... over 103,863 CpGs" mixed two numbers that
+  come from two different tests. The 1,550 are the *most widely covered*
+  loci — the pool the sample-level shared-locus AUC is computed on, and
+  the pool the channel script falls back to when too few loci reach its
+  80% coverage threshold (only 16 do). The 103,863 are the loci where
+  *both* arms have coverage, each tested on the samples that cover it,
+  and they are what the per-CpG median difference of exactly 0.0 is
+  measured over. The two sets are not the same, and the 1,550 loci are
+  not all covered by both arms. Corrected in the preprint, the methods
+  paper, the markdown twin, README, MODEL, REVIEWERS, the readiness doc,
+  the landing page and the changelog.
+- **The submission PDF's metadata was stale.** The PDF is 8 pages, not
+  the 7 three documents claimed, and 264 KB, not 261 KB — the
+  dataset-naming edit pushed the references onto an eighth page. The
+  PDF has been rebuilt from the corrected `paper.tex`.
+- **The bioRxiv upload form quoted a stale abstract length** (2905
+  against the manuscript's 2897). `scripts/check_biorxiv_form.py` now
+  fails if the form and the manuscript disagree, and a test asserts the
+  changelog states the current length.
 - **The methylation channel's shared-locus number is not reproducible, and
   the cause is upstream.** FinaleMe's HMM training is not deterministic: on
   byte-identical decoder inputs the trained model differs between runs,
@@ -213,9 +250,11 @@ cohort size.
   cannot come back through the images.
 - **The abstract fitted bioRxiv's character limit again.** It grew with the
   v2.3.0 results to 3119 plain-text characters against bioRxiv's 3000
-  limit, so the upload would have been refused; it is now 2894 with every
+  limit, so the upload would have been refused; it is now 2897 with every
   number intact. A test fails the build if the abstract exceeds 3000
-  characters, or creeps within 50 of the limit.
+  characters, or creeps within 50 of the limit, and
+  `scripts/check_biorxiv_form.py` fails if the upload form quotes a
+  different length than the manuscript actually has.
 - **Eight tests that no workflow ever ran now run in CI.**
   `test/test_foundation_smoke.py` needs torch, so the core job skipped
   every test in it, and the deep-learning job does not collect `test/`

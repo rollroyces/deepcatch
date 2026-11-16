@@ -27,7 +27,9 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -192,3 +194,57 @@ def test_abstract_fits_the_biorxiv_character_limit():
     assert length <= 2950, (
         f"the abstract is {length} characters -- only {3000 - length} of "
         "margin left under bioRxiv's limit")
+
+
+def _abstract_length() -> int:
+    """The abstract's length, measured the way the test above measures it."""
+    tex = _read("paper/paper.tex")
+    match = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.S)
+    assert match, "paper.tex has no abstract"
+    plain = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", match.group(1))
+    plain = re.sub(r"\\[a-zA-Z]+", "", plain)
+    plain = re.sub(r"\$[^$]*\$", "0", plain)
+    return len(" ".join(plain.split()))
+
+
+def test_changelog_states_the_current_abstract_length():
+    """The release note tells the reader how long the shipped abstract is.
+
+    The abstract is edited after the note is written often enough -- it
+    went from 2894 to 2897 when the dataset names were made precise -- and
+    a release note that states the wrong length sends the author to
+    bioRxiv with the wrong number in hand.
+    """
+    length = _abstract_length()
+    changelog = _read("CHANGELOG.md")
+    match = re.search(r"it is now (\d+) with every\s+number intact", changelog)
+    assert match, (
+        "the CHANGELOG no longer states the abstract's length; update it "
+        "and this test")
+    stated = int(match.group(1))
+    assert stated == length, (
+        f"the CHANGELOG says the abstract is {stated} characters; "
+        f"paper/paper.tex makes it {length}")
+
+
+def test_biorxiv_form_agrees_with_the_manuscript():
+    """The upload form must quote the manuscript's own length and numbers.
+
+    The form is gitignored (it carries the corresponding author's
+    details), so this only runs on the author's machine -- which is where
+    it matters, because that is where the form is filled in.
+    """
+    form = _REPO_ROOT / "paper" / "BIORXIV_SUBMISSION.md"
+    if not form.is_file():
+        pytest.skip(
+            "paper/BIORXIV_SUBMISSION.md is gitignored -- the check runs on "
+            "the author's machine")
+    checker = _REPO_ROOT / "scripts" / "check_biorxiv_form.py"
+    proc = subprocess.run(
+        [sys.executable, str(checker)],
+        capture_output=True, text=True, timeout=60,
+        env={k: v for k, v in os.environ.items() if k != "PYTHONPATH"},
+    )
+    assert proc.returncode == 0, (
+        f"the bioRxiv submission form has drifted from the manuscript:\n"
+        f"{proc.stdout}\n{proc.stderr}")
