@@ -40,7 +40,7 @@ from sklearn.preprocessing import StandardScaler
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
     from fragmentomics.tumor_naive_adapter import (
-        load_cohort, load_labels_tsv, CHANNEL_NAMES,
+        load_cohort, load_labels_and_studies, CHANNEL_NAMES,
     )
     from fragmentomics.decision_curve import (
         decision_curve, per_specificity_table,
@@ -50,7 +50,9 @@ if __package__ in (None, ""):
         _MUT_CALIB,
     )
 else:
-    from .tumor_naive_adapter import load_cohort, load_labels_tsv, CHANNEL_NAMES
+    from .tumor_naive_adapter import (
+        load_cohort, load_labels_and_studies, CHANNEL_NAMES,
+    )
     from .decision_curve import decision_curve, per_specificity_table
     from .fusion_ablation import (
         _simulate_mutation_scores, _summarize, _harmonize, _MUT_CALIB,
@@ -104,18 +106,13 @@ def main() -> int:
                     help="Comma-separated decision-curve thresholds")
     args = ap.parse_args()
 
-    labels = load_labels_tsv(args.labels)
-    study_of: dict[str, str] = {}
-    with open(args.labels) as f:
-        for line in f:
-            line = line.rstrip("\n").rstrip("\r")
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) >= 3:
-                study_of[parts[0]] = parts[2]
-            else:
-                study_of[parts[0]] = "default"
+    # Both the label and the study come from the header-aware resolver.
+    # Reading the study positionally (column 2) picks up the LABEL in the
+    # canonical `sample disease_class label study` layout, and then the
+    # group-wise split groups by class -- every fold holds one class
+    # only, the out-of-fold scores become meaningless, and the run
+    # silently reports a chance-level AUC instead of failing.
+    labels, study_of = load_labels_and_studies(args.labels)
     sample_ids = sorted(labels)
     X, order = load_cohort(sample_ids, args.features_dir,
                            channels=CHANNEL_NAMES, skip_missing=True)

@@ -171,6 +171,31 @@ QUOTED_NUMBERS.append(
       "harmonized", "auc_mean"),
      ["docs/CROSS_STUDY_BENCHMARK.md"]))
 
+# The decision-curve operating points of RESULTS.md §4. They are a
+# separate benchmark from the fusion one -- the decision curve averages
+# each sample's out-of-fold score across seeds, the fusion benchmark
+# averages the per-seed metric -- so they are guarded against their own
+# artifact, not against the fusion one.
+QUOTED_NUMBERS.append(
+    ("decision_curve.json",
+     ("per_strategy", "tumor_naive", "auc"),
+     ["RESULTS.md"]))
+for _strategy in ("tumor_naive", "naive_average"):
+    for _spec in (0.95, 0.99):
+        QUOTED_SPECIAL.append(
+            ("decision_curve.json",
+             f"decision curve {_strategy} @{_spec} threshold",
+             "RESULTS.md"))
+# The lr_fusion operating points in the same table come from the fusion
+# benchmark, because the decision-curve CLI does not compute that
+# strategy.
+QUOTED_SPECIAL.append(
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_95",
+     "RESULTS.md"))
+QUOTED_SPECIAL.append(
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_99",
+     "RESULTS.md"))
+
 # ─────────────────────────────────────────────────────────────────────
 # Table rows that must be internally consistent
 # ─────────────────────────────────────────────────────────────────────
@@ -363,6 +388,76 @@ TABLE_ROWS = [
                        ("pooled", "sens_at_99"))],
         "forbidden": [],
     },
+    # The decision-curve table in RESULTS.md §4. Its rows mix two
+    # artifacts on purpose -- the decision-curve CLI does not compute
+    # the lr_fusion strategy, so that column comes from the fusion
+    # benchmark -- and the text says so. What must not happen is the row
+    # carrying a threshold from a different run of the decision curve.
+    {
+        "doc": "RESULTS.md",
+        "anchor": "| **95%** |",
+        "required": [
+            ("decision_curve.json",
+             ("per_strategy", "tumor_naive", "threshold@0.95")),
+            ("decision_curve.json",
+             ("per_strategy", "naive_average", "threshold@0.95")),
+        ],
+        "forbidden": [],
+    },
+    {
+        "doc": "RESULTS.md",
+        "anchor": "| **99%** |",
+        "required": [
+            ("decision_curve.json",
+             ("per_strategy", "tumor_naive", "threshold@0.99")),
+            ("decision_curve.json",
+             ("per_strategy", "naive_average", "threshold@0.99")),
+        ],
+        "forbidden": [],
+    },
+    # The TL;DR rows of RESULTS.md. Three tumor-naive benchmarks exist
+    # (0.9684 GC-corrected, 0.9770 legacy, 0.9785 with motifs) and the
+    # headline row used to quote one of the others -- the row pin is
+    # what keeps it on the headline one.
+    {
+        "doc": "RESULTS.md",
+        "anchor": "| Tumor-naive fragmentomics (627 FinaleDB cohort) |",
+        "required": [("cross_study_finallydb_gc_corrected.json",
+                       ("pooled", "harmonized", "auc_mean"))],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("pooled", "harmonized", "auc_mean")),
+            ("cross_study_finallydb_with_motifs.json",
+             ("pooled", "harmonized", "auc_mean")),
+        ],
+    },
+    {
+        "doc": "RESULTS.md",
+        "anchor": "| Mutation + tumor-naive naive-average |",
+        "required": [("fusion_ablation_isotonic.json",
+                       ("per_strategy", "naive_average", "auc_mean"))],
+        "forbidden": [],
+    },
+    # The harmonization row quotes the true-confound control's two
+    # states. Both come from the GC-corrected artifact; the legacy
+    # artifact's pair is a different run.
+    {
+        "doc": "RESULTS.md",
+        "anchor": "| Cross-study harmonization effect |",
+        "required": [
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+            ("cross_study_finallydb_gc_corrected.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "no_harmonize", "auc_mean")),
+        ],
+        "forbidden": [
+            ("cross_study_finallydb.json",
+             ("true_confound_control", "cancer_jiang_healthy_cristiano",
+              "harmonized", "auc_mean")),
+        ],
+    },
 ]
 
 
@@ -434,12 +529,33 @@ def dig_number(artifact, path):
 
     A path of ``("per_strategy", "<strategy>", "auc_mean")`` reaches into
     the fusion artifact's list-of-metric-rows shape, which a plain key
-    walk cannot do.
+    walk cannot do. ``("per_strategy", "<strategy>", "threshold@<spec>")``
+    reaches into the decision-curve artifact's list-of-operating-points
+    shape the same way.
     """
-    if (len(path) == 3 and path[0] == "per_strategy"
-            and path[2] == "auc_mean"):
-        return fusion_strategy_metric(artifact, path[1], "auc")
+    if (len(path) == 3 and path[0] == "per_strategy"):
+        if path[2] == "auc_mean":
+            return fusion_strategy_metric(artifact, path[1], "auc")
+        if path[2].startswith("threshold@"):
+            spec = float(path[2].split("@", 1)[1])
+            return float(decision_curve_point(
+                artifact, path[1], spec)["operating_threshold"])
+        if path[2] in ("sens_at_95", "sens_at_99"):
+            return fusion_strategy_metric(artifact, path[1], path[2])
     return float(dig(artifact, path))
+
+
+def decision_curve_point(artifact, strategy, spec):
+    """One operating point of the decision-curve artifact.
+
+    ``per_specificity`` is a list of
+    ``{"specificity", "sensitivity", "operating_threshold"}`` rows, so a
+    plain path lookup cannot reach into it.
+    """
+    for row in artifact["per_strategy"][strategy]["per_specificity"]:
+        if abs(row["specificity"] - spec) < 1e-9:
+            return row
+    raise KeyError(f"no specificity {spec} for {strategy}")
 
 
 def loso_direction(artifact, train, test):
@@ -488,6 +604,23 @@ def special_value(artifact_name, artifact, what):
         study = what[len("in_domain "):].strip()
         return (loso_in_domain(artifact, study),
                 f"{artifact_name} in_domain {study}")
+    if what.startswith("decision curve "):
+        rest = what[len("decision curve "):].strip()
+        metric = "threshold"
+        if rest.endswith(" threshold"):
+            rest = rest[:-len(" threshold")].strip()
+        strategy, _, spec = rest.rpartition(" @")
+        strategy = strategy.strip()
+        row = decision_curve_point(artifact, strategy, float(spec))
+        if metric == "threshold":
+            return (float(row["operating_threshold"]),
+                    f"{artifact_name} {strategy} @ {spec} threshold")
+        return (float(row["sensitivity"]),
+                f"{artifact_name} {strategy} @ {spec} sensitivity")
+    if what.startswith("fusion "):
+        strategy, _, metric = what[len("fusion "):].strip().rpartition(" ")
+        return (fusion_strategy_metric(artifact, strategy, metric),
+                f"{artifact_name} {strategy} {metric}")
     return fusion_auc(artifact, what), what
 
 

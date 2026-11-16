@@ -381,15 +381,27 @@ Bioinformatics or PLOS Computational Biology.
 
 ---
 
-## 7. Current state (audit summary, August 2026)
+## 7. Current state (v2.3.0, 2026-11-16)
+
+Every figure in this table is quoted from a committed artifact in
+`results/`, not from a memory of an earlier run. The audit summary this
+section replaces was written in August 2026 and had fallen a generation
+behind: it still listed the per-cancer AUC, the methylation channel and
+the mutation panel as not done, and quoted a fusion AUC the fusion
+artifact no longer holds.
 
 | Asset | Status | Documented in |
 |---|---|---|
-| Headline tumor-naive AUC 0.974-0.978 | ✓ Verified, 4 audit rounds | `RESULTS.md` |
-| Headline fusion AUC 0.989 | ✓ Verified, partly synthetic | `RESULTS.md` §3 |
+| Tumor-naive fragmentomics, cross-study (public FinaleDB) | ✅ pooled AUC 0.9684 ± 0.0027 (GC-corrected); 0.9770 legacy; 0.9785 with motifs | `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` |
+| **Held-out external validation on public data** | ✅ **0.9444** (pub 7, WGS, n=31), **0.708** (pub 1, WGS, n=52), **0.7385** pooled over the publications carrying both classes; pub 9 (case-only) sensitivity 0.6569 | `docs/EXTERNAL_VALIDATION.md` |
+| Leave-one-study-out transfer | ✅ 0.6805 (Jiang→Cristiano) / 0.9361 (Cristiano→Jiang) against in-domain 0.9789 / 0.969 | `docs/CROSS_STUDY_LOSO.md` |
+| Cross-repo fusion | ✅ naive average **0.9884 ± 0.0010**, LR fusion 0.9884 ± 0.0009, isotonic 0.9849 ± 0.0014 (10 seeds, n=627; the mutation channel is synthetic, calibrated to AUC 0.92) | `RESULTS.md` §3 |
+| Per-cancer-type AUC and sens@spec | ✅ LUAD 0.9825, OV 0.9930, CRC 0.9754, BRCA 0.9738, HCC 0.7221 — **the spread is real, and that is the interesting part** | `results/per_cancer_sens_at_spec.json` |
+| Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
+| Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
 | bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
-| 728 tests collected (`pytest src test -q`) | ✓ | `test/` + the per-module suites |
-| CI jobs green (core, deep-learning, paper PDF, docs site) | ✓ | `.github/workflows/` |
+| 744 tests collected (`pytest src test -q`) | ✅ 558 core + 186 deep-learning, all green | `test/` + the per-module suites |
+| CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |
 | Cross-repo fusion (DeepCatch + pipeline) | ✓ Working | `src/fragmentomics/fusion_ablation.py` |
@@ -397,14 +409,14 @@ Bioinformatics or PLOS Computational Biology.
 
 ### 7.1 What is **NOT** done (the honest list)
 
-- ❌ Held-out clinical validation (needs clinical co-author)
-- ❌ Per-cancer-type AUC (needs FinaleDB metadata or new cohort)
-- ❌ Methylation channel (scaffolding only)
-- ❌ Real mutation channel (synthetic only)
-- ❌ ComBat / limma harmonization comparison
-- ❌ Production deployment (regulatory framing not addressed)
-- ❌ Single-source funding
-- ❌ Second author
+- ❌ **Clinical** validation on a real patient plasma cohort — the
+  external validation above is on *public* plasma cfDNA, which is not the
+  same thing (needs a clinical co-author).
+- ❌ ComBat / limma empirical-Bayes harmonization comparison (needs the
+  `sva` / `pycombat` dependency).
+- ❌ Production deployment (regulatory framing not addressed).
+- ❌ Single-source funding.
+- ❌ Second author.
 
 ---
 

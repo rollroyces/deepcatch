@@ -91,6 +91,86 @@ cohort size.
 
 ### Fixed
 
+- **The decision-curve CLI read the study column positionally.** It
+  resolved the *label* with the header-aware resolver but took the
+  *study* from column 2 of each line. In the canonical FinaleDB layout
+  (`sample  disease_class  label  study`) column 2 is the label, so the
+  study became "cancer"/"healthy", the per-study harmonisation
+  z-scored each class separately, and the run reported a chance-level
+  AUC (0.4841 against 0.9773) instead of failing. The adapter's own
+  docstring warns about exactly this, and the bug stayed invisible
+  because the only labels file the CLI was ever run against was the
+  headerless `labels_cross_study.tsv`, where the positional read
+  happens to be right. Both the label and the study now come from the
+  header-aware resolver, and a regression test builds a synthetic
+  cohort with a class signal, runs the CLI against the canonical
+  layout, and requires the signal to survive.
+  `src/fragmentomics/decision_curve_cli.py`,
+  `test/test_decision_curve_labels.py`.
+- **The decision-curve table in RESULTS.md predated the seeded PCA.**
+  Section 4's operating points were computed on 2026-08-28, before the
+  PCA was seeded and before the CLI stopped refitting the PCA on the
+  test fold (commit `96b38da`). They could not be reproduced by the
+  committed code, and the method they came from is no longer the method
+  in the repository. The table is now read out of a committed
+  artifact, `results/decision_curve.json`, which the reproduction
+  driver regenerates; the run is deterministic (two runs are
+  byte-identical) and the operating points are pinned by the drift
+  guard.
+  `results/decision_curve.json`, `RESULTS.md`, `paper/REPRODUCE.sh`.
+- **RESULTS.md's TL;DR quoted a superseded generation.** Its
+  tumor-naive row carried the legacy 0.978 rather than the GC-corrected
+  headline, its fusion row carried 0.989 where the fusion artifact holds
+  0.9884, and its harmonization row carried a "0.499 (control) → 0.500
+  (harmonized on true confound)" pair that no artifact backs — the
+  true-confound control is 0.9989 without harmonization and 0.4836
+  with it. The precision note also told readers that ±0.002 AUC
+  between runs is convergence noise, which was true while the PCA was
+  unseeded and is no longer true at all. All four are corrected, and
+  RESULTS.md — the repository's headline results document — was covered
+  by no check whatsoever, so it is now in the drift guard's document
+  list, with its TL;DR rows pinned to one run each.
+  `RESULTS.md`, `scripts/benchmark_numbers.py`.
+- **Two PPV figures did not reproduce.** The 3.5%-prevalence column of
+  the screening table read 38.7% and 75.6%; recomputed from the
+  operating points the sibling repository's `results/ppv_screening.json`
+  actually holds (sens 0.91 at spec 0.95, and sens 0.82 at spec 0.99),
+  they are 39.8% and 74.8%. The table now names the repository the
+  script and artifact live in, and says which columns are the
+  artifact's own values and which are computed at the stated
+  prevalences.
+  `RESULTS.md`.
+- **The project-team state table was a generation behind.** `TEAM.md` §7
+  — the document a wet-lab lab reads first — still listed the
+  per-cancer AUC, the methylation channel and the mutation panel as not
+  done, quoted a fusion AUC the fusion artifact no longer holds, and
+  said the hold-out validation was missing (the public hold-out
+  validation exists; the *clinical* one does not). It is now written
+  from the committed artifacts, and the honest list says what is
+  genuinely not done.
+  `TEAM.md`.
+- **A committed generated document could drift from its generator.** The
+  same hole that let the readiness report call the held-out cohort
+  unusable was open for every other generated document, because nothing
+  compared a document with the generator that writes it. A new test
+  regenerates each offline generator's document *and* its artifact into
+  a temporary directory and asserts the committed copies are exactly what
+  the generator produces. The audit that motivated it found the others
+  clean: the leave-one-study-out report, the external-validation report
+  and the readiness report all regenerate byte-identically (modulo the
+  generation timestamp and the commit stamp). A hand edit to a generated
+  file now fails the build.
+  `test/test_generated_docs_match_their_generators.py`.
+- **The ORCID/affiliation flag now states the verified public record.**
+  `docs/JOURNAL_SUBMISSION.md` flagged that the declared "Independent
+  Researcher" affiliation and the ORCID record disagree, without saying
+  what the record contains. It does now: one public employment
+  (University of Michigan), no start date, no end date, no department and
+  no role title — so ORCID renders it as a *current* employment — and no
+  other employment, education, work or affiliation of any kind. Both
+  resolutions are spelled out, with the files to change for each; which
+  one is true is the author's fact, not the repository's.
+  `docs/JOURNAL_SUBMISSION.md`.
 - **The readiness report called the external cohort unusable.** The
   publication-readiness diagnostic only sees the *training* labels file
   and the *training* feature cache, so the held-out publications come
@@ -110,13 +190,12 @@ cohort size.
   `scripts/_verify_publication_readiness.py`,
   `docs/PUBLICATION_READINESS.md`.
 - **The Chinese README stated the fast-path gate from an older run.** Its
-  table said 541 collected / 505 passed and its file tree said 528
-  fast-path tests, while the English original said 540 collected / 504
-  passed and 527 fast-path tests — the translation was one test behind
-  and nothing compared the two. Both READMEs now state what the gate
-  actually produces (543 collected, 507 passed + 23 skipped + 13
-  deselected, 530 fast-path tests), and the suite-table guard checks the
-  English one against a real collection.
+  table carried the gate's collected/passed/skipped/deselected split and
+  its file tree the fast-path test count, while the English original
+  carried different ones — the translation was a test behind and
+  nothing compared the two. Both READMEs now state what the gate
+  actually produces, and the suite-table guard checks the English one
+  against a real collection.
   `README.md`, `README.zh-CN.md`.
 
 - **A stated limitation was not true.** The repository said twice that the

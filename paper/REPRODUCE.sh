@@ -145,6 +145,7 @@ ARTIFACTS=(
     cross_study_loso.json
     external_validation_finaledb.json
     fusion_ablation_isotonic.json
+    decision_curve.json
     methylation_cohort_channel.json
 )
 
@@ -175,7 +176,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[1/9] Cross-study FinaleDB sweep — legacy (no GC correction)"
+echo "[1/10] Cross-study FinaleDB sweep — legacy (no GC correction)"
 echo "================================================================"
 # `--gc-correction` DEFAULTS TO ON, so a driver that passes no flag writes
 # the GC-corrected run into the legacy path. That silently replaced the
@@ -203,7 +204,7 @@ echo "      seeds: ${SEEDS[*]}"
 
 echo
 echo "================================================================"
-echo "[2/9] Cross-study FinaleDB sweep — GC-corrected (headline)"
+echo "[2/10] Cross-study FinaleDB sweep — GC-corrected (headline)"
 echo "================================================================"
 # `--include-screening` is deliberately OFF here. The committed
 # `results/per_cancer_sens_at_spec.json` was produced on the legacy
@@ -227,7 +228,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[3/9] Shuffled-label null control"
+echo "[3/10] Shuffled-label null control"
 echo "================================================================"
 # Single seed (2), matching the committed artifact: the control is a sanity
 # check, and a second seed adds minutes without adding evidence.
@@ -239,7 +240,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[4/9] Leave-one-study-out transfer (train on one publication)"
+echo "[4/10] Leave-one-study-out transfer (train on one publication)"
 echo "================================================================"
 "${PYTHON}" scripts/cross_study_loso.py \
     --features-dir "${FEATURES_DIR}" \
@@ -252,7 +253,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[5/9] External validation on held-out public publications"
+echo "[5/10] External validation on held-out public publications"
 echo "================================================================"
 if [[ ! -d "${EXTERNAL_DIR}" ]]; then
     echo "[REPRODUCE] !! external cohort not found: ${EXTERNAL_DIR}" >&2
@@ -269,7 +270,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[6/9] Fusion ablation (tumor-naive + mutation-informed)"
+echo "[6/10] Fusion ablation (tumor-naive + mutation-informed)"
 echo "================================================================"
 PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
     --features-dir "${FEATURES_DIR}" \
@@ -281,7 +282,22 @@ PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
 
 echo
 echo "================================================================"
-echo "[7/9] Methylation channel (FinaleMe on real public fragments)"
+echo "[7/10] Decision curve (clinician-facing operating points)"
+echo "================================================================"
+# The operating points RESULTS.md section 4 quotes. Same cohort, same
+# PCA (200 components) and the same five seeds as the decision curve
+# was always run with -- but the PCA is seeded now, so this output is
+# reproducible instead of one arbitrary draw.
+PYTHONPATH=src "${PYTHON}" src/fragmentomics/decision_curve_cli.py \
+    --features-dir "${FEATURES_DIR}" \
+    --labels "${LABELS_TSV}" \
+    --pca-n 200 \
+    --seeds 5 \
+    --out "${RESULTS_DIR}/decision_curve.json"
+
+echo
+echo "================================================================"
+echo "[8/10] Methylation channel (FinaleMe on real public fragments)"
 echo "================================================================"
 # This step needs java, the FinaleMe 0.58 jar and the cached per-sample CpG
 # matrices. When any of those is missing the step is skipped and reported
@@ -311,7 +327,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[8/9] Figures"
+echo "[9/10] Figures"
 echo "================================================================"
 "${PYTHON}" scripts/plot_figures.py \
     --results-dir "${RESULTS_DIR}" \
@@ -319,7 +335,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[9/9] Acceptance floors"
+echo "[10/10] Acceptance floors"
 echo "================================================================"
 read_harm() {
     "${PYTHON}" -c "
@@ -425,6 +441,7 @@ echo "  ${RESULTS_DIR}/cross_study_finallydb_shuffled_control.json"
 echo "  ${RESULTS_DIR}/cross_study_loso.json"
 echo "  ${RESULTS_DIR}/external_validation_finaledb.json"
 echo "  ${RESULTS_DIR}/fusion_ablation_isotonic.json"
+echo "  ${RESULTS_DIR}/decision_curve.json"
 echo "  ${RESULTS_DIR}/methylation_cohort_channel.json"
 echo "  ${DOCS_DIR}/CROSS_STUDY_BENCHMARK.md"
 echo "  ${DOCS_DIR}/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"

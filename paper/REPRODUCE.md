@@ -35,11 +35,12 @@ The driver does three things, in this order:
 | 4 | `scripts/cross_study_loso.py` | `results/cross_study_loso.json`, `docs/CROSS_STUDY_LOSO.md` | §3.2.1 leave-one-study-out transfer |
 | 5 | `scripts/external_validation_finaledb.py` | `results/external_validation_finaledb.json`, `docs/EXTERNAL_VALIDATION.md` | §3.2.2 external validation on held-out public publications |
 | 6 | `src/fragmentomics/fusion_ablation.py` | `results/fusion_ablation_isotonic.json` | §3.1 / fusion ablation |
-| 7 | `scripts/methylation_cohort_channel.py` | `results/methylation_cohort_channel.json` | §3.2.4 the methylation channel (reported as a **null**) |
-| 8 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
-| 9 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
+| 7 | `src/fragmentomics/decision_curve_cli.py` | `results/decision_curve.json` | `RESULTS.md` §4 decision-curve operating points |
+| 8 | `scripts/methylation_cohort_channel.py` | `results/methylation_cohort_channel.json` | §3.2.4 the methylation channel (reported as a **null**) |
+| 9 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
+| 10 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
 
-Between 8 and the gate sit the two **acceptance floors** (see below) and the
+Between 9 and the gate sit the two **acceptance floors** (see below) and the
 **reproduction check**.
 
 > **Why two cross-study runs?** `--gc-correction` defaults to ON, so a driver

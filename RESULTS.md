@@ -37,21 +37,29 @@ detection from open-access data:
 | Setup | AUC | Notes |
 |---|---|---|
 | Panel LLR (DeepCatch, TCGA-LUAD, simulated plasma) | **0.921** | At 0.1% ctDNA, Sens@95%=0.770 |
-| Tumor-naive fragmentomics (627 FinaleDB cohort) | **0.978** | Latest, +0.005 from LR-no-PCA C=1000 |
-| Mutation + tumor-naive naive-average | **0.989** | Paired t p<0.0001 vs each alone |
+| Tumor-naive fragmentomics (627 FinaleDB cohort) | **0.9684** | GC-corrected headline benchmark |
+| Mutation + tumor-naive naive-average | **0.9884** | Paired t p<0.0001 vs each alone |
 | LLM baseline (Gemma 2 9B IT, 4-shot) | 0.576 | -0.40 vs the structured pipeline |
-| Cross-study harmonization effect | 0.499 (control) → 0.500 (harmonized on true confound) | Confirms no information leakage |
+| Cross-study harmonization effect | 0.9989 → 0.4836 | True-confound control (cancer=Jiang, healthy=Cristiano): without harmonization the study identity alone separates them perfectly; harmonization removes it completely — no information leakage |
+
+The tumor-naive headline is the **GC-corrected** benchmark. Three
+different tumor-naive benchmarks exist and each lives in its own
+artifact: 0.9684 GC-corrected, 0.9770 legacy no-GC, 0.9785 with
+4-mer motifs. They are not interchangeable, and a figure quoted without
+its artifact is ambiguous.
 
 All code (MIT), data (open access), and results (JSON) are
 publicly available. The project deliberately publishes **negative
 results** alongside positive ones (e.g., nucleosome-aware features
 add +0.0003 AUC; LLM baseline AUC 0.58).
 
-**Number-precision note**: TL;DR table values are rounded to 3
-decimal places for readability; Section numbers (where they appear)
-are at 4 decimal places from the original result JSONs. Differences
-of ±0.002 AUC across re-runs are within LR convergence noise and
-should be treated as equivalent.
+**Number-precision note**: TL;DR table values are quoted at the
+precision the committed artifact carries (3 or 4 decimals); Section
+numbers (where they appear) are at 4 decimal places from the original
+result JSONs. The benchmark pipeline is seeded, so re-running it
+reproduces the same numbers exactly — differences of ±0.002 AUC are
+*not* expected between runs, and a figure that moves is a figure that
+has been re-fitted on something else.
 
 **Sample-count note**: `data/features/labels_cross_study.tsv`
 contains 658 candidate samples (364 cancer + 294 healthy; 537
@@ -245,48 +253,69 @@ strong general-purpose LLM reading the same features as text**.
 
 ## Section 4: Decision curve analysis (clinician-facing)
 
-Decision-curve operating points (sensitivity at fixed specificity) were
-re-computed from `decision_curve_cli.py --seeds 5` on 2026-08-28 for
-all three fusion strategies and reported by source model below.
-**The previous version of Section 4 in this document showed operating
-points that did not match any specific model's output — that has been
-corrected.** The numbers below are reproducible by running
-`decision_curve_cli.py` directly.
+Decision-curve operating points (sensitivity at fixed specificity) come
+from `src/fragmentomics/decision_curve_cli.py --seeds 5`; the committed
+artifact is `results/decision_curve.json` and the numbers below are read
+out of it.
+
+**This table was restated on 2026-11-16.** The previous version was
+computed on 2026-08-28 — before the PCA was seeded and before the CLI
+stopped refitting the PCA on the test fold (commit `96b38da`). Both
+changed the numbers, the old ones could not be reproduced by the
+committed code, and the method they came from is no longer the method
+in the repository. They were replaced rather than kept.
 
 | | tumor_naive | | naive_average | | lr_fusion |
 |---|---|---|---|---|---|
 | Spec | Sens | Thr | Sens | Thr | Sens |
-| 80% | 95.0% | 0.180 | **98.9%** | 0.438 | — |
-| 85% | 92.6% | 0.314 | 98.3% | 0.458 | — |
-| 90% | 88.4% | 0.523 | 95.9% | 0.511 | — |
-| **95%** | 81.0% | 0.855 | 90.1% | 0.639 | **93.9%** |
-| 98% | 76.9% | 0.957 | 84.8% | 0.727 | — |
-| **99%** | 67.5% | 0.995 | **80.7%** | 0.768 | **86.9%** |
+| 80% | 97.5% | 0.089 | 99.7% | 0.398 | — |
+| 85% | 97.0% | 0.152 | 99.4% | 0.423 | — |
+| 90% | 95.3% | 0.252 | 98.3% | 0.456 | — |
+| **95%** | 88.2% | 0.700 | 95.3% | 0.546 | 93.2% |
+| 98% | 82.9% | 0.922 | 89.8% | 0.687 | — |
+| **99%** | 79.6% | 0.977 | 85.7% | 0.756 | 83.3% |
 
-`tumor_naive`: LR no-PCA C=1000 on 5-channel features (AUC 0.974-0.978).
-`naive_average`: (tumor_naive + synthetic mutation) / 2 fusion (AUC ~0.984-0.989).
-`lr_fusion`: LR-learned fusion weights on (tumor_naive + synthetic mutation)
-(AUC 0.989 ± 0.001, 10-seed). Sens@95/99 are from a 5-seed run of
-`fusion_ablation.py` because `decision_curve_cli.py` does not compute
-the lr_fusion strategy — see `deepcatch/src/fragmentomics/fusion_ablation.py:243`.
+`tumor_naive` and `naive_average` are the two decision-curve strategies:
+LR on PCA-200 of the 5-channel features (AUC 0.9773) and the plain
+average of it with the synthetic mutation channel, both from
+`results/decision_curve.json`.
+`lr_fusion` is **not** a decision-curve strategy — `decision_curve_cli.py`
+does not compute it — so its two operating points come from the 10-seed
+fusion benchmark (`results/fusion_ablation_isotonic.json`: AUC 0.9884 ±
+0.0009, sens@95% 0.9322 ± 0.0091, sens@99% 0.8325 ± 0.0421); see
+`src/fragmentomics/fusion_ablation.py`. The two sources are not
+directly comparable: the decision curve averages each sample's
+out-of-fold score across seeds, the fusion benchmark averages the
+per-seed metric, so the same strategy carries a slightly higher AUC in
+the decision curve (0.9773 against 0.9740 ± 0.0013 for `tumor_naive`).
 
-Net benefit over treat-all and treat-none: positive for tumor-naive
-in [0.18, 0.95], positive for naive_average in [0.44, 0.77], positive
-for lr_fusion at the 95%/99% operating points. **The clinical
-implication depends on the prevalence of the screened population;
-see PPV section below.**
+Net benefit over treat-all and treat-none is positive for
+`tumor_naive` and `naive_average` at every probed threshold from 0.05
+upwards (the grid runs 0.01–0.5; at 0.01–0.02 the model is level with
+treat-all). No net-benefit claim is made for `lr_fusion` here, because
+the decision curve does not compute it. **The clinical implication
+depends on the prevalence of the screened population; see PPV section
+below.**
 
 ### PPV at screening prevalence
 
 Sensitivity and specificity alone don't tell a clinician whether
 to act on a positive screen. **PPV at the population prevalence
-the assay will be deployed at is the right metric.** From
-`scripts/ppv_screening.py`:
+the assay will be deployed at is the right metric.** From the sibling
+repository's `scripts/ppv_screening.py`, whose artifact is
+`results/ppv_screening.json` there:
 
 | Operating point | Prev 0.4% (US 50+, *annual incidence*) | Prev 1.5% (NLST, *annual incidence*) | Prev 2.0% (point prev, surveillance) | Prev 3.5% (5-yr limited prev) |
 |---|---|---|---|---|
-| Sens@95%, spec=95% | **PPV 6.8%** (1 TP per 14 positives) | PPV 21.7% | PPV 27.1% | PPV 38.7% |
-| Sens@82%, spec=99% | **PPV 24.8%** (1 TP per 4) | PPV 55.5% | PPV 62.6% | PPV 75.6% |
+| Sens@95%, spec=95% | **PPV 6.8%** (1 TP per 14 positives) | PPV 21.7% | PPV 27.1% | PPV 39.8% |
+| Sens@82%, spec=99% | **PPV 24.8%** (1 TP per 4) | PPV 55.5% | PPV 62.6% | PPV 74.8% |
+
+The operating points and the first two prevalence columns are the
+sibling artifact's own values; the 2.0% and 3.5% columns are computed
+at those prevalences from the same two operating points (sens 0.91 at
+spec 0.95, and sens 0.82 at spec 0.99). **The 3.5% column previously
+read 38.7% and 75.6%; neither reproduced from those operating points,
+and both have been corrected.**
 
 **Important caveat on prevalence interpretation**: The "0.4%" and
 "1.5%" columns are *annual incidence* rates (ACS Cancer Statistics 2024;

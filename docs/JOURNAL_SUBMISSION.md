@@ -66,7 +66,7 @@ independent researcher can produce.
 | Submission metadata | ✅ `paper/BIORXIV_SUBMISSION.md` (gitignored: it carries personal details) |
 | ORCID | ✅ `0009-0008-9113-769X`, also in `CITATION.cff` |
 | Code URL in the manuscript | ✅ |
-| **Affiliation consistent with the ORCID record** | ⚠️ **check before uploading** — the manuscript and `CITATION.cff` declare "Independent Researcher (no institutional affiliation)", but the public ORCID record carries an employment at the University of Michigan. bioRxiv asks for an affiliation, and a reviewer who clicks the ORCID sees the record. Make the two agree before the upload — either the ORCID entry is out of date, or the declared affiliation should say so. |
+| **Affiliation consistent with the ORCID record** | ⚠️ **decide before uploading** — the manuscript's author block and `CITATION.cff` declare "Independent Researcher (no institutional affiliation)", but the public ORCID record for `0009-0008-9113-769X` (checked 2026-11-16) carries **one public employment: University of Michigan** (Ann Arbor, MI, US; ROR `00jmfr291`) with **no start date, no end date, no department and no role title** — so ORCID renders it as a *current* employment — and no education, works or other affiliations of any kind. bioRxiv asks for an affiliation, and a reviewer who clicks the ORCID sees the record. Two coherent resolutions, both a few minutes' work: **(a)** the ORCID entry is stale or a placeholder → end-date or delete it and keep "Independent Researcher"; **(b)** it is current → declare the affiliation in `paper/paper.tex` (author block, line 13) and `CITATION.cff`, which makes the paper *stronger*, not weaker, for a reviewer who distrusts an unaffiliated author. Which of the two is true is the author's fact, not the repository's — but the two must not contradict each other on the day of upload. |
 | **Upload** | ⬜ author action — needs the bioRxiv account |
 | **Corresponding-author email** | ⬜ author action — deliberately not in the repo |
 
@@ -76,7 +76,7 @@ independent researcher can produce.
 |---|---|
 | Public, versioned repository | ✅ MIT-licensed, tagged releases |
 | Installable package | ✅ `pyproject.toml` |
-| Test suite | ✅ 728 tests (`pytest src test -q`), split across two CI jobs |
+| Test suite | ✅ 744 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
 | **DOI** | ⬜ requires Zenodo's GitHub integration + the `v2.3.0` tag |

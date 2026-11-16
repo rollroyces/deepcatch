@@ -207,6 +207,13 @@ CURRENT_DOCS = [
     # the English one (the fusion table from a pre-regeneration run) with
     # no check covering it at all.
     "README.zh-CN.md",
+    # RESULTS.md is the repository's headline results document and it
+    # was covered by no check at all: its TL;DR quoted the legacy
+    # tumor-naive benchmark, a fusion AUC the fusion artifact no longer
+    # holds, and a "0.499 -> 0.500" harmonization pair that no artifact
+    # backs, while its Section 4 decision-curve table predated the
+    # seeded PCA and could not be reproduced by the committed code.
+    "RESULTS.md",
 ]
 
 
