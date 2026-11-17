@@ -276,6 +276,54 @@ def main() -> int:
             "per_seed_auc": aucs,
         }
 
+    # The POOLED measured null, over every permutation of every seed.
+    #
+    # The per-seed nulls live under
+    # ``per_seed[*].diagnostics.empirical_null``, and a document that
+    # quotes "the null" needs ONE number for the cohort rather than
+    # three. This summary is what the documents quote, so it is written
+    # into the artifact rather than computed in the prose: quoting the
+    # highest seed's mean (0.4176 -> "0.42") as if it were the pooled
+    # value (0.4063) is exactly the kind of drift the number guard
+    # cannot see, because it requires at least three decimals and
+    # "0.42 +/- 0.12" has two.
+    #
+    # ``mean`` is the pooled mean over all permutations (the per-seed
+    # means averaged weighted by their trial counts) and ``std`` is the
+    # pooled standard deviation over all permutations -- so the pair is
+    # the mean and spread of ONE distribution, not a mean of means
+    # beside a mean of standard deviations.
+    nulls = [
+        results[str(s)]["diagnostics"]["empirical_null"]
+        for s in seeds
+        if "empirical_null" in results[str(s)]["diagnostics"]
+    ]
+    measured_null = None
+    if nulls:
+        trials = [n["trials"] for n in nulls]
+        total = float(sum(trials))
+        pooled_mean = sum(n["mean"] * t for n, t in zip(nulls, trials)) / total
+        # Pooled variance: the within-seed variance (ddof=1) plus the
+        # between-seed spread of the per-seed means.
+        within = sum((t - 1) * (n["std"] ** 2) for n, t in zip(nulls, trials))
+        between = sum(
+            t * (n["mean"] - pooled_mean) ** 2
+            for n, t in zip(nulls, trials)
+        )
+        pooled_std = ((within + between) / (total - 1)) ** 0.5
+        measured_null = {
+            "mean": round(pooled_mean, 4),
+            "std": round(pooled_std, 4),
+            "n_trials": int(total),
+            "per_seed_mean": [n["mean"] for n in nulls],
+            "per_seed_std": [n["std"] for n in nulls],
+            "note": "pooled over every permutation of every seed; the null "
+                    "on this paired design sits BELOW 0.5 because a model "
+                    "fitted to permuted labels still recovers the "
+                    "within-pair axis, so it is read against this measured "
+                    "null and not against chance",
+        }
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -290,12 +338,13 @@ def main() -> int:
                 "permuted_label_auc": "labels permuted within each fold's "
                                       "train and test blocks independently; "
                                       "on this paired design the measured "
-                                      "null is ~0.42, not 0.5 (see "
-                                      "per_seed[*].diagnostics.empirical_null)",
+                                      "null is below 0.5, not at it (see "
+                                      "protocol.measured_null.mean)",
                 "arm_swap_auc": "arms swapped within half the patients; a "
                                 "model leaning on the per-patient invariant "
                                 "lands below 0.5",
             },
+            "measured_null": measured_null,
             "seeds": seeds,
             "n_inner_folds": args.n_inner,
         },

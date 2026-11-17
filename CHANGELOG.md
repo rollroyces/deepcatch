@@ -106,6 +106,22 @@ cohort size.
 
 ### Fixed
 
+- **The pooled null the documents quote was the wrong seed's, at a
+  precision the guard could not see.** Six documents stated the
+  paired-cohort null as "0.42 ± 0.12". Those are the HIGHEST seed's
+  mean and standard deviation (0.4176 and 0.1187) rounded to two
+  decimals; the cohort's pooled null over all 150 permutations is
+  **0.4063 ± 0.1143**. The per-seed nulls (0.3997, 0.4017, 0.4176) sit
+  within a rounding unit of each other, so nothing flagged it — and at
+  two decimals the number guard could not see it at all, because it
+  requires at least three decimals to identify a value. A figure
+  quoted at two decimals can drift freely while the guard stays green.
+  The fusion artifact now carries the pooled figure at
+  `protocol.measured_null` (mean, std, and the per-seed values it
+  pools), the documents quote it at four decimals, and two new pins
+  hold them to it. The pins are red-green checked in both directions:
+  writing the old two-decimal rendering back into a document now
+  FAILS the guard, where before it passed.
 - **The shuffled-label control was a no-op, and now it is a control.**
   `scripts/foundation_real_smoke.py` built its "pair-broken shuffle" by
   permuting the positive index set among itself and the negative index
@@ -938,7 +954,7 @@ cohort size.
   fragment objects are reachable.
 - The foundation smoke's label-permutation control was a no-op — it permuted
   index sets and reassigned the same values, so it reproduced `y_true`
-  exactly. The corrected control's null on the paired design is 0.42 ± 0.12,
+  exactly. The corrected control's null on the paired design is 0.4063 ± 0.1143,
   not 0.5, and is now measured rather than assumed.
 - `scripts/finaleme_pipeline.py` invoked a FinaleMe class and CLI flags that
   do not exist in the released tool.

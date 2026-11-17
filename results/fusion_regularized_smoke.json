@@ -1,12 +1,28 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-17T08:08:53.150809+00:00",
+  "generated_at": "2026-11-17T09:05:21.276255+00:00",
   "protocol": {
     "cohort": "TCGA-LUAD paired (20 patients x 2 arms), real MAF-derived panel scores and real mutation-derived fragmentomics channel; simulated plasma at TF=0.001",
     "cv": "GroupKFold(n_splits=min(5, n_patients)) over patient groups -- both arms of every patient stay together",
     "controls": {
-      "permuted_label_auc": "labels permuted within each fold's train and test blocks independently; on this paired design the measured null is ~0.42, not 0.5 (see per_seed[*].diagnostics.empirical_null)",
+      "permuted_label_auc": "labels permuted within each fold's train and test blocks independently; on this paired design the measured null is below 0.5, not at it (see protocol.measured_null.mean)",
       "arm_swap_auc": "arms swapped within half the patients; a model leaning on the per-patient invariant lands below 0.5"
+    },
+    "measured_null": {
+      "mean": 0.4063,
+      "std": 0.1143,
+      "n_trials": 150,
+      "per_seed_mean": [
+        0.3997,
+        0.4017,
+        0.4176
+      ],
+      "per_seed_std": [
+        0.1213,
+        0.1035,
+        0.1187
+      ],
+      "note": "pooled over every permutation of every seed; the null on this paired design sits BELOW 0.5 because a model fitted to permuted labels still recovers the within-pair axis, so it is read against this measured null and not against chance"
     },
     "seeds": [
       0,

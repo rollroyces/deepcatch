@@ -220,6 +220,81 @@ def test_the_committed_foundation_control_is_not_the_honest_foundation():
 
 
 # --------------------------------------------------------------------------
+# The measured null the documents read the control against
+# --------------------------------------------------------------------------
+def _fusion_artifact():
+    path = _ROOT / "results" / "fusion_regularized_smoke.json"
+    if not path.exists():
+        pytest.skip("the fusion artifact is not present")
+    return json.loads(path.read_text())
+
+
+def test_the_measured_null_is_pooled_not_one_seed():
+    """The cohort's null must be the POOLED figure, not a single seed's.
+
+    Six documents stated the null as "0.42 +/- 0.12", which is the
+    HIGHEST seed's mean and standard deviation rounded to two decimals;
+    the pooled null is 0.4063 +/- 0.1143. The two agree to within a
+    rounding unit, so nothing caught it -- and at two decimals the
+    number guard cannot see it at all. The artifact now carries the
+    pooled figure, and this test pins that it is the pooled one.
+
+    The check is deliberately structural rather than a comparison
+    against a literal: the pooled mean must lie BETWEEN the per-seed
+    means and must not equal any single one of them, and the pooled
+    standard deviation must not be smaller than every per-seed one.
+    """
+    artifact = _fusion_artifact()
+    measured = artifact["protocol"].get("measured_null")
+    if measured is None:
+        pytest.skip("the artifact carries no pooled measured_null")
+    per_seed_mean = measured["per_seed_mean"]
+    per_seed_std = measured["per_seed_std"]
+    assert measured["n_trials"] == sum(
+        artifact["per_seed"][k]["diagnostics"]["empirical_null"]["trials"]
+        for k in artifact["per_seed"]
+        if "empirical_null" in artifact["per_seed"][k]["diagnostics"]
+    )
+    assert min(per_seed_mean) <= measured["mean"] <= max(per_seed_mean), (
+        "the pooled null mean must lie between the per-seed means"
+    )
+    assert measured["mean"] not in per_seed_mean, (
+        "the pooled null mean is one seed's mean, not the pooled one"
+    )
+    assert measured["std"] >= min(per_seed_std), (
+        "the pooled null spread is smaller than every per-seed spread"
+    )
+
+
+def test_the_measured_null_is_recomputed_from_the_per_seed_summaries():
+    """The pooled figures must follow from the per-seed ones.
+
+    They are computed from the per-seed means and standard deviations
+    rather than from the raw permutations, so this recomputes them the
+    same way and checks the artifact agrees.
+    """
+    artifact = _fusion_artifact()
+    measured = artifact["protocol"].get("measured_null")
+    if measured is None:
+        pytest.skip("the artifact carries no pooled measured_null")
+    nulls = [
+        artifact["per_seed"][k]["diagnostics"]["empirical_null"]
+        for k in artifact["per_seed"]
+        if "empirical_null" in artifact["per_seed"][k]["diagnostics"]
+    ]
+    trials = [n["trials"] for n in nulls]
+    total = float(sum(trials))
+    pooled_mean = sum(n["mean"] * t for n, t in zip(nulls, trials)) / total
+    within = sum((t - 1) * (n["std"] ** 2) for n, t in zip(nulls, trials))
+    between = sum(
+        t * (n["mean"] - pooled_mean) ** 2 for n, t in zip(nulls, trials)
+    )
+    pooled_std = ((within + between) / (total - 1)) ** 0.5
+    assert round(pooled_mean, 4) == measured["mean"]
+    assert round(pooled_std, 4) == measured["std"]
+
+
+# --------------------------------------------------------------------------
 # The scripts
 # --------------------------------------------------------------------------
 def test_the_scripts_share_one_control_implementation():

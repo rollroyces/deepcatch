@@ -210,7 +210,7 @@ separately and reassigned 1s and 0s to those same sets, which
 reproduces `y_true` exactly — it was a no-op, and the "shuffled"
 numbers in the audit-2 table are the honest numbers. The corrected
 control permutes labels inside each fold; its null on this paired
-design is **0.42 ± 0.12, not 0.5** (measured over 50 permutations per
+design is **0.4063 ± 0.1143, not 0.5** (measured over 150 permutations
 seed), because every patient contributes one positive and one negative
 arm whose panel scores differ by ~+127 with the positive arm higher in
 100% of patients, so a model fitted to random labels still recovers

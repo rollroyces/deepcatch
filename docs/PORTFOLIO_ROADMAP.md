@@ -230,7 +230,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **862 tests**, 4 CI workflows green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **866 tests**, 4 CI workflows green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
 | 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
 | 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_channel_diagnosis.json` |

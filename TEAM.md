@@ -406,7 +406,7 @@ artifact no longer holds.
 | Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
 | Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
 | bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
-| 862 tests collected (`pytest src test -q`) | ✅ 676 core + 186 deep-learning, all green | `test/` + the per-module suites |
+| 866 tests collected (`pytest src test -q`) | ✅ 680 core + 186 deep-learning, all green | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |

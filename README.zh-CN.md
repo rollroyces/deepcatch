@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-862%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-866%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -95,7 +95,7 @@
 - **多模态片段组学**——DELFI（5Mb / 100kb 分箱比值）、MFS、核小体定位、FSD 直方图、THEMIS 4-mer 末端基序频次——融合成每样本约 70 维的特征向量。
 - **跨研究癌症检测**——在开放数据 cfDNA（FinaleDB 出版物 6 + 8，n=627 样本，覆盖 8 种癌症 + 健康）上做 5 种子 × 5 折的合并 OOF；`scripts/cross_study_finallydb.py` 带 `--gc-correction`（默认开启）和 `--include-motifs` 开关。
 - **在从未训练过的公开数据上做外部验证**——在 FinaleDB 出版物 6+8（n=627）上训练，在从公开 API + S3 抓取的出版物 1/7/9 上测试（无需 IRB）：出版物 7（WGS，n=31）上 **AUC 0.9444** [0.8731, 1.0]，出版物 1（WGS，n=52）上 0.708，在同时含两类样本的出版物上合并为 0.7385；全外显子组出版物只部分迁移（乳腺癌 0.6938，前列腺癌 0.7127）——这既是研究迁移，也是检测平台迁移。
-- **诚实的混杂对照**——真实混杂对照（癌症=研究 A，健康=研究 B）在按研究 z-score harmonization 下塌缩到约 0.50；置换标签零假设是 0.446，而在这一配对设计下它*实测*的零假设是 0.42 ± 0.12（不是 0.5），因此该对照要对着实测零假设读，而不是对着随机。
+- **诚实的混杂对照**——真实混杂对照（癌症=研究 A，健康=研究 B）在按研究 z-score harmonization 下塌缩到约 0.50；置换标签零假设是 0.446，而在这一配对设计下它*实测*的零假设是 0.4063 ± 0.1143（不是 0.5），因此该对照要对着实测零假设读，而不是对着随机。
 - **突变知情检测 panel**——TCGA 导出的 LUAD panel，含 CADD-PHRED 打分的 Top-K=20 选择；在合成 cfDNA 稀释（spike-in，不是临床血浆）上 0.1% ctDNA 时 AUC 0.92。
 - **肿瘤盲 + 突变融合**——片段组学 + 突变通道的朴素平均在 627 队列上达到 AUC 0.988（一个 what-if 配对——突变通道是校准到 AUC 0.92 的，并未配对）。
 - **在这个样本量下真正有效的晚期融合**——神经编码器在诚实的配对队列上只有 0.554，而 LR 基线是 0.910；正则化晚期融合在同样的折上达到 **0.9825 ± 0.0094**，贝叶斯模型平均达到 **0.9650 ± 0.0089**（`src/foundation/regularized_fusion.py`）。

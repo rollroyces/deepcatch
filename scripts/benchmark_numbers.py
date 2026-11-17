@@ -390,6 +390,28 @@ QUOTED_NUMBERS.append(
      # the correction of that stale number.
      ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
       "paper/METHODS_PAPER.md", "paper/REPRODUCE.md", "CITATION.cff"]))
+# The POOLED measured null on the paired cohort -- the number the
+# documents read the control against, because on this design the null
+# sits below 0.5 rather than at it.
+#
+# The documents used to say "0.42 +/- 0.12", which is the HIGHEST
+# seed's mean and std rounded to two decimals; the cohort's pooled null
+# is 0.4063 +/- 0.1143. The difference is under a rounding unit, so
+# nothing flagged it -- and at two decimals the number guard cannot
+# see it at all, because it requires at least three decimals to
+# identify a value. The artifact now carries the pooled figure at
+# `protocol.measured_null`, and these two pins hold the documents to
+# it at the precision they write it.
+QUOTED_NUMBERS.append(
+    ("fusion_regularized_smoke.json",
+     ("protocol", "measured_null", "mean"),
+     ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
+      "paper/METHODS_PAPER.md", "CHANGELOG.md"]))
+QUOTED_NUMBERS.append(
+    ("fusion_regularized_smoke.json",
+     ("protocol", "measured_null", "std"),
+     ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
+      "paper/METHODS_PAPER.md", "CHANGELOG.md"]))
 # The shuffled-label null. Six documents quote 0.4460 as "the signal is
 # not in the labels"; nothing pinned it.
 QUOTED_NUMBERS.append(

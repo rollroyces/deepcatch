@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-862%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-866%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -91,7 +91,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 - **Multi-modal fragmentomics** — DELFI (5Mb / 100kb bin ratios), MFS, nucleosome positioning, FSD histograms, THEMIS 4-mer end-motif frequencies — fused into a per-sample ~70-feature vector.
 - **Cross-study cancer detection** — pooled 5-seed × 5-fold OOF on open-data cfDNA (FinaleDB pubs 6 + 8, n=627 samples across 8 cancer types + healthy); `scripts/cross_study_finallydb.py` with `--gc-correction` (default) and `--include-motifs` flags.
 - **External validation on never-trained public data** — train on FinaleDB pubs 6+8 (n=627), test on pubs 1/7/9 fetched from the public API + S3 (no IRB): **AUC 0.9444** [0.8731, 1.0] on pub 7 (WGS, n=31), 0.708 on pub 1 (WGS, n=52), 0.7385 pooled over the publications carrying both classes; the whole-exome publication transfers only partly (breast 0.6938, prostate 0.7127) — an assay-platform shift on top of a study shift.
-- **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; the permuted-label null is 0.446 and its *measured* null on this paired design is 0.42 ± 0.12 (not 0.5), so the control is read against the measured null rather than against chance.
+- **Honest confound controls** — true-confound control (cancer=study A, healthy=study B) collapses to ~0.50 under per-study z-score harmonization; the permuted-label null is 0.446 and its *measured* null on this paired design is 0.4063 ± 0.1143 (not 0.5), so the control is read against the measured null rather than against chance.
 - **Mutation-informed detection panel** — TCGA-derived panel of 5,738 LUAD mutations with CADD-PHRED-scored Top-K=20 selection; AUC 0.92 at 0.1% ctDNA on synthetic cfDNA dilution (spike-in, not clinical plasma).
 - **Tumor-naive + mutation fusion** — naive average of fragmentomics + mutation channels reaches AUC 0.988 on the 627 cohort (a what-if pairing — the mutation channel is calibrated to AUC 0.92, not paired).
 - **Late fusion that works at this sample size** — the neural encoder scores 0.554 on the honest paired cohort against an LR baseline of 0.910; a regularized late fusion reaches **0.9825 ± 0.0094** and a Bayesian model average **0.9650 ± 0.0089** on the same folds (`src/foundation/regularized_fusion.py`).
@@ -361,7 +361,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_label_control.py` | 17 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **677 collected** | **623 passed + 23 skipped + 13 deselected** |
+| **Combined fast-path gate** | **681 collected** | **623 passed + 23 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks. Eleven of them live in `src/foundation/test_integration.py` and run in the deep-learning job of `validate.yml`, which does not deselect them. The other two — `test/test_cross_study_per_cancer_integration.py` and `test/test_load5_with_motifs.py` — need the companion repository's extracted feature cache, which CI does not have; they are deselected here and run only where that cache is present.
 
