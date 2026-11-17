@@ -2,7 +2,7 @@
 
 This document describes the cross-platform fusion methodology demo: combining
 a fragmentomics channel from this repo with a methylation channel from the
-sibling [`deepcatch-methylation`](https://github.com/deepcatch/deepcatch-methylation)
+sibling [`deepcatch-methylation`](https://github.com/rollroyces/deepcatch-methylation)
 repo.
 
 ## TL;DR

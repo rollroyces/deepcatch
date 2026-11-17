@@ -106,6 +106,52 @@ cohort size.
 
 ### Fixed
 
+- **The user guide documented a command line that does not exist.**
+  `docs/USER_GUIDE.md` told the reader to run `evaluate.py`,
+  `agent2-multimodal-fusion/evaluate.py`,
+  `agent3-longitudinal/run_final_fixed.py` and
+  `validation_framework_tests.py`, with flags, sample outputs and clinical
+  verdicts that no file in the repository backed; the README linked to
+  `docs/TUMOR_NAIVE.md`, which was never written; the wiki's install step
+  ran `pip install -r requirements.txt`, a file the repository does not
+  have. A reader who followed the guide got a usage error on the first
+  command, and nothing in CI could see it: the unit tests call functions,
+  not command lines, and the documentation guards check numbers, not
+  paths. Section 2 now describes the three interfaces the release
+  actually ships — the REST API (`uvicorn api.main:app`, `POST /predict`),
+  the cohort adapter (`scripts/adapter_local_cohort.py`) and the modules
+  under `src/` — and the sections around it were corrected against the
+  code: where a run writes its output, how the ctDNA levels and the
+  sequencing depth are configured, which error the cohort adapter
+  raises, and how the test suite is run.
+- **`RUN_ALL.sh` could replace the published artifacts and report success
+  after a failure.** The runner wrote straight into `results/`, so a
+  validation run overwrote the repository's published artifacts; its
+  dependency step installed a `requirements.txt` that does not exist; and
+  `set -e` swallowed the exit code of the cross-validation, so a failed
+  run still ended in "VALIDATION PIPELINE COMPLETE". It also passed
+  `--quick` to `real_tcga_validation.py`, which has no such flag, so the
+  TCGA step could never run, and it ran the Jiang step without the
+  `--input` that script requires, so that step could never run either.
+  The runner now writes to a scratch directory (`RUN_ALL_OUTPUT` overrides
+  it) and the repository's published artifacts are untouched; it installs
+  the package (`pip install -e .`); the cross-validation's exit code is
+  captured; the TCGA step receives a path it can write to and a reduced
+  scale it understands; the Jiang step runs against a copy the user
+  supplies (`JIANG_INPUT`) and says so plainly when there is none; and an
+  unknown flag is an error instead of a silent full run.
+- **A documented command can no longer name a file that is not there.**
+  `test/test_documented_commands_exist.py` checks every script path in the
+  user-facing documents against the tree: a path a reader is told to run
+  has to resolve exactly, and a name quoted in a comment only has to
+  exist somewhere. It is red-green verified — against the previous guide
+  it reports the twenty-four fictional paths it found there, against the
+  corrected guide it passes. Adding it moved the suite from 919 to 924
+  tests, so every
+  document that quotes the count was updated together (919 → 924, the CI
+  split 733 + 186 → 738 + 186, the fast-path gate 734 → 739) and the
+  submission PDF was rebuilt.
+
 - **Three documents cited artifacts that do not hold their figures.**
   A row-level audit — every table row that names an artifact, checked
   against that artifact's own numbers — found three groups of rows

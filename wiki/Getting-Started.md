@@ -8,12 +8,12 @@ This guide walks you through installing DeepCatch and running your first 4‑mer
 
 | Requirement | Minimum Version | Notes |
 |-------------|----------------|-------|
-| **Python** | 3.9+ | Recommended: 3.10 or 3.11 |
-| **pip** | 21.0+ | Comes with Python ≥ 3.9 |
+| **Python** | 3.10+ | Recommended: 3.11 |
+| **pip** | 21.0+ | Comes with Python ≥ 3.10 |
 | **Git** | 2.0+ | For cloning the repo |
 | **Disk space** | ~ 1 GB | For dependencies + sample data |
 
-Core Python dependencies (installed automatically via `requirements.txt`):
+Core Python dependencies (installed automatically by `pip install -e .`):
 
 ```text
 numpy >= 1.24.0
@@ -40,10 +40,10 @@ cd deepcatch
 ### Step 2: Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
-> **Note:** If `requirements.txt` is not present (e.g., early release), install the core packages manually:
+> **Note:** The dependencies are declared in `pyproject.toml`; to install only the core packages, name them directly:
 > ```bash
 > pip install numpy scipy pandas scikit-learn matplotlib seaborn
 > ```

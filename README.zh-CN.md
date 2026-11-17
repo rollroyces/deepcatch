@@ -293,7 +293,7 @@ proba = fusion.predict_proba(modalities)   # shape (N, 2)
 
 ### D. 肿瘤盲 + 突变知情融合
 
-跨仓库适配器见 [`docs/TUMOR_NAIVE.md`](docs/TUMOR_NAIVE.md)，`scripts/cross_study_finallydb.py --include-motifs` 同理。头条结果：片段组学 + 校准突变通道的朴素平均在 627 队列、10 种子上达到 AUC **0.9884 ± 0.0010**（配对 t 检验 p < 0.0001）。突变通道是校准出来的，并非配对——这是诚实的 what-if 实验。
+肿瘤盲 + 融合结果见 [`docs/FUSION_ISOTONIC.md`](docs/FUSION_ISOTONIC.md)，`scripts/cross_study_finallydb.py --include-motifs` 可复现跨研究基准。头条结果：片段组学 + 校准突变通道的朴素平均在 627 队列、10 种子上达到 AUC **0.9884 ± 0.0010**（配对 t 检验 p < 0.0001）。突变通道是校准出来的，并非配对——这是诚实的 what-if 实验。
 
 ### E. 复现全部内容
 
@@ -359,7 +359,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 | `src/variant_calling/` | 贝叶斯 + 对比深度学习（合成） | `docs/CADD_FLARE_VALIDATION.md` |
 | `src/preprocessing/` | CHIP filter | — |
 
-**突变知情通道**见 `docs/CADD_WEIGHTED_LLR.md`、`docs/CADD_PER_SUBGROUP_LLR.md`、`docs/CADD_GDC_VALIDATION.md`、`docs/CADD_ALPHAMISSENSE_COMBINED.md`、`docs/ALPHAMISSENSE_REAL_LLR.md`。**肿瘤盲 + 融合**见 `docs/TUMOR_NAIVE.md` 和 `docs/FUSION_ISOTONIC.md`。**架构提案**（甲基化 β 值 + Apple MPS）见 `docs/V3_DESIGN.md`。
+**突变知情通道**见 `docs/CADD_WEIGHTED_LLR.md`、`docs/CADD_PER_SUBGROUP_LLR.md`、`docs/CADD_GDC_VALIDATION.md`、`docs/CADD_ALPHAMISSENSE_COMBINED.md`、`docs/ALPHAMISSENSE_REAL_LLR.md`。**肿瘤盲 + 融合**见 `docs/FUSION_ISOTONIC.md` 和 `docs/CROSS_STUDY_BENCHMARK.md`。**架构提案**（甲基化 β 值 + Apple MPS）见 `docs/V3_DESIGN.md`。
 
 ---
 
@@ -480,7 +480,7 @@ deepcatch/
 - **[RESULTS.md](RESULTS.md)**——合并的研究摘要（DeepCatch + cfdna-fragmentomics-pipeline 姊妹仓库）
 - **[paper/paper.tex](paper/paper.tex)**——研究论文（预印本源文件；编译好的 PDF 是 [paper/biorxiv_submission_v2.3.0.pdf](paper/biorxiv_submission_v2.3.0.pdf)）
 - **[REVIEWERS.md](REVIEWERS.md)**——给专家评审者的评审说明
-- **[docs/](docs/)**——30+ 篇深入文档（CADD / TUMOR_NAIVE / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN 等）
+- **[docs/](docs/)**——30+ 篇深入文档（CADD / CROSS_PLATFORM_BENCHMARK / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN 等）
 - **[ULTRA_EARLY_READINESS.md](ULTRA_EARLY_READINESS.md)**——超早期癌症信号的单一来源就绪文档（每一个论断都绑定到一个 `results/*.json` artifact）
 - **[paper/REPRODUCE.sh](paper/REPRODUCE.sh)**——一条命令复现每一个 §3 artifact
 

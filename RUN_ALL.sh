@@ -5,22 +5,30 @@
 # Runs the complete validation pipeline with ONE command.
 #
 # Usage:
-#   bash RUN_ALL.sh              # Full run
-#   bash RUN_ALL.sh --quick      # Quick run with reduced data
-#   bash RUN_ALL.sh --skip-plots # Skip plot generation
+#   bash RUN_ALL.sh                 # Full run
+#   bash RUN_ALL.sh --quick         # Quick run with reduced data
+#   bash RUN_ALL.sh --with-plots    # Also render the comparison plots
+#   bash RUN_ALL.sh --python=PATH   # Use a specific interpreter
+#
+# Environment:
+#   RUN_ALL_OUTPUT=<dir>   Write the run's outputs to <dir> instead of a
+#                          scratch directory
+#   JIANG_INPUT=<file>     Run step 4 on your own copy of the Jiang 4-mer
+#                          dataset (not shipped with this repository)
 #
 # Requirements:
-#   - Python 3.9+ with numpy, scipy, scikit-learn
-#   - Optional: matplotlib, torch, torch-geometric (for GNN)
+#   - Python 3.10+ with numpy, scipy, scikit-learn
+#   - Optional: matplotlib (plots), torch + torch-geometric (GNN channel)
 #
-# Outputs:
-#   results/final_cross_validated_results.json
-#   results/tcga_validation_results.json
-#   results/benchmark_comparison.json
-#   results/benchmark_table.md
-#   results/roc_comparison.png
-#   results/sensitivity_vs_vaf.png
-#   results/ensemble_waterfall.png
+# Outputs -- written to the output directory, which is a scratch
+# directory by default so a run never replaces the repository's
+# published artifacts under results/; set RUN_ALL_OUTPUT to choose one:
+#   final_cross_validated_results.json   cross-validated AUCs
+#   roc_comparison.png                   (--with-plots)
+#   sensitivity_vs_vaf.png               (--with-plots)
+#   ensemble_waterfall.png               (--with-plots)
+#   real_tcga_validation.json            step 3, when the TCGA cache is present
+#   real_tcga_performance.png            step 3, with --with-plots
 #
 
 set -euo pipefail
@@ -45,7 +53,13 @@ for arg in "$@"; do
     case "$arg" in
         --quick) QUICK_FLAG="--quick" ;;
         --with-plots) SKIP_PLOTS="" ;;
+        --skip-plots) SKIP_PLOTS="--skip-plots" ;;   # plots are off by default
         --python=*) PYTHON_CMD="${arg#*=}" ;;
+        *)
+            echo -e "${RED}[ERROR] Unknown option: $arg${NC}"
+            echo "Usage: bash RUN_ALL.sh [--quick] [--with-plots] [--python=PATH]"
+            exit 2
+            ;;
     esac
 done
 
@@ -87,7 +101,7 @@ else
     echo -e "${RED}MISSING${NC}"
     echo ""
     echo "Required packages not found. Install them first:"
-    echo "  pip install -r requirements.txt"
+    echo "  pip install -e ."
     echo ""
     exit 1
 fi
@@ -119,15 +133,18 @@ else
     SKIP_PLOTS="--skip-plots"
 fi
 
-# Create directories
-mkdir -p results
+# Where this run writes. The artifacts under results/ are the
+# repository's published ones -- a validation run must not replace them,
+# so the output goes to a scratch directory unless the caller names one.
+OUTPUT_DIR="${RUN_ALL_OUTPUT:-$(mktemp -d -t deepcatch-run-all-XXXXXX)}"
+mkdir -p "$OUTPUT_DIR"
 mkdir -p validation/tcga/results
 
 echo ""
 echo -e "${BOLD}Pipeline Configuration:${NC}"
 echo "  Quick mode:    ${QUICK_FLAG:-OFF}"
 echo "  Plots:         $([ -z "$SKIP_PLOTS" ] && echo 'ENABLED' || echo 'DISABLED')"
-echo "  Output:        $(pwd)/results/"
+echo "  Output:        ${OUTPUT_DIR}"
 echo ""
 
 # ------------------------------------------------------------------
@@ -136,13 +153,9 @@ echo ""
 
 echo -e "${BLUE}${BOLD}[1/5] Installing dependencies...${NC}"
 
-if [ -f "requirements.txt" ]; then
-    $PYTHON -m pip install -r requirements.txt --quiet 2>/dev/null || {
-        echo -e "${YELLOW}[WARN] Some packages could not be installed. Continuing with available packages.${NC}"
-    }
-else
-    echo -e "${YELLOW}[WARN] requirements.txt not found. Skipping.${NC}"
-fi
+$PYTHON -m pip install -e . --quiet 2>/dev/null || {
+    echo -e "${YELLOW}[WARN] The package could not be installed (no network?). Continuing with the packages already present.${NC}"
+}
 
 echo ""
 
@@ -153,13 +166,12 @@ echo ""
 echo -e "${BLUE}${BOLD}[2/5] Running full cross-validation...${NC}"
 echo ""
 
+FULL_EXIT=0
 $PYTHON run_full_validation.py \
     $QUICK_FLAG \
     $SKIP_PLOTS \
-    --output results/ \
-    --seeds 5
-
-FULL_EXIT=$?
+    --output "${OUTPUT_DIR}" \
+    --seeds 5 || FULL_EXIT=$?
 if [ $FULL_EXIT -ne 0 ]; then
     echo -e "${RED}[ERROR] Full validation failed with exit code $FULL_EXIT${NC}"
     exit $FULL_EXIT
@@ -178,10 +190,16 @@ echo ""
 
 TCGA_SCRIPT="$(dirname $0)/real_tcga_validation.py"
 if [ -f "$TCGA_SCRIPT" ]; then
+    # real_tcga_validation.py has no --quick flag of its own; the reduced
+    # scale is expressed as a smaller cohort instead.
+    TCGA_QUICK_ARGS=""
+    if [ -n "$QUICK_FLAG" ]; then
+        TCGA_QUICK_ARGS="--n-patients 5"
+    fi
     $PYTHON real_tcga_validation.py \
-        $QUICK_FLAG \
-        --output results/ \
-        --seeds 5 || echo -e "${YELLOW}[WARN] TCGA validation non-fatal error${NC}"
+        $TCGA_QUICK_ARGS \
+        --output "${OUTPUT_DIR}/real_tcga_validation.json" \
+        --seeds 5 || echo -e "${YELLOW}[WARN} TCGA validation non-fatal error${NC}"
 else
     echo -e "${YELLOW}[WARN] real_tcga_validation.py not found — skipping${NC}"
 fi
@@ -198,10 +216,17 @@ echo -e "${BLUE}${BOLD}[4/5] Running Jiang 4-mer analysis...${NC}"
 echo ""
 
 JIANG_SCRIPT="$(dirname $0)/run_jiang_analysis.py"
-if [ -f "$JIANG_SCRIPT" ]; then
+if [ -n "${JIANG_INPUT:-}" ] && [ -f "$JIANG_INPUT" ]; then
+    # The Jiang 4-mer dataset is not part of this repository (it was
+    # requested from the source lab -- see data/JIANG_DATA_REQUEST.md),
+    # so this step only runs against a copy the user provides.
     $PYTHON run_jiang_analysis.py \
-        $QUICK_FLAG \
-        --output results/ || echo -e "${YELLOW}[WARN] Jiang analysis non-fatal error${NC}"
+        --input "$JIANG_INPUT" \
+        ${JIANG_ARGS:-} \
+        --output "${OUTPUT_DIR}/jiang_reanalysis/" || echo -e "${YELLOW}[WARN] Jiang analysis non-fatal error${NC}"
+elif [ -f "$JIANG_SCRIPT" ]; then
+    echo -e "${YELLOW}[SKIP] No Jiang 4-mer dataset in this repository (see data/JIANG_DATA_REQUEST.md).${NC}"
+    echo -e "${YELLOW}       Set JIANG_INPUT=<path> to run this step on your own copy.${NC}"
 else
     echo -e "${YELLOW}[WARN] run_jiang_analysis.py not found — skipping${NC}"
 fi
@@ -246,11 +271,11 @@ echo -e "${BLUE}${BOLD}========================================${NC}"
 echo ""
 
 # Print summary of results if available
-if [ -f "results/final_cross_validated_results.json" ]; then
+if [ -f "${OUTPUT_DIR}/final_cross_validated_results.json" ]; then
     echo -e "${BOLD}Cross-Validated Results:${NC}"
     $PYTHON -c "
 import json
-with open('results/final_cross_validated_results.json') as f:
+with open('${OUTPUT_DIR}/final_cross_validated_results.json') as f:
     data = json.load(f)
 for exp_name, exp_data in data.get('experiments', {}).items():
     agg = exp_data.get('aggregated', {})
@@ -260,22 +285,23 @@ for exp_name, exp_data in data.get('experiments', {}).items():
     echo ""
 fi
 
-if [ -f "results/tcga_validation_results.json" ]; then
+if [ -f "${OUTPUT_DIR}/real_tcga_validation.json" ]; then
     echo -e "${BOLD}TCGA Validation:${NC}"
     $PYTHON -c "
 import json
-with open('results/tcga_validation_results.json') as f:
+with open('${OUTPUT_DIR}/real_tcga_validation.json') as f:
     data = json.load(f)
-for model in ['variant_caller', 'multimodal_fusion']:
-    if model in data:
-        s = data[model].get('summary', {})
-        print(f\"  {model}: AUC={s.get('auc',{}).get('mean',0):.4f} ± {s.get('auc',{}).get('std',0):.4f}\")
+for model in ['variant_caller', 'ml_classifier']:
+    entries = data.get('results', {}).get(model) or []
+    auc = next((e for e in entries if e.get('metric') == 'auc'), None)
+    if auc:
+        print(f\"  {model}: AUC={auc['mean']:.4f} ± {auc['std']:.4f}\")
 " 2>/dev/null || true
     echo ""
 fi
 
 echo -e "${BOLD}Generated Files:${NC}"
-for f in results/*.json results/*.md results/*.png; do
+for f in "${OUTPUT_DIR}"/*.json "${OUTPUT_DIR}"/*.md "${OUTPUT_DIR}"/*.png; do
     if [ -f "$f" ]; then
         size=$(du -h "$f" | cut -f1)
         echo -e "  ${GREEN}✓${NC} $f ($size)"
@@ -284,8 +310,8 @@ done
 
 echo ""
 echo -e "${BOLD}Quick Commands:${NC}"
-echo "  View results:    cat results/final_cross_validated_results.json | python -m json.tool"
-echo "  View benchmark:  cat results/benchmark_table.md"
+echo "  Output directory: ${OUTPUT_DIR}"
+echo "  View results:    cat ${OUTPUT_DIR}/final_cross_validated_results.json | python -m json.tool"
 echo "  Rerun with plots: bash RUN_ALL.sh --with-plots"
 echo "  Quick run:       bash RUN_ALL.sh --quick"
 echo ""
