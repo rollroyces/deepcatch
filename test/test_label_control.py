@@ -338,3 +338,94 @@ def test_the_no_op_shuffle_construction_is_gone():
         "the no-op pair-broken shuffle is back in "
         "scripts/foundation_real_smoke.py"
     )
+
+
+# --------------------------------------------------------------------------
+# Derived figures that no artifact stores
+# --------------------------------------------------------------------------
+def test_the_n5_paired_deltas_are_recomputable_from_the_n5_arrays():
+    """The n=5 paired deltas must follow from the n=5 per-run arrays.
+
+    These two figures are DERIVED, not stored: the n=5 ablation
+    artifact was overwritten by the n=20 run, so no committed artifact
+    holds them any more. The document says which arrays they come from,
+    so the check is that the derivation still produces what the
+    document claims -- and that the document says so.
+
+    The failure this guards against is the one it already had once: the
+    claim table cited ``results/sens_at_spec_ablation.json`` for
+    figures that artifact no longer held.
+    """
+    import numpy as np
+    from scipy import stats
+
+    ce_path = _ROOT / "results" / "sens_at_spec_ce.json"
+    sens_path = _ROOT / "results" / "sens_at_spec_sens.json"
+    if not (ce_path.exists() and sens_path.exists()):
+        pytest.skip("the n=5 artifacts are not present")
+    ce = json.loads(ce_path.read_text())
+    sens = json.loads(sens_path.read_text())
+
+    doc = (_ROOT / "docs" / "SENS_AT_SPEC_ABLATION.md").read_text()
+    assert "sens_at_spec_ablation.json:foundation_auc_paired_t" not in doc, (
+        "the n=5 claim table cites the ablation artifact for the n=5 "
+        "paired delta, but that artifact was overwritten by the n=20 run "
+        "and no longer holds the figure"
+    )
+
+    # The two per-run rows quote a mean and a standard deviation. The
+    # mean is a stored field; the standard deviation is NOT -- the n=5
+    # artifacts carry the population spread (ddof=0) while the document
+    # quotes the sample spread (ddof=1) of the same per-seed array.
+    # Both must follow from the array the row names.
+    def quoted(value, decimals):
+        """Whether the document quotes ``value`` at that precision.
+
+        The documents write a negative number with the typographic
+        minus (U+2212), not ASCII '-', so both spellings are accepted.
+        """
+        for written in (f"{value:.{decimals}f}",
+                        f"{value:.{decimals}f}".replace("-", "−")):
+            if written in doc:
+                return True
+        return False
+
+    for artifact, mean_key in (("sens_at_spec_ce.json", "foundation_auc_mean"),
+                               ("sens_at_spec_sens.json", "foundation_auc_mean")):
+        data = json.loads((_ROOT / "results" / artifact).read_text())
+        assert quoted(float(data[mean_key]), 4), (
+            f"the document does not quote {artifact}'s {mean_key} "
+            f"({float(data[mean_key]):.4f})"
+        )
+        spread = float(np.asarray(data["foundation_aucs"],
+                                  dtype=np.float64).std(ddof=1))
+        assert quoted(spread, 4), (
+            f"the document does not quote {artifact}'s ddof=1 spread "
+            f"({spread:.4f})"
+        )
+
+    def paired_delta(ce_key, sens_key):
+        a = np.asarray(ce[ce_key], dtype=np.float64)
+        b = np.asarray(sens[sens_key], dtype=np.float64)
+        d = b - a
+        n = len(d)
+        se = d.std(ddof=1) / np.sqrt(n)
+        crit = stats.t.ppf(0.975, n - 1)
+        return d.mean(), d.mean() - crit * se, d.mean() + crit * se
+
+    mean, lo, hi = paired_delta("foundation_aucs", "foundation_aucs")
+    assert quoted(mean, 4), (
+        f"the document does not quote the recomputed n=5 AUC delta "
+        f"({mean:+.4f})"
+    )
+    assert quoted(lo, 4), f"the document does not quote the CI bound {lo:+.4f}"
+    assert quoted(hi, 4), f"the document does not quote the CI bound {hi:+.4f}"
+
+    mean99, lo99, hi99 = paired_delta(
+        "foundation_sens_at_99", "foundation_sens_at_99")
+    assert quoted(mean99, 3), (
+        f"the document does not quote the recomputed n=5 sens@99 delta "
+        f"({mean99:+.3f})"
+    )
+    assert quoted(lo99, 3), f"the document does not quote the CI bound {lo99:+.3f}"
+    assert quoted(hi99, 3), f"the document does not quote the CI bound {hi99:+.3f}"

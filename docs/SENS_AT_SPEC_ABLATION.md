@@ -308,10 +308,10 @@ comparison would be invalid.
 
 | # | Claim | Source | Status |
 |---|---|---|---|
-| 1 | `loss="ce"` produces foundation AUC 0.9410 ± 0.0252 over 5 seeds | `results/sens_at_spec_ce.json:foundation_auc_mean` and `foundation_auc_std` | ✅ verified (also matches the `foundation_aucs` array, 5 elements) |
-| 2 | `loss="sens_at_spec"` with `alpha_pos=20` produces foundation AUC 0.9485 ± 0.0245 | `results/sens_at_spec_sens.json:foundation_auc_mean` and `foundation_auc_std` | ✅ verified |
-| 3 | Paired Δ AUC = +0.0075, 95% CI [−0.0064, +0.0214] | `results/sens_at_spec_ablation.json:foundation_auc_paired_t` | ✅ verified (recomputable from `foundation_aucs_ce` and `foundation_aucs_sens_at_spec`) |
-| 4 | Paired Δ Sens@99% = +0.110, 95% CI [−0.093, +0.313] | `results/sens_at_spec_ablation.json:foundation_sens_at_99_paired_t` | ✅ verified |
+| 1 | `loss="ce"` produces foundation AUC 0.9410 ± 0.0252 over 5 seeds | `results/sens_at_spec_ce.json:foundation_auc_mean` and `foundation_aucs` (the ±0.0252 is the ddof=1 spread of that 5-element array) | ✅ verified (recomputable from `foundation_aucs`) |
+| 2 | `loss="sens_at_spec"` with `alpha_pos=20` produces foundation AUC 0.9485 ± 0.0245 | `results/sens_at_spec_sens.json:foundation_auc_mean` and `foundation_aucs` (the ±0.0245 is the ddof=1 spread of that 5-element array) | ✅ verified (recomputable from `foundation_aucs`) |
+| 3 | Paired Δ AUC = +0.0075, 95% CI [−0.0064, +0.0214] | recomputed from `results/sens_at_spec_ce.json:foundation_aucs` and `results/sens_at_spec_sens.json:foundation_aucs` (the n=5 pair). `results/sens_at_spec_ablation.json` no longer holds this figure: it was overwritten by the n=20 run, whose paired Δ is −0.0005, CI [−0.0015, +0.0005] | ✅ verified (recomputable from the two n=5 arrays) |
+| 4 | Paired Δ Sens@99% = +0.110, 95% CI [−0.093, +0.313] | recomputed from `results/sens_at_spec_ce.json:foundation_sens_at_99` and `results/sens_at_spec_sens.json:foundation_sens_at_99` (the n=5 pair). `results/sens_at_spec_ablation.json` no longer holds this figure: it was overwritten by the n=20 run, whose paired Δ is −0.0075, CI [−0.0232, +0.0082] | ✅ verified (recomputable from the two n=5 arrays) |
 | 5 | Both runs use the same seeds, data, and CV folds | `lr_baseline_aucs` bit-identical across the two JSONs | ✅ verified (`lr_baseline_aucs_match: true`) |
 | 6 | Smoke gate is now ADVISORY ONLY (no longer affects exit code) | `scripts/foundation_real_smoke.py` module docstring + `honest_framing` string | ✅ verified — `gate_pass` is computed and reported in JSON, but the script always returns 0 after writing the JSON |
 | 7 | Foundation score is 0.7 × frozen-encoder + LR-head + 0.3 × trainable transformer | `scripts/foundation_real_smoke.py:535` | ✅ source code cited |

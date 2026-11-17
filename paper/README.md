@@ -30,7 +30,7 @@ Everything below is backed by a committed artifact under `results/`:
 | Held-out external cohorts (never trained on) | 0.9444 [0.8731–1.0000] (pub 7), 0.708 (pub 1), pooled 0.7385 | `results/external_validation_finaledb.json` |
 | Leave-one-study-out transfer | 0.6805 / 0.9361 | `results/cross_study_loso.json` |
 | Late fusion vs the neural encoder | 0.9825 ± 0.0094 vs 0.554 | `results/fusion_regularized_smoke.json` |
-| Methylation channel | **null** (0.9444 = the coverage baseline) | `results/methylation_channel_diagnosis.json` |
+| Methylation channel | **null** (0.9444 = the coverage baseline) | `results/methylation_cohort_channel.json` |
 
 ## How to compile
 

@@ -106,6 +106,49 @@ cohort size.
 
 ### Fixed
 
+- **Three documents cited artifacts that do not hold their figures.**
+  A row-level audit — every table row that names an artifact, checked
+  against that artifact's own numbers — found three groups of rows
+  naming the wrong source. (1) The Fragmentomics row of the
+  cross-platform table quoted the HCC_J OvR AUC as **0.7532**; that is
+  the value `results/per_cancer_sens_at_spec.json` held on 2026-09-23.
+  The artifact was regenerated on 2026-11-16 and the row's own source
+  now reads **0.7221** (CI 0.653–0.792). Nothing caught it because
+  that row was not in the number guard. (2) The n=5 claim table of the
+  sens-at-spec ablation document cited
+  `results/sens_at_spec_ablation.json` for its paired deltas, but that
+  file was overwritten by the n=20 run — its `n_seeds` is 20 and its
+  paired Δ is now −0.0005, CI [−0.0015, +0.0005], not the n=5
+  +0.0075 the table quotes. The n=5 figures are real, but they are
+  derived from the two n=5 per-run arrays, so the table now names
+  those arrays and says which run they are. (3) Four documents (the
+  bioRxiv checklist, the methods paper's limitation table,
+  `paper/README.md` and the portfolio roadmap) cited
+  `results/methylation_channel_diagnosis.json` for the methylation
+  null's figures — 0.9444, 103,863 CpGs, p=1.0, median difference 0.0
+  — but that artifact does not hold them; they are in
+  `results/methylation_cohort_channel.json`. The diagnosis artifact
+  holds the MECHANISM (the depth figures, the coverage baselines, the
+  decoder degeneracy), so each citation now names the artifact that
+  actually holds what it is cited for.
+  All three are guarded now: the cross-platform row by a pin that
+  requires the current figure and **forbids** the superseded 0.688 CI
+  bound; the methylation figures by pins that name the documents that
+  quote them; and the n=5 derived figures by a recomputation test
+  instead of a pin, because they are derived, no artifact stores them,
+  and the n=5 per-run artifacts are the historical leaky-CV record —
+  the leaky `StratifiedKFold` they were produced with is gone from the
+  code, so the driver cannot regenerate them and must not be asked to.
+- **The number guard could not see a count written with a thousands
+  separator.** Its parser matched only DECIMAL numbers, so a figure the
+  documents write as "103,863" was invisible to it: it could drift
+  freely while the guard stayed green — the same blind spot as a figure
+  re-rendered at a coarser precision, a rendering the guard cannot
+  parse. The parser now matches a separated integer and matches it
+  **exactly** (a count like that is written exactly, so an off-by-one
+  must not pass). A plain unseparated integer stays invisible: the
+  convention is three decimals or an exact separated count, nothing
+  looser.
 - **The pooled null the documents quote was the wrong seed's, at a
   precision the guard could not see.** Six documents stated the
   paired-cohort null as "0.42 ± 0.12". Those are the HIGHEST seed's

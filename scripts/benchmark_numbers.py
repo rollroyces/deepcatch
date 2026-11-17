@@ -102,8 +102,25 @@ QUOTED_NUMBERS = [
     ("methylation_cohort_channel.json",
      ("beta_summary_auc_loo",),
      ["paper/paper.tex", "paper.md", "README.md", "MODEL.md",
-      "ULTRA_EARLY_READINESS.md", "docs/METHYLATION_PIPELINE.md"]),
+      "ULTRA_EARLY_READINESS.md", "docs/METHYLATION_PIPELINE.md",
+      # These four documents quote the same 0.9444 but named
+      # ``methylation_channel_diagnosis.json`` as their source -- and
+      # that artifact does NOT hold the figure; it holds the MECHANISM
+      # (the depth figures, the coverage baselines, the decoder
+      # degeneracy). Naming the documents here is what makes the
+      # misattribution fail the guard.
+      "paper/METHODS_PAPER.md", "paper/README.md",
+      "docs/PORTFOLIO_ROADMAP.md", "docs/METHYLATION_PIPELINE.md"]),
 ]
+# The matched-locus test the same null rests on: 103,863 loci, a median
+# cancer-minus-control difference of exactly 0.0, and a permutation
+# p-value of 1.0. These live in the COHORT artifact, not the diagnosis
+# one.
+QUOTED_NUMBERS.append(
+    ("methylation_cohort_channel.json",
+     ("common_cpg_set", "per_cpg_test", "n_cpgs_tested"),
+     ["paper/METHODS_PAPER.md", "paper/paper.tex", "README.md",
+      "docs/METHYLATION_PIPELINE.md"]))
 
 # The top-5 per-cancer rows of the §3.3 table. Generated rather than
 # written out, so a new cancer type joins the guard automatically.
@@ -789,6 +806,41 @@ TABLE_ROWS = [
                        ("pooled", "sens_at_99"))],
         "forbidden": [],
     },
+    # The Fragmentomics row of the cross-platform table quoted the HCC_J
+    # OvR AUC as 0.7532 -- the value the per-cancer artifact held on
+    # 2026-09-23. The artifact was regenerated on 2026-11-16 and the
+    # row's own source (`per_cancer_sens_at_spec.json`, HCC_J) now reads
+    # 0.7221. Nothing caught it because that row was not guarded: the
+    # document carried a figure from a run the artifact no longer
+    # described. The pin holds the row to the artifact it names, and
+    # FORBIDS the superseded value so the old figure cannot come back.
+    {
+        "doc": "docs/CROSS_PLATFORM_BENCHMARK.md",
+        "anchor": "| Fragmentomics |",
+        "required": [("per_cancer_sens_at_spec.json",
+                       ("per_cancer", "HCC_J", "auc_mean"))],
+        # The superseded CI bound from the 2026-09-23 run. It is not in
+        # the artifact any more, so it is quoted as a literal -- a
+        # forbidden value is compared as a NUMBER, and 0.688 was the
+        # old auc_ci[0]. If the row ever quotes it again, the row has
+        # gone back to a run the artifact does not describe.
+        "forbidden": [("per_cancer_sens_at_spec.json", ("__literal__", 0.688))],
+        "source": "results/per_cancer_sens_at_spec.json",
+    },
+    # The n=5 pair's paired deltas (rows 3 and 4) are DERIVED from the
+    # two n=5 per-run arrays -- the n=5 ablation artifact was
+    # overwritten by the n=20 run, so no artifact stores them. They
+    # are therefore guarded by a recomputation test rather than by a
+    # row pin: `test/test_label_control.py` recomputes both deltas
+    # from the arrays and requires the document to quote them.
+    #
+    # The n=5 per-run artifacts themselves are the historical
+    # leaky-CV record: the leaky StratifiedKFold they were produced
+    # with is gone from the code, so the driver cannot regenerate
+    # them and must not be asked to. Pinning them here would put the
+    # reproduction driver in the impossible position of having to
+    # re-create a superseded protocol, which is why the n=5 rows are
+    # guarded by recomputation instead.
     # The decision-curve table in RESULTS.md §4. Its rows mix two
     # artifacts on purpose -- the decision-curve CLI does not compute
     # the lr_fusion strategy, so that column comes from the fusion
@@ -872,6 +924,13 @@ def load(name: str, results_dir: str | None = None):
 
 # Every decimal number in a text, with the precision it was written at.
 _NUMBER_RE = re.compile(r"(?<![\d.])[-−]?\d+\.\d+(?![\d])")
+# An integer written with a thousands separator, e.g. "103,863". A
+# count like this is written EXACTLY -- there is no rounding to allow
+# for -- so it is matched exactly rather than at a decimal precision.
+# Without this, a figure the documents quote in that form is invisible
+# to the guard: the decimal-only pattern skips it, so it could drift
+# freely while the guard stayed green.
+_THOUSANDS_RE = re.compile(r"(?<![\d.,])[-−]?\d{1,3}(?:,\d{3})+(?![\d,.])")
 
 
 def numbers_in(text: str):
@@ -891,11 +950,18 @@ def numbers_in(text: str):
     figure parsed as its positive magnitude would never match the
     artifact it came from, and the row pin would fail on a document
     that quotes it correctly.
+
+    A thousands-separated integer yields ``decimals = 0`` and is
+    matched EXACTLY by the caller: "103,863" names one value, so a
+    tolerance of half a unit would let "103,864" pass.
     """
     for match in _NUMBER_RE.finditer(text):
         raw = match.group(0)
         decimals = len(raw.split(".")[1])
         yield (float(raw.replace("−", "-")), decimals)
+    for match in _THOUSANDS_RE.finditer(text):
+        raw = match.group(0)
+        yield (float(raw.replace(",", "").replace("−", "-")), 0)
 
 
 def quotes(text: str, value: float, tol: float = 1e-9) -> bool:
@@ -912,8 +978,16 @@ def quotes(text: str, value: float, tol: float = 1e-9) -> bool:
     coarse to identify a value: "0.50" cannot tell 0.4958 from 0.5033,
     so accepting it would make both the presence check and the
     forbidden-value check unreliable.
+
+    A thousands-separated integer is the exception: it is written
+    EXACTLY, so it is matched exactly rather than at a decimal
+    precision.
     """
     for written, decimals in numbers_in(text):
+        if decimals == 0:
+            if abs(written - value) <= tol:
+                return True
+            continue
         if decimals < 3:
             continue
         if abs(written - value) <= 0.5 * (10.0 ** -decimals) + tol:
@@ -928,6 +1002,11 @@ def line(label, value, source):
 def dig(artifact, path):
     node = artifact
     for key in path:
+        if key == "__literal__":
+            # A literal value, not a key to walk. Used for a FORBIDDEN
+            # number that is no longer in the artifact -- the superseded
+            # figure a row must not quote again.
+            continue
         node = node[key]
     return node
 
@@ -940,7 +1019,14 @@ def dig_number(artifact, path):
     walk cannot do. ``("per_strategy", "<strategy>", "threshold@<spec>")``
     reaches into the decision-curve artifact's list-of-operating-points
     shape the same way.
+
+    A path of ``("__literal__", <number>)`` returns the number itself.
+    That is how a forbidden value is expressed when it is NOT in the
+    artifact any more -- the superseded figure a row must not quote
+    again.
     """
+    if len(path) == 2 and path[0] == "__literal__":
+        return float(path[1])
     if (len(path) == 3 and path[0] == "per_strategy"):
         if path[2] == "auc_mean":
             return fusion_strategy_metric(artifact, path[1], "auc")

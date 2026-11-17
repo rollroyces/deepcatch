@@ -132,6 +132,34 @@ def test_methylation_null_is_quoted_with_its_permutation_p_value():
         "the matched-locus CpG count that the null rests on is missing")
 
 
+def test_the_guard_can_see_a_thousands_separated_integer():
+    """A count written "103,863" must be visible to the number guard.
+
+    The guard's parser matched only DECIMAL numbers, so a figure the
+    documents quote with a thousands separator was invisible to it: it
+    could drift freely while the guard stayed green. That is the same
+    blind spot as a figure re-rendered at a coarser precision -- a
+    rendering the guard cannot parse.
+
+    A count like this is written EXACTLY, so it is matched exactly:
+    an off-by-one must not pass.
+    """
+    assert _numbers.quotes("over 103,863 loci", 103863.0), (
+        "the guard cannot see a thousands-separated integer")
+    assert not _numbers.quotes("over 103,863 loci", 103864.0), (
+        "a thousands-separated integer was matched with a tolerance")
+    assert not _numbers.quotes("over 103,863 loci", 103.0), (
+        "the comma-separated count was parsed as its leading part")
+    assert not _numbers.quotes("over 103,863 loci", 863.0), (
+        "the comma-separated count was parsed as its trailing part")
+    # A plain integer without a separator is NOT a benchmark rendering:
+    # the guard's convention is three decimals or an exact separated
+    # count, nothing looser. "n = 103863" must not be read as a
+    # figure that pins a value.
+    assert not _numbers.quotes("n = 103863", 103863.0), (
+        "an unseparated integer was treated as an exact benchmark figure")
+
+
 def test_paired_fusion_delta_matches_the_artifact():
     """The preprint quotes a paired delta; it must be the artifact's."""
     artifact = _numbers.load("fusion_ablation_isotonic.json")

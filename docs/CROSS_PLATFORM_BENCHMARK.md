@@ -9,7 +9,7 @@ repo.
 
 | Channel | Source | Cohort | Published AUC | n |
 |---------|--------|--------|---------------|---|
-| Fragmentomics | this repo, `results/per_cancer_sens_at_spec.json` HCC_J OvR row | Jiang 2015 cfDNA WGS (HCC plasma) | **0.7532** (Delong CI 0.688–0.819) | 89 cancer + 264 healthy |
+| Fragmentomics | this repo, `results/per_cancer_sens_at_spec.json` HCC_J OvR row | Jiang 2015 cfDNA WGS (HCC plasma) | **0.7221** (Delong CI 0.653–0.792) | 89 cancer + 264 healthy |
 | Methylation | sibling repo, `results/multi_cancer_baseline.json` TCGA-LIHC row | GDC TCGA-LIHC tissue HM450 β-values | **0.9722 ± 0.0088** (5-seed × 5-fold CV) | 12 tumor + 6 normal (n=18) |
 
 **The two channels are from disjoint cohorts. This is a methodology demo, not
