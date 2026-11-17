@@ -35,20 +35,28 @@ jobs:
           else
             echo "bioinfo.cls not found — using article class"
           fi
-          # Compile whichever paper sources exist (main + benchmark papers)
-          if [ -f deepcatch_final.tex ]; then
-            echo "── deepcatch_final.tex ──"
-            pdflatex -interaction=nonstopmode deepcatch_final.tex
-            bibtex deepcatch_final || true
-            pdflatex -interaction=nonstopmode deepcatch_final.tex
-            pdflatex -interaction=nonstopmode deepcatch_final.tex
-            ls -lh deepcatch_final.pdf
-          fi
+          # The submission manuscript is compiled FIRST, because it is the
+          # one that must build. The deprecated v1.0 draft used to be
+          # compiled first, and a LaTeX error in it failed the job before
+          # it ever reached paper.tex -- so a broken draft took the
+          # submission PDF down with it.
           if [ -f paper.tex ]; then
             echo "── paper.tex (v2.2 benchmark) ──"
             pdflatex -interaction=nonstopmode paper.tex
             pdflatex -interaction=nonstopmode paper.tex
             ls -lh paper.pdf
+          fi
+          # The deprecated draft is kept for the record, not for
+          # submission, so a LaTeX error in it is reported and the job
+          # still finishes with the submission PDF.
+          if [ -f deepcatch_final.tex ]; then
+            echo "── deepcatch_final.tex (deprecated v1.0 draft) ──"
+            pdflatex -interaction=nonstopmode deepcatch_final.tex \
+              || echo "::warning::the deprecated draft did not compile; the submission PDF is unaffected"
+            bibtex deepcatch_final || true
+            pdflatex -interaction=nonstopmode deepcatch_final.tex || true
+            pdflatex -interaction=nonstopmode deepcatch_final.tex || true
+            ls -lh deepcatch_final.pdf || true
           fi
 
       - name: Upload PDF

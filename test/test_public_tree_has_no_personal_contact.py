@@ -122,10 +122,24 @@ def test_no_personal_mailbox_address_is_in_the_tracked_tree():
 
 
 def test_the_detector_sees_a_personal_address():
-    """The detector must actually see one, or the test above is vacuous."""
-    assert _personal_domains("write to someone@example.org") == []
-    assert _personal_domains("write to someone@gmail.com") == ["gmail.com"]
-    assert _personal_domains("a@gmail.com b@yahoo.com") == [
+    """The detector must actually see one, or the test above is vacuous.
+
+    The fixtures are assembled at run time rather than written out, so
+    that this file does not itself contain an address literal. It is
+    scanned like every other tracked file -- the one file the guard
+    must not exempt -- and a written-out fixture would make the guard
+    fail on its own test data. That is not a cosmetic problem: it
+    happened on the first CI run, and it is also the proof that the
+    guard reaches its own file.
+    """
+    def address(local: str, domain: str) -> str:
+        return f"{local}@{domain}"
+
+    assert _personal_domains(f"write to {address('someone', 'example.org')}") == []
+    assert _personal_domains(
+        f"write to {address('someone', 'gmail.com')}") == ["gmail.com"]
+    assert _personal_domains(
+        f"{address('a', 'gmail.com')} {address('b', 'yahoo.com')}") == [
         "gmail.com", "yahoo.com"]
 
 
