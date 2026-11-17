@@ -39,13 +39,14 @@ The driver does three things, in this order:
 | 8 | `scripts/fusion_regularized_smoke.py` | `results/fusion_regularized_smoke.json` | §2.2 the regularized late fusion / Bayesian model average that replaced the neural encoder |
 | 9 | `src/fragmentomics/decision_curve_cli.py` | `results/decision_curve.json` | `RESULTS.md` §4 decision-curve operating points |
 | 10 | `scripts/methylation_cohort_channel.py` | `results/methylation_cohort_channel.json` | §3.2.4 the methylation channel (reported as a **null**) |
-| 11 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
-| 12 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
+| 11 | `real_tcga_validation.py` | `results/real_tcga_validation.json` | the panel-LLR AUC (0.921) — the abstract's first figure — **skipped without the GDC masked-MAF cache** |
+| 12 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
+| 13 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
 
-Between 12 and the gate sit the two **acceptance floors** (see below) and the
+Between 13 and the gate sit the two **acceptance floors** (see below) and the
 **reproduction check**.
 
-> **Two steps need inputs that are not in the repository.**
+> **Three steps need inputs that are not in the repository.**
 > Step 3 (the with-motifs sweep) needs the cached 4-mer end-motif features
 > (`<sample>.motifs.npy`), which live in the author's local feature
 > directory and are tracked in neither repository: without them the motif
@@ -54,7 +55,9 @@ Between 12 and the gate sit the two **acceptance floors** (see below) and the
 > then reports that artifact as NOT regenerated and ends with "the
 > reproduction is incomplete" — the correct verdict, not a silent pass.
 > Step 10 (the methylation channel) needs java, the FinaleMe 0.58 jar and
-> the cached per-sample CpG matrices, and is skipped the same way.
+> the cached per-sample CpG matrices, and is skipped the same way. Step 11
+> (the panel-LLR validation) needs the GDC masked-MAF cache in
+> `validation/tcga/tcga_cache/`.
 
 > **Why two cross-study runs?** `--gc-correction` defaults to ON, so a driver
 > that passes no flag writes the GC-corrected run into the legacy path. That

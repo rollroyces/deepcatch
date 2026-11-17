@@ -46,9 +46,9 @@ Scope that would be useful, in order of what unblocks the most:
 3. **Stage I vs late-stage labels** — the stage breakdown is implemented and waiting for data.
 4. **Matched tumour tissue** — enables tumour-specific fragmentomics instead of tumour-agnostic ones.
 
-Everything is MIT-licensed and every number in the repository traces to a committed JSON artifact, so a collaborator can audit the analysis end to end before deciding anything. See [`TEAM.md`](TEAM.md) §2 for the contribution model and [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md) for the validation plan.
+Everything is MIT-licensed and every number in the repository traces to a committed JSON artifact, so a collaborator can audit the analysis end to end before deciding anything. See [`TEAM.md`](TEAM.md) §2 for the contribution model, [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to set the project up, run the tests and bring a cohort in, and [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md) for the validation plan.
 
-**How to reach us**: open a *External cohort validation (collaboration)* issue — the template asks for cohort metadata only, so no patient data ever has to leave your institution. Questions about the analysis itself are better in [Discussions](https://github.com/rollroyces/deepcatch/discussions).
+**How to reach us**: open a *External cohort validation (collaboration)* issue — the template asks for cohort metadata only, so no patient data ever has to leave your institution. Questions about the analysis itself are better in [Discussions](https://github.com/rollroyces/deepcatch/discussions). Code contributions are governed by [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
 
 ---
 

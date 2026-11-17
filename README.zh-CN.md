@@ -50,9 +50,9 @@
 3. **Stage I 与晚期标签**——分期拆解已经实现，只等数据。
 4. **配对肿瘤组织**——可用肿瘤特异的片段组学，而不是与肿瘤无关的片段组学。
 
-全部内容采用 MIT 许可，仓库里每一个数字都可以追溯到一个已提交的 JSON artifact，因此合作者可以在决定之前把整套分析从头到尾审一遍。贡献模式见 [`TEAM.md`](TEAM.md) §2，验证计划见 [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md)。
+全部内容采用 MIT 许可，仓库里每一个数字都可以追溯到一个已提交的 JSON artifact，因此合作者可以在决定之前把整套分析从头到尾审一遍。贡献模式见 [`TEAM.md`](TEAM.md) §2，环境设定、测试与导入队列的步骤见 [`CONTRIBUTING.md`](CONTRIBUTING.md)，验证计划见 [`docs/PRODUCTION_ROADMAP.md`](docs/PRODUCTION_ROADMAP.md)。
 
-**如何联系**：开一个 *External cohort validation (collaboration)* issue——模板只索取队列元数据，因此患者数据永远不需要离开你的机构。关于分析本身的问题更适合发在 [Discussions](https://github.com/rollroyces/deepcatch/discussions)。
+**如何联系**：开一个 *External cohort validation (collaboration)* issue——模板只索取队列元数据，因此患者数据永远不需要离开你的机构。关于分析本身的问题更适合发在 [Discussions](https://github.com/rollroyces/deepcatch/discussions)。代码贡献请遵循 [`CONTRIBUTING.md`](CONTRIBUTING.md) 与 [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)。
 
 ---
 

@@ -160,6 +160,7 @@ ARTIFACTS=(
     external_validation_finaledb.json
     fusion_ablation_isotonic.json
     fusion_regularized_smoke.json
+    real_tcga_validation.json
     decision_curve.json
     methylation_cohort_channel.json
     ultraearly_readiness.json
@@ -205,7 +206,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[1/12] Cross-study FinaleDB sweep — legacy (no GC correction)"
+echo "[1/13] Cross-study FinaleDB sweep — legacy (no GC correction)"
 echo "================================================================"
 # `--gc-correction` DEFAULTS TO ON, so a driver that passes no flag writes
 # the GC-corrected run into the legacy path. That silently replaced the
@@ -233,7 +234,7 @@ echo "      seeds: ${SEEDS[*]}"
 
 echo
 echo "================================================================"
-echo "[2/12] Cross-study FinaleDB sweep — GC-corrected (headline)"
+echo "[2/13] Cross-study FinaleDB sweep — GC-corrected (headline)"
 echo "================================================================"
 # `--include-screening` is deliberately OFF here. The committed
 # `results/per_cancer_sens_at_spec.json` was produced on the legacy
@@ -257,7 +258,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[3/12] Cross-study FinaleDB sweep — with 4-mer end motifs"
+echo "[3/13] Cross-study FinaleDB sweep — with 4-mer end motifs"
 echo "================================================================"
 # The third tumor-naive benchmark: the same pipeline with the 256-dim
 # 4-mer end-motif vector added. Eight documents quote its pooled AUC,
@@ -295,7 +296,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[4/12] Shuffled-label null control"
+echo "[4/13] Shuffled-label null control"
 echo "================================================================"
 # Single seed (2), matching the committed artifact: the control is a sanity
 # check, and a second seed adds minutes without adding evidence.
@@ -307,7 +308,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[5/12] Leave-one-study-out transfer (train on one publication)"
+echo "[5/13] Leave-one-study-out transfer (train on one publication)"
 echo "================================================================"
 "${PYTHON}" scripts/cross_study_loso.py \
     --features-dir "${FEATURES_DIR}" \
@@ -320,7 +321,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[6/12] External validation on held-out public publications"
+echo "[6/13] External validation on held-out public publications"
 echo "================================================================"
 if [[ ! -d "${EXTERNAL_DIR}" ]]; then
     echo "[REPRODUCE] !! external cohort not found: ${EXTERNAL_DIR}" >&2
@@ -337,7 +338,7 @@ fi
 
 echo
 echo "================================================================"
-echo "[7/12] Fusion ablation (tumor-naive + mutation-informed)"
+echo "[7/13] Fusion ablation (tumor-naive + mutation-informed)"
 echo "================================================================"
 PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
     --features-dir "${FEATURES_DIR}" \
@@ -349,7 +350,7 @@ PYTHONPATH=src "${PYTHON}" src/fragmentomics/fusion_ablation.py \
 
 echo
 echo "================================================================"
-echo "[8/12] Regularized late fusion / Bayesian model averaging"
+echo "[8/13] Regularized late fusion / Bayesian model averaging"
 echo "================================================================"
 # The estimator that replaced the neural encoder, with the permuted-
 # label and arm-swap controls it is reported with. Ten documents quote
@@ -359,7 +360,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[9/12] Decision curve (clinician-facing operating points)"
+echo "[9/13] Decision curve (clinician-facing operating points)"
 echo "================================================================"
 # The operating points RESULTS.md section 4 quotes. Same cohort, same
 # PCA (200 components) and the same five seeds as the decision curve
@@ -374,7 +375,7 @@ PYTHONPATH=src "${PYTHON}" src/fragmentomics/decision_curve_cli.py \
 
 echo
 echo "================================================================"
-echo "[10/12] Methylation channel (FinaleMe on real public fragments)"
+echo "[10/13] Methylation channel (FinaleMe on real public fragments)"
 echo "================================================================"
 # This step needs java, the FinaleMe 0.58 jar and the cached per-sample CpG
 # matrices. When any of those is missing the step is skipped and reported
@@ -404,7 +405,32 @@ fi
 
 echo
 echo "================================================================"
-echo "[11/12] Figures"
+echo "[11/13] Mutation-informed panel validation (real TCGA-LUAD mutations)"
+echo "================================================================"
+# The panel-LLR AUC (0.921 at 0.1% ctDNA) is the first figure in the
+# preprint's abstract and the readiness verdict depends on it. It needs
+# the GDC masked-MAF cache; without it the step is skipped and says so,
+# and the reproduction check then reports that artifact as NOT
+# regenerated.
+MAF_COUNT=$(find "${REPO_ROOT}/validation/tcga/tcga_cache" -maxdepth 1 \
+    -name 'gdc_TCGA-LUAD_*.maf.gz' 2>/dev/null | wc -l | tr -d ' ')
+if [[ "${MAF_COUNT}" == "0" ]]; then
+    echo "[REPRODUCE] SKIP: no gdc_TCGA-LUAD_*.maf.gz in"
+    echo "[REPRODUCE]       ${REPO_ROOT}/validation/tcga/tcga_cache — the GDC"
+    echo "[REPRODUCE]       masked-MAF cache is not present, so the panel"
+    echo "[REPRODUCE]       validation cannot be regenerated here."
+else
+    echo "[REPRODUCE]       ${MAF_COUNT} MAF file(s) in the GDC cache"
+    "${PYTHON}" real_tcga_validation.py \
+        --no-download \
+        --cache-dir "${REPO_ROOT}/validation/tcga/tcga_cache" \
+        --output "${RESULTS_DIR}/real_tcga_validation.json" \
+        --seeds 5 --n-patients 20
+fi
+
+echo
+echo "================================================================"
+echo "[12/13] Figures"
 echo "================================================================"
 "${PYTHON}" scripts/plot_figures.py \
     --results-dir "${RESULTS_DIR}" \
@@ -412,7 +438,7 @@ echo "================================================================"
 
 echo
 echo "================================================================"
-echo "[12/12] Acceptance floors"
+echo "[13/13] Acceptance floors"
 echo "================================================================"
 read_harm() {
     "${PYTHON}" -c "
@@ -526,6 +552,7 @@ echo "  ${RESULTS_DIR}/cross_study_loso.json"
 echo "  ${RESULTS_DIR}/external_validation_finaledb.json"
 echo "  ${RESULTS_DIR}/fusion_ablation_isotonic.json"
 echo "  ${RESULTS_DIR}/fusion_regularized_smoke.json"
+echo "  ${RESULTS_DIR}/real_tcga_validation.json"
 echo "  ${RESULTS_DIR}/decision_curve.json"
 echo "  ${RESULTS_DIR}/methylation_cohort_channel.json"
 echo "  ${RESULTS_DIR}/ultraearly_readiness.json"
