@@ -79,6 +79,9 @@ independent researcher can produce.
 | Test suite | ✅ 820 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
+| Contribution guidelines | ✅ `CONTRIBUTING.md` (setup, the drift-guard rules, how to bring a cohort in) |
+| Author list | ✅ `AUTHORS` |
+| Code of conduct | ✅ `CODE_OF_CONDUCT.md` |
 | **DOI** | ⬜ requires Zenodo's GitHub integration + the `v2.3.0` tag |
 | **Paper file discoverable from the repo root** | ✅ `paper.md` in the repo root, in JOSS format (summary, statement of need, features, quality/reproducibility, documentation, code availability, limitations, acknowledgements) |
 | **Short description** (the JOSS submission form's one-paragraph field) | ✅ the Summary section of `paper.md` is the one-paragraph description |

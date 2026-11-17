@@ -1,0 +1,28 @@
+# Authors
+
+## Lead
+
+- **Yu Ching Lam** — ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
+  - Design and implementation of the fragmentomics pipeline, the
+    cross-study benchmarks, the fusion estimator that replaced the
+    neural encoder, the methylation channel and the reproduction driver.
+  - Maintainer of this repository.
+
+## Acknowledged
+
+The people named in `TEAM.md` §1.2 contributed through review, data
+provision, discussion or code — each is acknowledged there with what
+they contributed, which is the record that matters for authorship.
+
+## Adding yourself
+
+If you contribute code, data or a clinical cohort, add your name here
+and the contribution to `TEAM.md` §1.2 in the same change. Use the
+name you want to be cited under, and add your ORCID iD if you have
+one — the citation metadata in `CITATION.cff` is generated from the
+author list here and from the release tag.
+
+Authorship of the papers is a separate decision, made with the
+contributors under the model in `TEAM.md` §3 and §4; contributing to
+the repository does not by itself make someone an author of a
+publication.
