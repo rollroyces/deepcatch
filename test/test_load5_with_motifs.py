@@ -19,6 +19,16 @@ in tight CI; run it manually with:
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV  # noqa: E402
+
 
 import json
 import os
@@ -43,11 +53,11 @@ from load5_with_motifs import (  # noqa: E402
     load5_with_motifs_optional,
 )
 
-# Cross-platform skip: tests need /Users/hermes/cfdna-fragmentomics-pipeline/data/features
+# Cross-platform skip: tests need ../cfdna-fragmentomics-pipeline/data/features
 # (gitignored). CI runners don't have it.
 _FEAT_DIR = Path(os.environ.get(
     "CFDNA_FEATURES_DIR",
-    "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+    str(FEATURES_DIR),
 ))
 _HAS_FEATURES = (
     _FEAT_DIR.is_dir()
@@ -273,7 +283,7 @@ def test_with_motifs_pooled_auc_differs_from_baseline(feat_dir, tmp_path):
     )
     if not labels_tsv.exists():
         labels_tsv = Path(
-            "/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv"
+            str(LABELS_TSV)
         )
     if not labels_tsv.exists():
         pytest.skip(f"labels_multiclass.tsv not found at {labels_tsv}")

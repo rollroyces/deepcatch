@@ -19,6 +19,16 @@ tissue). The tests below verify:
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import METHYLATION_PIPELINE, REPO_ROOT  # noqa: E402
+
 
 import json
 import os
@@ -247,7 +257,7 @@ def test_load_hcc_j_per_cancer_finds_hccj():
 def test_load_lihc_methylation_finds_lihc():
     """load_lihc_methylation must find the TCGA-LIHC row in the sibling JSON."""
     sibling_meth_json = (
-        "/Users/hermes/deepcatch-methylation/results/multi_cancer_baseline.json"
+        str(METHYLATION_PIPELINE / "results" / "multi_cancer_baseline.json")
     )
     if not os.path.exists(sibling_meth_json):
         pytest.skip(f"{sibling_meth_json} not found — sibling repo not checked out")
@@ -266,7 +276,7 @@ def test_load_lihc_methylation_finds_lihc():
 def test_provenance_marks_methodology_demo():
     """The JSON must mark this as a methodology demo, not a clinical fusion."""
     out_json = (
-        "/Users/hermes/deepcatch/results/cross_platform_methylation_fusion.json"
+        str(REPO_ROOT / "results" / "cross_platform_methylation_fusion.json")
     )
     if not os.path.exists(out_json):
         pytest.skip(f"{out_json} not found — run the script first")
@@ -289,7 +299,7 @@ def test_provenance_marks_methodology_demo():
 def test_provenance_carries_lihc_and_hccj_n():
     """Provenance must carry the published n_pos/n_neg/n_samples for each channel."""
     out_json = (
-        "/Users/hermes/deepcatch/results/cross_platform_methylation_fusion.json"
+        str(REPO_ROOT / "results" / "cross_platform_methylation_fusion.json")
     )
     if not os.path.exists(out_json):
         pytest.skip(f"{out_json} not found — run the script first")
@@ -313,7 +323,7 @@ def test_cli_runs_end_to_end_and_writes_json(tmp_path):
     """End-to-end CLI run with --seeds 1 writes a JSON with 3 strategies."""
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     sibling_meth_json = (
-        "/Users/hermes/deepcatch-methylation/results/multi_cancer_baseline.json"
+        str(METHYLATION_PIPELINE / "results" / "multi_cancer_baseline.json")
     )
     if not os.path.exists(sibling_meth_json):
         pytest.skip(f"{sibling_meth_json} not found — sibling repo not checked out")

@@ -1121,7 +1121,11 @@ cohort size.
   repository, then in the home directory, with the environment variables
   overriding both. Every resolved path is byte-for-byte the path that
   worked before, except the repository root, which now points at the
-  repository.
+  repository. The seven test files that carried the same paths — the
+  skip-guards that decide whether the sibling-dependent tests run or skip
+  — were migrated the same way, so a reader who clones the sibling
+  repository into their home directory gets those tests to run rather
+  than skip.
 - **The reproduction driver and the demo scripts had the same problem.**
   `paper/REPRODUCE.sh` defaulted its feature, labels and sister-pipeline
   paths to `/Users/hermes/...`, so a reader who followed the driver's own
@@ -1145,7 +1149,8 @@ cohort size.
 - **The paths a reader is told to use are now guarded.**
   `test/test_availability_claims.py` requires that a named checkpoint
   either exists or sits in a paragraph that says it is not distributed,
-  that the driver points at no home directory, and that the
+  that **no tracked script** points at a home directory (a container's
+  `/home/node` is not one — it is part of the image), and that the
   missing-cache message names the remedy rather than only the environment
   variable.
 

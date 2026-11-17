@@ -17,13 +17,23 @@ Honesty-first rules (per `docs/ALPHAMISSENSE_REAL_LLR.md`):
 
 The tests rely on the real per-Uniprot pickle
 ``results/alphamissense_real_index_full.pkl`` (built from
-``/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz``). If the
+``~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz``). If the
 pickle or the TSV are absent, the tests skip — never fail. This keeps
 CI honest (it doesn't claim real-AM code works without exercising it)
 without blocking contributors who don't have the data.
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 
 import json
 import sys
@@ -36,7 +46,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import alphamissense_weights as amw  # noqa: E402
 
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 REAL_INDEX_PKL = ROOT / "results" / "alphamissense_real_index_full.pkl"
 REAL_RUN_JSON = ROOT / "results" / "alphamissense_real_llr.json"
 TCGA_CACHE = ROOT / "validation" / "tcga" / "tcga_cache"

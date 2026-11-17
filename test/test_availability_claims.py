@@ -40,6 +40,7 @@ says it is not distributed.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -108,33 +109,51 @@ def test_the_way_to_regenerate_the_checkpoint_is_a_script_that_exists():
     )
 
 
-def test_the_reproduce_driver_does_not_point_at_one_machine_home_directory():
-    """The driver's defaults must work for a reader, not for its author.
+def test_no_tracked_script_points_at_one_machine_home_directory():
+    """Every script a reader is told to run must work for a reader.
 
-    The reproduction driver is what a reviewer runs first. Its default
-    paths pointed at `/Users/hermes/...`, so a reader who followed its
-    own clone instruction and ran it hit a path that does not exist on
-    their machine -- and the failure message said only "set
-    DEEPCATCH_FEATURES_DIR to the extracted FinaleDB features", without
-    saying that those features are in neither repository and have to be
-    built first.
+    Twenty-seven scripts and five shell scripts hardcoded one machine's
+    home directory. Those paths do not exist for a reader -- and several
+    had stopped existing for the author too, because the repository had
+    been moved, so they were broken for everyone.
 
-    The defaults are now derived from the repository's own location, so
-    the documented layout (the sibling repository cloned next to this
-    one) works without any environment variable. The guard is the
+    The paths now resolve through `scripts/_paths.py`, which tries the
+    environment variable, then the layout the documentation tells a
+    reader to use (the sibling repository next to this one), then the
+    author's own layout (the home directory). This test is the
     portability half of the same lesson the checkpoint guard above
     teaches: a path that exists on the author's machine is not a path a
     reader has.
     """
-    driver = (_REPO_ROOT / "paper" / "REPRODUCE.sh").read_text(encoding="utf-8")
-    offenders = sorted({
-        m.group(0) for m in re.finditer(r"/(?:Users|home)/[A-Za-z0-9_.-]+", driver)
-    })
+    tracked = subprocess.run(
+        ["git", "-C", str(_REPO_ROOT), "ls-files", "*.py", "*.sh"],
+        capture_output=True, text=True, timeout=60, check=True,
+    ).stdout.split("\n")
+    offenders = {}
+    for name in tracked:
+        if not name:
+            continue
+        path = _REPO_ROOT / name
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        hits = []
+        for match in re.finditer(r"/(?:Users|home)/[A-Za-z0-9_.-]+", text):
+            found = match.group(0)
+            # A container's home directory (`/home/node` in the Docker
+            # image) is part of that image, not of a machine. Only a
+            # home directory that exists HERE can be a path that fails
+            # for someone else.
+            if found.startswith("/home/") and not Path(found).exists():
+                continue
+            hits.append(found)
+        if hits:
+            offenders[name] = sorted(set(hits))
     assert not offenders, (
-        f"paper/REPRODUCE.sh points at a home directory: {offenders}. The "
-        "defaults must be derived from the repository's own location, so "
-        "that a reader who follows the clone instruction gets working "
-        "paths."
+        "a tracked script points at a home directory, which does not "
+        f"exist for a reader: {offenders}. Resolve the path from the "
+        "repository's own location (see scripts/_paths.py) instead."
     )
 
 

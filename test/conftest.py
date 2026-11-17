@@ -13,6 +13,16 @@ Tests marked this way still run -- and must still pass -- wherever the
 sibling checkout / venv is available, so this narrows nothing locally.
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import SIBLING_PIPELINE  # noqa: E402
+
 
 import os
 from pathlib import Path
@@ -23,7 +33,7 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 SISTER_PIPELINE = Path(os.environ.get(
     "DEEPCATCH_SISTER_PIPELINE",
-    "/Users/hermes/cfdna-fragmentomics-pipeline",
+    str(SIBLING_PIPELINE),
 ))
 SISTER_PIPELINE_PRESENT = (
     SISTER_PIPELINE / "scripts" / "honest_benchmark.py"

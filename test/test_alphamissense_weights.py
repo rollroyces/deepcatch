@@ -8,6 +8,16 @@ without actually exercising it.
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 
 import json
 import os
@@ -113,7 +123,7 @@ def test_weight_cohort_skips_non_missense():
 def test_load_tcga_mutations_with_protein_filters_missense():
     """The augmented pool only contains Missense_Mutation SNVs."""
     # Skip if the TCGA cache isn't present (CI without data)
-    cache = Path("/Users/hermes/deepcatch/validation/tcga/tcga_cache")
+    cache = REPO_ROOT / "validation" / "tcga" / "tcga_cache"
     if not cache.exists():
         pytest.skip("TCGA cache not present on this machine")
     muts = amw.load_tcga_mutations_with_protein(str(cache))

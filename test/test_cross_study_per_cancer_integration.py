@@ -22,6 +22,16 @@ small synthetic fixture. The fixture covers:
   - Standalone JSON matches `build_per_cancer_table` schema
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR  # noqa: E402
+
 
 import json
 import math
@@ -358,7 +368,7 @@ def test_end_to_end_script_writes_both_outputs(tmp_path):
     test is the end-to-end contract test.
     """
     features_dir = Path(
-        "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+        str(FEATURES_DIR)
     )
     if not features_dir.exists():
         pytest.skip("features cache not present (run on a machine with "
