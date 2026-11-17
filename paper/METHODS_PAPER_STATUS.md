@@ -92,7 +92,7 @@ The parent task asks that the following pytest command remain green after any
 edit:
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/test_biomedical_review_fixes.py \
     test/test_sparse_aware_projection.py \

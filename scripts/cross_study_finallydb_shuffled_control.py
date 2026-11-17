@@ -39,6 +39,16 @@ Usage:
       scripts/cross_study_finallydb_shuffled_control.py
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV  # noqa: E402
+
 
 import argparse
 import os
@@ -66,9 +76,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ap.add_argument("--features-dir",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
+                    default=str(FEATURES_DIR))
     ap.add_argument("--labels-multiclass",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+                    default=str(LABELS_TSV))
     ap.add_argument("--publications", nargs="+", default=["6", "8"],
                     help="Space-separated FinaleDB publication ids to "
                          "include (default: '6 8' = Jiang + Cristiano, "

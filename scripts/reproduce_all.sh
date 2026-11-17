@@ -88,7 +88,15 @@ fi
 
 # Feature dir: env var override, else standard cfdna-fragmentomics path
 # (FinaleDB feature cache, used by cross_study_finallydb.py)
-FINALEDB_FEATURES_DIR="${FINALEDB_FEATURES_DIR:-/Users/hermes/cfdna-fragmentomics-pipeline/data/features}"
+# The sister pipeline is expected next to this repository -- which is
+# where the header tells you to clone it -- so the default is derived
+# from the repo root rather than hardcoding one machine's home
+# directory. FINALEDB_FEATURES_DIR still overrides it.
+SIBLING_PIPELINE="${DEEPCATCH_SISTER_PIPELINE:-$(dirname "${REPO_ROOT}")/cfdna-fragmentomics-pipeline}"
+if [[ ! -d "${SIBLING_PIPELINE}" && -d "${HOME}/cfdna-fragmentomics-pipeline" ]]; then
+    SIBLING_PIPELINE="${HOME}/cfdna-fragmentomics-pipeline"
+fi
+FINALEDB_FEATURES_DIR="${FINALEDB_FEATURES_DIR:-${SIBLING_PIPELINE}/data/features}"
 if [ ! -d "$FINALEDB_FEATURES_DIR" ]; then
     echo "⚠️  FinaleDB features dir not found: $FINALEDB_FEATURES_DIR" >&2
     echo "   Cross-study benchmark (step 1) will fail." >&2

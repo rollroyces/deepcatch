@@ -9,6 +9,16 @@ Design (honest for n=13):
 - LOOCV logistic regression (leave-one-out is the only honest CV at n=13)
 - Report AUC, sensitivity @ 95% spec, plus univariate direction checks
 """
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[2] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 import gzip
 import sys
 from pathlib import Path
@@ -16,7 +26,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-DATA_DIR = Path("/Users/hermes/deepcatch/data/GSE185307")
+DATA_DIR = REPO_ROOT / "data" / "GSE185307"
 
 # sample → label (1 = lung adenocarcinoma, 0 = healthy control)
 LABELS = {
@@ -175,7 +185,7 @@ def main():
                        for c in ["mean_beta", "pct_hyper", "pct_hypo", "entropy"]},
     }
     import json
-    with open("/Users/hermes/deepcatch/results/gse185307_methylation_validation.json", "w") as f:
+    with open(str(REPO_ROOT / "results" / "gse185307_methylation_validation.json"), "w") as f:
         json.dump(out, f, indent=2)
     print("\n  Saved: results/gse185307_methylation_validation.json")
 

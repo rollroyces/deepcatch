@@ -49,6 +49,16 @@ Usage:
         --out-md   docs/EXTERNAL_VALIDATION.md
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import SIBLING_PIPELINE  # noqa: E402
+
 
 import argparse
 import json
@@ -73,7 +83,7 @@ from src.per_cancer_sens_at_spec import (  # noqa: E402
 )
 
 SISTER = os.environ.get(
-    "DEEPCATCH_SISTER_PIPELINE", "/Users/hermes/cfdna-fragmentomics-pipeline")
+    "DEEPCATCH_SISTER_PIPELINE", str(SIBLING_PIPELINE))
 TRAIN_PUBLICATIONS = {"6", "8"}
 
 # The canonical label vocabulary lives in the package, so every reader of

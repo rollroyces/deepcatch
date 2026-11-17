@@ -3,6 +3,11 @@
 # Uses --seeds 2 to stay under 3 min wall clock for the demo.
 # Production runs use --seeds 5 (see results/cross_study_finallydb.json).
 set -e
+# The repository root, derived from this script's own location, so the
+# demo runs for anyone who clones the repository -- it used to point at
+# the machine it was recorded on.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "${REPO_ROOT}"
 export TERM=xterm-256color
 export COLUMNS=110
 export LINES=32
@@ -13,15 +18,14 @@ date
 echo ""
 echo ">>> step 1: 5-channel cross-publication pipeline"
 echo "    (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)"
-cd /Users/hermes/deepcatch
 env -u PYTHONPATH ./.venv/bin/python scripts/cross_study_finallydb.py --seeds 2 \
     --out-json results/_demo_cross_study.json \
     --out-md docs/_demo_benchmark.md 2>&1 | tail -22
 echo ""
 echo ">>> step 2: headline numbers"
-env -u PYTHONPATH ./.venv/bin/python <<'PYEOF'
-import json
-d = json.load(open('/Users/hermes/deepcatch/results/_demo_cross_study.json'))
+REPO_ROOT="${REPO_ROOT}" env -u PYTHONPATH ./.venv/bin/python <<'PYEOF'
+import json, os
+d = json.load(open(os.path.join(os.environ['REPO_ROOT'], 'results/_demo_cross_study.json')))
 p = d['pooled']['harmonized']
 nh = d['pooled']['no_harmonize']
 tc = d['true_confound_control']['cancer_jiang_healthy_cristiano']

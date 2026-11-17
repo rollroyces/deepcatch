@@ -29,6 +29,16 @@ Exit code: 0 if every non-skipped step PASSed, non-zero otherwise.
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, REPO_ROOT  # noqa: E402
+
 
 import argparse
 import json
@@ -457,7 +467,7 @@ def main() -> int:
         "--finallydb-dir",
         default=os.environ.get(
             "FINALEDB_FEATURES_DIR",
-            "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+            str(FEATURES_DIR),
         ),
         help="FinaleDB feature cache dir (default: cfdna-fragmentomics-pipeline)",
     )

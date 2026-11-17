@@ -1,4 +1,5 @@
-"""The manuscript must not offer a file the repository does not contain.
+"""What a reader is told exists must exist for them — in the manuscript
+and in the reproduction driver.
 
 What went wrong
 ---------------
@@ -22,6 +23,12 @@ encoder behind the §3.1 fusion comparison is trained in-run with
 `pretrained=False`, so §3 reproduces from a clean checkout. This test
 pins that structure, so a future edit cannot quietly turn the
 Availability section back into a list of files that are not there.
+
+The same lesson applies to the reproduction driver, which is what a
+reviewer runs first: its default paths pointed at one machine's home
+directory, and the message it printed when the feature cache was
+missing did not say that the cache is in neither repository and has to
+be built from the public API first. Those cases are checked here too.
 
 What it does NOT do
 -------------------
@@ -98,6 +105,52 @@ def test_the_way_to_regenerate_the_checkpoint_is_a_script_that_exists():
     assert not missing, (
         f"the manuscript points at pre-training scripts that do not "
         f"exist: {missing}"
+    )
+
+
+def test_the_reproduce_driver_does_not_point_at_one_machine_home_directory():
+    """The driver's defaults must work for a reader, not for its author.
+
+    The reproduction driver is what a reviewer runs first. Its default
+    paths pointed at `/Users/hermes/...`, so a reader who followed its
+    own clone instruction and ran it hit a path that does not exist on
+    their machine -- and the failure message said only "set
+    DEEPCATCH_FEATURES_DIR to the extracted FinaleDB features", without
+    saying that those features are in neither repository and have to be
+    built first.
+
+    The defaults are now derived from the repository's own location, so
+    the documented layout (the sibling repository cloned next to this
+    one) works without any environment variable. The guard is the
+    portability half of the same lesson the checkpoint guard above
+    teaches: a path that exists on the author's machine is not a path a
+    reader has.
+    """
+    driver = (_REPO_ROOT / "paper" / "REPRODUCE.sh").read_text(encoding="utf-8")
+    offenders = sorted({
+        m.group(0) for m in re.finditer(r"/(?:Users|home)/[A-Za-z0-9_.-]+", driver)
+    })
+    assert not offenders, (
+        f"paper/REPRODUCE.sh points at a home directory: {offenders}. The "
+        "defaults must be derived from the repository's own location, so "
+        "that a reader who follows the clone instruction gets working "
+        "paths."
+    )
+
+
+def test_the_reproduce_driver_says_how_to_build_the_missing_feature_cache():
+    """The missing-cache message must name the remedy, not just the knob.
+
+    The extracted FinaleDB features are gitignored in the pipeline
+    repository (~600 MB for 627 samples) and are rebuilt from the public
+    API. A reader who is told only "set DEEPCATCH_FEATURES_DIR" has to
+    guess where the directory comes from.
+    """
+    driver = (_REPO_ROOT / "paper" / "REPRODUCE.sh").read_text(encoding="utf-8")
+    assert "run_cross_study.py" in driver, (
+        "the driver's missing-feature message no longer says how to build "
+        "the feature cache; the features are gitignored in the pipeline "
+        "repository and must be rebuilt from the public FinaleDB API"
     )
 
 

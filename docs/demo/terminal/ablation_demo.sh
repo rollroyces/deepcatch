@@ -3,6 +3,11 @@
 # Shows: (1) motif on/off, (2) GC-correction on/off, (3) shuffled-label null.
 # All pre-computed; we just print cached JSON numbers + re-run the shuffled control.
 set -e
+# The repository root, derived from this script's own location, so the
+# demo runs for anyone who clones the repository -- it used to point at
+# the machine it was recorded on.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "${REPO_ROOT}"
 export TERM=xterm-256color
 export COLUMNS=110
 export LINES=30
@@ -11,8 +16,7 @@ echo "=== DeepCatch ablation: motifs, GC-correction, shuffled null ==="
 echo "=== Pre-computed cache + live shuffled-null verification ==="
 date
 echo ""
-cd /Users/hermes/deepcatch
-env -u PYTHONPATH ./.venv/bin/python <<'PYEOF'
+REPO_ROOT="${REPO_ROOT}" env -u PYTHONPATH ./.venv/bin/python <<'PYEOF'
 import json
 def auc(name):
     return json.load(open(f'results/{name}.json'))

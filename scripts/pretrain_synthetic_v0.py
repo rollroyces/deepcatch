@@ -1,3 +1,13 @@
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, REPO_ROOT  # noqa: E402
+
 #!/usr/bin/env python3
 """
 HISTORICAL ARTIFACT — PRESERVED FOR PROVENANCE ONLY (2026-09-23)
@@ -43,7 +53,7 @@ training pass (MMP + contrastive, PROTOTYPE_CONFIG), and saves the
 checkpoint to ``checkpoints/foundation_pretrained_finaledb.pt``.
 
 The bulk of the cohort is loaded from
-``/Users/hermes/cfdna-fragmentomics-pipeline/data/features/`` —
+``../cfdna-fragmentomics-pipeline/data/features/`` —
 the artifacts of an earlier ``fetch → extract → delete`` pipeline
 run on real FinaleDB ``*.frag.tsv.bgz`` files.
 
@@ -78,7 +88,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
 PIPELINE_FEAT_DIR = Path(
-    "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+    str(FEATURES_DIR)
 )
 PIPELINE_LABELS_TSV = PIPELINE_FEAT_DIR / "labels_cross_study.tsv"
 COHORT_OUT = REPO_ROOT / "data" / "finaledb_pretrain_cohort.npz"

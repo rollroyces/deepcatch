@@ -46,23 +46,23 @@ Why a directory adapter, not a Python API?
 
 Usage:
     # 1) Sanity-check a cohort layout
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/adapter_local_cohort.py \\
         --cohort-root /path/to/cohort \\
         --dry-run
 
     # 2) Convert + validate + write normalized output
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/adapter_local_cohort.py \\
         --cohort-root /path/to/cohort \\
         --cohort-name my_lab_2026
 
     # 3) Merge with existing labels + run cross-study benchmark
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/adapter_local_cohort.py \\
         --cohort-root /path/to/cohort \\
         --cohort-name my_lab_2026 \\
-        --merge-with /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
+        --merge-with ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
         --cross-study
 """
 from __future__ import annotations

@@ -1108,6 +1108,47 @@ cohort size.
   Both are now compared against a real collection, and the CI job count
   in RESULTS.md against the workflow files.
 
+- **Twenty-seven scripts hardcoded one machine's home directory.** Every
+  script that needs the FinaleDB feature cache, the multi-class labels, the
+  pre-trained checkpoints or the FinaleMe installation pointed at
+  `/Users/hermes/...`. Those paths do not exist for a reader, and several
+  had stopped existing for the author too: the repository had moved, so
+  `ROOT = Path("/Users/hermes/deepcatch")` in six CADD scripts, the two
+  `validation/cfdna/` scripts and a handful of defaults were pointing at a
+  directory that was not there — broken for everyone, not just for a
+  reader. All of them now resolve through one module,
+  `scripts/_paths.py`, which looks the sibling pipeline up next to this
+  repository, then in the home directory, with the environment variables
+  overriding both. Every resolved path is byte-for-byte the path that
+  worked before, except the repository root, which now points at the
+  repository.
+- **The reproduction driver and the demo scripts had the same problem.**
+  `paper/REPRODUCE.sh` defaulted its feature, labels and sister-pipeline
+  paths to `/Users/hermes/...`, so a reader who followed the driver's own
+  instruction — clone the sibling repository *next to* this one — and ran
+  it hit paths that do not exist on their machine. The defaults are now
+  derived from the repository's own location. The same goes for the three
+  recorded demo scripts under `docs/demo/terminal/` and for
+  `scripts/reproduce_all.sh`.
+- **The driver never said where the missing feature cache comes from.**
+  The extracted FinaleDB features are in *neither* repository: the
+  pipeline repository gitignores `data/features/` (~600 MB for 627
+  samples) and `data/raw/` (~100 GB), because both are rebuilt from the
+  public FinaleDB API. So "set DEEPCATCH_FEATURES_DIR to the extracted
+  FinaleDB features" left the reader hunting for them. The preflight now
+  says which repository does not have them, how to build them (`python
+  run_cross_study.py --parallel 8 --max-mb 500` in the pipeline
+  checkout) and where to point the variable; the methods manuscript's
+  Availability section says the same, and `paper/REPRODUCE.md` documents
+  the sibling-relative defaults and the one command that produces the
+  cache.
+- **The paths a reader is told to use are now guarded.**
+  `test/test_availability_claims.py` requires that a named checkpoint
+  either exists or sits in a paragraph that says it is not distributed,
+  that the driver points at no home directory, and that the
+  missing-cache message names the remedy rather than only the environment
+  variable.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

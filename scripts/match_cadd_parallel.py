@@ -2,6 +2,16 @@
 
 Uses ThreadPoolExecutor to launch many tabix calls concurrently.
 """
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 import json
 import subprocess
 import sys
@@ -10,7 +20,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 SNV_TSV = ROOT / "data" / "cadd" / "cadd_v1.6_gnomad_r3_snv.tsv.gz"
 COHORT_PATH = ROOT / "results" / "cadd_mutations_gdc_validation.json"
 OUT = ROOT / "results" / "cadd_matches_gdc_validation.json"

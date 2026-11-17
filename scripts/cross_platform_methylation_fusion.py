@@ -52,15 +52,25 @@ WHY THIS IS OK TO PUBLISH
   references the disjoint-cohort caveat in the `provenance` block.
 
 Usage:
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/cross_platform_methylation_fusion.py
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/cross_platform_methylation_fusion.py --help
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/cross_platform_methylation_fusion.py --seeds 1 --output /tmp/x.json
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import METHYLATION_PIPELINE, REPO_ROOT  # noqa: E402
+
 
 import argparse
 import json
@@ -74,14 +84,14 @@ from sklearn.metrics import roc_auc_score, roc_curve
 from sklearn.model_selection import StratifiedKFold
 
 # Default inputs — mirror the conventions used by other scripts in this repo.
-DEFAULT_FRAG_JSON = "/Users/hermes/deepcatch/results/per_cancer_sens_at_spec.json"
+DEFAULT_FRAG_JSON = str(REPO_ROOT / "results" / "per_cancer_sens_at_spec.json")
 DEFAULT_METH_JSON = (
-    "/Users/hermes/deepcatch-methylation/results/multi_cancer_baseline.json"
+    str(METHYLATION_PIPELINE / "results" / "multi_cancer_baseline.json")
 )
 DEFAULT_PROXY_JSON = (
-    "/Users/hermes/deepcatch-methylation/results/methylation_proxy_head_to_head.json"
+    str(METHYLATION_PIPELINE / "results" / "methylation_proxy_head_to_head.json")
 )
-DEFAULT_OUTPUT = "/Users/hermes/deepcatch/results/cross_platform_methylation_fusion.json"
+DEFAULT_OUTPUT = str(REPO_ROOT / "results" / "cross_platform_methylation_fusion.json")
 
 DEFAULT_CANCER_KEY = "HCC_J"
 DEFAULT_SEEDS = [42, 13, 7, 99, 1234]

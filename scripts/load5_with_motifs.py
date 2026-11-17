@@ -31,6 +31,16 @@ flag on the cross-study benchmark. When the flag is OFF (default), load5
 behaviour is preserved bit-identical.
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR  # noqa: E402
+
 
 import json
 import os
@@ -41,7 +51,7 @@ from typing import Optional, Tuple
 import numpy as np
 
 # Default features dir matches the upstream cfdna-fragmentomics-pipeline layout.
-DEFAULT_FEATURES_DIR = "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+DEFAULT_FEATURES_DIR = str(FEATURES_DIR)
 
 # Motif file shape and channel-set contract.
 MOTIF_DIM = 256  # 4^4 possible 4-mers over {A,C,G,T}

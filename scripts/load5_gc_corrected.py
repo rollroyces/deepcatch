@@ -45,6 +45,16 @@ The cross-study script ``scripts/cross_study_finallydb.py`` exposes a
 ``--gc-correction`` CLI flag (default ON) that toggles this flag.
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import SIBLING_PIPELINE  # noqa: E402
+
 
 import argparse
 import json
@@ -66,7 +76,7 @@ from sklearn.model_selection import StratifiedKFold
 # paths BEHIND the auto-prepended scripts dir.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _PIPELINE_DIR = Path(
-    "/Users/hermes/cfdna-fragmentomics-pipeline"
+    str(SIBLING_PIPELINE)
 )
 # Put this repo's own scripts/ FIRST so `gc_correction` resolves to the
 # DeepCatch copy (which exposes DEFAULT_GC_NPY). When run as a script,

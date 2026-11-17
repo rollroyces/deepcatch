@@ -74,7 +74,7 @@ from cadd_weighted_llr import (  # noqa: E402
 
 LOG = logging.getLogger("cadd_alphamissense_combined")
 
-AM_TSV_GZ = Path("/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz")
+AM_TSV_GZ = Path(str(Path.home() / "mrnavax" / "AlphaMissense_hg38.tsv.gz"))
 COHORT_MUTATIONS = ROOT / "results" / "cadd_mutations_full.json"
 CADD_MATCHES = ROOT / "results" / "cadd_matches_augmented.json"
 RESULTS_PATH = ROOT / "results" / "cadd_alphamissense_combined.json"

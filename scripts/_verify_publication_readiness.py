@@ -18,14 +18,24 @@ even if the labels file references them — because there is no path to
 fetch their features in this state.
 
 Usage:
-  env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+  env -u PYTHONPATH ./.venv/bin/python \\
       scripts/_verify_publication_readiness.py \\
-      --features-dir /Users/hermes/cfdna-fragmentomics-pipeline/data/features \\
-      --labels-multiclass /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
+      --features-dir ../cfdna-fragmentomics-pipeline/data/features \\
+      --labels-multiclass ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
       --out-json results/publication_readiness.json \\
       --out-md    docs/PUBLICATION_READINESS.md
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV  # noqa: E402
+
 
 import argparse
 import json
@@ -456,9 +466,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ap.add_argument("--features-dir",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
+                    default=str(FEATURES_DIR))
     ap.add_argument("--labels-multiclass",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+                    default=str(LABELS_TSV))
     ap.add_argument("--out-json", default="results/publication_readiness.json")
     ap.add_argument("--out-md", default="docs/PUBLICATION_READINESS.md")
     ap.add_argument("--external-validation",

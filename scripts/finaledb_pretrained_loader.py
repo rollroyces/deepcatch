@@ -45,7 +45,7 @@ Usage
 
     # NEW (real-data) cohort + checkpoint
     cohort = load_real_cohort(
-        "/Users/hermes/deepcatch/data/finaledb_pretrain_cohort_PRODUCTION.npz"
+        str(REPO_ROOT / "data" / "finaledb_pretrain_cohort_PRODUCTION.npz")
     )
     modalities = modalities_from_flat_X(cohort["X"])
 
@@ -56,7 +56,7 @@ Usage
         config=FoundationConfig(embed_dim=128, n_layers=4, n_heads=4,
                                ff_dim=256, dropout=0.2),
         pretrained=True,
-        checkpoint_path="/Users/hermes/deepcatch/checkpoints/foundation_pretrained_finaledb_PRODUCTION.pt",
+        checkpoint_path=str(REPO_ROOT / "checkpoints" / "foundation_pretrained_finaledb_PRODUCTION.pt"),
     )
     proba = fd.predict_proba(modalities)
 
@@ -64,17 +64,27 @@ Usage
     # -- use only for audit / regression tests, never for
     #    "real-data-derived" downstream work.
     old_cohort = load_real_cohort(
-        "/Users/hermes/deepcatch/data/finaledb_pretrain_cohort_SYNTHETIC_v0.npz"
+        str(REPO_ROOT / "data" / "finaledb_pretrain_cohort_SYNTHETIC_v0.npz")
     )
     old_modalities = modalities_from_flat_X(old_cohort["X"])
     fd_old = FoundationDownstream(
         config=FoundationConfig(embed_dim=64, n_layers=2, n_heads=2,
                                ff_dim=128, dropout=0.2),
         pretrained=True,
-        checkpoint_path="/Users/hermes/deepcatch/checkpoints/foundation_pretrained_SYNTHETIC_v0.pt",
+        checkpoint_path=str(REPO_ROOT / "checkpoints" / "foundation_pretrained_SYNTHETIC_v0.pt"),
     )
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 
 from pathlib import Path
 from typing import Dict

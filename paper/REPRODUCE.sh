@@ -91,8 +91,18 @@ echo "[REPRODUCE] Using python: ${PYTHON}"
 export PYTHONPATH=
 
 # --------------------------------------------------------------- paths ----
-FEATURES_DIR="${DEEPCATCH_FEATURES_DIR:-/Users/hermes/cfdna-fragmentomics-pipeline/data/features}"
-LABELS_TSV="${DEEPCATCH_LABELS:-/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv}"
+# The sister pipeline is expected NEXT TO this repository -- which is where
+# the header above tells you to clone it -- so the defaults are derived
+# from the repo root instead of hardcoding one machine's home directory.
+# A reviewer who followed the clone instruction gets working defaults; the
+# environment variables still override everything.
+SIBLING_DEFAULT="$(dirname "${REPO_ROOT}")/cfdna-fragmentomics-pipeline"
+if [[ ! -d "${SIBLING_DEFAULT}" && -d "${HOME}/cfdna-fragmentomics-pipeline" ]]; then
+    SIBLING_DEFAULT="${HOME}/cfdna-fragmentomics-pipeline"
+fi
+FEATURES_DIR="${DEEPCATCH_FEATURES_DIR:-${SIBLING_DEFAULT}/data/features}"
+LABELS_TSV="${DEEPCATCH_LABELS:-${SIBLING_DEFAULT}/labels_multiclass.tsv}"
+SISTER_PIPELINE="${DEEPCATCH_SISTER_PIPELINE:-${SIBLING_DEFAULT}}"
 EXTERNAL_DIR="${DEEPCATCH_EXTERNAL_DIR:-${REPO_ROOT}/data/external_cohort}"
 METHYLATION_DIR="${DEEPCATCH_METHYLATION_DIR:-${REPO_ROOT}/../methylation_cohort}"
 
@@ -188,7 +198,12 @@ echo "[REPRODUCE] Snapshotted $(ls -1 "${BASELINE_DIR}" | wc -l | tr -d ' ') com
 
 if [[ ! -d "${FEATURES_DIR}" ]]; then
     echo "[REPRODUCE] !! feature directory not found: ${FEATURES_DIR}" >&2
-    echo "[REPRODUCE]    set DEEPCATCH_FEATURES_DIR to the extracted FinaleDB features." >&2
+    echo "[REPRODUCE]    The extracted FinaleDB features are in NEITHER repository:" >&2
+    echo "[REPRODUCE]    the pipeline repo gitignores data/features/ (~600 MB for 627" >&2
+    echo "[REPRODUCE]    samples), because they are rebuilt from the public FinaleDB API." >&2
+    echo "[REPRODUCE]    Build them from the pipeline checkout:" >&2
+    echo "[REPRODUCE]      cd \"${SISTER_PIPELINE}\" && python run_cross_study.py --parallel 8 --max-mb 500" >&2
+    echo "[REPRODUCE]    then re-run with DEEPCATCH_FEATURES_DIR=\"${SISTER_PIPELINE}/data/features\"." >&2
     exit 4
 fi
 
@@ -197,7 +212,6 @@ fi
 # Without the check below, step 1 dies with "No module named
 # 'honest_benchmark'" -- which reads like a broken repo rather than a
 # missing prerequisite.
-SISTER_PIPELINE="${DEEPCATCH_SISTER_PIPELINE:-/Users/hermes/cfdna-fragmentomics-pipeline}"
 if [[ ! -f "${SISTER_PIPELINE}/scripts/honest_benchmark.py" ]]; then
     echo "[REPRODUCE] !! sister-pipeline checkout not found: ${SISTER_PIPELINE}" >&2
     echo "[REPRODUCE]    clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline" >&2

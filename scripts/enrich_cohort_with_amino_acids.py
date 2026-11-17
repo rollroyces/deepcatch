@@ -12,6 +12,16 @@ Honest scope:
     We do NOT touch non-missense or non-SNV mutations.
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 
 import gzip
 import io
@@ -24,7 +34,7 @@ from typing import Dict, List, Optional
 
 import requests
 
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 COHORT = ROOT / "results" / "cadd_mutations_full.json"
 OUT_PATH = ROOT / "results" / "cohort_with_amino_acids.jsonl"
 CACHE_MAF = ROOT / "validation" / "tcga" / "tcga_cache" / "downloaded_mafs"

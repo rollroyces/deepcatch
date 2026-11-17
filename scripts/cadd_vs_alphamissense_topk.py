@@ -24,6 +24,16 @@ Writes:
 """
 
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 
 import argparse
 import json
@@ -35,7 +45,7 @@ from pathlib import Path
 
 import numpy as np
 
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 

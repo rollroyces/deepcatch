@@ -11,7 +11,7 @@ Citation:
     genetic variants. Nat Genet. 2014;46(3):310-315.
     https://doi.org/10.1038/ng.2892
 
-Data sources (both downloaded once into /Users/hermes/deepcatch/data/cadd/):
+Data sources (both downloaded once into ./data/cadd/):
   - CADD v1.6 GRCh38 gnomAD genomes r3.0 SNVs (5.9 GB advertised, ~6.35 GB actual):
       https://krishna.gs.washington.edu/download/CADD/v1.6/GRCh38/gnomad.genomes.r3.0.snv.tsv.gz
   - CADD v1.7 GRCh38 gnomAD genomes r4.0 InDels (1.2 GB):
@@ -26,6 +26,16 @@ rare/private and do not appear in gnomAD; match rate is honestly reported below.
 License: CADD data and scores are CC BY-NC-SA 4.0 (non-commercial). This work
 is research use.
 """
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 import gzip
 import json
 import os
@@ -53,7 +63,7 @@ from real_tcga_validation import (  # noqa: E402
 # ─────────────────────────────────────────────────────────────────────────────
 # Paths
 # ─────────────────────────────────────────────────────────────────────────────
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 DATA_CADD = ROOT / "data" / "cadd"
 SNV_TSV = DATA_CADD / "cadd_v1.6_gnomad_r3_snv.tsv.gz"
 SNV_TBI = DATA_CADD / "cadd_v1.6_gnomad_r3_snv.tsv.gz.tbi"

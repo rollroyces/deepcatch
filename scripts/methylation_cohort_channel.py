@@ -24,6 +24,16 @@ Usage:
         --out-json      results/methylation_cohort_channel.json
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FINALEME_HOME  # noqa: E402
+
 
 import argparse
 import gzip
@@ -40,7 +50,7 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _REPO_ROOT)
 
 FINALEME_HOME = os.environ.get(
-    "FINALEME_HOME", "/Users/hermes/.hermes/.local/finaleme")
+    "FINALEME_HOME", str(FINALEME_HOME))
 JAR = os.path.join(FINALEME_HOME, "FinaleMe-0.58-jar-with-dependencies.jar")
 CLASS_PATH = (
     os.path.join(FINALEME_HOME, "fm_src/FinaleMe-main/target/classes")

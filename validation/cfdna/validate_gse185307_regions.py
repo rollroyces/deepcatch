@@ -8,6 +8,16 @@ Cancer-specific methylation changes are concentrated in shores/shelves,
 not inside CpG islands or genome-wide. This analysis tests whether
 region-aware features recover the cancer signal at n=13.
 """
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[2] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 import gzip
 import sys
 from pathlib import Path
@@ -18,8 +28,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score
 
-DATA_DIR = Path("/Users/hermes/deepcatch/data/GSE185307")
-CPG_ISLANDS = Path("/Users/hermes/deepcatch/data/reference/cpgIslandExt.hg38.txt.gz")
+DATA_DIR = REPO_ROOT / "data" / "GSE185307"
+CPG_ISLANDS = REPO_ROOT / "data" / "reference" / "cpgIslandExt.hg38.txt.gz"
 SHORE_KB = 2  # shore = ±2kb from island boundary
 SHELF_KB = 4  # shelf = ±4kb (2-4kb from boundary)
 
@@ -233,7 +243,7 @@ def main():
            "genome_wide_auc": 0.357, "region_aware_auc": auc,
            "sens_at_95_spec": sens95,
            "per_sample_scores": {gsm: float(s) for gsm, s in zip(sample_ids, y_pred)}}
-    with open(Path("/Users/hermes/deepcatch/results/gse185307_region_aware_validation.json"), "w") as f:
+    with open(REPO_ROOT / "results" / "gse185307_region_aware_validation.json", "w") as f:
         json.dump(out, f, indent=2)
     print("  Saved: results/gse185307_region_aware_validation.json")
 

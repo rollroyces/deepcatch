@@ -53,7 +53,7 @@ CLI
 
     # Build the GC reference (one-time; ~6s on hg38 .2bit):
     python scripts/gc_correction.py build-reference \\
-        --fasta2bit /Users/hermes/cfdna-fragmentomics-pipeline/data/references/hg38.2bit \\
+        --fasta2bit ../cfdna-fragmentomics-pipeline/data/references/hg38.2bit \\
         --out data/reference/hg38_100kb_gc_per_bin.npy
 
     # Per-sample (mostly for debugging / inspection):

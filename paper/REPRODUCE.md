@@ -87,10 +87,30 @@ digit for digit.
 
 | What | Default | Override |
 |---|---|---|
-| Extracted FinaleDB features | `/Users/hermes/cfdna-fragmentomics-pipeline/data/features` | `DEEPCATCH_FEATURES_DIR` |
-| Multi-class labels | `/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv` | `DEEPCATCH_LABELS` |
+| Extracted FinaleDB features | `<sibling>/data/features` | `DEEPCATCH_FEATURES_DIR` |
+| Multi-class labels | `<sibling>/labels_multiclass.tsv` | `DEEPCATCH_LABELS` |
+| Sister-pipeline checkout | `<sibling>` (next to this repository, or in your home directory) | `DEEPCATCH_SISTER_PIPELINE` |
 | Held-out external cohort | `data/external_cohort` | `DEEPCATCH_EXTERNAL_DIR` |
 | Methylation CpG matrices | `../methylation_cohort` | `DEEPCATCH_METHYLATION_DIR` |
+
+`<sibling>` is `cfdna-fragmentomics-pipeline` cloned **next to** this
+repository (i.e. `../cfdna-fragmentomics-pipeline`), or in your home
+directory. The defaults are derived from the repository's own location,
+so the documented layout works without any environment variable.
+
+**The extracted features are in neither repository.** The pipeline repo
+gitignores `data/features/` (~600 MB for 627 samples) and `data/raw/`
+(the raw downloads, ~100 GB), because both are rebuilt from the public
+FinaleDB API. Build the features once from the pipeline checkout:
+
+```bash
+cd ../cfdna-fragmentomics-pipeline
+python run_cross_study.py --parallel 8 --max-mb 500
+```
+
+After that, `data/features/` exists and the driver's default path finds
+it. The labels file (`labels_multiclass.tsv`) *is* committed in the
+pipeline repo, so it needs no extra step.
 
 The external cohort is fetched from the public FinaleDB API + S3 by
 `scripts/fetch_external_cohort.py` — no IRB, no institutional account.

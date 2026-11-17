@@ -34,7 +34,7 @@ is intentionally NOT provided: this is the *layout example*, never the
 *signal example*.
 
 Run:
-    env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+    env -u PYTHONPATH ./.venv/bin/python \\
         scripts/_synthetic_collaborator_cohort.py \\
         --out data/synthetic_collaborator_cohort
 """

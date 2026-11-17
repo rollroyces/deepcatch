@@ -35,6 +35,16 @@ data_source off 'both' (e.g., when validating the negation path
 without an external dependency).
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV  # noqa: E402
+
 
 import argparse
 import json
@@ -61,9 +71,9 @@ from _finaledb_feature_loader import load_all_channels_or_skip  # noqa: E402
 # ─────────────────────────────────────────────────────────────────────
 
 DEFAULT_FINALEDB_FEATURES_DIR = Path(
-    "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+    str(FEATURES_DIR)
 )
-DEFAULT_LABELS_TSV = Path("/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+DEFAULT_LABELS_TSV = Path(str(LABELS_TSV))
 DEFAULT_FINALEME_OUTPUT_DIR = Path("~/.hermes/.local/finaleme/output").expanduser()
 
 BRIDGE_OUTPUT = "results/cross_platform_finaledb_bridge.json"
@@ -428,7 +438,7 @@ def build_readiness_payload(
                     "Methylation channel is missing — install FinaleMe JAR + pretrained "
                     "models + reference files (see docs/CROSS_PLATFORM_FINALEME.md)."
                     if not methylation_available and not skip_finaleme
-                    else "Fragmentomics channel is missing — install FinaleDB features cache at /Users/hermes/cfdna-fragmentomics-pipeline/data/features/."
+                    else "Fragmentomics channel is missing — install FinaleDB features cache at ../cfdna-fragmentomics-pipeline/data/features/."
                     if not frag_available
                     else ""
                 )

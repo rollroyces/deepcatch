@@ -40,10 +40,10 @@ honest current status. The default `--publications 6 8` uses the
 already-cached local features for the open-data benchmark.
 
 Usage:
-  env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \\
+  env -u PYTHONPATH ./.venv/bin/python \\
       scripts/cross_study_finallydb.py \\
-      --features-dir /Users/hermes/cfdna-fragmentomics-pipeline/data/features \\
-      --labels-multiclass /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
+      --features-dir ../cfdna-fragmentomics-pipeline/data/features \\
+      --labels-multiclass ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \\
       --publications 6 8 \\
       --out-json results/cross_study_finallydb.json \\
       --out-md    docs/CROSS_STUDY_BENCHMARK.md
@@ -55,6 +55,16 @@ the rationale and `docs/ULTRA_EARLY_READINESS_AUTO.md` for the
 machine-generated readiness verdict.
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV, SIBLING_PIPELINE  # noqa: E402
+
 
 import argparse
 import json
@@ -79,7 +89,7 @@ from sklearn.preprocessing import StandardScaler
 # session on ModuleNotFoundError: No module named 'honest_benchmark').
 PIPELINE = os.environ.get(
     "DEEPCATCH_SISTER_PIPELINE",
-    "/Users/hermes/cfdna-fragmentomics-pipeline",
+    str(SIBLING_PIPELINE),
 )
 _SISTER = None
 
@@ -1326,9 +1336,9 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     ap.add_argument("--features-dir",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
+                    default=str(FEATURES_DIR))
     ap.add_argument("--labels-multiclass",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+                    default=str(LABELS_TSV))
     ap.add_argument("--publications", nargs="+", default=["6", "8"],
                     help="Space-separated list of FinaleDB publication ids to "
                          "include in the benchmark (default: '6 8' = Jiang + "

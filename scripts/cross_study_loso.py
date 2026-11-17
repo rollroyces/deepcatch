@@ -62,6 +62,16 @@ Outputs:
   docs/CROSS_STUDY_LOSO.md
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, LABELS_TSV, SIBLING_PIPELINE  # noqa: E402
+
 
 import argparse
 import json
@@ -109,7 +119,7 @@ def _external():
 
     pipeline = os.environ.get(
         "DEEPCATCH_SISTER_PIPELINE",
-        "/Users/hermes/cfdna-fragmentomics-pipeline",
+        str(SIBLING_PIPELINE),
     )
     for path in (pipeline, os.path.join(pipeline, "scripts")):
         if path not in sys.path:
@@ -498,9 +508,9 @@ def main():
     _, helpers = _external()
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--features-dir",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/data/features")
+                    default=str(FEATURES_DIR))
     ap.add_argument("--labels-multiclass",
-                    default="/Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv")
+                    default=str(LABELS_TSV))
     ap.add_argument("--publications", nargs="+", default=["6", "8"])
     ap.add_argument("--pca", type=int, default=helpers.DEFAULT_PCA_N)
     ap.add_argument("--seeds", type=int, nargs="+",

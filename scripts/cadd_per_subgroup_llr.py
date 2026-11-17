@@ -28,9 +28,19 @@ that's a real per-subgroup lift (and the per-subgroup uniform LLR is the
 proper baseline, not the whole-cohort number).
 
 Outputs:
-  - /Users/hermes/deepcatch/results/cadd_per_subgroup_llr.json
-  - /Users/hermes/deepcatch/docs/CADD_PER_SUBGROUP_LLR.md
+  - ./results/cadd_per_subgroup_llr.json
+  - ./docs/CADD_PER_SUBGROUP_LLR.md
 """
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import REPO_ROOT  # noqa: E402
+
 import json
 import statistics
 import sys
@@ -41,7 +51,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from sklearn.metrics import roc_auc_score
 
-ROOT = Path("/Users/hermes/deepcatch")
+ROOT = REPO_ROOT
 sys.path.insert(0, str(ROOT))
 
 from real_tcga_validation import (  # noqa: E402

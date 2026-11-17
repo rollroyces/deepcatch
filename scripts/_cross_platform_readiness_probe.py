@@ -20,6 +20,16 @@ Usage:
     env -u PYTHONPATH ./.venv/bin/python scripts/_cross_platform_readiness_probe.py
 """
 from __future__ import annotations
+import sys as _sys
+from pathlib import Path as _Path
+
+# The repository's own path layout, resolved from this file: the
+# sibling pipeline, the feature cache and the labels are looked up
+# next to the repository, then in the home directory, with the
+# environment variables overriding both.
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1] / "scripts"))
+from _paths import FEATURES_DIR, FINALEME_HOME  # noqa: E402
+
 
 import argparse
 import os
@@ -65,7 +75,7 @@ DEFAULT_FINALEME_OUTPUT_DIR = FINALEME_HOME / "output"
 
 # FinaleDB features cache (deepcatch's cfdna-fragmentomics sibling)
 DEFAULT_FINALEDB_FEATURES_DIR = Path(
-    "/Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+    str(FEATURES_DIR)
 )
 
 # ─────────────────────────────────────────────────────────────────────
@@ -155,7 +165,7 @@ def _check_finaledb_features(features_dir: Path) -> Tuple[bool, str]:
     if not features_dir.is_dir():
         return False, (
             f"{features_dir} does not exist. The FinaleDB features cache "
-            f"is at /Users/hermes/cfdna-fragmentomics-pipeline/data/features/."
+            f"is at ../cfdna-fragmentomics-pipeline/data/features/."
         )
     # Count .npy files; there should be 5 per sample
     npy = list(features_dir.glob("*.npy"))

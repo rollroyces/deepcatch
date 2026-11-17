@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # DeepCatch install + smoke test demo (recorded into docs/demo/install.cast)
 set -e
+# The repository root, derived from this script's own location, so the
+# demo runs for anyone who clones the repository -- it used to point at
+# the machine it was recorded on.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "${REPO_ROOT}"
 export TERM=xterm-256color
 export COLUMNS=100
 export LINES=30
@@ -9,11 +14,10 @@ echo "=== DeepCatch install + smoke-test demo (~60s) ==="
 date
 echo ""
 echo ">>> step 0: repo + branch info"
-git -C /Users/hermes/deepcatch log --oneline -1
-git -C /Users/hermes/deepcatch describe --tags --always 2>/dev/null || echo "(no tag)"
+git -C "${REPO_ROOT}" log --oneline -1
+git -C "${REPO_ROOT}" describe --tags --always 2>/dev/null || echo "(no tag)"
 echo ""
 echo ">>> step 1: editable install (venv reuses cache)"
-cd /Users/hermes/deepcatch
 pip install -e . --quiet --no-deps 2>&1 | tail -3 || true
 echo "[install: ok]"
 echo ""
