@@ -106,6 +106,30 @@ cohort size.
 
 ### Fixed
 
+- **What the audit of the paired-cohort work found.** An independent
+  audit of the four commits around it found three real defects, all now
+  fixed. (1) The control the table called a "label-permuted control" is
+  not a permutation: `scripts/foundation_real_smoke.py` writes 1 back to
+  the same indices, so `y_shuf == y_true` — as
+  `scripts/fusion_regularized_smoke.py` already recorded. The row is
+  renamed the pair-broken control it is, and the paragraph that leaned
+  on it now says what the control actually breaks and that the LR and
+  naive-average channels reproduce their real AUC under it. (2) The
+  driver's new fourteenth step regenerated an artifact that nothing
+  compared: `scripts/reproduce_check.py` collected the quotable list and
+  the extra numbers, and the table-row pins were in neither. The
+  paired-cohort figures are now in the comparison (69 numbers instead of
+  57), and a perturbed artifact fails it. (3) `paper/REPRODUCE.md` still
+  quoted the pre-regeneration value. The audit also found the methods
+  paper's abstract, the ablation document's prose and the README's
+  test-file line describing the old run; they now carry the measured
+  figures. The two artifacts disagreed on the standard deviation
+  (population versus sample) for the same per-seed array, so the smoke
+  script now uses ddof=1 and the two documents quote one number.
+  One correction to the previous entry: the coverage test caught the
+  missing driver step only once the table's rows were pinned to the
+  artifact — it was the audit that found the table did not match the
+  artifact at all.
 - **The methods paper's paired-cohort table was a record, not a
   reproduction — now it is one.** Section 3.1's seven rows cited
   `results/sens_at_spec_ce_n20.json` and six of them did not match it:

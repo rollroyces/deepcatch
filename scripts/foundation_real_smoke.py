@@ -893,7 +893,11 @@ def main() -> int:
         )
 
     foundation_auc_mean = float(np.mean(aucs))
-    foundation_auc_std = float(np.std(aucs))
+    # ddof=1 (the sample standard deviation), so this field agrees with
+    # scripts/sens_at_spec_ablation.py: the two artifacts describe the
+    # same per-seed array, and a document quoting one of them must not
+    # quote a different spread than a document quoting the other.
+    foundation_auc_std = float(np.std(aucs, ddof=1))
     panel_auc_mean = float(np.mean(panel_only_aucs))
     frag_auc_mean = float(np.mean(frag_only_aucs))
     sens95_mean = float(np.mean(sens95))

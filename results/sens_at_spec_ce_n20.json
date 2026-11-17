@@ -318,7 +318,7 @@
   "panel_only_auc_mean": 0.9175000000000001,
   "frag_only_auc_mean": 0.6228750000000001,
   "foundation_auc_mean": 0.5635,
-  "foundation_auc_std": 0.011051018052650168,
+  "foundation_auc_std": 0.01133810529052131,
   "foundation_sens_at_95_mean": 0.145,
   "foundation_sens_at_99_mean": 0.0775,
   "lr_baseline_auc_mean": 0.9040000000000001,

@@ -17,7 +17,7 @@ result. The honest n=20 paired comparison below supersedes the n=5 numbers.
 |-------------------------|---------------------|----------------------------|----------------------------------|--------:|---------|
 | Foundation AUC          | 0.5635 ± 0.0113     | 0.5621 ± 0.0089            | **−0.0014** [−0.0052, +0.0025]  |   0.463 | **null** (point estimate flipped sign) |
 | Foundation Sens@99%     | 0.078 ± 0.034        | 0.075 ± 0.034              | **−0.003** [−0.008, +0.003]      |   0.330 | **null** (sign flip) |
-| Foundation Sens@95%     | 0.145                | 0.148                      | +0.003 (the threshold moved)     |   n/a   | no material change |
+| Foundation Sens@95%     | 0.145                | 0.1475                     | +0.003 (the threshold moved)     |   n/a   | no material change |
 | LR-baseline AUC         | 0.904 (20/20 match) | 0.904 (20/20 match)        | 0.0000 (deterministic)           |   n/a   | no change (loss not applied) |
 | Smoke gate              | **fail** (sens@99=0.245<0.40) | **fail** (sens@99=0.245<0.40) | n/a | n/a | pre-existing |
 | `lr_baseline_aucs_match` | ✅ 20/20 bit-identical across the two JSONs |
@@ -29,18 +29,16 @@ gives t-critical 2.093 at α=0.05 two-sided, so the test has the power to
 detect a +0.005 AUC effect — none is observed.
 
 **Confidence interval narrowed as predicted.** n=5 → n=20 cut the AUC CI
-half-width from ±0.015 to ±0.001 (~**15×** narrower, much more than the
-~2× predicted in the n=5 write-up). The reason: the per-seed foundation
-AUC std dropped from 0.025 to 0.009 as n went up (more seeds dilute the
-rare positive outliers in the per-seed sens@99 calculation), AND the
-paired-diff std dropped from 0.011 to 0.002 (the two losses produce
-nearly-identical per-seed AUCs).
+half-width from ±0.015 to ±0.004 (~**4×** narrower, more than the
+~2× predicted in the n=5 write-up). The per-seed foundation AUC std
+moved from 0.025 (n=5, leaky CV) to 0.011 (n=20, honest CV), and the
+paired-diff std is 0.008.
 
 **Honest verdict: NULL effect on this cohort under honest CV.**
-Both losses land within ±0.001 AUC of each other on average, with the
-sens_at_spec variant running a hair below CE (Δ = −0.0005, p=0.30). The
-95% CI excludes the original n=5 point estimate of +0.0075 by an order of
-magnitude. The previous "positive direction, not statistically significant"
+Both losses land within 0.002 AUC of each other on average, with the
+sens_at_spec variant running a hair below CE (Δ = −0.0014, p=0.46). The
+95% CI excludes the original n=5 point estimate of +0.0075. The previous
+"positive direction, not statistically significant"
 verdict was an artifact of the CV-leak; under honest per-patient GroupKFold
 the two losses are statistically indistinguishable.
 
@@ -48,7 +46,7 @@ the two losses are statistically indistinguishable.
 1. Keep `loss="ce"` as the default — the n=20 paired test gives no evidence
    that `loss="sens_at_spec"` helps on this cohort.
 2. The ablation is **moot at this honest baseline AUC (0.56)**: neither loss
-   extracts the signal that the LR baseline (AUC 0.97) trivially captures
+   extracts the signal that the LR baseline (AUC 0.90) trivially captures
    from the same [panel, frag] input. Until the foundation model can match
    the LR baseline, comparing loss functions is comparing two equally
    failing configurations.

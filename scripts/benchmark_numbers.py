@@ -495,7 +495,7 @@ TABLE_ROWS = [
     },
     {
         "doc": "paper/METHODS_PAPER.md",
-        "anchor": "| `shuffled_foundation AUC` (label-permuted control) |",
+        "anchor": "| `shuffled_foundation AUC` (pair-broken control) |",
         "required": [("sens_at_spec_ce_n20.json",
                        ("shuffled_foundation_auc_mean",))],
         "forbidden": [],

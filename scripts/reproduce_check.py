@@ -90,6 +90,23 @@ EXTRA_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "9",
       "sensitivity_at_train_threshold_99spec")),
+    # The paired synthetic-plasma honest baseline behind the methods
+    # paper's section 3.1. The driver's step 14 regenerates the artifact,
+    # so its numbers have to be compared here like the rest -- otherwise
+    # the step would write a file nobody checks.
+    ("sens_at_spec_ce_n20.json", ("panel_only_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("frag_only_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("foundation_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("foundation_auc_std",)),
+    ("sens_at_spec_ce_n20.json", ("lr_baseline_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("naive_avg_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("shuffled_foundation_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("delta_auc_normalized",)),
+    # The loss ablation built from the two n=20 runs.
+    ("sens_at_spec_ablation_n20.json", ("foundation_auc_mean_ce",)),
+    ("sens_at_spec_ablation_n20.json",
+     ("foundation_auc_mean_sens_at_spec",)),
+    ("sens_at_spec_ablation_n20.json", ("foundation_auc_paired_t", "p_value")),
     # The readiness verdict, which ~20 documents quote. It is derived
     # from the artifacts above, so it has to be compared too -- it used
     # to be regenerated after the proof step and never checked.

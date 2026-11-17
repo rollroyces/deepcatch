@@ -170,7 +170,7 @@ same numbers, to the last digit.
 
 | Paper section | JSON artifact | Headline value |
 |---|---|---|
-| §3.1 (paired synthetic-plasma) | `results/sens_at_spec_ce_n20.json` | foundation AUC 0.5588 ± 0.0094 (n=20 paired seeds) |
+| §3.1 (paired synthetic-plasma) | `results/sens_at_spec_ce_n20.json` | foundation AUC 0.5635 ± 0.0113 (n=20 paired seeds) |
 | §3.1.1 (estimator class) | `results/fusion_regularized_smoke.json` | late fusion 0.9825 ± 0.0094, BMA 0.9650 ± 0.0089 |
 | §3.2 per-cohort rows | `results/cross_study_finallydb_gc_corrected.json:per_cohort` (headline) / `results/cross_study_finallydb.json:per_cohort` (legacy) | GC-corrected: jiang 0.9661 ± 0.0031, cristiano 0.9698 ± 0.0016; legacy: jiang 0.9789 ± 0.0027, cristiano 0.9704 ± 0.0023 |
 | §3.2 pooled rows | `results/cross_study_finallydb_gc_corrected.json:pooled` (headline) / `results/cross_study_finallydb.json:pooled` (legacy) | GC-corrected harmonized 0.9684 ± 0.0027, sens@99 = 0.700; legacy 0.9770 ± 0.0013, sens@99 = 0.785 |

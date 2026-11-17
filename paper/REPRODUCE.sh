@@ -496,7 +496,7 @@ if [[ "${MAF_COUNT}" == "0" ]]; then
     echo "[REPRODUCE]       paired synthetic-plasma baseline cannot be"
     echo "[REPRODUCE]       regenerated without the GDC cache."
 elif ! command -v java >/dev/null 2>&1; then
-    echo "[REPRODUCE] SKIP: java is not on PATH (needed by the HMM decoder)"
+    echo "[REPRODUCE] SKIP: java is not on PATH (the fragmentomics decoder needs it)"
 else
     echo "[REPRODUCE]       ${MAF_COUNT} MAF file(s) in the GDC cache"
     "${PYTHON}" scripts/foundation_real_smoke.py \
