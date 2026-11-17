@@ -108,7 +108,7 @@ linked to the account. The steps are in `ZENODO_SETUP.md`:
 1. Enable the repository at <https://zenodo.org/account/settings/github/>
 2. Tag the release: `git tag -a v2.3.0 -m "v2.3.0" && git push origin v2.3.0`
 3. Zenodo archives the release and issues the DOI; paste it into
-   `CITATION.cff`, `MODEL.md` and `paper/PAPER.md`.
+   `CITATION.cff`, `MODEL.md` and `paper/paper.tex`.
 
 Without it, the preprint can still go out (bioRxiv issues its own DOI),
 but the journal submissions would cite a commit hash instead of a

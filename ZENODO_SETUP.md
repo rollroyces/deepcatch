@@ -45,7 +45,7 @@ tagging — that repository has its own release history):
 
 ```bash
 cd /path/to/cfdna-fragmentomics-pipeline
-git tag -a v0.2.0 -m "v0.2.0: cross-study AUC 0.9770, AUC gate, HEAD-size guard, 18 unit tests"
+git tag -a v0.2.0 -m "v0.2.0: cross-study AUC 0.9770, AUC gate, HEAD-size guard, 126 unit tests"
 git push origin v0.2.0
 ```
 
@@ -61,14 +61,45 @@ git push origin v0.2.0
 >           random_state=sd).fit(Xtr)
 > ```
 >
-> Measured with that one line, the same command returns **0.977018 ±
-> 0.001316** on every run — identical to DeepCatch's own legacy pooled
-> number (0.977018 ± 0.001316), which confirms the two repositories run
-> the same computation once both are seeded. The sibling's documents
-> (`BENCHMARK.md`, `docs/MULTICANCER_RESULTS.md`) still quote the
-> unseeded 0.9745 and need updating at the same time; a DOI minted on a
-> tag whose headline number is known to drift is exactly the failure
-> this file warns about.
+> **Measured 2026-11-17, on an isolated worktree at the sibling's HEAD
+> (`eb1529e`), so its uncommitted work was never touched:**
+>
+> | Run | Cross-study headline | Sens@95% | lbfgs warning |
+> |---|---|---|---|
+> | unseeded (today) | 0.9744 ± 0.0032 | 0.880 | "failed to converge after 2000 iterations" |
+> | **seeded (today)** | **0.9770 ± 0.0013** | **0.900** | none |
+> | DeepCatch's own legacy pooled number | 0.977018 ± 0.001316 | — | — |
+>
+> The seeded number is identical to DeepCatch's own legacy pooled number,
+> which is the check that the two repositories run the same computation
+> once both are seeded. The drift has a mechanism: scikit-learn's PCA
+> picks the *randomised* SVD when `n_components < 0.8 *
+> min(n_samples, n_features)`, and with PCA(200) on the 627-sample cohort
+> that is 200 < 400 — so the subspace was random. The single-study
+> sections do not move (their PCA fits the full SVD).
+>
+> **The change is prepared, not published.** In the sibling repository it
+> sits on the local branch `fix/seed-pca` (commit `545073d`), which also
+> updates the sibling's documents to the measured figures (the cross-study
+> headline and its Sens@95%, the single-study figure, and the README note
+> that a re-run varies by ±0.001 AUC). It is not pushed, and the sibling
+> has uncommitted work in three scripts, so applying it is a decision
+> for its author:
+>
+> ```bash
+> # in cfdna-fragmentomics-pipeline, after dealing with the working tree
+> git cherry-pick 545073d          # or apply the exported .patch
+> ```
+>
+> A DOI minted on a tag whose headline number is known to drift is exactly
+> the failure this file warns about.
+>
+> **Two more unseeded PCA calls remain in that repository** and their
+> figures still drift: `scripts/sens_at_specification.py` and
+> `scripts/sens_calibration_sweep.py`. Their numbers are quoted in
+> `docs/SENS_OPTIMIZATION.md` and `BENCHMARK.md`; seeding them means
+> re-running those scripts and updating the figures, which is a separate
+> piece of work.
 
 ### 3. Create the GitHub Release
 

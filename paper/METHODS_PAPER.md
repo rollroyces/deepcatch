@@ -76,7 +76,7 @@ Downstream classification is a `FoundationDownstream` head: 0.7 × frozen-pretra
 
 ### 2.3 Panel-based detection (when prior cohort is known)
 
-For tumor-informed panel detection, the same `FoundationDownstream` consumes a modality dict where `frag_basic[:, 0]` is the panel-LLR sum (the sufficient statistic under independent Poisson observation at each locus), `frag_enhanced[:, 0]` is the patient-level frag score, and the other modalities are filled with cohort-derived priors. The panel-LLR scoring function, the Fisher-method aggregate, and the strand-concordance-weighted variant are documented in `paper/PAPER.md` (§2 of the companion benchmark paper) and `scripts/foundation_real_smoke.py`.
+For tumor-informed panel detection, the same `FoundationDownstream` consumes a modality dict where `frag_basic[:, 0]` is the panel-LLR sum (the sufficient statistic under independent Poisson observation at each locus), `frag_enhanced[:, 0]` is the patient-level frag score, and the other modalities are filled with cohort-derived priors. The panel-LLR scoring function, the Fisher-method aggregate, and the strand-concordance-weighted variant are documented in `paper/paper.tex` (§2 of the benchmark paper) and `scripts/foundation_real_smoke.py`.
 
 ### 2.4 Validation protocol
 
@@ -381,8 +381,8 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
   - `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` — cross-study AUC table (headline run); `docs/CROSS_STUDY_BENCHMARK.md` — the legacy no-GC counterpart
   - `MODEL.md` — model architecture reference
   - `docs/COLLABORATOR_DATA_INTERFACE.md` — schema for external collaborators to contribute a plasma cohort (no code required); see also `docs/COLLABORATOR_QUICKSTART.md` for a 1-page recipe.
-  - `paper/PAPER.md` (companion benchmark paper) — bioRxiv submission
-  - `paper/paper.tex` — LaTeX source of the companion benchmark paper
+  - `paper/paper.tex` — the benchmark paper being submitted (LaTeX source; the compiled artefact is `paper/biorxiv_submission_v2.3.0.pdf`)
+  - `paper/PAPER.md` — the earlier panel-only revision of that paper, kept for reference
 
 ---
 

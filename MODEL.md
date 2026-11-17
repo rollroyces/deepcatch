@@ -31,7 +31,7 @@ It has not been validated on a held-out clinical cohort. See
 | **Repository** | https://github.com/rollroyces/deepcatch |
 | **Companion pipeline** | [cfdna-fragmentomics-pipeline](https://github.com/rollroyces/cfdna-fragmentomics-pipeline) (the source of the tumor-naive channel) |
 | **Companion data** | 627 cross-study FinaleDB samples (Jiang 2015 + Cristiano 2019) |
-| **Reference paper** | `paper/PAPER.md` (242 lines) and `paper/paper.tex` (177 lines) |
+| **Reference paper** | `paper/paper.tex` — the manuscript (compiled to `paper/biorxiv_submission_v2.3.0.pdf`); `paper/PAPER.md` — the earlier panel-only revision, kept for reference |
 
 ## Intended use
 

@@ -253,7 +253,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 | Methylation phasing | `deepcatch-methylation/METHYLATION_PROJECT.md` + `PHASE0_PLAN.md` |
 | Clinical production path | `docs/PRODUCTION_ROADMAP.md` (historical — superseded by §2 Phase D above) |
 | Immediate tactical actions | `NEXT_STEPS.md` (historical — most items now done) |
-| bioRxiv manuscript | `paper/PAPER.md` (this repo) + `deepcatch-methylation/BIORXIV_PAPER*.md` |
+| bioRxiv manuscript | `paper/paper.tex` (this repo) + `deepcatch-methylation/BIORXIV_PAPER*.md` |
 | Reviewer pack | `REVIEWERS.md` |
 | Audit findings | `AUDIT_REPORT_2.md` |
 | Speed optimization | `cfdna-fragmentomics-pipeline/docs/SPEED_OPTIMIZATION.md` |
