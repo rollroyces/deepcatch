@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-881%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-882%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -163,13 +163,39 @@ flowchart LR
 
 ## Installation
 
-```bash
-git clone https://github.com/rollroyces/deepcatch.git
-cd deepcatch
+DeepCatch is **two repositories and one data step**. The headline
+numbers come from a feature cache that lives in the *companion pipeline
+repository*, and that cache is in **neither** repository — it is
+rebuilt from the public FinaleDB API, so nothing has to be downloaded
+by hand and no credentials are needed.
 
-# Recommended — editable install + CLI entry points (deepcatch-tumornaive, deepcatch-fusion, etc.)
+```bash
+# 1. The companion pipeline — do this FIRST. DeepCatch's scripts import
+#    its feature loader and its per-study harmoniser, and it is where
+#    the feature cache is built.
+git clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline
+cd cfdna-fragmentomics-pipeline
+python3.11 -m venv .venv && source .venv/bin/activate   # Windows: use WSL2
 pip install -e .
+
+# 2. Materialise the feature cache (~600 MB for 627 samples; the raw
+#    downloads are ~100 GB and are deleted as they are processed).
+#    This is the one long step.
+python run_cross_study.py --parallel 8 --max-mb 500
+
+# 3. DeepCatch itself.
+cd ../deepcatch
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -e .        # editable install + CLI entry points
 ```
+
+With the two repositories cloned side by side, every script and the
+reproduction driver find the cache, the labels and the sister pipeline
+without any further configuration. [`USAGE.md`](USAGE.md) has the full
+sequence with the platform notes; [`paper/REPRODUCE.md`](paper/REPRODUCE.md)
+documents the one-command reproduction; and
+[`docs/PUBLIC_DATA_SOURCES.md`](docs/PUBLIC_DATA_SOURCES.md) lists the
+public archives every number comes from.
 
 **Minimum dependencies** (CPU fragmentomics only):
 ```bash
@@ -221,6 +247,8 @@ print(f"AUC {np.mean(aucs):.4f} ± {np.std(aucs):.4f}")
 ```
 
 ### B. Cross-study benchmark CLI (the headline number)
+
+Needs the feature cache from Installation step 2.
 
 ```bash
 # Production run (5 seeds × 5 folds, ~5 min on 627 samples)
@@ -337,7 +365,7 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 659 passed, 24 skipped, 13 deselected (slow real-data smoke)
+# → 660 passed, 24 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -362,7 +390,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_public_tree_has_no_personal_contact.py` | 3 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **696 collected** | **659 passed + 24 skipped + 13 deselected** |
+| **Combined fast-path gate** | **697 collected** | **660 passed + 24 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks. Eleven of them live in `src/foundation/test_integration.py` and run in the deep-learning job of `validate.yml`, which does not deselect them. The other two — `test/test_cross_study_per_cancer_integration.py` and `test/test_load5_with_motifs.py` — need the companion repository's extracted feature cache, which CI does not have; they are deselected here and run only where that cache is present.
 
@@ -372,6 +400,7 @@ The 13 deselected tests are the slow real-data foundation smoke and per-study ha
 
 | Channel | Required data | Source |
 |---|---|---|
+| **Feature cache (the input to every headline number)** | `cfdna-fragmentomics-pipeline/data/features/` — 627 samples × 5 channels | **built by `run_cross_study.py` from the public FinaleDB API; in *neither* repository** (Installation step 2) |
 | Fragmentomics 5-channel | BAM / FASTQ (WGS) | FinaleDB (pubs 6 + 8), TCGA WXS |
 | GC / mappability correction | Reference GC track (hg19/hg38) | ENCODE, UCSC goldenPath |
 | 4-mer end motifs (`--include-motifs`) | End 5-mer counts from .bam | derived from BAM |
@@ -411,7 +440,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 46 test files (653 fast-path tests)
+├── test/                         # 46 test files (654 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts

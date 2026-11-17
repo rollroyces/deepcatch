@@ -1170,6 +1170,18 @@ cohort size.
   `test/test_availability_claims.py` checks the documents as well as the
   scripts.
 
+- **The README's quick start could not work, because it never said where
+  the data comes from.** It told the reader to run the cross-study
+  benchmark — the headline number — and to validate the install with
+  `./.venv/bin/python`, but its installation section created neither the
+  virtualenv nor the companion repository, and never mentioned that the
+  feature cache is in *neither* repository. `USAGE.md` had the correct
+  sequence; the README, which is the front door, did not. Both READMEs
+  now install the companion pipeline first, build the cache with
+  `run_cross_study.py`, create the virtualenv, and say which artifacts
+  come from where. A fresh clone of the public repository was checked
+  against this: every file the instructions name is present in it.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

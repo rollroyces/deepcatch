@@ -220,6 +220,33 @@ def test_the_reproduce_driver_says_how_to_build_the_missing_feature_cache():
     )
 
 
+def test_the_readme_says_where_the_benchmark_input_comes_from():
+    """The front door must say how to get the data the numbers need.
+
+    The README's quick start ran the cross-study benchmark and never
+    said where the feature cache comes from -- and the cache is in
+    *neither* repository, it is built from the public FinaleDB API. A
+    reader who followed the README alone got a path that does not exist
+    on their machine, and no indication of the one command that builds
+    it. The README also called a virtualenv interpreter that its own
+    installation section never created.
+
+    Both READMEs now name the companion repository and the command that
+    materialises the cache, and this keeps them saying so.
+    """
+    for doc in ("README.md", "README.zh-CN.md"):
+        text = (_REPO_ROOT / doc).read_text(encoding="utf-8")
+        assert "cfdna-fragmentomics-pipeline" in text, (
+            f"{doc} does not name the companion repository whose feature "
+            "cache every headline number is computed from"
+        )
+        assert "run_cross_study.py" in text, (
+            f"{doc} does not name the command that builds the feature "
+            "cache -- it is in neither repository, so without this line "
+            "the quick start cannot work"
+        )
+
+
 def test_the_repository_really_has_no_checkpoint_directory_to_discover():
     """The guard above must not be vacuous because the files appeared.
 

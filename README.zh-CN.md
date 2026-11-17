@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-881%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-882%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -167,13 +167,33 @@ flowchart LR
 
 ## 安装
 
-```bash
-git clone https://github.com/rollroyces/deepcatch.git
-cd deepcatch
+DeepCatch 是**两个仓库加一个数据步骤**。头条数字所用的特征缓存放在**配套的
+pipeline 仓库**里，而这个缓存在*两个仓库中都没有*——它是从公开的 FinaleDB API
+重建出来的，所以不必手动下载任何东西，也不���要任何凭证。
 
-# Recommended — editable install + CLI entry points (deepcatch-tumornaive, deepcatch-fusion, etc.)
+```bash
+# 1. 配套 pipeline —— 先做这个。DeepCatch 的脚本会 import 它的特征读取器与
+#    按研究 harmonizer，特征缓存也在这里构建。
+git clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline
+cd cfdna-fragmentomics-pipeline
+python3.11 -m venv .venv && source .venv/bin/activate   # Windows 请用 WSL2
 pip install -e .
+
+# 2. 生成特征缓存（627 个样本约 600 MB；原始下载约 100 GB，处理完即删除）。
+#    这是唯一耗时的步骤。
+python run_cross_study.py --parallel 8 --max-mb 500
+
+# 3. 然后是 DeepCatch 本体。
+cd ../deepcatch
+python3.11 -m venv .venv && source .venv/bin/activate
+pip install -e .        # 可编辑安装 + CLI 入口
 ```
+
+两个仓库并排放着，所有脚本与复现 driver 就能自动找到缓存、标签与 sister
+pipeline，无需再做任何配置。完整顺序（含各平台注意事项）见
+[`USAGE.md`](USAGE.md)，一键复现见 [`paper/REPRODUCE.md`](paper/REPRODUCE.md)，
+每个数字所来自的公开档案见
+[`docs/PUBLIC_DATA_SOURCES.md`](docs/PUBLIC_DATA_SOURCES.md)。
 
 **最小依赖**（仅 CPU 片段组学）：
 ```bash
@@ -225,6 +245,8 @@ print(f"AUC {np.mean(aucs):.4f} ± {np.std(aucs):.4f}")
 ```
 
 ### B. 跨研究基准 CLI（头条数字）
+
+需要安装步骤第 2 步生成的特征缓存。
 
 ```bash
 # Production run (5 seeds × 5 folds, ~5 min on 627 samples)
@@ -341,7 +363,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 659 passed, 24 skipped, 13 deselected (slow real-data smoke)
+# → 660 passed, 24 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -365,7 +387,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_public_tree_has_no_personal_contact.py` | 3 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 696** | **659 通过 + 24 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 697** | **660 通过 + 24 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 
@@ -375,6 +397,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 
 | 通道 | 需要的数据 | 来源 |
 |---|---|---|
+| **特征缓存（每个头条数字的输入）** | `cfdna-fragmentomics-pipeline/data/features/` —— 627 个样本 × 5 通道 | **由 `run_cross_study.py` 从公开 FinaleDB API 生成；*两个仓库中都没有*（安装步骤第 2 步）** |
 | 片段组学 5 通道 | BAM / FASTQ（WGS） | FinaleDB（出版物 6 + 8）、TCGA WXS |
 | GC / mappability 校正 | 参考 GC 轨道（hg19/hg38） | ENCODE、UCSC goldenPath |
 | 4-mer 末端基序（`--include-motifs`） | 来自 .bam 的末端 5-mer 计数 | 由 BAM 推导 |
@@ -414,7 +437,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 46 test files (653 fast-path tests)
+├── test/                         # 46 test files (654 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
