@@ -42,11 +42,12 @@ The driver does three things, in this order:
 | 11 | `real_tcga_validation.py` | `results/real_tcga_validation.json` | the panel-LLR AUC (0.921) — the abstract's first figure — **skipped without the GDC masked-MAF cache** |
 | 12 | `scripts/plot_figures.py` | `docs/figures/fig1..fig4*.png` | Figures 1–4 |
 | 13 | `scripts/ultraearly_readiness.py` | `results/ultraearly_readiness.json`, `docs/ULTRA_EARLY_READINESS_AUTO.md` | the readiness verdicts |
+| 14 | `scripts/foundation_real_smoke.py --seeds 20 --loss ce` | `results/sens_at_spec_ce_n20.json` | the paired synthetic-plasma honest baseline behind §3.1 — **skipped without the GDC masked-MAF cache** |
 
-Between 13 and the gate sit the two **acceptance floors** (see below) and the
-**reproduction check**.
+Between the steps and the gate sit the **acceptance floors** (see below) and
+the **reproduction check**.
 
-> **Three steps need inputs that are not in the repository.**
+> **Four steps need inputs that are not in the repository.**
 > Step 3 (the with-motifs sweep) needs the cached 4-mer end-motif features
 > (`<sample>.motifs.npy`), which live in the author's local feature
 > directory and are tracked in neither repository: without them the motif
@@ -57,7 +58,10 @@ Between 13 and the gate sit the two **acceptance floors** (see below) and the
 > Step 10 (the methylation channel) needs java, the FinaleMe 0.58 jar and
 > the cached per-sample CpG matrices, and is skipped the same way. Step 11
 > (the panel-LLR validation) needs the GDC masked-MAF cache in
-> `validation/tcga/tcga_cache/`.
+> `validation/tcga/tcga_cache/`, and step 14 (the paired synthetic-plasma
+> baseline behind §3.1) needs the same cache — it is also skipped
+> without it, and the check then reports
+> `results/sens_at_spec_ce_n20.json` as not regenerated.
 
 > **Why two cross-study runs?** `--gc-correction` defaults to ON, so a driver
 > that passes no flag writes the GC-corrected run into the legacy path. That

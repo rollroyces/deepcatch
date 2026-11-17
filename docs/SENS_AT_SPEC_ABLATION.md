@@ -15,11 +15,11 @@ result. The honest n=20 paired comparison below supersedes the n=5 numbers.
 
 | Metric                  | loss="ce"           | loss="sens_at_spec" (α=20) | Paired Δ (95% CI)                | p-value | Verdict |
 |-------------------------|---------------------|----------------------------|----------------------------------|--------:|---------|
-| Foundation AUC          | 0.5588 ± 0.0094     | 0.5582 ± 0.0104            | **−0.0005** [−0.0015, +0.0005]  |   0.297 | **null** (point estimate flipped sign) |
-| Foundation Sens@99%     | 0.078 ± 0.053        | 0.070 ± 0.044              | **−0.008** [−0.023, +0.008]      |   0.330 | **null** (sign flip) |
-| Foundation Sens@95%     | 0.165 ± 0.026        | 0.165 ± 0.026              | 0.000 (byte-identical arrays)    |   n/a   | no change (loss didn't move threshold) |
-| LR-baseline AUC         | 0.966 (20/20 match) | 0.966 (20/20 match)        | 0.0000 (deterministic)           |   n/a   | no change (loss not applied) |
-| Smoke gate              | **fail** (sens@99=0.35<0.40) | **fail** (sens@99=0.35<0.40) | n/a | n/a | pre-existing |
+| Foundation AUC          | 0.5635 ± 0.0113     | 0.5621 ± 0.0089            | **−0.0014** [−0.0052, +0.0025]  |   0.463 | **null** (point estimate flipped sign) |
+| Foundation Sens@99%     | 0.078 ± 0.034        | 0.075 ± 0.034              | **−0.003** [−0.008, +0.003]      |   0.330 | **null** (sign flip) |
+| Foundation Sens@95%     | 0.145                | 0.148                      | +0.003 (the threshold moved)     |   n/a   | no material change |
+| LR-baseline AUC         | 0.904 (20/20 match) | 0.904 (20/20 match)        | 0.0000 (deterministic)           |   n/a   | no change (loss not applied) |
+| Smoke gate              | **fail** (sens@99=0.245<0.40) | **fail** (sens@99=0.245<0.40) | n/a | n/a | pre-existing |
 | `lr_baseline_aucs_match` | ✅ 20/20 bit-identical across the two JSONs |
 
 **Paired design is honest:** the 20 per-seed `lr_baseline_aucs` arrays are
@@ -92,9 +92,9 @@ are not a real loss-comparison result, they're a CV-leak demonstration.
 ### Files added (n=20, supersedes the n=5 ones for honest comparison)
 
 - `results/sens_at_spec_ce_n20.json` — 20-seed run, `loss="ce"`,
-  honest GroupKFold, foundation AUC 0.5588 ± 0.0094.
+  honest GroupKFold, foundation AUC 0.5635 ± 0.0113.
 - `results/sens_at_spec_sens_n20.json` — 20-seed run, `loss="sens_at_spec"`,
-  `alpha_pos=20`, honest GroupKFold, foundation AUC 0.5582 ± 0.0104.
+  `alpha_pos=20`, honest GroupKFold, foundation AUC 0.5621 ± 0.0089.
 - `results/sens_at_spec_ablation_n20.json` — paired comparison with
   95% CIs and verdict classification. `lr_baseline_aucs_match: true`.
 

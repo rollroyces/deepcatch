@@ -16,6 +16,13 @@ the manuscript states to be in it. The list is DERIVED from the .tex
 rather than written out here, so the guard cannot itself drift from
 the manuscript, and it grows a check for every new figure.
 
+What it does NOT catch, stated plainly: a change to the manuscript's
+PROSE that alters no figure and no count. The guard reads numbers, so
+a reworded sentence leaves it green; the figure comparison covers the
+images, and the title/author/closing-sentence phrases cover the
+handful of strings the submission depends on. It is a staleness guard
+for the figures, not a diff against the source PDF.
+
 `pypdf` is a test-only dependency. The CI job installs it; where it is
 absent the test skips rather than fails, and says so.
 """

@@ -106,6 +106,27 @@ cohort size.
 
 ### Fixed
 
+- **The methods paper's paired-cohort table was a record, not a
+  reproduction — now it is one.** Section 3.1's seven rows cited
+  `results/sens_at_spec_ce_n20.json` and six of them did not match it:
+  that artifact was an older run of the same protocol, and the numbers
+  in the table came from an audit-2 run whose output was never
+  committed. Re-running the documented commands against the current code
+  (`scripts/foundation_real_smoke.py --seeds 20 --loss ce`, the
+  `sens_at_spec` variant, and `scripts/sens_at_spec_ablation.py`) gives
+  the current figures — panel-only 0.9175 ± 0.0135, frag-only 0.6229 ±
+  0.0141, foundation 0.5635 ± 0.0111, LR baseline 0.9040 ± 0.0121,
+  naive average 0.9174 ± 0.0136, permuted-label control 0.7421, delta
+  −2.813 — and the three artifacts are committed in that state. The
+  table carries them and names the artifact, seven row pins hold it
+  there, and `docs/SENS_AT_SPEC_ABLATION.md`'s n=20 comparison
+  follows. The driver has a fourteenth step that re-measures the
+  paired-cohort baseline with the documented command, so §3.1's figures
+  are compared like the rest (it skips itself, with the reason, when
+  the GDC cache is absent). The guard's number parser also learned to
+  read a typographic minus (U+2212): a negative figure written the way
+  the manuscripts write it parsed as its positive magnitude, so it
+  could never match the artifact it came from.
 - **The readiness document's panel table still carried the wrong
   sensitivity, and the guard could not see it.** The document's table
   said **0.490** where the artifact says **0.460** — while another
