@@ -49,7 +49,25 @@ OFFLINE_GENERATORS = [
         "artifact": "results/ultraearly_readiness.json",
         "args": ["--results-dir", "results"],
     },
+    {
+        # The paste-ready bioRxiv abstract. It was a separately written
+        # document for months, and it carried an older abstract, an older
+        # title and the author line "Royce et al." on a single-author
+        # paper -- so the text the author submits and the PDF they upload
+        # were different papers. Now the manuscript's LaTeX is the only
+        # source, and this generator is what renders it.
+        "name": "preprint_abstract",
+        "script": "scripts/generate_preprint_abstract.py",
+        "doc": "docs/PREPRINT_ABSTRACT.md",
+        "artifact": None,
+        "out_flag": "--out",
+    },
 ]
+
+# The generators that also produce a JSON artifact. A generator that only
+# writes a document has no artifact to compare.
+GENERATORS_WITH_ARTIFACTS = tuple(
+    spec for spec in OFFLINE_GENERATORS if spec.get("artifact"))
 
 # An ISO-8601 instant, however many fractional digits it carries.
 _TIMESTAMP = re.compile(
@@ -88,9 +106,10 @@ def _run_generator(spec: dict, tmp_path: Path) -> tuple[Path, Path]:
     cmd = [
         sys.executable, "-u", spec["script"],
         *spec.get("args", []),
-        "--out-json", str(out_json),
-        "--out-md", str(out_md),
+        spec.get("out_flag", "--out-md"), str(out_md),
     ]
+    if spec.get("artifact"):
+        cmd += ["--out-json", str(out_json)]
     proc = subprocess.run(cmd, capture_output=True, text=True,
                           cwd=str(_REPO_ROOT), timeout=600)
     assert proc.returncode == 0, (
@@ -117,7 +136,7 @@ def test_the_committed_document_is_what_the_generator_produces(spec, tmp_path):
     )
 
 
-@pytest.mark.parametrize("spec", OFFLINE_GENERATORS, ids=lambda s: s["name"])
+@pytest.mark.parametrize("spec", GENERATORS_WITH_ARTIFACTS, ids=lambda s: s["name"])
 def test_the_committed_artifact_is_what_the_generator_produces(spec, tmp_path):
     """The committed JSON artifact must equal a fresh generation too."""
     _, out_json = _run_generator(spec, tmp_path)

@@ -33,19 +33,20 @@ QUOTED_NUMBERS = [
      ["paper/paper.tex", "paper.md", "README.md", "README.zh-CN.md",
       "MODEL.md", "RESULTS.md", "TEAM.md", "CITATION.cff",
       "docs/EXTERNAL_VALIDATION.md", "docs/JOURNAL_SUBMISSION.md",
-      "docs/site/index.html", "paper/README.md", "results/README.md"]),
+      "docs/PREPRINT_ABSTRACT.md", "docs/site/index.html",
+      "paper/README.md", "results/README.md"]),
     # The second held-out whole-genome publication, and the case-only
     # one reported as sensitivity at the training threshold.
     ("external_validation_finaledb.json",
      ("per_publication_auc", "1", "auc"),
      ["paper/METHODS_PAPER.md", "MODEL.md", "README.md", "README.zh-CN.md",
       "RESULTS.md", "CITATION.cff", "docs/EXTERNAL_VALIDATION.md",
-      "results/README.md"]),
+      "docs/PREPRINT_ABSTRACT.md", "results/README.md"]),
     ("external_validation_finaledb.json",
      ("pooled_external_auc_matched_publications_only", "auc"),
      ["paper/METHODS_PAPER.md", "MODEL.md", "README.md", "README.zh-CN.md",
       "RESULTS.md", "CITATION.cff", "docs/EXTERNAL_VALIDATION.md",
-      "results/README.md"]),
+      "docs/PREPRINT_ABSTRACT.md", "results/README.md"]),
     # The case-only publication is reported as a sensitivity at the
     # threshold fixed in training, so the threshold and that sensitivity
     # are quoted numbers too.
@@ -155,7 +156,8 @@ QUOTED_SPECIAL = [
 _LOSO_DOCS = [
     "NEXT_STEPS.md", "README.md", "README.zh-CN.md", "REVIEWERS.md",
     "TEAM.md", "docs/CROSS_STUDY_BENCHMARK.md", "docs/CROSS_STUDY_LOSO.md",
-    "docs/JOURNAL_SUBMISSION.md", "docs/site/index.html", "paper.md",
+    "docs/JOURNAL_SUBMISSION.md", "docs/PREPRINT_ABSTRACT.md",
+    "docs/site/index.html", "paper.md",
     "paper/METHODS_PAPER.md", "paper/README.md", "paper/REPRODUCE.md",
     "results/README.md",
 ]

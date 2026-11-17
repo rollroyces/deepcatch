@@ -374,6 +374,15 @@ def _write_report(
     report = RESULTS / "REPRODUCE_REPORT.md"
     lines: List[str] = []
     lines.append("# Reproduction report\n")
+    lines.append(
+        "> **This report is the output of `scripts/reproduce_all.sh`, the older\n"
+        "> open-data benchmark pipeline.** The numbers the manuscript quotes are\n"
+        "> regenerated and PROVEN by the driver in `paper/REPRODUCE.sh`, which\n"
+        "> re-runs every script whose artifact the paper cites and then\n"
+        "> compares the regenerated numbers against the committed ones. A run\n"
+        "> of this pipeline reports the steps it could not run as SKIP, so a\n"
+        "> report here is not evidence that anything failed -- and not\n"
+        "> evidence that anything was reproduced either.\n")
     lines.append(f"- Generated: {time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(started))}")
     lines.append(f"- repo_root: `{repo_root}`")
     py_ver = subprocess.run(

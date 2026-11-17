@@ -51,6 +51,19 @@ _numbers = _load_numbers_module()
 SUPERSEDED = _numbers.SUPERSEDED
 
 
+def _load_abstract_module():
+    """The renderer that turns the manuscript's abstract into paste-ready text."""
+    spec = importlib.util.spec_from_file_location(
+        "generate_preprint_abstract",
+        _REPO_ROOT / "scripts" / "generate_preprint_abstract.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_abstract = _load_abstract_module()
+
+
 def _read(rel: str) -> str:
     return io.open(_REPO_ROOT / rel, encoding="utf-8").read()
 
@@ -255,14 +268,14 @@ def test_abstract_fits_the_biorxiv_character_limit():
     The abstract grew with the v2.3.0 results and passed 3000 without
     anyone checking; the upload would have been refused. This keeps the
     margin visible.
+
+    The length is measured on the string that is actually pasted: the
+    abstract rendered out of its LaTeX with the maths intact. The
+    previous measure deleted the maths (`$...$` became `0`), so it
+    under-counted and could not see an abstract that was long because
+    of its formulae.
     """
-    tex = _read("paper/paper.tex")
-    match = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.S)
-    assert match, "paper.tex has no abstract"
-    plain = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", match.group(1))
-    plain = re.sub(r"\\[a-zA-Z]+", "", plain)
-    plain = re.sub(r"\$[^$]*\$", "0", plain)
-    length = len(" ".join(plain.split()))
+    length = _abstract_length()
     assert length <= 3000, (
         f"the abstract is {length} characters; bioRxiv rejects anything "
         f"over 3000")
@@ -272,14 +285,16 @@ def test_abstract_fits_the_biorxiv_character_limit():
 
 
 def _abstract_length() -> int:
-    """The abstract's length, measured the way the test above measures it."""
+    """The abstract's length, measured the way the test above measures it.
+
+    This is the length of the text that goes into the bioRxiv form: the
+    LaTeX rendered to plain text -- not the LaTeX source, and not a lossy
+    normalisation of it. `scripts/generate_preprint_abstract.py` is the
+    same renderer the paste-ready document uses, so the form, that
+    document and this test cannot disagree about the number.
+    """
     tex = _read("paper/paper.tex")
-    match = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.S)
-    assert match, "paper.tex has no abstract"
-    plain = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", match.group(1))
-    plain = re.sub(r"\\[a-zA-Z]+", "", plain)
-    plain = re.sub(r"\$[^$]*\$", "0", plain)
-    return len(" ".join(plain.split()))
+    return _abstract.abstract_length(tex)
 
 
 def test_changelog_states_the_current_abstract_length():

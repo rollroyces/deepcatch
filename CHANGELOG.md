@@ -774,13 +774,34 @@ cohort size.
   regenerated and the PDF rebuilt. The paper-number guard now also
   asserts which artifact the figure script reads, so the same drift
   cannot come back through the images.
+- **The text submitted to bioRxiv was not the paper.**
+  `docs/PREPRINT_ABSTRACT.md` — the document `docs/PATH_TO_IMPACT.md`
+  tells the author to submit — was written separately and had drifted:
+  it quoted an older abstract (panel AUC 0.922 instead of 0.921,
+  Sens@95% 0.600 instead of 0.770, the Fisher score 0.849 instead of
+  0.834), carried none of the external-validation or
+  leave-one-study-out results, had an older title, and named
+  "Royce et al." on a single-author paper. The abstract and the PDF
+  would have been different papers. The document is now generated from
+  `paper/paper.tex` by `scripts/generate_preprint_abstract.py`, with the
+  LaTeX rendered to the plain text bioRxiv's field accepts, and the
+  generator's vocabulary is closed: an unknown command raises rather
+  than silently dropping a symbol. A test fails the build if the
+  committed document is not what the generator produces.
+  `scripts/generate_preprint_abstract.py`,
+  `test/test_preprint_abstract_generator.py`,
+  `docs/PREPRINT_ABSTRACT.md`.
 - **The abstract fitted bioRxiv's character limit again.** It grew with the
   v2.3.0 results to 3119 plain-text characters against bioRxiv's 3000
-  limit, so the upload would have been refused; it is now 2937 with every
+  limit, so the upload would have been refused; it is now 2940 with every
   number intact. A test fails the build if the abstract exceeds 3000
   characters, or creeps within 50 of the limit, and
   `scripts/check_biorxiv_form.py` fails if the upload form quotes a
-  different length than the manuscript actually has.
+  different length than the manuscript actually has. The length is
+  measured on the text that is actually pasted — the abstract rendered
+  out of its LaTeX, paragraph breaks included — rather than on a
+  normalisation that deleted the mathematics and so counted a string
+  nobody would submit.
 - **Eight tests that no workflow ever ran now run in CI.**
   `test/test_foundation_smoke.py` needs torch, so the core job skipped
   every test in it, and the deep-learning job does not collect `test/`

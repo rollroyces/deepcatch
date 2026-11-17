@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-15T16:44:11.026362+00:00",
+  "generated_at": "2026-11-17T01:58:46.739767+00:00",
   "protocol": {
     "cohort": "TCGA-LUAD paired (20 patients x 2 arms), real MAF-derived panel scores and real mutation-derived fragmentomics channel; simulated plasma at TF=0.001",
     "cv": "GroupKFold(n_splits=min(5, n_patients)) over patient groups -- both arms of every patient stay together",

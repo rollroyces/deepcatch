@@ -1,6 +1,6 @@
 # Leave-One-Study-Out (LOSO) Cross-Publication Benchmark
 > **Scope**: open-data cross-publication transfer on FinaleDB publications 6 (jiang) + 8 (cristiano). **NOT** clinical validation. **NOT** external cohort validation. The test publication is fully held out of training.
-- Generated: `2026-11-16T06:55:17.615896+00:00`
+- Generated: `2026-11-17T01:52:11.473270+00:00`
 - Features: `5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)`
 - PCA n_components: `200` (capped at min(pca_n, n_train) per direction)
 - Classifier: `LogisticRegression(max_iter=2000)`

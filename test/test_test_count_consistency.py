@@ -23,6 +23,15 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Documents that state the suite's size. Each must quote the same total.
+#
+# `docs/PREPRINT_ABSTRACT.md` is NOT in this list, and no longer states a
+# count: it is generated from the manuscript's abstract
+# (`scripts/generate_preprint_abstract.py`), and the manuscript's abstract
+# does not quote the suite size. It used to be here because the document
+# was separately written and carried "All code (820 tests)" -- a sentence
+# the paper itself does not make. The guard's rule is that documents
+# which state a count must state the same one, not that every document
+# must state one.
 COUNT_DOCS = [
     "paper/paper.tex",
     "paper/METHODS_PAPER.md",
@@ -35,7 +44,6 @@ COUNT_DOCS = [
     "docs/JOURNAL_SUBMISSION.md",
     "docs/PORTFOLIO_ROADMAP.md",
     "docs/PATH_TO_IMPACT.md",
-    "docs/PREPRINT_ABSTRACT.md",
 ]
 
 # "658 tests", "658 collected", "Tests-658%20collected", "(658 tests)"

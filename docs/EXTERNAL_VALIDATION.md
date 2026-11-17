@@ -2,7 +2,7 @@
 
 > Train: FinaleDB 6 + 8 (the cross-study cohort). Test: publications 1, 7, 9 -- never trained on. Public data, no IRB required.
 
-- Generated: `2026-11-16T06:55:53.473661+00:00`
+- Generated: `2026-11-17T01:52:52.594356+00:00`
 
 - Train n=627 (cancer 363) | External n=322 (cancer 300, non-cancer 22)
 

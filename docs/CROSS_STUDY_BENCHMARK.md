@@ -1,6 +1,6 @@
 # Cross-Study FinaleDB Benchmark (Open Data)
 > **Scope**: Open-data benchmark on FinaleDB publications: 6 (jiang) + 8 (cristiano). **NOT** clinical validation. **NOT** external cohort validation. Pooled OOF on the same cohort that trained the model.
-- Generated: `2026-11-16T06:47:29.481613+00:00`
+- Generated: `2026-11-17T01:35:50.635887+00:00`
 - Classifier: `LogisticRegression(max_iter=2000)`
 - Feature set: 5-channel (5mb_ratio + 5mb_coverage + 100kb_ratio + 100kb_counts + FSD-196)
 - PCA n_components: 200 (capped at `min(n_train, n_features)` per fold)

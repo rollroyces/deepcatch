@@ -336,6 +336,15 @@ REPORT="$RESULTS/REPRODUCE_REPORT.md"
 {
     echo "# Reproduction report"
     echo
+    echo '> **This report is the output of `scripts/reproduce_all.sh`, the older'
+    echo '> open-data benchmark pipeline.** The numbers the manuscript quotes are'
+    echo '> regenerated and PROVEN by the driver in `paper/REPRODUCE.sh`, which'
+    echo '> re-runs every script whose artifact the paper cites and then'
+    echo '> compares the regenerated numbers against the committed ones. A run'
+    echo '> of this pipeline reports the steps it could not run as SKIP, so a'
+    echo '> report here is not evidence that anything failed -- and not'
+    echo '> evidence that anything was reproduced either.'
+    echo
     echo "- Generated: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
     echo "- repo_root: \`$REPO_ROOT\`"
     echo "- python:    \`$PY\` ($(env -u PYTHONPATH "$PY" -V 2>&1))"

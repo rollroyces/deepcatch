@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-820%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-830%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -337,7 +337,7 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 599 passed, 23 skipped, 13 deselected (slow real-data smoke)
+# → 609 passed, 23 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -360,7 +360,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_foundation_smoke.py` | 8 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **635 collected** | **599 passed + 23 skipped + 13 deselected** |
+| **Combined fast-path gate** | **645 collected** | **609 passed + 23 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks; they run in dedicated GitHub Actions workflows (`foundation-real-smoke`, `validate.yml`) on real datasets.
 

@@ -24,6 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if os.path.join(ROOT, "scripts") not in sys.path:
     sys.path.insert(0, os.path.join(ROOT, "scripts"))
 import benchmark_numbers as _numbers  # noqa: E402
+import generate_preprint_abstract as _abstract  # noqa: E402
 
 TEX = os.path.join(ROOT, "paper", "paper.tex")
 FORM = os.path.join(ROOT, "paper", "BIORXIV_SUBMISSION.md")
@@ -70,17 +71,14 @@ def matches(written: str, value: float) -> bool:
 def abstract_text(tex: str) -> str:
     """The abstract as bioRxiv would receive it.
 
-    Same normalisation as the regression test: drop one level of
-    ``\\cmd{...}`` argument braces, then the remaining commands, then the
-    math, then collapse whitespace.
+    This is the SAME renderer the paste-ready document
+    (`docs/PREPRINT_ABSTRACT.md`, written by
+    `scripts/generate_preprint_abstract.py`) and the regression test use,
+    so the form, that document and the test cannot disagree about how
+    long the abstract is. The previous measure deleted the maths, so it
+    counted a string nobody would ever paste.
     """
-    match = re.search(r"\\begin\{abstract\}(.*?)\\end\{abstract\}", tex, re.S)
-    if not match:
-        raise ValueError("paper.tex has no abstract")
-    plain = re.sub(r"\\[a-zA-Z]+\{([^}]*)\}", r"\1", match.group(1))
-    plain = re.sub(r"\\[a-zA-Z]+", "", plain)
-    plain = re.sub(r"\$[^$]*\$", "0", plain)
-    return " ".join(plain.split())
+    return _abstract.latex_abstract(tex)
 
 
 def main() -> int:
