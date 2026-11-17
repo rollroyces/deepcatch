@@ -1232,6 +1232,16 @@ cohort size.
   symlinks into a collaborator's own data files and its manifest names
   their lab, contact and IRB number.
 
+  A fourth defect surfaced in CI, where the sibling checkout is absent:
+  the GC-corrected path of the cross-study benchmark imported the
+  sibling's loader at module level, so the whole path died with a
+  `ModuleNotFoundError` naming a module the reader has never heard of.
+  It now falls back to the repo-local implementation, which is
+  line-for-line identical to the sibling's — verified bit-for-bit on
+  the same cohort. The per-study harmoniser still comes from the
+  sibling, which is a documented prerequisite, and the adapter now says
+  so plainly instead of letting it fail with a traceback.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

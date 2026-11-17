@@ -112,7 +112,20 @@ fit_gc_coverage_curve = _gc_correction.fit_gc_coverage_curve
 correct_coverage = _gc_correction.correct_coverage
 load_gc_reference = _gc_correction.load_gc_reference
 
-from honest_benchmark import fsd_vec, load5  # noqa: E402 (may pivot sys.path[0]; safe)
+try:
+    from honest_benchmark import fsd_vec, load5  # noqa: E402 (may pivot sys.path[0]; safe)
+except ImportError:
+    # The sibling pipeline's checkout is absent on CI and in a fresh
+    # clone. A module-level import made this file -- and the
+    # GC-corrected path of the cross-study benchmark, which imports it
+    # -- unusable there, with a ModuleNotFoundError that said nothing
+    # about the cause. The repo-local implementation is line-for-line
+    # identical to honest_benchmark.py:load5, so the cohort gives the
+    # same numbers either way.
+    from load5_with_motifs import (  # noqa: E402
+        _fsd_vec as fsd_vec,
+        load5_only as load5,
+    )
 
 CHANNEL_NAMES_GC = (
     "delfi_5mb_ratio",

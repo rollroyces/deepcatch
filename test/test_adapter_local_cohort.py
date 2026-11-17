@@ -618,6 +618,7 @@ def test_the_merged_cohort_keeps_both_sides(tmp_path):
 # 6. The optional merge + cross-study step, end to end
 # ──────────────────────────────────────────────────────────────────────
 
+@pytest.mark.requires_sister_pipeline
 def test_the_cross_study_step_runs_and_never_writes_into_the_repository(tmp_path):
     """The cross-study step must work, and must not touch the published files.
 

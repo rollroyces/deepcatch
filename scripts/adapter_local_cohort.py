@@ -626,6 +626,21 @@ def _run_cross_study(merged_labels_tsv: str, merged_features_dir: str,
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     script = os.path.join(repo_root, "scripts", "cross_study_finallydb.py")
     import subprocess
+
+    # The benchmark's per-study harmoniser lives in the companion
+    # pipeline, whose checkout is a documented prerequisite for it. Say
+    # so plainly instead of letting it fail with a traceback about a
+    # module named `train_classifier`.
+    sibling = os.environ.get("DEEPCATCH_SISTER_PIPELINE")
+    if sibling and not os.path.isfile(
+            os.path.join(sibling, "scripts", "honest_benchmark.py")):
+        print("[adapter_local_cohort] the cross-study benchmark needs the "
+              "companion pipeline checkout "
+              f"({sibling} does not contain scripts/honest_benchmark.py); "
+              "clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline "
+              "or point DEEPCATCH_SISTER_PIPELINE at it.")
+        return 4
+
     out_dir = os.path.dirname(os.path.abspath(out_json)) or "."
     cmd = [
         sys.executable, script,
