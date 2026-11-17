@@ -94,12 +94,13 @@ git push origin v0.2.0
 > A DOI minted on a tag whose headline number is known to drift is exactly
 > the failure this file warns about.
 >
-> **Two more unseeded PCA calls remain in that repository** and their
-> figures still drift: `scripts/sens_at_specification.py` and
-> `scripts/sens_calibration_sweep.py`. Their numbers are quoted in
-> `docs/SENS_OPTIMIZATION.md` and `BENCHMARK.md`; seeding them means
-> re-running those scripts and updating the figures, which is a separate
-> piece of work.
+> **The remaining unseeded PCA calls in that repository** are seven
+> call sites in two scripts — `scripts/sens_calibration_sweep.py` (six)
+> and `scripts/sens_at_specificity.py` (one) — and the figures they
+> produce still drift: they feed `docs/SENS_OPTIMIZATION.md`, which is
+> generated from their JSON by `scripts/build_sens_report.py`.
+> (`scripts/_speed.py` has one more, but it is a timing script and
+> publishes no figure.)
 
 ### 3. Create the GitHub Release
 

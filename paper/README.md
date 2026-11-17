@@ -101,5 +101,5 @@ gives **0.9770 ± 0.0013** with no warning — the same number this
 repository reports for its legacy pooled figure, which is the check that
 the two compute the same thing once both are seeded. The one-line fix
 and the companion's document updates are prepared on that repository's
-local branch `fix/seed-pca` (not pushed); two further unseeded PCA calls
+local branch `fix/seed-pca` (not pushed); the remaining unseeded PCA calls
 there are named in `ZENODO_SETUP.md`.
