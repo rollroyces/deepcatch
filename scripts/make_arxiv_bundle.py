@@ -152,20 +152,22 @@ def verify(archive: Path, expected_pdf: Path) -> tuple[bool, str]:
             return True, ("the bundle compiled, but there is no committed "
                            "PDF to compare it with")
 
+        # A missing figure is the failure this script exists to prevent,
+        # so it is checked whether or not the page count can be read.
+        text = (work / f"{_STEM}.tex").read_text(encoding="utf-8")
+        for relative in _figure_targets(text):
+            if not (work / _flat_name(relative)).exists():
+                return False, f"the bundle is missing {relative}"
+
         want = _pdf_page_count(expected_pdf)
         got = _pdf_page_count(produced)
-        if want > 0 and got > 0 and want != got:
+        if want < 0 or got < 0:
+            return True, ("the bundle compiles standalone and carries every "
+                          "figure; the page count was not compared, because "
+                          "pypdf is not installed here")
+        if want != got:
             return False, (f"the bundle compiled to {got} pages but the "
                            f"committed PDF has {want}")
-
-        # A missing figure is the failure this script exists to prevent.
-        text = (work / f"{_STEM}.tex").read_text(encoding="utf-8")
-        for relative, flat in {
-            r[3:] if r.startswith("../") else r: _flat_name(r)
-            for r in _figure_targets(text)
-        }.items():
-            if not (work / flat).exists():
-                return False, f"the bundle is missing {relative}"
 
         return True, (f"the bundle compiles standalone: {got} pages, "
                       f"the same as the committed PDF")
