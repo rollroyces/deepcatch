@@ -750,3 +750,45 @@ def test_the_committed_readiness_artifact_agrees_with_the_external_validation():
         assert entry["held_out_external"] == (
             pub in external["per_publication_auc"]
         ), f"publication {pub} is marked inconsistently between the artifacts"
+
+def test_the_advertised_version_is_the_repository_version():
+    """The API and the clinical report must not advertise a stale version.
+
+    Both used to carry a hardcoded version string, and both had
+    drifted: they still said 2.1.0 while the repository was at 2.3.0.
+    A reader who runs the API -- which the demo recording does -- sees
+    that version in the OpenAPI metadata, so a stale one contradicts
+    the code it is running.
+
+    The version is now read (from the installed metadata, or from
+    pyproject.toml in a source checkout), so the check here is that the
+    reader gets the same number the repository declares.
+    """
+    pyproject = (_REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    declared = None
+    for line in pyproject.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("version ="):
+            declared = stripped.split("=", 1)[1].strip().strip('"').strip("'")
+            break
+    assert declared, "pyproject.toml declares no version"
+
+    sys.path.insert(0, str(_REPO_ROOT / "src"))
+    from fragmentomics.version import package_version
+
+    assert package_version() == declared, (
+        f"the package reports {package_version()!r} but pyproject.toml "
+        f"declares {declared!r}"
+    )
+
+    # No source file may hardcode the version again.
+    offenders = []
+    for rel in ("api/main.py", "src/clinical/clinical_interpretation.py"):
+        text = (_REPO_ROOT / rel).read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if re.search(r'["\']\d+\.\d+\.\d+["\']', line) and "version" in line:
+                offenders.append(f"{rel}: {line.strip()}")
+    assert not offenders, (
+        "a version string is hardcoded again, so it can drift again: "
+        f"{offenders}"
+    )

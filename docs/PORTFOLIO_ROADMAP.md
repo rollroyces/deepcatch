@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-17 (refresh — 22:30 batch)
 **Author:** Yu Ching Lam (via Hermes Agent)
-**Status:** Current as of commits `d92a690` (deepcatch), `1e500c3` (cfdna-fragmentomics-pipeline), `addfcab` (deepcatch-methylation).
+**Status:** Current as of commits `d92a691` (deepcatch), `1e500c3` (cfdna-fragmentomics-pipeline), `addfcab` (deepcatch-methylation).
 
 This is the **single source-of-truth roadmap** for the 3-repo open-source cfDNA
 early-detection portfolio. It supersedes the older `NEXT_STEPS.md` and
@@ -18,7 +18,7 @@ pretrained-model breakthrough.
 
 | Repo | Local path | Latest commit | Tests | CI | Headline result |
 |---|---|---|---|---|---|
-| **deepcatch** | `.` | `d92a690` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
+| **deepcatch** | `.` | `d92a691` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
 | **cfdna-fragmentomics-pipeline** | `../cfdna-fragmentomics-pipeline` | `1e500c3` | 117/117 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
 | **deepcatch-methylation** | `.-methylation` | `addfcab` | 15/15 | ✅ green | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 |
 
@@ -66,7 +66,7 @@ pretrained-model breakthrough.
 
 ✅ **FLARE honest no-data report** (deepcatch, `5dd2b61`): `docs/CADD_FLARE_VALIDATION.md` documents that GSE317007/FLARE ships only a 12×256 5'-end motif matrix — no per-sample somatic variants (VCF/MAF), no healthy controls. The CADD Top-K=200 lift therefore **cannot be re-tested on ONT-sequenced HNSCC samples** without SRA-fetching raw reads (PRJNA1405652) and running a Nanopore somatic caller — a multi-day engineering task outside this session. **No fabricated AUC / Sens@spec / per-cancer lift.**
 
-✅ **README updated with CADD Top-K section + corrected 51/51 tests badge** (deepcatch, `d92a690`): New "Variant-impact-weighted panel selection (CADD Top-K)" section inserted between the panel-based detection table and the assay sweep, including the GDC 150-patient per-subgroup lift table, the Top-K=20 (vs Top-K=200) justification, match-rate caveat (86% → 8.9%), 3 honest negative results preserved (continuous weighting, CADD×AlphaMissense, driver-only panel), and reproduction commands. Tests badge corrected from an inflated 256 → the actual **51/51**.
+✅ **README updated with CADD Top-K section + corrected 51/51 tests badge** (deepcatch, `d92a691`): New "Variant-impact-weighted panel selection (CADD Top-K)" section inserted between the panel-based detection table and the assay sweep, including the GDC 150-patient per-subgroup lift table, the Top-K=20 (vs Top-K=200) justification, match-rate caveat (86% → 8.9%), 3 honest negative results preserved (continuous weighting, CADD×AlphaMissense, driver-only panel), and reproduction commands. Tests badge corrected from an inflated 256 → the actual **51/51**.
 
 ### 1.3 What's still blocked
 
@@ -230,7 +230,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **918 tests**, 3 CI workflows / 10 jobs green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **919 tests**, 3 CI workflows / 10 jobs green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
 | 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
 | 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_cohort_channel.json` (the AUCs and the matched-locus test), `results/methylation_channel_diagnosis.json` (the mechanism) |
@@ -296,7 +296,7 @@ per-cancer channel selection, and the CADD×AlphaMissense honest null result.
 - CADD × AlphaMissense combined weighting — honest null result (`29374a6`, deepcatch)
 - FLARE/GSE317007 honest no-data report (`5dd2b61`, deepcatch)
 - CADD Top-K=20 whole-cohort +35pp + per-subgroup +24 to +50pp on **150-patient GDC cohort** (`8b6ce59`, deepcatch) — **new primary lever**
-- README updated with CADD Top-K section + corrected 51/51 tests badge (`d92a690`, deepcatch)
+- README updated with CADD Top-K section + corrected 51/51 tests badge (`d92a691`, deepcatch)
 - Per-cancer top-K channel selection sweep (`b5d8260`, pipeline) — OV +10.7pp
 - Comprehensive Sens@Spec + PPV@Prev table with DeLong CI (`1e500c3`, pipeline)
 

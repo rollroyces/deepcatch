@@ -1290,6 +1290,16 @@ cohort size.
   `import src.fragmentomics` works, and all three console scripts are
   present.
 
+- **The API advertised a version the repository had left behind.** The
+  OpenAPI metadata and the service's root response both carried a
+  hardcoded `2.1.0` while the repository was at 2.3.0, and the clinical
+  report carried the same stale string. A reader who runs the API —
+  which the demo recording does — sees that version in `/openapi.json`
+  and `/`, so it contradicts the code serving the request. The version is
+  now read from the installed distribution's metadata, or from
+  `pyproject.toml` in a source checkout (`src/fragmentomics/version.py`),
+  and a guard fails the build if it is hardcoded again.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

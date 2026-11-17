@@ -26,6 +26,11 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+try:
+    from ..fragmentomics.version import package_version
+except ImportError:  # pragma: no cover - imported as a top-level module
+    from fragmentomics.version import package_version
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 # ClinicalReportGenerator
@@ -561,7 +566,7 @@ class ClinicalReportGenerator:
 
         report = {
             'meta': {
-                'version': '2.1.0',
+                'version': package_version(),
                 'module': 'ClinicalReportGenerator',
                 'generated_at': summary['generated_at'],
                 'threshold_sens': self.threshold_sens,

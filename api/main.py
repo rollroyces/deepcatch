@@ -64,6 +64,8 @@ _workspace = Path(__file__).resolve().parent.parent
 if str(_workspace) not in sys.path:
     sys.path.insert(0, str(_workspace))
 
+from src.fragmentomics.version import package_version  # noqa: E402
+
 # ── FastAPI imports ──────────────────────────────────────────────
 try:
     from fastapi import FastAPI, HTTPException
@@ -158,7 +160,7 @@ app = FastAPI(
         "Provides classical MDS, neural self-attention model, and "
         "Integrated Gradients explanations."
     ),
-    version="2.1.0",
+    version=package_version(),
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
@@ -391,7 +393,7 @@ async def root():
     """Redirect to docs."""
     return {
         "service": "DeepCatch Fragmentomics API",
-        "version": "2.1.0",
+        "version": package_version(),
         "docs": "/docs",
         "health": "/health",
         "predict": "/predict",
