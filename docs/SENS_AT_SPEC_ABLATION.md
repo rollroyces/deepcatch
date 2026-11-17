@@ -380,7 +380,16 @@ the positive point estimate into a defensible "this helps" claim.
   95% CIs and verdict classification.
 - `docs/SENS_AT_SPEC_ABLATION.md` — this document.
 
-## Reproduce
+## Reproduce (the historical n=5 artifacts)
+
+> **These commands no longer reproduce the n=5 artifacts below.** They
+> were measured under the leaky `StratifiedKFold` CV that audit-2 P0-A
+> replaced with `GroupKFold`; the current script runs the honest
+> per-patient protocol, so it returns different numbers (foundation AUC
+> ≈ 0.57 rather than ≈ 0.94). The n=5 artifacts are kept as the
+> historical record of the leaky run, and the **Reproduce (n=20)** block
+> above is the one that reproduces the numbers this document now
+> reports.
 
 ```bash
 cd /Users/hermes/deepcatch
