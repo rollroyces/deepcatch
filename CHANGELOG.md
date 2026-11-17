@@ -1242,6 +1242,23 @@ cohort size.
   sibling, which is a documented prerequisite, and the adapter now says
   so plainly instead of letting it fail with a traceback.
 
+- **The JOSS manuscript quoted two figures that no guard pinned.**
+  `paper.md` is the paper a JOSS reviewer reads, and it quotes 0.708 (the
+  second held-out publication) and 0.8731 (the lower bound of the first
+  one's DeLong interval). Both are pinned for the methods paper and for
+  the READMEs — but not for `paper.md`, and the interval's lower bound
+  was pinned nowhere at all, so a document could carry a stale interval
+  and nothing would notice. Every document that quotes either figure is
+  now named, `paper.md` included.
+
+- **The GC-corrected pooled row's standard deviation was unpinned.** The
+  row quotes "0.9684 ± 0.0027" and only the AUC was pinned, so the std
+  could drift. The two runs' stds render differently (0.0027 vs
+  0.0013), so the row check now requires the GC pair and forbids the
+  legacy pair, and a row that mixed the two runs fails. Verified by
+  breaking it: a row with the GC AUC and the legacy std turns the
+  guard red.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every
