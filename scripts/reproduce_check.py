@@ -101,6 +101,9 @@ EXTRA_NUMBERS = [
     ("sens_at_spec_ce_n20.json", ("lr_baseline_auc_mean",)),
     ("sens_at_spec_ce_n20.json", ("naive_avg_auc_mean",)),
     ("sens_at_spec_ce_n20.json", ("shuffled_foundation_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("shuffled_lr_baseline_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("shuffled_naive_avg_auc_mean",)),
+    ("sens_at_spec_ce_n20.json", ("foundation_auc_minus_null",)),
     ("sens_at_spec_ce_n20.json", ("delta_auc_normalized",)),
     # The loss ablation built from the two n=20 runs.
     ("sens_at_spec_ablation_n20.json", ("foundation_auc_mean_ce",)),

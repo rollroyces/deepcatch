@@ -5,22 +5,21 @@
 **`SparseAwareLinearProjection` routed onto the panel-LLR modality slot
 (`projection_kinds={"frag_basic": "sparse_aware"}`) is NOT a lift on
 the 20-patient TCGA-LUAD cohort at TF=0.1%.** The paired Δ AUC is
-**−0.0155** (95% CI [−0.0315, +0.0005], t=−2.683, **p=0.055**),
-marginal-by-1pp from crossing the 0.05 significance bar in the
-negative direction. Sens@99 is unchanged within noise (Δ −0.020,
-p=0.374).
+**−0.0440** (95% CI [−0.0593, −0.0287], t=−7.984, **p=0.0013**),
+a 4.4pp loss that is now clearly significant. Sens@99 moves by
+Δ −0.030 (p=0.071), still within noise.
 
 | Metric                  | LinearProjection (default) | SparseAwareLinearProjection | Paired Δ (95% CI)               | p-value | Verdict |
 |-------------------------|----------------------------|-----------------------------|---------------------------------|--------:|---------|
-| Foundation AUC          | 0.5555 ± 0.0135            | 0.5400 ± 0.0157             | **−0.0155** [−0.0315, +0.0005] |  0.0551 | negative (marginal) |
-| Foundation Sens@99%     | 0.080 ± 0.067              | 0.060 ± 0.022               | **−0.020** [−0.076, +0.036]     |  0.3739 | null |
-| Foundation Sens@95%     | 0.180 ± 0.027              | 0.150 ± 0.035               | **−0.030** [−0.064, +0.004]     |  0.0691 | null |
-| LR-baseline AUC         | 0.9725 (5/5 match)         | 0.9725 (5/5 match)          | 0.0000 (bit-identical)          |    n/a  | no change (flag doesn't touch LR) |
+| Foundation AUC          | 0.5680 ± 0.0119            | 0.5240 ± 0.0058             | **−0.0440** [−0.0593, −0.0287] |  0.0013 | negative (significant) |
+| Foundation Sens@99%     | 0.080 ± 0.034              | 0.050 ± 0.031               | **−0.030** [−0.064, +0.004]     |  0.0705 | null |
+| Foundation Sens@95%     | 0.150 ± 0.033              | 0.120 ± 0.029               | **−0.030** [−0.064, +0.004]     |  0.0705 | null |
+| LR-baseline AUC         | 0.9100 (5/5 match)         | 0.9100 (5/5 match)          | 0.0000 (bit-identical)          |    n/a  | no change (flag doesn't touch LR) |
 | Smoke gate              | fail                       | fail                        | n/a                             |    n/a  | pre-existing — see below |
 | Sanity checks           | n/a                        | all 9 match bit-identical   | 0.0000 (LR + naive + panel + frag bit-identical across runs) | n/a | paired design honest |
 
-**Honest classification: negative direction, marginal (p=0.0551, CI
-just barely crosses zero).** The pillar-2 mechanism is correct on
+**Honest classification: negative direction, significant
+(p=0.0013, CI entirely below zero).** The pillar-2 mechanism is correct on
 synthetic unit tests (`test_sparse_aware_projection.py`, 7/7 pass),
 but on this real-data cohort the panel-LLR slot
 (`frag_basic[:, 0]`) is **not** sparse at the 0.1% VAF operating
@@ -61,8 +60,17 @@ following 9 metrics are bit-identical to <1e-9 across the two JSONs
 The ONLY metric that differs as a result of the architecture change
 itself (rather than the data) is `shuffled_foundation_aucs` — that
 **should** differ because the model class changed. This is a
-diagnostic on the shuffled-label null, not a sanity check on the
+diagnostic on the permuted-label null, not a sanity check on the
 paired design.
+
+> **Note.** The `shuffled_*` rows were previously byte-identical to
+> their honest counterparts, because the label permutation was a
+> no-op (see `AUDIT_2_FINDINGS.md` P0-C and the CHANGELOG). The
+> control is now a genuine permutation, so the `shuffled_*` rows are
+> real null measurements; `shuffled_lr_baseline_aucs` and
+> `shuffled_naive_avg_aucs` remain bit-identical between the two runs
+> only because those channels do not read the encoder at all — which is
+> why they are listed separately.
 
 ## Data
 
@@ -85,7 +93,7 @@ paired design.
 The repo's `MODALITY_DIMS` schema (`src/foundation/config.py:15-22`)
 defines 6 slots — `frag_basic`, `frag_enhanced`, `cnv`, `sero`,
 `gnn`, `tissue`. There is no slot called `panel_llr`. The smoke
-(`scripts/foundation_real_smoke.py:490-493`) stuffs the panel-LLR
+(`scripts/foundation_real_smoke.py:475-478`) stuffs the panel-LLR
 score into `frag_basic[:, 0]` and the frag score into
 `frag_enhanced[:, 0]`. The user's task description specifies
 `projection_kinds={"panel_llr": "sparse_aware"}`; in this repo's
@@ -98,9 +106,10 @@ which is what was run.
    `FoundationDownstream.__init__` (`src/foundation/downstream.py:174, 222-224`)
    and forwarded it to the `MultiModalEncoder` constructor.
 2. Added `--projection-kinds` JSON flag to
-   `scripts/foundation_real_smoke.py:715-728, 735-755` and forwarded
-   it into all 3 `FoundationDownstream(...)` instantiations
-   (lines 495, 533, 597).
+   `scripts/foundation_real_smoke.py:480, 517` and forwarded
+   it into both `FoundationDownstream(...)` instantiations.
+   (The honest run and the permuted-label control now share one
+   code path, so both receive the flag.)
 3. Default behavior unchanged: `projection_kinds=None` (empty CLI
    value) means every modality uses `LinearProjection`, exactly as
    before. The audit-friendly contract.
@@ -120,56 +129,56 @@ which is what was run.
 
 | seed | linear | sparse_aware | diff    |
 |-----:|-------:|------------:|--------:|
-|    0 | 0.5550 | 0.5500      | -0.0050 |
-|    1 | 0.5350 | 0.5200      | -0.0150 |
-|    2 | 0.5650 | 0.5275      | -0.0375 |
-|    3 | 0.5700 | 0.5575      | -0.0125 |
-|    4 | 0.5525 | 0.5450      | -0.0075 |
+|    0 | 0.5575 | 0.5275      | -0.0300 |
+|    1 | 0.5575 | 0.5150      | -0.0425 |
+|    2 | 0.5650 | 0.5300      | -0.0350 |
+|    3 | 0.5850 | 0.5250      | -0.0600 |
+|    4 | 0.5750 | 0.5225      | -0.0525 |
 
-Per-seed diff: −0.0050, −0.0150, −0.0375, −0.0125, −0.0075 — **5/5
-negative** (no positive seeds). Mean diff −0.0155 is just outside
-per-seed std (~0.014) in the same direction as the sign — that
-consistency is what drives the marginal p-value.
+Per-seed diff: −0.0300, −0.0425, −0.0350, −0.0600, −0.0525 — **5/5
+negative** (no positive seeds). Mean diff −0.0440 against a per-seed
+std of ~0.012: every seed moves the same way and by a similar amount,
+which is what drives the p=0.0013.
 
 ### Foundation Sens@99% (the MRD operating point)
 
 | seed | linear | sparse_aware | diff  |
 |-----:|-------:|------------:|------:|
-|    0 | 0.05   | 0.05        |  0.00 |
+|    0 | 0.10   | 0.05        | -0.05 |
 |    1 | 0.05   | 0.05        |  0.00 |
 |    2 | 0.05   | 0.05        |  0.00 |
-|    3 | 0.20   | 0.10        | -0.10 |
-|    4 | 0.05   | 0.05        |  0.00 |
+|    3 | 0.10   | 0.05        | -0.05 |
+|    4 | 0.10   | 0.05        | -0.05 |
 
-Per-seed diff: 0.00, 0.00, 0.00, −0.10, 0.00 — 1/5 negative, 4/5
-zero. Mean diff −0.020 is dominated by seed 3.
+Per-seed diff: −0.05, 0.00, 0.00, −0.05, −0.05 — 3/5 negative, 2/5
+zero. Mean diff −0.030 (p=0.0705).
 
 ### Foundation Sens@95%
 
 | seed | linear | sparse  | diff  |
 |-----:|-------:|-------:|------:|
-|    0 | 0.20   | 0.20   |  0.00 |
-|    1 | 0.20   | 0.15   | -0.05 |
-|    2 | 0.15   | 0.15   |  0.00 |
-|    3 | 0.20   | 0.15   | -0.05 |
-|    4 | 0.15   | 0.10   | -0.05 |
+|    0 | 0.10   | 0.10   |  0.00 |
+|    1 | 0.15   | 0.10   | -0.05 |
+|    2 | 0.20   | 0.15   | -0.05 |
+|    3 | 0.15   | 0.10   | -0.05 |
+|    4 | 0.15   | 0.15   |  0.00 |
 
-Per-seed diff: 0.00, −0.05, 0.00, −0.05, −0.05 — 3/5 negative, 2/5
-zero. Mean diff −0.030.
+Per-seed diff: 0.00, −0.05, −0.05, −0.05, 0.00 — 3/5 negative, 2/5
+zero. Mean diff −0.030 (p=0.0705).
 
 ## Claim-by-claim verification (AUDIT style)
 
 | # | Claim | Source | Status |
 |---|---|---|---|
-| 1 | `projection_kinds=None` produces foundation AUC 0.5555 ± 0.0135 over 5 seeds | `results/sparse_aware_linear.json:foundation_aucs` (5 elements) | ✅ verified |
-| 2 | `projection_kinds={"frag_basic": "sparse_aware"}` produces foundation AUC 0.5400 ± 0.0157 | `results/sparse_aware_panel.json:foundation_aucs` (5 elements) | ✅ verified |
-| 3 | Paired Δ AUC = −0.0155, 95% CI [−0.0315, +0.0005], p=0.0551 | `results/sparse_aware_ablation.json:foundation_auc_paired_t` | ✅ verified (recomputable from the per-seed arrays) |
-| 4 | Paired Δ Sens@99% = −0.020, 95% CI [−0.076, +0.036], p=0.3739 | `results/sparse_aware_ablation.json:foundation_sens_at_99_paired_t` | ✅ verified |
+| 1 | `projection_kinds=None` produces foundation AUC 0.5680 ± 0.0119 over 5 seeds | `results/sparse_aware_linear.json:foundation_aucs` (5 elements) | ✅ verified |
+| 2 | `projection_kinds={"frag_basic": "sparse_aware"}` produces foundation AUC 0.5240 ± 0.0058 | `results/sparse_aware_panel.json:foundation_aucs` (5 elements) | ✅ verified |
+| 3 | Paired Δ AUC = −0.0440, 95% CI [−0.0593, −0.0287], p=0.0013 | `results/sparse_aware_ablation.json:foundation_auc_paired_t` | ✅ verified (recomputable from the per-seed arrays) |
+| 4 | Paired Δ Sens@99% = −0.030, 95% CI [−0.064, +0.004], p=0.0705 | `results/sparse_aware_ablation.json:foundation_sens_at_99_paired_t` | ✅ verified |
 | 5 | Both runs use the same seeds, data, CV folds | `lr_baseline_aucs` + 9 other metrics bit-identical across the two JSONs (`all_sanity_checks_match: true`) | ✅ verified |
 | 6 | The smoke gate fails for both modes | `gate_pass: false` in both JSONs | ✅ verified |
 | 7 | `SparseAwareLinearProjection` is a drop-in for `LinearProjection` (forward signature identical) | `test_sparse_aware_projection.py:test_dense_row_uses_linear_path_equivalent_to_linear_projection` | ✅ source code cited |
 | 8 | `MultiModalEncoder` routes `projection_kinds` per modality | `src/foundation/model.py:243-253` | ✅ source code cited |
-| 9 | The `--projection-kinds` flag was plumbed into all 3 `FoundationDownstream` instantiations in the smoke script | `scripts/foundation_real_smoke.py:495, 533, 597` | ✅ grep-verified |
+| 9 | The `--projection-kinds` flag was plumbed into both `FoundationDownstream` instantiations in the smoke script | `scripts/foundation_real_smoke.py:480, 517` | ✅ grep-verified — the honest run and the permuted-label control now share one code path, so both receive the flag |
 | 10 | `SparseAwareLinearProjection`'s missing-token branch fires when zero_frac > 0.5 | `src/foundation/model.py:135` | ✅ source code cited |
 
 ## What this does and does not establish
@@ -202,9 +211,11 @@ zero. Mean diff −0.030.
   cohorts, VAFs, or panel sizes. The 20-patient cohort is the
   only data point.
 - Statistical significance at α=0.05. The AUC paired-t p-value is
-  0.055 — just above the bar. The CI crosses zero by 0.0005. A
-  larger n (≥10 seeds) is needed to either confirm or refute the
-  marginal negative direction.
+  0.0013, so the negative direction is significant on this cohort —
+  but 5 seeds is still a small sample, and the effect could be
+  cohort-specific. A larger n (≥10 seeds) and a second cohort would
+  be needed to establish that the loss is general rather than a
+  property of these 20 patients.
 
 ## Why the headroom is so low (foundation AUC 0.55)
 
@@ -236,8 +247,8 @@ measures.
 ## Recommendation
 
 **Keep `LinearProjection` as the default for `frag_basic`.** The
-5-seed paired design shows a small negative Δ AUC (p=0.055,
-marginal) and a null Δ Sens@99. The pillar-2 mechanism is correct
+5-seed paired design shows a negative Δ AUC (p=0.0013) and a null
+Δ Sens@99. The pillar-2 mechanism is correct
 on synthetic inputs (unit tests pass) but does not earn the
 default-flag flip on this real-data cohort at TF=0.001 — the
 projection-input slot is not sparse at this operating point.

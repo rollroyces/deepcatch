@@ -122,6 +122,10 @@ from load5_with_motifs import (  # noqa: E402
     load5_with_motifs_optional as _load5_with_motifs_optional,
     load5_only as _load5_only_local,
 )
+from src.foundation.label_control import (  # noqa: E402
+    assert_not_degenerate,
+    global_permuted_labels,
+)
 from src.per_cancer_sens_at_spec import (  # noqa: E402
     DEFAULT_PREVALENCES,
     DEFAULT_SPECIFICITIES,
@@ -393,8 +397,16 @@ def run_shuffled_label_control(X, y, st, seeds, pca_n,
         perm_seed : int — echoes the seed used (reproducibility).
         n_cancer, n_healthy : int — pooled counts.
     """
-    rng = np.random.default_rng(perm_seed)
-    y_shuf = rng.permutation(y)  # global label perm (pair-broken)
+    # Global label permutation, from the ONE shared implementation in
+    # ``src/foundation/label_control.py``. The pooled cross-study
+    # cohort is unpaired, so there is no fold-local pairing to break;
+    # the only thing the null has to destroy is the association
+    # between the scores and the labels, which a global permutation
+    # does while preserving the class balance.
+    y_shuf = global_permuted_labels(y, perm_seed)
+    # A control that reproduces the real labels is not a control: it
+    # reports the honest AUC back as if it were a null.
+    assert_not_degenerate(y, y_shuf)
     _, score, seed_aucs = pooled_oof(
         X, y_shuf, st, seeds, pca_n, harmonize=True,
     )

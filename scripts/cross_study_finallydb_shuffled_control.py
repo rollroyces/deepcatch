@@ -6,11 +6,18 @@ skips the main 5-seed x 5-fold per-cancer OvR sweep (which takes 5–10
 minutes) and runs just the label-permuted pooled OOF. Same pipeline
 (harmonize + PCA + LR) and same 5 seeds as `cross_study_finallydb.py`.
 
-Mirrors the Audit-2 P0-C fix pattern in
-`scripts/foundation_real_smoke.py:580-590`: label permutation once,
+Uses the same label-permutation control as
+`scripts/foundation_real_smoke.py`, via the one shared implementation
+in `src/foundation/label_control.py`: the labels are permuted once,
 outside the fold loop, so every fold sees the same permutation; the
-classifier is trained on shuffled labels; AUC is computed against the
-shuffled labels.
+classifier is trained on the permuted labels; AUC is computed against
+the permuted labels.
+
+(Audit-2's original "pair-broken shuffle" was a NO-OP -- it permuted
+the positive index set among itself and then wrote the 1s back to
+those same positions, so `y_shuf == y_true` for every seed and the
+"control" reported the honest AUCs back. Both scripts now use the
+shared module, so that cannot happen again.)
 
 The control is a sanity check, not a gate:
   shuffled_AUC < 0.55 → null control PASSED → the main 0.97 AUC is a

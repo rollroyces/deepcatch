@@ -224,7 +224,7 @@ sequencing noise).
 ## Method
 
 1. Added `--loss {ce,sens_at_spec}` and `--alpha-pos` CLI flags to
-   `scripts/foundation_real_smoke.py:580-602`, plumbed through to
+   `scripts/foundation_real_smoke.py:480` and `:517`, plumbed through to
    `FoundationDownstream(...)` instantiations at lines 410, 441, 507.
 2. Re-ran the smoke with `loss="ce"` (default, preserves all existing
    numbers) → `results/sens_at_spec_ce.json`.
@@ -314,9 +314,9 @@ comparison would be invalid.
 | 4 | Paired Δ Sens@99% = +0.110, 95% CI [−0.093, +0.313] | `results/sens_at_spec_ablation.json:foundation_sens_at_99_paired_t` | ✅ verified |
 | 5 | Both runs use the same seeds, data, and CV folds | `lr_baseline_aucs` bit-identical across the two JSONs | ✅ verified (`lr_baseline_aucs_match: true`) |
 | 6 | Smoke gate is now ADVISORY ONLY (no longer affects exit code) | `scripts/foundation_real_smoke.py` module docstring + `honest_framing` string | ✅ verified — `gate_pass` is computed and reported in JSON, but the script always returns 0 after writing the JSON |
-| 7 | Foundation score is 0.7 × frozen-encoder + LR-head + 0.3 × trainable transformer | `scripts/foundation_real_smoke.py:460` | ✅ source code cited |
+| 7 | Foundation score is 0.7 × frozen-encoder + LR-head + 0.3 × trainable transformer | `scripts/foundation_real_smoke.py:535` | ✅ source code cited |
 | 8 | FoundationDownstream's `loss="sens_at_spec"` path uses `focal_binary_cross_entropy` with `alpha_pos=20` | `src/foundation/downstream.py:457-471` | ✅ source code cited |
-| 9 | The `--loss` flag was plumbed into all 3 `FoundationDownstream` instantiations in the smoke script | `scripts/foundation_real_smoke.py:410, 441, 507` | ✅ grep-verified |
+| 9 | The `--loss` flag was plumbed into both `FoundationDownstream` instantiations in the smoke script | `scripts/foundation_real_smoke.py:480, 517` | ✅ grep-verified — the honest run and the permuted-label control now share one code path, so both receive the flag |
 | 10 | The change does not regress on any seed (worst case 0.0 at seed 4 for AUC, −0.10 at seed 4 for sens@99) | `foundation_aucs` and `foundation_sens_at_99_*` arrays | ✅ verified |
 
 ## What this does and does not establish

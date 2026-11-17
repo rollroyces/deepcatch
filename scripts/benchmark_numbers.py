@@ -495,9 +495,23 @@ TABLE_ROWS = [
     },
     {
         "doc": "paper/METHODS_PAPER.md",
-        "anchor": "| `shuffled_foundation AUC` (pair-broken control) |",
+        "anchor": "| `shuffled_foundation AUC` (permuted-label null) |",
         "required": [("sens_at_spec_ce_n20.json",
                        ("shuffled_foundation_auc_mean",))],
+        "forbidden": [],
+        "source": "results/sens_at_spec_ce_n20.json",
+    },
+    {
+        # The raw gap between the honest AUC and its permuted-label
+        # null. It is pinned separately from ``delta_auc_normalized``
+        # because the normalised form divides by ``(real - 0.5)``,
+        # which assumes a null at 0.5 -- and on this paired design the
+        # null sits at ~0.35-0.42, below chance. The gap is the
+        # interpretable quantity.
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| `foundation_auc_minus_null` (honest − null) |",
+        "required": [("sens_at_spec_ce_n20.json",
+                       ("foundation_auc_minus_null",))],
         "forbidden": [],
         "source": "results/sens_at_spec_ce_n20.json",
     },

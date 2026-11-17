@@ -39,6 +39,10 @@ _REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _REPO_ROOT)
 sys.path.insert(0, os.path.join(_REPO_ROOT, "scripts"))
 
+from src.foundation.label_control import (  # noqa: E402
+    assert_not_degenerate,
+    foldwise_permuted_labels,
+)
 from src.foundation.regularized_fusion import (  # noqa: E402
     bayesian_model_average,
     regularized_late_fusion,
@@ -66,57 +70,27 @@ def _sens_at_spec(y, s, spec: float) -> float:
     return float(tpr[idx[-1]]) if len(idx) else 0.0
 
 
-def _foldwise_permuted_labels(y: np.ndarray, folds, seed: int) -> np.ndarray:
-    """Permute labels WITHIN each fold, independently.
-
-    The training-fold and test-fold label assignments are then
-    independent, so no dependence between them can bias the null.
-
-    MEASURED NULL ON THIS COHORT: 0.399 +/- 0.118 (200 permutations),
-    NOT 0.5. The reason is structural: the paired cohort gives every
-    patient one positive and one negative arm whose panel scores
-    differ by +127 on average (100% of patients have the positive arm
-    higher). A model fitted to *random* labels still recovers that
-    within-pair axis, because it is the direction along which the
-    paired points differ, and the resulting predictions are
-    anti-correlated with the permuted labels they are scored against.
-
-    So a control below 0.5 is NOT on its own evidence of leakage on
-    this design; it has to be compared with the measured null.
-    """
-    rng = np.random.default_rng(seed + 7777)
-    out = np.zeros_like(y)
-    for tr, te in folds:
-        out[tr] = rng.permutation(y[tr])
-        out[te] = rng.permutation(y[te])
-    return out
-
-
-def _global_permuted_labels(y: np.ndarray, seed: int) -> np.ndarray:
-    """Global label permutation -- the real null control.
-
-    NOTE ON THE REPO'S ORIGINAL CONTROL
-    ------------------------------------
-    ``scripts/foundation_real_smoke.py`` builds its "pair-broken" shuffle
-    as::
-
-        pos_shuf = pos_idx.copy(); rng.shuffle(pos_shuf)
-        y_shuf[pos_shuf] = 1; y_shuf[neg_shuf] = 0
-
-    ``pos_shuf`` is a permutation *of the positive indices*, so
-    ``y_shuf[pos_shuf] = 1`` writes 1 to exactly the same set of
-    positions that already held 1. The result is ``y_shuf == y_true``
-    -- the shuffle is a no-op, and the "shuffled" AUCs it reports are
-    the honest AUCs. (This is visible in the Audit-2 table, where
-    ``shuffled_lr_baseline`` equals the honest 0.910 and
-    ``shuffled_naive_avg`` is annotated "(no shuffle effect)".)
-
-    A global permutation is the standard null: it preserves the class
-    balance and destroys any relationship between the scores and the
-    labels, so a correct estimator must land at AUC ~0.5.
-    """
-    rng = np.random.default_rng(seed + 7777)
-    return rng.permutation(y)
+# The label-permutation controls live in ``src/foundation/label_control.py``
+# so that every script shares ONE implementation. That matters here
+# because this file previously carried its own copy of the permutation,
+# while ``scripts/foundation_real_smoke.py`` carried a DIFFERENT one
+# whose construction was a no-op: it permuted the positive index set
+# among itself and then wrote 1s back to those same positions, so
+# ``y_shuf == y_true`` for every seed and the "shuffled" AUCs it
+# reported were the honest AUCs. A control implemented twice drifts;
+# a control implemented once cannot.
+#
+# MEASURED NULL ON THIS COHORT: 0.399 +/- 0.118 (200 permutations),
+# NOT 0.5. The reason is structural: the paired cohort gives every
+# patient one positive and one negative arm whose panel scores differ
+# by +127 on average (100% of patients have the positive arm higher).
+# A model fitted to random labels still recovers that within-pair axis,
+# because it is the direction along which the paired points differ,
+# and the resulting predictions are anti-correlated with the permuted
+# labels they are scored against.
+#
+# So a control below 0.5 is NOT on its own evidence of leakage on this
+# design; it has to be compared with the measured null.
 
 
 def _arm_swap_labels(y: np.ndarray, seed: int) -> np.ndarray:
@@ -152,7 +126,7 @@ def _measure_null(panel, frag, y, groups, folds, seed, trials) -> dict:
     X = np.column_stack([panel, frag])
     aucs = []
     for t in range(trials):
-        yp = _foldwise_permuted_labels(y, folds, seed + 10000 * (t + 1))
+        yp = foldwise_permuted_labels(y, folds, seed + 10000 * (t + 1))
         oof = np.zeros(len(y))
         for tr, te in folds:
             m = LogisticRegression(C=1.0, max_iter=1000).fit(X[tr], yp[tr])
@@ -177,7 +151,11 @@ def _run_seed(panel, frag, y, groups, seed, n_folds, n_inner):
     oof = {v: np.zeros(n, dtype=float) for v in VARIANTS}
     diag = {"selected_C": [], "selected_shrink": [], "bma_weights": []}
     folds = list(cv.split(np.zeros(n), y, groups=groups))
-    y_perm = _foldwise_permuted_labels(y, folds, seed)
+    y_perm = foldwise_permuted_labels(y, folds, seed)
+    # A control that reproduces the real labels is not a control: it
+    # reports the honest AUC back as if it were a null. Raise rather
+    # than publish a meaningless number.
+    assert_not_degenerate(y, y_perm)
     y_swap = _arm_swap_labels(y, seed)
     oof_perm = {v: np.zeros(n, dtype=float) for v in VARIANTS}
     oof_swap = {v: np.zeros(n, dtype=float) for v in VARIANTS}
@@ -309,8 +287,11 @@ def main() -> int:
             "cv": f"GroupKFold(n_splits=min({args.n_folds}, n_patients)) over "
                   "patient groups -- both arms of every patient stay together",
             "controls": {
-                "permuted_label_auc": "global label permutation; a correct "
-                                      "estimator lands at ~0.5",
+                "permuted_label_auc": "labels permuted within each fold's "
+                                      "train and test blocks independently; "
+                                      "on this paired design the measured "
+                                      "null is ~0.42, not 0.5 (see "
+                                      "per_seed[*].diagnostics.empirical_null)",
                 "arm_swap_auc": "arms swapped within half the patients; a "
                                 "model leaning on the per-patient invariant "
                                 "lands below 0.5",

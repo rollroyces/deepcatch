@@ -1,82 +1,100 @@
 {
-  "n_seeds": 2,
-  "n_patients": 8,
-  "n_samples_total": 16,
-  "n_cancer": 6,
-  "n_healthy": 10,
+  "n_seeds": 5,
+  "n_patients": 20,
+  "n_samples_total": 40,
+  "n_cancer": 20,
+  "n_healthy": 20,
   "tumor_fraction": 0.001,
   "linear_projection_kinds": null,
   "sparse_projection_kinds": {
     "frag_basic": "sparse_aware"
   },
   "sparse_modality_opted_in": "frag_basic",
-  "data_source": "synthetic_panel_+_synthetic_fragmentomics_(TCGA_cache_unavailable)",
-  "linear_run_path": "/Users/hermes/deepcatch/results/foundation_smoke.json",
-  "sparse_run_path": "/Users/hermes/deepcatch/results/foundation_smoke_sparse.json",
+  "data_source": "real_TCGA_LUAD_panel_+_real_mutation_derived_fragmentomics",
+  "linear_run_path": "/Users/hermes/.minimax/sessions/mvs_e28c55de4c1644eaa630bf6e9dc5aeb7/workspace/deepcatch/results/sparse_aware_linear.json",
+  "sparse_run_path": "/Users/hermes/.minimax/sessions/mvs_e28c55de4c1644eaa630bf6e9dc5aeb7/workspace/deepcatch/results/sparse_aware_panel.json",
   "foundation_aucs_linear": [
-    0.4166666666666667,
-    0.953125
+    0.5575,
+    0.5575,
+    0.565,
+    0.585,
+    0.575
   ],
   "foundation_aucs_sparse_aware": [
-    0.4166666666666667,
-    0.859375
+    0.5275,
+    0.515,
+    0.53,
+    0.5249999999999999,
+    0.5225
   ],
-  "foundation_auc_mean_linear": 0.6848958333333334,
-  "foundation_auc_mean_sparse_aware": 0.6380208333333334,
-  "foundation_auc_std_linear": 0.3793333253240333,
-  "foundation_auc_std_sparse_aware": 0.3130420645877945,
+  "foundation_auc_mean_linear": 0.568,
+  "foundation_auc_mean_sparse_aware": 0.524,
+  "foundation_auc_std_linear": 0.011911129249571582,
+  "foundation_auc_std_sparse_aware": 0.005755432216610664,
   "foundation_auc_paired_t": {
-    "n": 2,
-    "mean_diff": -0.046875,
-    "std_diff": 0.06629126073623882,
-    "se_diff": 0.04687499999999999,
-    "t_stat": -1.0000000000000002,
-    "df": 1,
-    "p_value": 0.5,
-    "ci95_lo": -0.6424783470081887,
-    "ci95_hi": 0.5487283470081887
+    "n": 5,
+    "mean_diff": -0.044,
+    "std_diff": 0.012323757543866262,
+    "se_diff": 0.0055113519212621614,
+    "t_stat": -7.983522124626639,
+    "df": 4,
+    "p_value": 0.0013343188339574041,
+    "ci95_lo": -0.05930196606481078,
+    "ci95_hi": -0.028698033935189216
   },
   "foundation_sens_at_99_linear": [
-    0.16666666666666666,
-    0.875
+    0.1,
+    0.05,
+    0.05,
+    0.1,
+    0.1
   ],
   "foundation_sens_at_99_sparse_aware": [
-    0.16666666666666666,
-    0.375
+    0.05,
+    0.05,
+    0.05,
+    0.05,
+    0.05
   ],
-  "foundation_sens_at_99_mean_linear": 0.5208333333333334,
-  "foundation_sens_at_99_mean_sparse_aware": 0.2708333333333333,
+  "foundation_sens_at_99_mean_linear": 0.08,
+  "foundation_sens_at_99_mean_sparse_aware": 0.05,
   "foundation_sens_at_99_paired_t": {
-    "n": 2,
-    "mean_diff": -0.25,
-    "std_diff": 0.3535533905932738,
-    "se_diff": 0.25,
-    "t_stat": -1.0,
-    "df": 1,
-    "p_value": 0.5,
-    "ci95_lo": -3.4265511840436735,
-    "ci95_hi": 2.9265511840436735
+    "n": 5,
+    "mean_diff": -0.030000000000000006,
+    "std_diff": 0.027386127875258306,
+    "se_diff": 0.012247448713915891,
+    "t_stat": -2.4494897427831783,
+    "df": 4,
+    "p_value": 0.07048399691022,
+    "ci95_lo": -0.06400436903291279,
+    "ci95_hi": 0.004004369032912777
   },
   "foundation_sens_at_95_linear": [
-    0.16666666666666666,
-    0.875
+    0.1,
+    0.15,
+    0.2,
+    0.15,
+    0.15
   ],
   "foundation_sens_at_95_sparse_aware": [
-    0.16666666666666666,
-    0.375
+    0.1,
+    0.1,
+    0.15,
+    0.1,
+    0.15
   ],
-  "foundation_sens_at_95_mean_linear": 0.5208333333333334,
-  "foundation_sens_at_95_mean_sparse_aware": 0.2708333333333333,
+  "foundation_sens_at_95_mean_linear": 0.15,
+  "foundation_sens_at_95_mean_sparse_aware": 0.12,
   "foundation_sens_at_95_paired_t": {
-    "n": 2,
-    "mean_diff": -0.25,
-    "std_diff": 0.3535533905932738,
-    "se_diff": 0.25,
-    "t_stat": -1.0,
-    "df": 1,
-    "p_value": 0.5,
-    "ci95_lo": -3.4265511840436735,
-    "ci95_hi": 2.9265511840436735
+    "n": 5,
+    "mean_diff": -0.03,
+    "std_diff": 0.027386127875258306,
+    "se_diff": 0.012247448713915891,
+    "t_stat": -2.449489742783178,
+    "df": 4,
+    "p_value": 0.07048399691022,
+    "ci95_lo": -0.06400436903291279,
+    "ci95_hi": 0.004004369032912784
   },
   "sanity_checks": {
     "panel_only_aucs": true,
@@ -92,19 +110,25 @@
   },
   "all_sanity_checks_match": true,
   "shuffled_foundation_aucs_linear": [
-    0.4166666666666667,
-    0.9375
+    0.3175,
+    0.3425,
+    0.4575,
+    0.335,
+    0.265
   ],
   "shuffled_foundation_aucs_sparse_aware": [
-    0.4166666666666667,
-    0.921875
+    0.3225,
+    0.34249999999999997,
+    0.4525,
+    0.3475,
+    0.2525
   ],
   "shuffled_foundation_aucs_differ_intentionally": true,
   "verdict_auc": "negative",
-  "verdict_sens_at_99": "negative",
+  "verdict_sens_at_99": "null",
   "verdict_summary": {
-    "auc": "negative (\u0394 -0.0469 AUC, p=0.500)",
-    "sens_at_99": "negative (\u0394 -0.250 sens@99, p=0.500)",
+    "auc": "negative (\u0394 -0.0440 AUC, p=0.001)",
+    "sens_at_99": "null (\u0394 -0.030 sens@99, p=0.070)",
     "smoke_gate_pass_linear": false,
     "smoke_gate_pass_sparse_aware": false,
     "all_sanity_checks_match": true

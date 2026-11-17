@@ -373,109 +373,70 @@ def _sens_at_spec(
     return float(tpr[ok.nonzero()[0][-1]])
 
 
-def _foundation_smoke(
+def _fold_oof_predictions(
     panel_scores: np.ndarray,
     frag_scores: np.ndarray,
-    y_true: np.ndarray,
+    y_fit: np.ndarray,
+    folds,
     seed: int,
-    n_folds: int = 5,
-    n_ensemble: int = 3,
-    loss: str = "ce",
-    alpha_pos: float = 20.0,
-    patient_groups: np.ndarray = None,
-    projection_kinds: Optional[Dict[str, str]] = None,
-) -> Dict[str, float]:
-    """Train FoundationDownstream on (panel, frag) → y_true, return metrics.
+    n_ensemble: int,
+    loss: str,
+    alpha_pos: float,
+    projection_kinds: Optional[Dict[str, str]],
+) -> tuple:
+    """Fit the pipeline on ``y_fit`` and return out-of-fold predictions.
 
-    **Audit-2 fix (P0-A):** Uses ``GroupKFold`` so that both arms of
-    every paired cancer/control sample stay in the same fold. With
-    paired data, ``StratifiedKFold`` per-sample lets the model
-    memorize the per-patient mutation-derived frag score (invariant
-    within a pair) and predict the held-out arm of the same patient —
-    inflating AUC by an unknown amount. ``GroupKFold`` keeps patients
-    whole, which is the only honest protocol for paired data with
+    Returns ``(oof_foundation, oof_lr, oof_naive)``:
+
+      - ``oof_foundation``: the blended foundation score,
+        0.7 x (frozen encoder + sklearn LR head) + 0.3 x (trainable
+        tiny transformer ensemble).
+      - ``oof_lr``: the sklearn LogisticRegression baseline on
+        [panel, frag].
+      - ``oof_naive``: the naive average (panel + frag) / 2.
+
+    The SAME function produces the honest numbers and the
+    permuted-label control's numbers. That is deliberate: the control
+    must be like-for-like with the honest metric, differing ONLY in the
+    labels the models were fitted against. An earlier version of this
+    script had two separate fold loops -- the honest one trained the
+    0.7/0.3 blend while the control trained the frozen-encoder variant
+    alone -- so the reported "difference" mixed a change of estimator
+    with a change of labels and could not be read as a null.
+
+    The model seeds are shared between the two runs as well, so the
+    control's models are initialised identically to the honest ones:
+    the comparison is paired, and the only thing that differs is the
+    label assignment.
+
+    **Audit-2 fix (P0-A):** the caller passes per-patient ``folds``
+    built with ``GroupKFold``, so both arms of every paired
+    cancer/control sample stay in the same fold. With paired data,
+    ``StratifiedKFold`` per-sample lets the model memorize the
+    per-patient mutation-derived frag score (invariant within a pair)
+    and predict the held-out arm of the same patient -- inflating AUC
+    by an unknown amount. ``GroupKFold`` keeps patients whole, which
+    is the only honest protocol for paired data with
     per-patient-invariant features.
-
-    **Audit-2 fix (P0-C):** The shuffled-label negative control
-    shuffles the pos-half and neg-half **independently** so the pair
-    structure is broken. ``shuffled_*`` AUCs are computed against
-    ``y_shuf`` (the post-shuffle labels), not against ``y_true`` —
-    otherwise the metric reports anti-correlation with the original
-    labels, not the null-hypothesis AUC. ``shuffled_naive_avg_auc``
-    is no longer byte-identical to ``naive_avg_auc`` because the
-    pair structure is broken.
-
-    Real signal in 2 of the 6 modality slots (frag_basic + frag_enhanced);
-    other 4 slots are zero-filled so the encoder still receives its
-    expected input shape. This is the documented hybrid eval.
-
-    Three configurations are reported so reviewers can see the gap
-    between the full foundation model and the LR-baseline that
-    honestly wins on n=40:
-      - foundation (PyTorch encoder): tiny config (embed_dim=8, 1
-        layer, dropout=0.4). Larger configs overfit on n=40.
-      - lr_baseline (sklearn LogisticRegression on [panel, frag]):
-        the standard ctDNA fusion baseline.
-      - naive_average: (panel + frag) / 2.
     """
-    from sklearn.model_selection import GroupKFold
     from sklearn.linear_model import LogisticRegression
     from src.foundation.config import FoundationConfig
     from src.foundation.downstream import FoundationDownstream
     from src.foundation.data import MODALITY_DIMS
 
-    n = len(y_true)
-    # Audit-2 P0-A fix: per-patient groups. If patient_groups is None
-    # (e.g. unpaired synthetic data), fall back to a dummy group of
-    # all zeros — every sample is its own group, which is the
-    # most-conservative split (no two samples share a group).
-    if patient_groups is None:
-        patient_groups = np.arange(n, dtype=np.int64)
-
-    # n_splits must not exceed the number of unique groups.
-    n_groups = len(np.unique(patient_groups))
-    n_splits = min(n_folds, n_groups)
-    cv = GroupKFold(n_splits=n_splits)
-
-    # Three OOF arrays: foundation, LR baseline, naive average.
+    n = len(y_fit)
     oof_foundation = np.zeros(n, dtype=np.float64)
     oof_lr = np.zeros(n, dtype=np.float64)
     oof_naive = np.zeros(n, dtype=np.float64)
 
-    # Pre-compute a deterministic shuffle of labels that breaks the
-    # pair structure. The pos-half indices are shuffled among
-    # themselves, the neg-half indices are shuffled among themselves,
-    # then the two halves are interleaved back into ``y_shuf``. This
-    # destroys the patient pair invariant that the real signal relies
-    # on, while keeping the marginal class balance. After this
-    # shuffle, no per-patient signature can survive.
-    rng_shuf = np.random.default_rng(seed + 7777)
-    pos_idx = np.where(y_true == 1)[0]
-    neg_idx = np.where(y_true == 0)[0]
-    pos_shuf = pos_idx.copy()
-    neg_shuf = neg_idx.copy()
-    rng_shuf.shuffle(pos_shuf)
-    rng_shuf.shuffle(neg_shuf)
-    y_shuf = np.empty_like(y_true)
-    y_shuf[pos_shuf] = 1
-    y_shuf[neg_shuf] = 0
-
-    # Three OOF arrays for the shuffled-label control. Computed
-    # against ``y_shuf`` (post-shuffle labels), not ``y_true``.
-    oof_naive_shuf = np.zeros(n, dtype=np.float64)
-    oof_lr_shuf = np.zeros(n, dtype=np.float64)
-    oof_foundation_shuf = np.zeros(n, dtype=np.float64)
-
-    for fold_idx, (tr, te) in enumerate(
-        cv.split(np.zeros(n), y_true, groups=patient_groups)
-    ):
+    for fold_idx, (tr, te) in enumerate(folds):
         # ---- Naive average (no training needed) ----
         oof_naive[te] = (panel_scores[te] + frag_scores[te]) / 2.0
 
         # ---- LR baseline on [panel, frag] ----
         X_tr = np.column_stack([panel_scores[tr], frag_scores[tr]])
         X_te = np.column_stack([panel_scores[te], frag_scores[te]])
-        lr = LogisticRegression(C=1.0, max_iter=1000).fit(X_tr, y_true[tr])
+        lr = LogisticRegression(C=1.0, max_iter=1000).fit(X_tr, y_fit[tr])
         oof_lr[te] = lr.predict_proba(X_te)[:, 1]
 
         # ---- Foundation model variants ----
@@ -485,7 +446,7 @@ def _foundation_smoke(
             # Small-cohort model: 1 layer, 8-dim embed, 1 head, strong
             # dropout (0.4) to combat overfit on n<100 cohorts. The
             # PRODUCTION_CONFIG (4-layer, 128-dim) overfits dramatically
-            # on n=40 — measured 5-seed AUC 0.58 with the production
+            # on n=40 -- measured 5-seed AUC 0.58 with the production
             # config; this small config trains stably on the same data.
             cfg = FoundationConfig(
                 embed_dim=8, n_heads=1, n_layers=1, ff_dim=16,
@@ -518,7 +479,7 @@ def _foundation_smoke(
 
             fd = FoundationDownstream(config=cfg, pretrained=False, loss=loss, alpha_pos=alpha_pos, projection_kinds=projection_kinds)
             fd.fit(
-                modalities_tr, y_true[tr],
+                modalities_tr, y_fit[tr],
                 n_epochs=40, batch_size=8,
                 validation_split=0.2, verbose=False,
             )
@@ -529,14 +490,14 @@ def _foundation_smoke(
         # the joint embedding. This is the architecture-honest path:
         # the encoder provides a learned (here, random) projection
         # and the linear head does the actual classification. Equivalent
-        # to a frozen feature extractor — proves the encoder itself
+        # to a frozen feature extractor -- proves the encoder itself
         # adds nothing beyond the LR baseline on n=40.
         cfg_b = FoundationConfig(
             embed_dim=8, n_heads=1, n_layers=1, ff_dim=16,
             batch_size=8, seed=seed * 1000 + fold_idx,
         )
-        # Audit-2 P0-D: seed torch BEFORE encoder construction (see
-        # the same call in the variant-A loop above for the rationale).
+        # Audit-2 P0-D: seed torch BEFORE encoder construction (see the
+        # same call in the variant-A loop above for the rationale).
         import torch as _torch_b
         _torch_b.manual_seed(cfg_b.seed)
         if _torch_b.cuda.is_available():
@@ -555,17 +516,14 @@ def _foundation_smoke(
         modalities_te_b["frag_enhanced"][:, 0] = frag_scores[te]
         fd_b = FoundationDownstream(config=cfg_b, pretrained=False, loss=loss, alpha_pos=alpha_pos, projection_kinds=projection_kinds)
         fd_b.fit(
-            modalities_tr_b, y_true[tr],
+            modalities_tr_b, y_fit[tr],
             n_epochs=20, batch_size=8,
             validation_split=0.2, verbose=False,
         )
-        # Replace the trained classifier head with sklearn LR on the
-        # frozen encoder outputs. This is a fair comparison: same
-        # backbone, linear head instead of MLP.
         train_emb = fd_b.encode(modalities_tr_b)
         test_emb = fd_b.encode(modalities_te_b)
         lr_b = LogisticRegression(C=1.0, max_iter=1000).fit(
-            train_emb, y_true[tr]
+            train_emb, y_fit[tr]
         )
         fold_proba_b = lr_b.predict_proba(test_emb)[:, 1]
 
@@ -576,62 +534,124 @@ def _foundation_smoke(
         # lr_baseline but still exercises the PyTorch encoder path.
         oof_foundation[te] = 0.7 * fold_proba_b + 0.3 * fold_proba_a
 
-    # ---- Negative control: shuffled labels ----
-    # Audit-2 P0-C fix: pair-broken shuffle + AUC computed against
-    # ``y_shuf`` (not ``y_true``). The shuffle is computed once
-    # outside the fold loop (above) so every fold uses the same
-    # shuffled labels and the OOF predictions are consistent across
-    # folds.
-    for fold_idx, (tr, te) in enumerate(
-        cv.split(np.zeros(n), y_true, groups=patient_groups)
-    ):
-        # Naive avg on shuffled labels — pair structure is broken,
-        # so this is now different from oof_naive[te] above.
-        oof_naive_shuf[te] = (panel_scores[te] + frag_scores[te]) / 2.0
-        # LR on shuffled labels — fit to predict y_shuf, score on test.
-        X_tr = np.column_stack([panel_scores[tr], frag_scores[tr]])
-        X_te = np.column_stack([panel_scores[te], frag_scores[te]])
-        lr_shuf = LogisticRegression(C=1.0, max_iter=1000).fit(
-            X_tr, y_shuf[tr]
-        )
-        oof_lr_shuf[te] = lr_shuf.predict_proba(X_te)[:, 1]
-        # Foundation variant B on shuffled labels — frozen encoder + LR.
-        cfg_b = FoundationConfig(
-            embed_dim=8, n_heads=1, n_layers=1, ff_dim=16,
-            batch_size=8, seed=seed * 1000 + fold_idx,
-        )
-        # Audit-2 P0-D: seed torch BEFORE encoder construction.
-        import torch as _torch_c
-        _torch_c.manual_seed(cfg_b.seed)
-        if _torch_c.cuda.is_available():
-            _torch_c.cuda.manual_seed_all(cfg_b.seed)
-        modalities_tr_b = {
-            name: np.zeros((len(tr), dim), dtype=np.float32)
-            for name, dim in MODALITY_DIMS.items()
-        }
-        modalities_te_b = {
-            name: np.zeros((len(te), dim), dtype=np.float32)
-            for name, dim in MODALITY_DIMS.items()
-        }
-        modalities_tr_b["frag_basic"][:, 0] = panel_scores[tr]
-        modalities_tr_b["frag_enhanced"][:, 0] = frag_scores[tr]
-        modalities_te_b["frag_basic"][:, 0] = panel_scores[te]
-        modalities_te_b["frag_enhanced"][:, 0] = frag_scores[te]
-        fd_b = FoundationDownstream(config=cfg_b, pretrained=False, loss=loss, alpha_pos=alpha_pos, projection_kinds=projection_kinds)
-        fd_b.fit(
-            modalities_tr_b, y_shuf[tr],
-            n_epochs=20, batch_size=8,
-            validation_split=0.2, verbose=False,
-        )
-        train_emb = fd_b.encode(modalities_tr_b)
-        test_emb = fd_b.encode(modalities_te_b)
-        lr_b = LogisticRegression(C=1.0, max_iter=1000).fit(
-            train_emb, y_shuf[tr]
-        )
-        oof_foundation_shuf[te] = lr_b.predict_proba(test_emb)[:, 1]
+    return oof_foundation, oof_lr, oof_naive
 
-    # Average Variant A and Variant B per fold (matched real-signal logic)
-    # — but on the shuffled labels.
+
+def _foundation_smoke(
+    panel_scores: np.ndarray,
+    frag_scores: np.ndarray,
+    y_true: np.ndarray,
+    seed: int,
+    n_folds: int = 5,
+    n_ensemble: int = 3,
+    loss: str = "ce",
+    alpha_pos: float = 20.0,
+    patient_groups: np.ndarray = None,
+    projection_kinds: Optional[Dict[str, str]] = None,
+) -> Dict[str, float]:
+    """Train FoundationDownstream on (panel, frag) -> y_true, return metrics.
+
+    The run has two halves: the HONEST one, on the true labels, and the
+    PERMUTED-LABEL CONTROL, on a relabelled copy of the same cohort.
+    Both halves go through ``_fold_oof_predictions``, so they are
+    like-for-like: same estimator, same folds, same model seeds, same
+    data -- only the labels differ. The control therefore answers one
+    question cleanly: *what would this pipeline report if the labels
+    carried no information about cancer status?*
+
+    **The control used to be a no-op.** The old code built its
+    "pair-broken shuffle" by permuting the positive index set among
+    itself and the negative index set among itself, then writing 1s
+    back to the permuted positive positions and 0s to the permuted
+    negative positions. A permutation of a set has the same set as its
+    image, so that reproduces ``y_true`` exactly: ``y_shuf == y_true``
+    for every seed. The "shuffled" AUCs the script reported were
+    therefore the HONEST AUCs, not a null.
+
+    The fingerprint is visible in the committed artifact: in
+    ``results/sens_at_spec_ce_n20.json`` the control
+    ``shuffled_lr_baseline_auc_mean`` was byte-identical to the honest
+    ``lr_baseline_auc_mean`` (both 0.904), and
+    ``shuffled_naive_avg_auc_mean`` was byte-identical to
+    ``naive_avg_auc_mean`` (both 0.9174). A control that reproduces
+    the real number exactly is not a control.
+
+    The fix is a genuine label permutation, built by the ONE shared
+    implementation in ``src/foundation/label_control.py`` so the
+    control cannot drift apart between scripts again. The same
+    construction is used by ``scripts/fusion_regularized_smoke.py``,
+    whose measured null this script's control is read against.
+
+    NOTE ON THE MEASURED NULL. On this PAIRED design the null does not
+    sit exactly at 0.5: every patient contributes one positive and one
+    negative arm whose panel scores differ by ~+127 (the positive arm
+    is higher for 100% of patients), so a model fitted to permuted
+    labels can still recover that within-pair axis and lands BELOW 0.5
+    (measured at 0.42 +/- 0.12 over 50 permutations per seed; see
+    ``results/fusion_regularized_smoke.json`` ->
+    ``per_seed/*/diagnostics/empirical_null``). A control below 0.5 is
+    therefore not on its own evidence of leakage on this design; it
+    has to be read against that measured null.
+
+    Real signal in 2 of the 6 modality slots (frag_basic + frag_enhanced);
+    other 4 slots are zero-filled so the encoder still receives its
+    expected input shape. This is the documented hybrid eval.
+
+    Three configurations are reported so reviewers can see the gap
+    between the full foundation model and the LR-baseline that
+    honestly wins on n=40:
+      - foundation (PyTorch encoder): tiny config (embed_dim=8, 1
+        layer, dropout=0.4). Larger configs overfit on n=40.
+      - lr_baseline (sklearn LogisticRegression on [panel, frag]):
+        the standard ctDNA fusion baseline.
+      - naive_average: (panel + frag) / 2.
+    """
+    from sklearn.model_selection import GroupKFold
+    from src.foundation.label_control import (
+        assert_not_degenerate,
+        foldwise_permuted_labels,
+    )
+
+    n = len(y_true)
+    # Audit-2 P0-A fix: per-patient groups. If patient_groups is None
+    # (e.g. unpaired synthetic data), fall back to a dummy group of
+    # all zeros -- every sample is its own group, which is the
+    # most-conservative split (no two samples share a group).
+    if patient_groups is None:
+        patient_groups = np.arange(n, dtype=np.int64)
+
+    # n_splits must not exceed the number of unique groups.
+    n_groups = len(np.unique(patient_groups))
+    n_splits = min(n_folds, n_groups)
+    cv = GroupKFold(n_splits=n_splits)
+    # Materialise the folds ONCE and reuse them for both the honest
+    # run and the control, so the two are provably split the same way.
+    folds = list(cv.split(np.zeros(n), y_true, groups=patient_groups))
+
+    # The permuted-label control. ``y_perm`` is a relabelled copy of
+    # ``y_true``: the class balance of each fold block is preserved and
+    # the association between the scores and the labels is destroyed.
+    # ``assert_not_degenerate`` raises if the permutation turns out to
+    # be the identity, because a control that reproduces the real
+    # labels reports the honest AUC back as if it were a null.
+    y_perm = foldwise_permuted_labels(y_true, folds, seed)
+    assert_not_degenerate(y_true, y_perm)
+
+    # --- Honest run, on the true labels ---
+    oof_foundation, oof_lr, oof_naive = _fold_oof_predictions(
+        panel_scores, frag_scores, y_true, folds, seed,
+        n_ensemble=n_ensemble, loss=loss, alpha_pos=alpha_pos,
+        projection_kinds=projection_kinds,
+    )
+
+    # --- Control run, on the permuted labels. Same function, same
+    # folds, same seeds; only y_fit differs. ---
+    oof_foundation_perm, oof_lr_perm, oof_naive_perm = _fold_oof_predictions(
+        panel_scores, frag_scores, y_perm, folds, seed,
+        n_ensemble=n_ensemble, loss=loss, alpha_pos=alpha_pos,
+        projection_kinds=projection_kinds,
+    )
+
     return {
         "auc": _single_channel_auc(y_true, oof_foundation),
         "sens_at_95": _sens_at_spec(y_true, oof_foundation, 0.05),
@@ -642,10 +662,13 @@ def _foundation_smoke(
         "naive_avg_auc": _single_channel_auc(y_true, oof_naive),
         "naive_avg_sens_at_95": _sens_at_spec(y_true, oof_naive, 0.05),
         "naive_avg_sens_at_99": _sens_at_spec(y_true, oof_naive, 0.01),
-        # Audit-2 P0-C fix: AUC computed against y_shuf, not y_true.
-        "shuffled_lr_baseline_auc": _single_channel_auc(y_shuf, oof_lr_shuf),
-        "shuffled_naive_avg_auc": _single_channel_auc(y_shuf, oof_naive_shuf),
-        "shuffled_foundation_auc": _single_channel_auc(y_shuf, oof_foundation_shuf),
+        # The control AUCs are computed against ``y_perm`` (the
+        # permuted labels), not ``y_true``: the metric reports the
+        # null-hypothesis AUC, not anti-correlation with the original
+        # labels.
+        "shuffled_lr_baseline_auc": _single_channel_auc(y_perm, oof_lr_perm),
+        "shuffled_naive_avg_auc": _single_channel_auc(y_perm, oof_naive_perm),
+        "shuffled_foundation_auc": _single_channel_auc(y_perm, oof_foundation_perm),
     }
 
 
@@ -979,6 +1002,19 @@ def main() -> int:
         "shuffled_lr_baseline_auc_mean": shuf_lr_auc_mean,
         "shuffled_naive_avg_auc_mean": shuf_naive_auc_mean,
         "shuffled_foundation_auc_mean": shuf_found_auc_mean,
+        # The raw gap between the honest AUC and its permuted-label
+        # null. This is the directly interpretable quantity: how much
+        # of the foundation's AUC survives the label permutation.
+        # ``delta_auc_normalized`` below divides this by
+        # ``(real - 0.5)``, which is only meaningful when the null sits
+        # at 0.5 -- and on this paired design it does NOT (the measured
+        # null is ~0.35-0.42, below chance, because a model fitted to
+        # permuted labels still recovers the within-pair axis). The raw
+        # gap is therefore the number to quote; the normalised one is
+        # kept for continuity with the earlier artifact.
+        "foundation_auc_minus_null": (
+            foundation_auc_mean - shuf_found_auc_mean
+        ),
         # Audit-2 P1-A fix: rename to match its actual formula. The
         # metric reports ``(real − shuffled) / (real − 0.5)`` — that
         # is, the fraction of the real above-chance signal that is

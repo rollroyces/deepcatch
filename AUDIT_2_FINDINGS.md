@@ -92,10 +92,32 @@ now reaches the foundation model.
    because naive-average doesn't train on labels, so it has no
    shuffle effect — the control reported nothing.
 
-**Fix:**
+**Fix (as originally written):**
 1. Shuffle pos-half and neg-half **independently** so the pair
    structure is broken.
 3. Compute shuffled-AUC against `y_shuf`, not `y_true`.
+
+> **SUPERSEDED — this fix did not work.** Step 1 was implemented as
+> "permute the positive index set among itself, then write 1s back to
+> those positions". A permutation of a set has the same set as its
+> image, so that reproduces `y_true` exactly: `y_shuf == y_true` for
+> every seed, and the "shuffled" AUCs the script reported were the
+> HONEST AUCs, not a null. The fingerprint was visible in the
+> committed artifact, where `shuffled_lr_baseline_auc_mean` was
+> byte-identical to `lr_baseline_auc_mean` (both 0.904) and
+> `shuffled_naive_avg_auc_mean` was byte-identical to
+> `naive_avg_auc_mean` (both 0.9174). The 0.910 / 0.915 / 0.741 in
+> the "Honest Numbers" table below are therefore NOT control
+> measurements.
+>
+> The control was fixed later: it is now a genuine label permutation,
+> built by the one shared implementation in
+> `src/foundation/label_control.py`, and the honest run and the
+> control run go through the same code path (same estimator, same
+> folds, same model seeds) so they differ only in the label
+> assignment. The corrected numbers are in
+> `paper/METHODS_PAPER.md` §3.1, and
+> `test/test_label_control.py` guards the property structurally.
 
 ---
 
@@ -162,11 +184,17 @@ Updated README and honest_framing text accordingly.
 | foundation AUC | **0.939** (inflated) | **0.554 ± 0.005** |
 | lr_baseline AUC | 0.96 | **0.910** |
 | naive_avg AUC | 0.92 | **0.915** |
-| shuffled_lr_baseline AUC | 0.37 (artifact) | **0.910** (no leak) |
-| shuffled_naive_avg AUC | 0.92 (no shuffle effect) | **0.915** (no shuffle effect) |
-| shuffled_foundation AUC | 0.31 (anti-correlated) | **0.741** (model picks up pair-invariant) |
-| delta_auc_normalized | 1.49 (misleading) | **−3.45** (foundation < shuffled) |
+| shuffled_lr_baseline AUC | 0.37 (artifact) | **0.910** (no leak) † |
+| shuffled_naive_avg AUC | 0.92 (no shuffle effect) | **0.915** (no shuffle effect) † |
+| shuffled_foundation AUC | 0.31 (anti-correlated) | **0.741** (model picks up pair-invariant) † |
+| delta_auc_normalized | 1.49 (misleading) | **−3.45** (foundation < shuffled) † |
 | gate_pass | true | **false** |
+
+† **These four control values were not control measurements.** The
+permutation was a no-op (see P0-C above), so the "shuffled" numbers
+are the honest numbers and the delta between them is meaningless. The
+table is kept as the historical audit-2 record; the corrected control
+numbers are in `paper/METHODS_PAPER.md` §3.1.
 
 \* The 0.95 frag_only AUC was on synthetic Gaussian noise (P0-B
 fix removes this); the real mutation-derived frag channel alone
