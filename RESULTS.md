@@ -465,7 +465,8 @@ cd cfdna-fragmentomics-pipeline
 pip install -e .
 
 # Headline result
-python scripts/honest_benchmark.py  # AUC 0.9745 +/- 0.0022
+python scripts/honest_benchmark.py  # AUC 0.9744 +/- 0.0032 (2026-11-17; the
+#                                    figure moves between runs — see below)
 
 # Initial run: download FinaleDB samples (~5-15 min, depends on cohort size)
 python run_cross_study.py --parallel 8 --max-mb 500
@@ -477,6 +478,23 @@ python scripts/lr_regularization_sweep.py --seeds 5 --c-values 1000  # AUC 0.978
 # Reproducibility gate (synthetic cohort, <30 s)
 python scripts/auc_reproducibility_gate.py  # AUC floor 0.80
 ```
+
+**The pipeline's headline figure moves between runs.** Its
+`scripts/honest_benchmark.py` fits `PCA(...)` without `random_state`, so
+the subspace is randomised whenever `n_components < 0.8 *
+min(n_samples, n_features)` — which is the case for PCA(200) on the
+627-sample cohort. Two runs of the same command on the same data gave
+0.975618 and 0.973906, with the reported ±std changing too (0.000923 vs
+0.002371); on 2026-11-17 the same command reported 0.9744 ± 0.0032. The
+one-line fix — seed the PCA with the CV seed that is already in scope —
+is prepared on the pipeline's local branch `fix/seed-pca` and has not
+been published; seeded, the same command reports **0.9770 ± 0.0013**,
+which is bit-identical to DeepCatch's own pooled figure, and the
+control that fits no PCA does not move at all. The seven other
+unseeded PCA call sites in that repository were seeded too
+(`scripts/sens_calibration_sweep.py`, `scripts/sens_at_specificity.py`),
+so its sens@spec and calibration figures move for the same reason.
+
 
 ---
 
