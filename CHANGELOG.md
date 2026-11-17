@@ -106,6 +106,24 @@ cohort size.
 
 ### Fixed
 
+- **The readiness document quoted the panel's sensitivity at two
+  decimals, and the guard could not see it.**
+  `ULTRA_EARLY_READINESS.md` said "AUC 0.921 / sens@99% = 0.49" where
+  the artifact says **0.460** — the figure every other document
+  quotes. The number guard requires at least three decimals, because
+  "0.49" cannot identify a value, so the figure was invisible to it.
+  It is written as 0.460 now and named in the quotable list, so a later
+  rewrite of that document fails the build; the readiness document had
+  never been named for the panel's AUC either, and now it is.
+- **The long-form manuscript still carried a September status line.**
+  `paper/METHODS_PAPER.md` described itself as a 2026-09-23 draft whose
+  §3 came from the legacy sweep (`results/cross_study_finallydb.json`),
+  while its numbers come from the GC-corrected one; it now names the
+  artifacts its figures actually come from, and records that the author
+  line is a placeholder to settle before submission. `paper/README.md`
+  called that manuscript "the JOSS / PLOS-style article" while the
+  venue map sends JOSS to the root `paper.md`; it also quoted the
+  submission PDF's byte size, which changes on every rebuild.
 - **Nothing compared the submission PDF with the manuscript.**
   `paper/biorxiv_submission_v2.3.0.pdf` is the file bioRxiv receives,
   and it is a committed binary: a PDF that was not rebuilt after the

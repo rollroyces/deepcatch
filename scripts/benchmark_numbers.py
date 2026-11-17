@@ -356,7 +356,18 @@ QUOTED_NUMBERS.append(
     ("real_tcga_validation.json", ("panel_detection", "panel_llr", 16, "mean"),
      ["paper/paper.tex", "paper/PAPER.md", "paper.md", "MODEL.md",
       "REVIEWERS.md", "README.md", "README.zh-CN.md", "NEXT_STEPS.md",
-      "results/README.md", "docs/site/index.html"]))
+      "ULTRA_EARLY_READINESS.md", "results/README.md",
+      "docs/site/index.html"]))
+
+# The panel's sensitivity at 99% specificity, quoted next to its AUC.
+# It was unguarded, and one document carried it as "0.49" -- a two-decimal
+# rendering the guard cannot see, because a number written with fewer than
+# three decimals cannot identify a value. Written as 0.460 and named here,
+# a later rewrite of that document fails the guard instead of drifting.
+QUOTED_NUMBERS.append(
+    ("real_tcga_validation.json", ("panel_detection", "panel_llr", 18, "mean"),
+     ["paper/paper.tex", "paper/PAPER.md", "MODEL.md",
+      "ULTRA_EARLY_READINESS.md", "docs/PREPRINT_ABSTRACT.md"]))
 
 # The goal-2 headline: the regularized late fusion and the Bayesian
 # model average that replaced the overfitting neural encoder. It was
