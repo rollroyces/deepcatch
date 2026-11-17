@@ -1196,6 +1196,42 @@ cohort size.
   registration asks for. A guard now checks that every figure the
   manuscript includes is in the repository.
 
+- **The collaborator path did not work, and nothing had ever run it.**
+  The quick-start's optional third step — merge with the open-data
+  labels and run the cross-study benchmark — failed with "Found array
+  with 0 sample(s)", and three separate defects sat behind that:
+
+  * The adapter passed the *labels'* directory as the benchmark's
+    features directory. The pipeline repository keeps its labels at the
+    top level and its feature cache under `data/features/`, so the
+    loader found no feature files at all.
+  * The benchmark reads the FSD channel from `<sample>.fsd.json`, while
+    the collaborator interface asks for `<sample>.fsd_histogram.npy` — so
+    a cohort that followed the documentation exactly was invisible to the
+    benchmark, which drops any sample whose FSD it cannot read. The
+    adapter now derives the `.json` from the `.npy`, so the converted
+    cohort is directly consumable.
+  * The run wrote the benchmark document and the per-cancer artifact to
+    their **published** paths, so a collaborator's optional run replaced
+    the manuscript's numbers with a single-publication result. Both
+    outputs now go to the adapter's own directory.
+
+  The step also had no test at all — the test module's docstring
+  claimed it was "smoke-tested with `--quick` synthetic data" and
+  nothing exercised it. There is now one, and it runs the whole step on
+  a synthetic cohort and asserts that the repository's published files
+  come out byte-identical.
+
+  The merged run covers the open-data publications only: the benchmark
+  selects publications from the FinaleDB registry, so a study with no
+  FinaleDB publication id is dropped from it. The adapter says so in
+  its report and the quick-start now says it too, instead of implying
+  that the local cohort joins the benchmark.
+
+  `results/local_cohort/` is now gitignored: the adapter's output
+  symlinks into a collaborator's own data files and its manifest names
+  their lab, contact and IRB number.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

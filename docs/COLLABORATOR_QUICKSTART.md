@@ -33,6 +33,8 @@ my_cohort/features/
 ├── H342.delfi_100kb_ratio.npy     (30894 bins)
 ├── H342.delfi_100kb_counts.npy    (30894 bins)
 ├── H342.fsd_histogram.npy         (196 bins, 5bp, normalized to sum=1)
+                                  ↑ the adapter also writes H342.fsd.json from it,
+                                    because that is what the benchmark reads
 ├── H201.<same 5 channels>
 └── ...
 ```
@@ -93,6 +95,13 @@ env -u PYTHONPATH ./.venv/bin/python \
     --merge-with ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \
     --cross-study
 ```
+
+That last step runs the open-data benchmark over the merged label file.
+**Your study's samples are not part of it**: the benchmark selects
+publications from the FinaleDB registry, so a study with no FinaleDB
+publication id is dropped from that run — the adapter says so in its
+report. The deliverable is the normalised cohort above; adding a new
+study to the benchmark itself is done on the maintainer side.
 
 The output lives at `results/local_cohort/my_lab_2026/`:
 

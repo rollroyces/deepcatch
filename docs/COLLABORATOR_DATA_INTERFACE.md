@@ -56,7 +56,7 @@ Each sample needs **5 `.npy` files**, one per channel. All five must have `dtype
 | `.delfi_5mb_coverage.npy` | `(631,)` | 5 Mb coverage, **median-normalized** per sample to median = 1.0 |
 | `.delfi_100kb_ratio.npy` | `(30894,)` | DELFI short/long ratio per 100 kb bin |
 | `.delfi_100kb_counts.npy` | `(30894,)` | 100 kb coverage, raw counts (NOT normalized — the adapter handles this) |
-| `.fsd_histogram.npy` | `(196,)` | 5 bp-resolution fragment-length histogram, normalized to sum = 1.0 (range 20–1000 bp) |
+| `.fsd_histogram.npy` | `(196,)` | 5 bp-resolution fragment-length histogram, normalized to sum = 1.0 (range 20–1000 bp). The adapter also derives `<sample_id>.fsd.json` from it, because the benchmark's feature loader reads the FSD channel from that JSON, not from the `.npy` — so a cohort that only had the `.npy` was invisible to the benchmark |
 
 ### How to produce these from raw data
 

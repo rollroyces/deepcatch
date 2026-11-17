@@ -13,8 +13,9 @@ The adapter must:
     3. Apply the cell-line filter regex (GM\\d+, HeLa, HepG2, K562, …)
        so cell-line samples do not contaminate the cancer set.
     4. Merge with an existing labels TSV when ``--merge-with`` is passed.
-    5. Run the cross-study benchmark on the merged cohort end-to-end
-       (smoke-tested with `--quick` synthetic data, not real data).
+    5. Run the cross-study benchmark on the converted cohort end-to-end
+       (smoke-tested with a synthetic cohort, not real data) -- and
+       never overwrite the repository's published benchmark files.
 
 No real FinaleDB cohort is required — every test builds its fixture
 locally with ``np.save``.
@@ -611,3 +612,65 @@ def test_the_merged_cohort_keeps_both_sides(tmp_path):
     assert set(labels) == {"EX_C1", "EX_H1", "H342", "H001"}, (
         f"the merge lost a side: {sorted(labels)}")
     assert pubs["EX_C1"] == "99" and pubs["H342"] == "6"
+
+
+# ──────────────────────────────────────────────────────────────────────
+# 6. The optional merge + cross-study step, end to end
+# ──────────────────────────────────────────────────────────────────────
+
+def test_the_cross_study_step_runs_and_never_writes_into_the_repository(tmp_path):
+    """The cross-study step must work, and must not touch the published files.
+
+    Both defects were found by running the collaborator path the way a
+    collaborator would, rather than by reading it:
+
+    * The adapter passed the *labels'* directory as the benchmark's
+      features directory. The pipeline repository keeps its labels at the
+      top level and its feature cache under `data/features/`, so the
+      benchmark's loader found no feature files at all and died with
+      "Found array with 0 sample(s)" -- an error that says nothing about
+      the cause.
+    * The benchmark writes a benchmark document and a per-cancer artifact
+      by default, and those two are the repository's PUBLISHED files --
+      the ones the manuscript quotes. The collaborator's optional run
+      replaced them with a single-publication result, silently.
+
+    The cohort here is small and its study id maps to FinaleDB
+    publication 8, so the benchmark's publication filter keeps it.
+
+    Its vectors carry the real channel dimensions: the benchmark loads
+    features through the sibling pipeline's `load5`, which drops a
+    sample whose concatenated size disagrees with the rest.
+    """
+    # Six per class: the benchmark's 5-fold CV needs at least five
+    # members in each class.
+    root = _build_cohort(tmp_path / "cohort", cohort_name="cristiano",
+                         n_cancer=6, n_healthy=6, include_cell_line=False)
+    out_root = tmp_path / "out"
+    adapter.convert_cohort(cohort_root=str(root), cohort_name="cristiano",
+                           out_root=str(out_root))
+    local_labels = out_root / "cristiano" / "labels.tsv"
+
+    # The published files must come out of the run byte-identical.
+    published = ROOT / "docs" / "CROSS_STUDY_BENCHMARK.md"
+    artifact = ROOT / "results" / "per_cancer_sens_at_spec.json"
+    before = (published.read_bytes(), artifact.read_bytes())
+
+    rc = adapter._run_cross_study(
+        merged_labels_tsv=str(local_labels),
+        # The CONVERTED features directory, not the collaborator's
+        # original: the conversion is what adds the `.fsd.json` the
+        # benchmark's loader reads.
+        merged_features_dir=str(out_root / "cristiano" / "features"),
+        out_json=str(out_root / "cross_study.json"),
+    )
+    assert rc == 0, (
+        "the cross-study step failed on a well-formed cohort; the "
+        "features directory is probably wrong"
+    )
+    assert (out_root / "cross_study.json").exists(), (
+        "the cross-study step wrote no output")
+    assert (published.read_bytes(), artifact.read_bytes()) == before, (
+        "the cross-study step overwrote the repository's published "
+        "benchmark document or per-cancer artifact"
+    )

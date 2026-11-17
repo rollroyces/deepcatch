@@ -328,6 +328,93 @@ def write_labels_tsv(path: str, rows: List[dict]) -> None:
 # Conversion
 # ──────────────────────────────────────────────────────────────────────
 
+# The fragment-size histogram: 196 bins of 5 bp, from 20 bp to 1000 bp.
+_FSD_BIN_LOW = 20
+_FSD_BIN_WIDTH = 5
+_FSD_N_BINS = 196
+
+
+def _write_fsd_json(features_dir: str, sample_id: str,
+                    histogram_path: str) -> None:
+    """Write `<sample>.fsd.json` from the collaborator's histogram .npy.
+
+    The benchmark's feature loaders -- the sibling pipeline's
+    `honest_benchmark.load5` and the repo-local fallback in
+    `scripts/load5_with_motifs.py` -- read the FSD channel from
+    `<sample>.fsd.json`, a JSON file with a `size_bins` map. The
+    collaborator interface documented here asks for
+    `<sample>.fsd_histogram.npy` instead, because a laboratory can
+    export a normalised histogram far more easily than it can produce
+    the pipeline's JSON.
+
+    So the adapter writes both: the .npy the interface specifies, and
+    the .json the benchmark can read. Without it a converted cohort is
+    invisible to the benchmark, because a sample with no readable FSD
+    is dropped by its loader -- silently, as an empty cohort.
+    """
+    import numpy as np
+
+    hist = np.load(histogram_path).astype(float).ravel()
+    if hist.size != _FSD_N_BINS:
+        raise ValueError(
+            f"{sample_id}: the FSD histogram has {hist.size} bins, expected "
+            f"{_FSD_N_BINS} (5 bp bins from {_FSD_BIN_LOW} bp to "
+            f"{_FSD_BIN_LOW + _FSD_BIN_WIDTH * _FSD_N_BINS} bp)"
+        )
+    total = float(hist.sum())
+    if total <= 0:
+        raise ValueError(f"{sample_id}: the FSD histogram sums to {total}")
+
+    edges = [_FSD_BIN_LOW + _FSD_BIN_WIDTH * i for i in range(_FSD_N_BINS)]
+    mass = hist / total
+    size_bins = {f"{lo}-{lo + _FSD_BIN_WIDTH}": float(m)
+                 for lo, m in zip(edges, mass)}
+
+    def quantile(q: float) -> float:
+        """The bin's upper edge where the cumulative mass crosses q."""
+        cumulative = 0.0
+        for (lo, hi), m in zip(zip(edges, edges[1:] + [edges[-1] + _FSD_BIN_WIDTH]), mass):
+            cumulative += m
+            if cumulative >= q:
+                return float(hi)
+        return float(edges[-1] + _FSD_BIN_WIDTH)
+
+    def fraction(lo_bp: float, hi_bp: float) -> float:
+        total_in_band = 0.0
+        for (lo, hi), m in zip(zip(edges, edges[1:] + [edges[-1] + _FSD_BIN_WIDTH]), mass):
+            overlap = min(hi, hi_bp) - max(lo, lo_bp)
+            if overlap > 0:
+                total_in_band += m * (overlap / (hi - lo))
+        return float(total_in_band)
+
+    mode_index = int(np.argmax(mass))
+    short_fraction = fraction(100.0, 150.0)
+    long_fraction = fraction(150.0, 220.0)
+    payload = {
+        "sample": sample_id,
+        "mode": "frag",
+        # The collaborator's histogram is normalised, so the fragment
+        # count behind it is not recoverable from the file.
+        "fragment_count": None,
+        "median_length": quantile(0.5),
+        "mean_length": float(sum(m * (lo + _FSD_BIN_WIDTH / 2)
+                                 for lo, m in zip(edges, mass))),
+        "mode_length": float(edges[mode_index] + _FSD_BIN_WIDTH / 2),
+        "p10": quantile(0.10),
+        "p25": quantile(0.25),
+        "p75": quantile(0.75),
+        "p90": quantile(0.90),
+        "short_fraction_100_150": short_fraction,
+        "long_fraction_150_220": long_fraction,
+        "short_long_ratio": (short_fraction / long_fraction
+                              if long_fraction > 0 else None),
+        "size_bins": size_bins,
+        "source": "collaborator fsd_histogram.npy, normalised to sum=1",
+    }
+    with open(os.path.join(features_dir, f"{sample_id}.fsd.json"), "w") as f:
+        json.dump(payload, f, indent=2)
+
+
 def convert_cohort(
     cohort_root: str,
     cohort_name: str,
@@ -422,6 +509,12 @@ def convert_cohort(
                 except (OSError, NotImplementedError):
                     import shutil
                     shutil.copyfile(src, dst)
+            # The benchmark reads the FSD channel from a .json, so the
+            # converted cohort carries that too (see _write_fsd_json).
+            _write_fsd_json(
+                target_features, sid,
+                os.path.join(features_dir, f"{sid}.fsd_histogram.npy"),
+            )
 
         # Canonical 4-col labels.tsv for the cross-study benchmark.
         write_labels_tsv(
@@ -503,6 +596,24 @@ def merge_with_existing_labels(
     }
 
 
+def _features_dir_for_labels(labels_tsv: str) -> str:
+    """Where the feature files of an existing labels TSV live.
+
+    The pipeline repository keeps its labels at the top level
+    (`labels_multiclass.tsv`) and its feature cache under
+    `data/features/`. The adapter used to pass the *labels'* directory,
+    which is one level too high: the benchmark's loader looks for
+    `<features_dir>/<sample_id>.<channel>.npy`, found nothing, and
+    failed with "Found array with 0 sample(s)" — an error that says
+    nothing about the cause. Both layouts are tried.
+    """
+    root = os.path.dirname(labels_tsv)
+    for candidate in (os.path.join(root, "data", "features"), root):
+        if os.path.isdir(candidate):
+            return candidate
+    return os.path.join(root, "data", "features")
+
+
 def _run_cross_study(merged_labels_tsv: str, merged_features_dir: str,
                      out_json: str) -> int:
     """Invoke scripts/cross_study_finallydb.py on the merged cohort.
@@ -515,12 +626,22 @@ def _run_cross_study(merged_labels_tsv: str, merged_features_dir: str,
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     script = os.path.join(repo_root, "scripts", "cross_study_finallydb.py")
     import subprocess
+    out_dir = os.path.dirname(os.path.abspath(out_json)) or "."
     cmd = [
         sys.executable, script,
         "--labels-multiclass", merged_labels_tsv,
         "--features-dir", merged_features_dir,
         "--out-json", out_json,
         "--publications", "8",
+        # The benchmark writes a benchmark document and a per-cancer
+        # artifact by default, and those two are the repository's
+        # PUBLISHED files — the ones the manuscript quotes. A
+        # collaborator's optional run must not overwrite them with a
+        # single-publication result, so both go to the adapter's own
+        # output directory (the per-cancer artifact is skipped: it
+        # belongs to the published run, not to this one).
+        "--out-md", os.path.join(out_dir, "CROSS_STUDY_BENCHMARK.md"),
+        "--out-per-cancer-json", "",
     ]
     print(f"[adapter_local_cohort] running: {' '.join(cmd)}")
     return subprocess.call(cmd)
@@ -640,10 +761,26 @@ def main() -> int:
             # local cohort's features are not visible to load5's glob.
             rc = _run_cross_study(
                 merged_labels_tsv=merged_path,
-                merged_features_dir=os.path.dirname(existing_labels),
+                merged_features_dir=_features_dir_for_labels(existing_labels),
                 out_json=os.path.abspath(args.cross_study_out),
             )
             report["cross_study_exit_code"] = rc
+            # Say plainly what that run did and did not include: the
+            # benchmark selects publications from the FinaleDB registry
+            # (--publications 8), so a study with no FinaleDB
+            # publication id is dropped from it. The normalised cohort
+            # above is the deliverable; this run is the open-data
+            # benchmark over the merged label file.
+            report["cross_study_scope"] = (
+                "open-data publications only (--publications 8); the local "
+                "study's samples are dropped by the benchmark's publication "
+                "filter, so they are not part of this run"
+            )
+            print("[adapter_local_cohort] NOTE: that run covers the "
+                  "open-data publications only -- the benchmark selects "
+                  "publications from the FinaleDB registry, so the local "
+                  "study's samples are not part of it. The normalised "
+                  "cohort above is the deliverable.")
 
     # Always emit the final report to stdout as JSON (one line so it is
     # easy to grep; the JSON contains all the provenance).

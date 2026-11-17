@@ -141,6 +141,10 @@ research/real_data_report.md
 review/*.md
 
 # ─── Result reports (simulation-based, not verified) ────────────────────
+# A collaborator's converted cohort: symlinks into their own data plus a
+# manifest naming their lab, contact and IRB number. It must never be
+# committed -- it is their data, and it is theirs to decide.
+results/local_cohort/
 results/node/*.md
 results/BIOINFORMATICS_VALIDATION_REPORT.md
 results/benchmark_table.md
