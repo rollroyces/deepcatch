@@ -106,6 +106,16 @@ cohort size.
 
 ### Fixed
 
+- **The upload package listed a supplementary that belongs to a different
+  paper.** `paper/supplementary.tex` is the deprecated v1.0 draft's
+  supplementary: it describes figures S1–S10 and tables S1–S5 for the
+  multi-modal product framing the project moved away from (CTC/miRNA
+  detectors, contrastive variant calling, MAML, longitudinal CET
+  monitoring), and it ships no image files. The bioRxiv upload list put
+  it next to `paper.tex`, so the upload would have described experiments
+  the manuscript does not contain. The form no longer lists it, and
+  `paper/README.md` says what it actually is.
+  `paper/README.md`, `paper/BIORXIV_SUBMISSION.md`.
 - **Five documents still called the earlier manuscript the current one.**
   The labelling pass covered `docs/README.md` and the docs site, but
   `docs/PORTFOLIO_ROADMAP.md`, `paper/METHODS_PAPER.md` (twice),

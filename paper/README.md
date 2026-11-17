@@ -16,7 +16,7 @@ author's bioRxiv account and the Zenodo DOI.
 | `METHODS_PAPER_STATUS.md` | Section-by-section status meta-doc for the methods manuscript | ✓ updated with the v2.3.0 numbers |
 | `PAPER.md` | The earlier panel-only manuscript, kept for reference | superseded by `paper.tex` |
 | `deepcatch_final.tex` | Deprecated v1.0 draft (April 2026), different title and scope | ✗ do not use |
-| `supplementary.tex` | Supplementary material (16 sections) | self-contained; not auto-compiled by CI |
+| `supplementary.tex` | The **deprecated v1.0 draft's** supplementary (the multi-modal product framing: CTC/miRNA detectors, contrastive variant calling, MAML, longitudinal CET monitoring). It describes figures S1–S10 and tables S1–S5 that the current manuscript does not contain, and it ships no image files. | ✗ do not upload with `paper.tex` |
 | `references_final.bib` | Bibliography for `paper.tex` | ✓ |
 
 ## What the preprint now reports
@@ -90,8 +90,16 @@ The abstract's tumor-naive and fusion numbers are the ones this
 repository produces: **0.9740 ± 0.0013** for the channel and **0.9884 ±
 0.0010** for the naive average with a calibrated synthetic mutation
 channel, both from `results/fusion_ablation_isotonic.json`
-(`src/fragmentomics/fusion_ablation.py`, seeded PCA, 10 seeds). The
-companion repository's `scripts/honest_benchmark.py` still fits its PCA
-without `random_state`, so its own figures are reproducible only to
-within ~0.003; the one-line fix there is tracked separately — see the
-CHANGELOG of this release.
+(`src/fragmentomics/fusion_ablation.py`, seeded PCA, 10 seeds).
+
+The companion repository's `scripts/honest_benchmark.py` fits its PCA
+without `random_state`, so its own headline moved on every run. Measured
+on 2026-11-17, on an isolated worktree at that repository's HEAD (its
+uncommitted work untouched): the unseeded run gave **0.9744 ± 0.0032**
+and raised an lbfgs "failed to converge" warning, while the seeded run
+gives **0.9770 ± 0.0013** with no warning — the same number this
+repository reports for its legacy pooled figure, which is the check that
+the two compute the same thing once both are seeded. The one-line fix
+and the companion's document updates are prepared on that repository's
+local branch `fix/seed-pca` (not pushed); two further unseeded PCA calls
+there are named in `ZENODO_SETUP.md`.
