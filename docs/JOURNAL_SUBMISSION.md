@@ -93,6 +93,7 @@ independent researcher can produce.
 | Methods manuscript | ✅ `paper/METHODS_PAPER.md` (all sections filled, numbers regenerated) |
 | Data availability statement | ✅ §5 |
 | Code availability | ✅ MIT, public, versioned |
+| **Acknowledgements section** | ⬜ **neither manuscript has one.** The data providers are named in the data-availability statements and `TEAM.md` credits the reviewers, but PLOS and Bioinformatics Advances both expect an acknowledgements section — whom to name, and how to disclose that the multi-persona audits were AI-assisted, is the author's call |
 | Figure files | ✅ `docs/figures/fig1..fig4*.png`, rendered from the committed artifacts |
 | **Statistical reviewer concerns** | ⚠️ expect a request for the per-cancer denominators and the single-cohort HCC_J reading — both are already stated in §3.3 and §4.2 |
 | **DOI** | ⬜ same Zenodo dependency |

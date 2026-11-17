@@ -443,7 +443,7 @@ Full history: `git log --oneline`. What changed in v2.3.0: [`CHANGELOG.md`](CHAN
 - **[USAGE.md](USAGE.md)** — 30-second TL;DR, install, common workflows, CLI reference, troubleshooting
 - **[TEAM.md](TEAM.md)** — who's involved, open roles, governance
 - **[RESULTS.md](RESULTS.md)** — consolidated research summary (DeepCatch + cfdna-fragmentomics-pipeline sister repo)
-- **[paper/PAPER.md](paper/PAPER.md)** / **[paper/paper.tex](paper/paper.tex)** — research paper
+- **[paper/paper.tex](paper/paper.tex)** — research paper (preprint source; the compiled PDF is [paper/biorxiv_submission_v2.3.0.pdf](paper/biorxiv_submission_v2.3.0.pdf))
 - **[REVIEWERS.md](REVIEWERS.md)** — review notes for expert reviewers
 - **[docs/](docs/)** — 30+ deep-dive docs (CADD / TUMOR_NAIVE / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN / etc.)
 - **[ULTRA_EARLY_READINESS.md](ULTRA_EARLY_READINESS.md)** — single-source readiness doc for ultra-early cancer signaling (every claim ties to a `results/*.json` artifact)

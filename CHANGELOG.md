@@ -106,6 +106,21 @@ cohort size.
 
 ### Fixed
 
+- **The last pointers to the earlier manuscript are gone, and the
+  acknowledgements the team page promises do not exist.** The project
+  metadata's "Paper" URL, the README's research-paper link, the methods
+  paper's BibTeX note and the CI trigger list still pointed at
+  `paper/PAPER.md` — the earlier panel-only revision — and the
+  compilation workflow rebuilt the submission PDF whenever that file
+  changed. They now point at `paper/paper.tex`, the manuscript the PDF
+  is compiled from. `TEAM.md` claimed the data providers and the
+  reviewers "are acknowledged in paper/PAPER.md and BENCHMARK.md
+  citations"; neither document has an acknowledgements section, so the
+  claim was false. It now says what is true — the data are named in the
+  manuscripts' data-availability statements — and the journal checklist
+  carries the missing section as an open item, because whom to name
+  there, and how to disclose the AI-assisted audits, is the author's
+  call.
 - **The readiness document quoted the panel's sensitivity at two
   decimals, and the guard could not see it.**
   `ULTRA_EARLY_READINESS.md` said "AUC 0.921 / sens@99% = 0.49" where

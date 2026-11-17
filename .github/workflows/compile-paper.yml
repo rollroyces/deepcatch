@@ -7,7 +7,6 @@ on:
       - 'paper/supplementary.tex'
       - 'paper/references_final.bib'
       - 'paper/paper.tex'
-      - 'paper/PAPER.md'
       - 'paper/*.pdf'
       # the manuscript embeds these, so a figure change must re-trigger it
       - 'docs/figures/**'

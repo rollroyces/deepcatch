@@ -52,7 +52,7 @@ None of those three are satisfiable from the data on disk or from the GEO supple
 
 ## 5. What IS already validated against FLARE
 
-DeepCatch's **4-mer end-motif fragmentomics** feature extraction (a different channel from CADD panel-LLR) was cross-validated on GSE317007 and reproduces the published CG-depletion / AT-enrichment signature. See `paper/PAPER.md` and `data/FLARE_CONTACT_TEMPLATE.md`. That is a fragmentomics result, not a CADD panel result, and it does not speak to the Top-K=200 question.
+DeepCatch's **4-mer end-motif fragmentomics** feature extraction (a different channel from CADD panel-LLR) was cross-validated on GSE317007 and reproduces the published CG-depletion / AT-enrichment signature. See `paper/paper.tex` and `data/FLARE_CONTACT_TEMPLATE.md`. That is a fragmentomics result, not a CADD panel result, and it does not speak to the Top-K=200 question.
 
 ## 6. No metrics fabricated
 

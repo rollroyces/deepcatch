@@ -447,7 +447,7 @@ deepcatch/
 - **[USAGE.md](USAGE.md)**——30 秒 TL;DR、安装、常用工作流、CLI 参考、故障排查
 - **[TEAM.md](TEAM.md)**——参与者、开放角色、治理
 - **[RESULTS.md](RESULTS.md)**——合并的研究摘要（DeepCatch + cfdna-fragmentomics-pipeline 姊妹仓库）
-- **[paper/PAPER.md](paper/PAPER.md)** / **[paper/paper.tex](paper/paper.tex)**——研究论文
+- **[paper/paper.tex](paper/paper.tex)**——研究论文（预印本源文件；编译好的 PDF 是 [paper/biorxiv_submission_v2.3.0.pdf](paper/biorxiv_submission_v2.3.0.pdf)）
 - **[REVIEWERS.md](REVIEWERS.md)**——给专家评审者的评审说明
 - **[docs/](docs/)**——30+ 篇深入文档（CADD / TUMOR_NAIVE / CROSS_STUDY_BENCHMARK* / FUSION_ISOTONIC / V3_DESIGN 等）
 - **[ULTRA_EARLY_READINESS.md](ULTRA_EARLY_READINESS.md)**——超早期癌症信号的单一来源就绪文档（每一个论断都绑定到一个 `results/*.json` artifact）

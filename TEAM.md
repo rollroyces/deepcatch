@@ -63,8 +63,12 @@ contributed code, design, or analysis**:
 - **OpenAI / Anthropic / Google** — the LLM providers behind the
   AI agents that have been doing 4+ rounds of multi-persona audits.
 
-These are acknowledged in [`paper/PAPER.md`](paper/PAPER.md) and
-[`BENCHMARK.md`](BENCHMARK.md) citations, not as authors.
+These are credited as data sources and reviewers, not as authors: the
+manuscripts name the data in their data-availability statements
+(`paper/paper.tex`) and the reviews live in `docs/`. Neither manuscript
+has an acknowledgements section — the journal checklist lists that as an
+open item, because whom to name there (and how to disclose the
+AI-assisted audits) is the author's call.
 
 ---
 
@@ -288,7 +292,8 @@ governance model**. Specifically:
   numbers, license, or maintainer): Yu Ching Lam has final say after
   one round of community review.
 - **Headline changes** (changes to `RESULTS.md` TL;DR, `BENCHMARK.md`
-  top section, `paper/PAPER.md` abstract, `paper/biorxiv_submission_v2.3.0.pdf`):
+  top section, the `paper/paper.tex` abstract, `docs/PREPRINT_ABSTRACT.md`,
+  `paper/biorxiv_submission_v2.3.0.pdf`):
   requires Yu Ching Lam approval + 2 weeks of public discussion.
 - **License changes**: requires Yu Ching Lam approval + 1 month of
   public discussion + 2 community-member agreement.

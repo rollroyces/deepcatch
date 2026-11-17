@@ -60,7 +60,7 @@ dev = [
 
 [project.urls]
 "Source code" = "https://github.com/rollroyces/deepcatch"
-"Paper" = "https://github.com/rollroyces/deepcatch/blob/main/paper/PAPER.md"
+"Paper" = "https://github.com/rollroyces/deepcatch/blob/main/paper/paper.tex"
 "Companion pipeline" = "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
 "Issue tracker" = "https://github.com/rollroyces/deepcatch/issues"
 
