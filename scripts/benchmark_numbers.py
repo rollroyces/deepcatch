@@ -162,6 +162,175 @@ for _cancer in _TOP5_CANCERS:
     ))
 
 # Numbers that need a lookup rather than a plain path.
+# Documents that quote a pinned figure but were not named in the entry
+# above. The guard checks that every named document quotes the figure, so
+# a document that is not named is a copy that can drift silently. This
+# audit found them by scanning every tracked document with the guard's
+# own matcher; the historical records (the changelog, the audit reports,
+# the deprecated v1.0 draft, the dated status note) are excluded, because
+# naming them would require them to keep quoting figures forever.
+EXTRA_DOCS = {
+    ("external_validation_finaledb.json", ('per_publication_auc', '7', 'auc')): [
+        "NEXT_STEPS.md",
+        "REVIEWERS.md",
+        "ULTRA_EARLY_READINESS.md",
+        "ZENODO_SETUP.md",
+        "docs/METHYLATION_PIPELINE.md",
+        "docs/PORTFOLIO_ROADMAP.md",
+        "docs/PUBLIC_DATA_SOURCES.md",
+        "paper/METHODS_PAPER.md",
+        "paper/REPRODUCE.md",
+    ],
+    ("external_validation_finaledb.json", ('per_publication_auc', '7', 'ci_lo')): [
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    ],
+    ("external_validation_finaledb.json", ('pooled_external_auc_matched_publications_only', 'auc')): [
+        "REVIEWERS.md",
+        "TEAM.md",
+        "docs/CADD_PER_SUBGROUP_LLR.md",
+        "docs/CROSS_STUDY_BENCHMARK.md",
+        "docs/site/index.html",
+        "paper/README.md",
+        "paper/REPRODUCE.md",
+        "paper/paper.tex",
+    ],
+    ("external_validation_finaledb.json", ('training_derived_threshold', 'threshold')): [
+        "RESULTS.md",
+        "paper/REPRODUCE.md",
+    ],
+    ("external_validation_finaledb.json", ('per_publication_auc', '9', 'sensitivity_at_train_threshold_99spec')): [
+        "MODEL.md",
+        "README.md",
+        "README.zh-CN.md",
+        "TEAM.md",
+        "paper/REPRODUCE.md",
+        "results/README.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')): [
+        "docs/CADD_PER_SUBGROUP_LLR.md",
+        "docs/ULTRA_EARLY_READINESS_AUTO.md",
+        "docs/USER_GUIDE.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')): [
+        "MODEL.md",
+        "docs/CROSS_STUDY_BENCHMARK.md",
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')): [
+        "docs/site/index.html",
+        "paper/PAPER.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')): [
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+        "paper/METHODS_PAPER.md",
+    ],
+    ("cross_study_finallydb.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')): [
+        "docs/HARMONIZATION.md",
+    ],
+    ("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')): [
+        "ZENODO_SETUP.md",
+        "docs/CROSS_PLATFORM_BENCHMARK.md",
+        "docs/HARMONIZATION.md",
+        "docs/site/index.html",
+        "paper/README.md",
+        "paper/REPRODUCE.md",
+    ],
+    ("methylation_cohort_channel.json", ('beta_summary_auc_loo',)): [
+        "CITATION.cff",
+        "NEXT_STEPS.md",
+        "README.zh-CN.md",
+        "RESULTS.md",
+        "REVIEWERS.md",
+        "TEAM.md",
+        "ZENODO_SETUP.md",
+        "docs/EXTERNAL_VALIDATION.md",
+        "docs/JOURNAL_SUBMISSION.md",
+        "docs/PREPRINT_ABSTRACT.md",
+        "docs/PUBLIC_DATA_SOURCES.md",
+        "docs/site/index.html",
+        "paper/REPRODUCE.md",
+        "results/README.md",
+    ],
+    ("methylation_cohort_channel.json", ('common_cpg_set', 'per_cpg_test', 'n_cpgs_tested')): [
+        "MODEL.md",
+        "README.zh-CN.md",
+        "RESULTS.md",
+        "REVIEWERS.md",
+        "TEAM.md",
+        "ULTRA_EARLY_READINESS.md",
+        "docs/PORTFOLIO_ROADMAP.md",
+        "docs/site/index.html",
+        "paper.md",
+        "results/README.md",
+    ],
+    ("per_cancer_sens_at_spec.json", ('per_cancer', 'OV', 'sens_at_99')): [
+        "docs/USER_GUIDE.md",
+    ],
+    ("per_cancer_sens_at_spec.json", ('per_cancer', 'PAAD', 'sens_at_99')): [
+        "docs/CADD_GDC_VALIDATION.md",
+    ],
+    ("per_cancer_sens_at_spec.json", ('per_cancer', 'HCC_J', 'sens_at_99')): [
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    ],
+    ("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')): [
+        "MODEL.md",
+        "TEAM.md",
+        "docs/CADD_ALPHAMISSENSE_COMBINED.md",
+        "docs/CROSS_STUDY_LOSO.md",
+        "paper/METHODS_PAPER.md",
+        "results/README.md",
+    ],
+    ("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')): [
+        "docs/site/index.html",
+        "paper/PAPER.md",
+    ],
+    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')): [
+        "RESULTS.md",
+        "docs/ALPHAMISSENSE_REAL_LLR.md",
+        "docs/ALPHAMISSENSE_WEIGHTED_LLR.md",
+        "docs/CADD_PER_SUBGROUP_LLR.md",
+        "docs/CADD_WEIGHTED_LLR.md",
+        "docs/PORTFOLIO_ROADMAP.md",
+        "docs/PREPRINT_ABSTRACT.md",
+        "paper/README.md",
+        "paper/REPRODUCE.md",
+    ],
+    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 18, 'mean')): [
+        "RESULTS.md",
+        "docs/CADD_PER_SUBGROUP_LLR.md",
+        "docs/CADD_WEIGHTED_LLR.md",
+    ],
+    ("fusion_regularized_smoke.json", ('summary', 'regularized_late_fusion', 'auc_mean')): [
+        "RESULTS.md",
+        "ZENODO_SETUP.md",
+        "docs/CADD_PER_SUBGROUP_LLR.md",
+        "docs/CROSS_STUDY_BENCHMARK.md",
+        "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
+        "paper/REPRODUCE.md",
+    ],
+    ("fusion_regularized_smoke.json", ('summary', 'bayesian_model_average', 'auc_mean')): [
+        "docs/CROSS_STUDY_BENCHMARK.md",
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    ],
+    ("cross_study_finallydb_with_motifs.json", ('pooled', 'harmonized', 'auc_mean')): [
+        "docs/ALPHAMISSENSE_REAL_LLR.md",
+    ],
+    ("cross_study_finallydb_with_motifs.json", ('per_publication', '6', 'auc_mean')): [
+        "RESULTS.md",
+        "USAGE.md",
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+        "docs/PORTFOLIO_ROADMAP.md",
+    ],
+    ("cross_study_finallydb_with_motifs.json", ('per_publication', '8', 'auc_mean')): [
+        "USAGE.md",
+        "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
+    ],
+    ("decision_curve.json", ('per_strategy', 'tumor_naive', 'auc')): [
+        "paper/METHODS_PAPER.md",
+        "results/README.md",
+    ],
+}
+
 QUOTED_SPECIAL = [
     ("cross_study_loso.json", "loso jiang -> cristiano",
      "paper/paper.tex"),
@@ -290,10 +459,50 @@ SCOPED_SUPERSEDED = {
 
 # Documents where a scoped value is legitimate for another reason: the
 # decision curve's naive-average AUC renders as 0.9915, so that document
-# may quote it.
+# may quote it; and the AlphaMissense document quotes 0.9785 as the
+# CADD Top-K=200 AUC while also quoting the with-motifs pooled AUC, so
+# it may quote that too.
 SCOPED_ALLOWED = {
     "0.9915": {"results/README.md"},
+    "0.9785": {"docs/ALPHAMISSENSE_REAL_LLR.md"},
 }
+
+# The special (label-addressed) figures have the same problem: a document
+# that quotes one was not named for it. These rows are the missing names.
+QUOTED_SPECIAL_EXTRA = [
+    ("fusion_ablation_isotonic.json", "naive_average", "MODEL.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "README.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "README.zh-CN.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "RESULTS.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "TEAM.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "USAGE.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "docs/CADD_PER_SUBGROUP_LLR.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "docs/CROSS_STUDY_BENCHMARK_with_motifs.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "docs/FUSION_ISOTONIC.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "docs/PREPRINT_ABSTRACT.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "docs/site/index.html"),
+    ("fusion_ablation_isotonic.json", "naive_average", "paper/PAPER.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "paper/README.md"),
+    ("fusion_ablation_isotonic.json", "naive_average", "results/README.md"),
+    ("cross_study_loso.json", "in_domain jiang", "docs/CADD_ALPHAMISSENSE_COMBINED.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "MODEL.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "README.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "README.zh-CN.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "ULTRA_EARLY_READINESS.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "docs/CADD_PER_SUBGROUP_LLR.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "docs/ULTRA_EARLY_READINESS_AUTO.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "paper/METHODS_PAPER.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "paper/REPRODUCE.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.99 threshold", "docs/EXTERNAL_VALIDATION.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.99 threshold", "paper/METHODS_PAPER.md"),
+    ("decision_curve.json", "decision curve tumor_naive @0.99 threshold", "paper/REPRODUCE.md"),
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_95", "MODEL.md"),
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_95", "docs/FUSION_ISOTONIC.md"),
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_99", "MODEL.md"),
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_99", "docs/CROSS_STUDY_BENCHMARK.md"),
+    ("fusion_ablation_isotonic.json", "fusion lr_fusion sens_at_99", "docs/FUSION_ISOTONIC.md"),
+]
 
 
 def documents_for(artifact: str, path) -> set[str]:
@@ -302,7 +511,13 @@ def documents_for(artifact: str, path) -> set[str]:
     for name, quoted_path, documents in QUOTED_NUMBERS:
         if name == artifact and tuple(quoted_path) == tuple(path):
             docs.update(documents)
+    for (name, quoted_path), extra in EXTRA_DOCS.items():
+        if name == artifact and tuple(quoted_path) == tuple(path):
+            docs.update(extra)
     for name, what, document in QUOTED_SPECIAL:
+        if name == artifact and what == path:
+            docs.add(document)
+    for name, what, document in QUOTED_SPECIAL_EXTRA:
         if name == artifact and what == path:
             docs.add(document)
     return docs
@@ -1186,9 +1401,19 @@ def quoted_values(results_dir: str | None = None):
         artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
+        named = list(documents)
+        for doc in EXTRA_DOCS.get((artifact_name, tuple(path)), []):
+            if doc not in named:
+                named.append(doc)
         yield (f"{artifact_name}:{'.'.join(map(str, path))}",
-               dig_number(artifact, path), artifact_name, documents)
+               dig_number(artifact, path), artifact_name, named)
     for artifact_name, what, document in QUOTED_SPECIAL:
+        artifact = load(artifact_name, results_dir)
+        if artifact is None:
+            continue
+        value, label = special_value(artifact_name, artifact, what)
+        yield (label, value, artifact_name, [document])
+    for artifact_name, what, document in QUOTED_SPECIAL_EXTRA:
         artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue

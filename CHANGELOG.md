@@ -1259,6 +1259,23 @@ cohort size.
   breaking it: a row with the GC AUC and the legacy std turns the
   guard red.
 
+- **Twenty-one documents quoted a pinned figure without being named for
+  it.** The quotable-number list names the documents that must quote each
+  figure, and the guard checks those documents — so a document that
+  quotes a figure but is not named is a copy that can drift silently.
+  An audit that scanned every tracked document with the guard's own
+  matcher found 21 of them, among them the preprint's own abstract
+  (0.7385), the JOSS manuscript, the landing page and the reproduce
+  guide. All are named now: 26 numeric entries gained their missing
+  documents and 32 label-addressed entries gained rows, so every copy of
+  a benchmark figure is checked.
+
+  One collision needed the mechanism that already exists for it:
+  `docs/ALPHAMISSENSE_REAL_LLR.md` quotes 0.9785 as the CADD Top-K=200
+  AUC while also quoting the with-motifs pooled AUC, so it is allowed to
+  carry that scoped value, exactly as `results/README.md` is allowed to
+  carry 0.9915.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every
