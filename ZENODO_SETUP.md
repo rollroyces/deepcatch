@@ -27,6 +27,30 @@ which would have put the DOI on the wrong version).
 - For each repo (DeepCatch, cfdna-fragmentomics-pipeline), toggle it ON
 - Zenodo will automatically archive future releases
 
+**Verified 2026-11-17: the integration is currently OFF, so step 1 has
+never been done.** The Zenodo API returns **zero** records for this
+repository:
+
+```bash
+curl -s "https://zenodo.org/api/records?q=metadata.title:%22DeepCatch%22" \
+  | python3 -c "import json,sys; print(json.load(sys.stdin)['hits']['total'])"
+# -> 0
+```
+
+That covers the whole history, not just the upcoming release: the
+**v2.2.0** GitHub release (published 2026-08-11) was never archived
+either and therefore carries no Zenodo DOI. `CITATION.cff` had a
+placeholder string under `doi:` for exactly that reason, and it has
+been removed (a `doi:` key that resolves to nothing renders in
+GitHub's "Cite this repository" box as a broken link).
+
+Check the toggle **before** tagging, not after. A release published
+while the integration is off gets a GitHub release and **no DOI**, and
+Zenodo has to be pointed at that release separately afterwards — so the
+order is: enable the toggle, confirm `rollroyces` appears in the list
+with both repositories switched on, publish the release, then run the
+query above again and expect `1`.
+
 ### 2. Make a release tag
 
 For `rollroyces/deepcatch` (**v2.3.0** is the current version — tag
@@ -129,9 +153,16 @@ Repeat for the pipeline repo.
 
 ### 5. Wire the DOI into the repo
 
-Replace `10.5281/zenodo.to-be-assigned-on-first-release` in
-`CITATION.cff` and any other placeholder DOIs with the real ones
-Zenodo assigned. Commit. Done.
+Add the minted DOI to `CITATION.cff` as a `doi:` key, and replace any
+other placeholder DOIs with the real ones Zenodo assigned.
+
+`CITATION.cff` deliberately carries **no** `doi:` key while no DOI
+exists. It used to hold the placeholder string
+`10.5281/zenodo.to-be-assigned-on-first-release`, which had two
+problems: it was a DOI that resolved to nothing (a broken link in
+GitHub's "Cite this repository" box), and "on-first-release" was no
+longer true — v2.2.0 was a release and got no DOI. So the key is
+*added* with the minted value, not substituted in place. Commit. Done.
 
 ## What the DOI gives you
 

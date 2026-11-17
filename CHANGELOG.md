@@ -1007,6 +1007,42 @@ cohort size.
 - `src/foundation/__init__.py` eagerly imported torch, so a collection error
   in any test file aborted the whole "Core tests" job — zero tests ran.
 
+- **Neither manuscript had an acknowledgements section, and both target
+  journals expect one.** PLOS Computational Biology and Bioinformatics
+  Advances ask for it, so its absence was a submission blocker that the
+  repository's own journal checklist had carried as open for months.
+  Both manuscripts now have one — `paper/paper.tex` and
+  `paper/METHODS_PAPER.md` — thanking the public data providers in the
+  wording the JOSS manuscript already used (`paper.md`). What stays the
+  author's decision is whether to add a disclosure of the AI-assisted
+  audits: PLOS's Ethical Publishing Practice requires AI contributions
+  to be reported with the tool names, how they were used, how their
+  output was validated and which parts of the work they touched, and
+  bioRxiv's FAQ says such use "should be detailed in manuscripts". Two
+  ready-to-paste variants sit in the local, gitignored checklist.
+- **`CITATION.cff` carried a DOI that resolves to nothing.** The
+  placeholder `10.5281/zenodo.to-be-assigned-on-first-release` was
+  rendered by GitHub's "Cite this repository" box as a link to a
+  record that does not exist, and its "on-first-release" wording had
+  become false — the v2.2.0 release was a release and got no DOI
+  either. The `doi:` key is now absent until a real one is minted, and
+  `ZENODO_SETUP.md` says to add it rather than substitute it.
+- **The Zenodo integration was never enabled, and the repository did not
+  say so.** The Zenodo API returns zero records for this repository, so
+  the v2.2.0 release (2026-08-11) was never archived and carries no
+  DOI. A release published with the integration off gets a GitHub
+  release and no DOI, so `ZENODO_SETUP.md` now states the verified
+  state, gives the one-line query that proves it, and puts "enable the
+  toggle, verify, then publish" in front of the tag step.
+- **bioRxiv's affiliation requirement is a registration gate, not a
+  formality.** Its submission guide asks authors to "supply an
+  affiliation so there is an entity providing oversight we can
+  contact", and openRxiv's 2026-10-20 statement repeats it. The
+  manuscript and `CITATION.cff` declare "Independent Researcher", which
+  is not an entity — so the ORCID/affiliation inconsistency the
+  checklist already flagged sits on the critical path of the upload,
+  and is now documented with its primary sources.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

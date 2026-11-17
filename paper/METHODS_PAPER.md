@@ -1,6 +1,6 @@
 # DeepCatch: a software framework for cfDNA fragmentomics with open-data cross-study benchmarking
 
-**Authors:** Yu Ching Lam¹, [co-authors: TBD]
+**Authors:** Yu Ching Lam¹ (sole author — see `AUTHORS`)
 
 ¹ DeepCatch Project — github.com/rollroyces/deepcatch (Independent researcher)
 
@@ -14,10 +14,9 @@ leave-one-study-out transfer (`results/cross_study_loso.json`), the
 shuffled-label null (`results/cross_study_finallydb_shuffled_control.json`)
 and the paired-cohort baselines (`results/fusion_regularized_smoke.json`,
 `results/sens_at_spec_ablation.json`); §4.2's limits are tightened to the
-per-cancer numerators actually observed. The author line above still
-carries a placeholder: the manuscript is single-author unless a
-co-author is confirmed, and the line has to be settled before this is
-submitted anywhere.
+per-cancer numerators actually observed. The author line above is
+single-author, consistent with `AUTHORS`; a co-author is added only if a
+contribution is agreed (see `TEAM.md` §3).
 
 ---
 
@@ -405,6 +404,14 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
   - `docs/COLLABORATOR_DATA_INTERFACE.md` — schema for external collaborators to contribute a plasma cohort (no code required); see also `docs/COLLABORATOR_QUICKSTART.md` for a 1-page recipe.
   - `paper/paper.tex` — the benchmark paper being submitted (LaTeX source; the compiled artefact is `paper/biorxiv_submission_v2.3.0.pdf`)
   - `paper/PAPER.md` — the earlier panel-only revision of that paper, kept for reference
+
+## 6. Acknowledgements
+
+The author thanks the public data providers whose archives make
+replication possible: the FinaleDB and FinaleMe teams (Zenodo
+10.5281/zenodo.14013719 and 10.5281/zenodo.6914806), the Genomic Data
+Commons for TCGA open-access somatic mutations, and the GEO depositors
+of GSE317007 and GSE185307.
 
 ---
 
