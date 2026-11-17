@@ -99,7 +99,8 @@ uncommitted work untouched): the unseeded run gave **0.9744 ± 0.0032**
 and raised an lbfgs "failed to converge" warning, while the seeded run
 gives **0.9770 ± 0.0013** with no warning — the same number this
 repository reports for its legacy pooled figure, which is the check that
-the two compute the same thing once both are seeded. The one-line fix
-and the companion's document updates are prepared on that repository's
-local branch `fix/seed-pca` (not pushed); the remaining unseeded PCA calls
-there are named in `ZENODO_SETUP.md`.
+the two compute the same thing once both are seeded. Seven more PCA
+calls in that repository were seeded on the same visit, and its
+sens@spec and calibration figures now carry the same pooled OOF AUC.
+The changes are prepared on that repository's local branch
+`fix/seed-pca` (not pushed).

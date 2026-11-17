@@ -79,28 +79,36 @@ git push origin v0.2.0
 > sections do not move (their PCA fits the full SVD).
 >
 > **The change is prepared, not published.** In the sibling repository it
-> sits on the local branch `fix/seed-pca` (commit `545073d`), which also
-> updates the sibling's documents to the measured figures (the cross-study
-> headline and its Sens@95%, the single-study figure, and the README note
-> that a re-run varies by ±0.001 AUC). It is not pushed, and the sibling
-> has uncommitted work in three scripts, so applying it is a decision
-> for its author:
+> sits on the local branch `fix/seed-pca` (commits `545073d` and
+> `f9b97df`), which also updates the sibling's documents to the measured
+> figures (the cross-study headline and its Sens@95%, the single-study
+> figure, and the README note that a re-run varies by ±0.001 AUC). It is
+> not pushed, and the sibling has uncommitted work in three scripts, so
+> applying it is a decision for its author:
 >
 > ```bash
 > # in cfdna-fragmentomics-pipeline, after dealing with the working tree
-> git cherry-pick 545073d          # or apply the exported .patch
+> git cherry-pick 545073d f9b97df   # or apply the exported .patch
 > ```
 >
 > A DOI minted on a tag whose headline number is known to drift is exactly
 > the failure this file warns about.
 >
-> **The remaining unseeded PCA calls in that repository** are seven
-> call sites in two scripts — `scripts/sens_calibration_sweep.py` (six)
-> and `scripts/sens_at_specificity.py` (one) — and the figures they
-> produce still drift: they feed `docs/SENS_OPTIMIZATION.md`, which is
-> generated from their JSON by `scripts/build_sens_report.py`.
-> (`scripts/_speed.py` has one more, but it is a timing script and
-> publishes no figure.)
+> **The other unseeded PCA calls in that repository were seeded too.**
+> Seven call sites in two scripts — `scripts/sens_calibration_sweep.py`
+> (six) and `scripts/sens_at_specificity.py` (one) — fitted a random
+> subspace, so the sens@spec and calibration figures drifted as well.
+> Seeded, the pooled OOF AUC is **0.977018 ± 0.0013** — bit-identical to
+> the cross-study headline above and to DeepCatch's own legacy number —
+> and the control that fits no PCA (`baseline_no_pca_C1000`) does not
+> move at all, which is what a fixed subspace should look like. Two
+> findings came out of it: channel reweighting is now *exactly* the
+> baseline (Δ +0.0000), so the "-0.0331" the report used to print was
+> unseeded noise; and the report script had been carrying hardcoded
+> numbers that had already drifted out of step with the table printed
+> above them, so it now reads them from the artifact it reports on.
+> (`scripts/_speed.py` has one more unseeded call, but it is a timing
+> script and publishes no figure.)
 
 ### 3. Create the GitHub Release
 

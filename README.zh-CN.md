@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-830%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-834%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -364,7 +364,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_foundation_smoke.py` | 8 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 645** | **609 通过 + 23 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 649** | **613 通过 + 23 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 

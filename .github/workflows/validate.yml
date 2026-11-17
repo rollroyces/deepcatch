@@ -12,7 +12,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: {python-version: '3.11'}
-      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest
+      # pypdf is test-only: it lets the submission-PDF guard read the
+      # committed PDF and check it against paper/paper.tex.
+      - run: pip install -q numpy scipy scikit-learn pandas matplotlib seaborn pytest pypdf
       - name: Run core test suite
         run: |
           python -m pytest src/fragmentomics src/preprocessing src/clinical \
