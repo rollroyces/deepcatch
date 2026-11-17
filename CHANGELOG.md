@@ -1043,6 +1043,30 @@ cohort size.
   checklist already flagged sits on the critical path of the upload,
   and is now documented with its primary sources.
 
+- **The author's email address was in the public tree.** The April 2026
+  v1.0 draft (`paper/deepcatch_final.tex`, deprecated since and marked
+  "do not use") carried it in the author block and the abstract's
+  contact line. The current tree no longer carries it — the history
+  still does, and a public history cannot be taken back. A new guard,
+  `test/test_public_tree_has_no_personal_contact.py`, keeps it out: the
+  rule is about the *kind* of address (a consumer mailbox provider is
+  a personal mailbox) rather than the address itself, because writing
+  the address into the test would put it back into the tree the test
+  exists to protect. Institutional contacts are left alone — the FLARE
+  provider's address is how a collaborator requests the data, and
+  `deepcatch+sponsors@` is a role alias.
+- **The suite's size was stated four different ways, and none of them
+  was right.** The English README said "685 collected" next to a
+  breakdown that summed to 659, the Chinese README said "659
+  collected" and "599 passed", and the two tree comments said 43 and
+  42 test files holding 646 and 622 tests. Measured at HEAD: **873
+  tests** (687 core + 186 deep-learning), the fast-path gate collects
+  **688** and runs **652 passed + 23 skipped + 13 deselected**, `test/`
+  holds 45 test files and 645 tests, `src/` discovery still collects
+  228. Every document that states a count now states the measured one.
+  `docs/PORTFOLIO_ROADMAP.md` also claimed "4 CI workflows green";
+  there are three workflow files and ten jobs.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every
