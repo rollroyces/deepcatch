@@ -255,8 +255,8 @@ and that patient-level ranking is robust to CADD weighting.
 ## Reproducibility
 
 ```bash
-cd /Users/hermes/deepcatch
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python scripts/cadd_weighted_llr.py
+cd deepcatch
+env -u PYTHONPATH ./.venv/bin/python scripts/cadd_weighted_llr.py
 ```
 
 Re-running is idempotent: it reuses `results/cadd_matches_augmented.json` and

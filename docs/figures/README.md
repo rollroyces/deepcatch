@@ -18,8 +18,8 @@ Matplotlib only — no seaborn, no heavy deps.
 Regenerate every figure with one command:
 
 ```bash
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
-    /Users/hermes/deepcatch/scripts/plot_figures.py
+env -u PYTHONPATH ./.venv/bin/python \
+    ./scripts/plot_figures.py
 ```
 
 This writes the four PNGs into `docs/figures/`. Each PNG is ≤80 KB
@@ -29,8 +29,8 @@ pressure cap on this Mac mini.
 Validate-only (no files written, used by `test/test_plot_figures.py`):
 
 ```bash
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
-    /Users/hermes/deepcatch/scripts/plot_figures.py --validate-only
+env -u PYTHONPATH ./.venv/bin/python \
+    ./scripts/plot_figures.py --validate-only
 ```
 
 ## Honesty contract

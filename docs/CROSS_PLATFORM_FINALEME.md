@@ -23,8 +23,8 @@ language, and never synthesize predictions.
 ```bash
 env -u PYTHONPATH ./.venv/bin/python scripts/cross_platform_finaledb_validate.py \
     --finaleme-dir ~/.hermes/.local/finaleme/output \
-    --features-dir /Users/hermes/cfdna-fragmentomics-pipeline/data/features \
-    --labels-tsv /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels-tsv ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \
     --output results/cross_platform_readiness.json
 ```
 

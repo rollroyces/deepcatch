@@ -122,10 +122,10 @@ default.
 ### Reproducing this experiment
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH .venv/bin/python -m src.fragmentomics.fusion_ablation \
-    --features-dir /Users/hermes/cfdna-fragmentomics-pipeline/data/features \
-    --labels /Users/hermes/cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
+    --features-dir ../cfdna-fragmentomics-pipeline/data/features \
+    --labels ../cfdna-fragmentomics-pipeline/data/features/labels_cross_study.tsv \
     --seeds 10 --pca-n 200 \
     --out results/fusion_ablation_isotonic.json
 ```

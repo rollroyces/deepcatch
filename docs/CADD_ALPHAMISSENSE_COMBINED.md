@@ -124,7 +124,7 @@ w_i = 0 if either score is missing (no imputation)
   https://doi.org/10.1126/science.adg7492
 - **TSV:** `AlphaMissense_hg38.tsv.gz` (643 MB compressed, 5.5 GB
   uncompressed, 71.7 M missense variants) downloaded once into
-  `/Users/hermes/.cache/mrnavax/`.
+  `~/.cache/mrnavax/`.
 - **License:** CC BY-NC-SA 4.0 (non-commercial).
 - **Columns used:** `uniprot_id` (5), `protein_variant` (7, e.g. `"V2L"`),
   `am_pathogenicity` (8).
@@ -164,8 +164,8 @@ w_i = 0 if either score is missing (no imputation)
 | `scripts/enrich_cohort_with_amino_acids.py` | One-shot GDC MAF enrichment |
 | `results/cohort_with_amino_acids.jsonl` | 4,613 missense SNVs × AA info |
 | `results/cadd_alphamissense_combined.json` | Full results (5 schemes × 5 TFs × 5 seeds) |
-| `/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz` | Source TSV (643 MB) |
-| `/Users/hermes/.cache/mrnavax/alphamissense_index.pkl` | Pre-built AM index (260 KB) |
+| `~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz` | Source TSV (643 MB) |
+| `~/.cache/mrnavax/alphamissense_index.pkl` | Pre-built AM index (260 KB) |
 
 ---
 
@@ -177,7 +177,7 @@ curl -L -o ~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz \
     https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz
 
 # 2. (One-time) Enrich the cohort with amino-acid info from GDC
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python scripts/enrich_cohort_with_amino_acids.py
 
 # 3. Run the combined weighting experiment

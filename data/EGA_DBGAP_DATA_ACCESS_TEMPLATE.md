@@ -96,7 +96,7 @@ produce open-source benchmarks, not clinical decision support.
 Specifically:
   1. Re-run DeepCatch's 5-channel tumor-naive pipeline on the [STUDY]
      cohort using only open-source code, on data already extracted to
-     /Users/hermes/cfdna-fragmentomics-pipeline/data/features/.
+     ../cfdna-fragmentomics-pipeline/data/features/.
   2. Report sens@spec at 95%/98%/99%/99.5%/99.9% specificity and
      per-cancer-type DeLong 95% CIs.
   3. Audit for batch effects via per-study z-score harmonization and

@@ -56,6 +56,15 @@ _MODEL_PATH = re.compile(r"`([A-Za-z0-9_./-]+\.pt)`")
 _NOT_DISTRIBUTED = "not distributed"
 
 
+def _tracked(*patterns: str) -> list[str]:
+    """The tracked files matching the given git pathspecs."""
+    proc = subprocess.run(
+        ["git", "-C", str(_REPO_ROOT), "ls-files", *patterns],
+        capture_output=True, text=True, timeout=60, check=True,
+    )
+    return [name for name in proc.stdout.split("\n") if name]
+
+
 def _paragraphs(text: str) -> list[str]:
     """The document's paragraphs, blank-line separated."""
     return [p for p in re.split(r"\n\s*\n", text) if p.strip()]
@@ -125,21 +134,16 @@ def test_no_tracked_script_points_at_one_machine_home_directory():
     teaches: a path that exists on the author's machine is not a path a
     reader has.
     """
-    tracked = subprocess.run(
-        ["git", "-C", str(_REPO_ROOT), "ls-files", "*.py", "*.sh"],
-        capture_output=True, text=True, timeout=60, check=True,
-    ).stdout.split("\n")
     offenders = {}
-    for name in tracked:
-        if not name:
-            continue
+    for name in _tracked("*.py", "*.sh"):
         path = _REPO_ROOT / name
         try:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
         hits = []
-        for match in re.finditer(r"/(?:Users|home)/[A-Za-z0-9_.-]+", text):
+        for match in re.finditer(
+                r"/(?:Users|home)/[A-Za-z0-9_.-]+", text):
             found = match.group(0)
             # A container's home directory (`/home/node` in the Docker
             # image) is part of that image, not of a machine. Only a
@@ -154,6 +158,49 @@ def test_no_tracked_script_points_at_one_machine_home_directory():
         "a tracked script points at a home directory, which does not "
         f"exist for a reader: {offenders}. Resolve the path from the "
         "repository's own location (see scripts/_paths.py) instead."
+    )
+
+
+def test_no_tracked_document_gives_a_reader_someone_elses_path():
+    """A copy-paste command must run on the reader's machine.
+
+    Twenty documents carried commands like
+    commands that invoked one machine's virtualenv by absolute path,
+    including the collaborator quick-start -- the entry point for the
+    wet-lab collaborators this project is recruiting. A reader who pasted
+    one got "no such file or directory" and no clue what to do instead.
+
+    Dated records are exempt: the changelog, the audit reports and the
+    generated run reports name the machine they were produced on, and
+    that is the point of a record.
+    """
+    exempt = {
+        "CHANGELOG.md",
+        "AUDIT_REPORT.md",
+        "AUDIT_REPORT_2.md",
+        "docs/PUBLICATION_READINESS.md",
+        "results/REPRODUCE_REPORT.md",
+        "results/CROSS_PLATFORM_HG19_REFS_READY.md",
+    }
+    offenders = {}
+    for name in _tracked("*.md", "*.tex", "*.cff", "*.yaml", "*.yml"):
+        if name in exempt or name.startswith("review/"):
+            continue
+        path = _REPO_ROOT / name
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        hits = sorted({
+            m.group(0) for m in re.finditer(
+                r"/(?:Users|home)/[A-Za-z0-9_.-]+", text)
+        })
+        if hits:
+            offenders[name] = hits
+    assert not offenders, (
+        "a tracked document hands the reader another machine's path: "
+        f"{offenders}. Write the path relative to the repository (or "
+        "relative to the reader's home directory) instead."
     )
 
 

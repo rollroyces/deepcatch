@@ -291,7 +291,7 @@ verdict just doesn't yet earn the default flip.
 ## Reproduce
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 # Baseline (default = all LinearProjection)
 env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
     --seeds 5 --n-patients 20 --n-folds 5 --n-ensemble 3 \

@@ -99,7 +99,7 @@ are not a real loss-comparison result, they're a CV-leak demonstration.
 ### Reproduce (n=20)
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
     --seeds 20 --loss ce --out results/sens_at_spec_ce_n20.json
 
@@ -390,7 +390,7 @@ the positive point estimate into a defensible "this helps" claim.
 > reports.
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
     --seeds 5 --n-patients 20 --loss ce \
     --out results/sens_at_spec_ce.json

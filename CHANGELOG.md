@@ -1154,6 +1154,22 @@ cohort size.
   missing-cache message names the remedy rather than only the environment
   variable.
 
+- **Twenty documents handed the reader another machine's path.** The
+  copy-paste commands in the documentation invoked one machine's
+  virtualenv by absolute path — `env -u PYTHONPATH
+  /Users/hermes/deepcatch/.venv/bin/python` — including
+  `docs/COLLABORATOR_QUICKSTART.md` and
+  `docs/COLLABORATOR_DATA_INTERFACE.md`, which are the entry points for
+  the wet-lab collaborators this project is recruiting. A reader who
+  pasted one got "no such file or directory" and no clue what to do
+  instead. The commands are now relative to the repository, the sibling
+  pipeline is written as `../cfdna-fragmentomics-pipeline`, and the
+  local caches as `~/.cache/…`. Dated records are left alone: the
+  changelog, the audit reports and the generated run reports name the
+  machine they were produced on, which is the point of a record.
+  `test/test_availability_claims.py` checks the documents as well as the
+  scripts.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

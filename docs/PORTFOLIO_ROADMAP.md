@@ -18,9 +18,9 @@ pretrained-model breakthrough.
 
 | Repo | Local path | Latest commit | Tests | CI | Headline result |
 |---|---|---|---|---|---|
-| **deepcatch** | `/Users/hermes/deepcatch` | `d92a658` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
-| **cfdna-fragmentomics-pipeline** | `/Users/hermes/cfdna-fragmentomics-pipeline` | `1e500c3` | 117/117 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
-| **deepcatch-methylation** | `/Users/hermes/deepcatch-methylation` | `addfcab` | 15/15 | ✅ green | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 |
+| **deepcatch** | `.` | `d92a658` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
+| **cfdna-fragmentomics-pipeline** | `../cfdna-fragmentomics-pipeline` | `1e500c3` | 117/117 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
+| **deepcatch-methylation** | `.-methylation` | `addfcab` | 15/15 | ✅ green | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 |
 
 ### 1.2 What we have shipped (Phase 0–1, complete)
 
@@ -230,7 +230,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
-| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **880 tests**, 3 CI workflows / 10 jobs green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
+| 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **881 tests**, 3 CI workflows / 10 jobs green; the milestone commit was `760eb31`), pipeline `1e500c3` (117/117), methylation `addfcab` (15/15) |
 | 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
 | 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_cohort_channel.json` (the AUCs and the matched-locus test), `results/methylation_channel_diagnosis.json` (the mechanism) |

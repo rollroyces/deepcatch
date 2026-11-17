@@ -73,24 +73,24 @@ And `manifest.json` (see §5 of the full spec for all fields):
 
 ```bash
 # Sanity check (no files written)
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/adapter_local_cohort.py \
     --cohort-root my_cohort \
     --cohort-name my_lab_2026 \
     --dry-run
 
 # Convert + write normalized cohort
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/adapter_local_cohort.py \
     --cohort-root my_cohort \
     --cohort-name my_lab_2026
 
 # Optional: merge with existing open-data labels + run cross-study benchmark
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/adapter_local_cohort.py \
     --cohort-root my_cohort \
     --cohort-name my_lab_2026 \
-    --merge-with /Users/hermes/cfdna-fragmentomics-pipeline/labels_multiclass.tsv \
+    --merge-with ../cfdna-fragmentomics-pipeline/labels_multiclass.tsv \
     --cross-study
 ```
 

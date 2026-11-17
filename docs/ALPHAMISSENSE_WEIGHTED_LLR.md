@@ -57,11 +57,11 @@
 
 | Check                                                                                  | Result |
 |----------------------------------------------------------------------------------------|--------|
-| `/Users/hermes/mrna_ai_tools/` exists?                                                 | **No.** (only `/Users/hermes/mrnavax-home/mrnavax/alphamissense_integration.py` — source code, no built index) |
-| `/Users/hermes/.cache/mrna_ai_tools/` exists?                                          | Yes, but only contains scgpt model files (no AM) |
-| `/Users/hermes/.cache/mrnavax/alphamissense_index.pkl` exists?                         | No |
+| `~/mrna_ai_tools/` exists?                                                 | **No.** (only `~/mrnavax-home/mrnavax/alphamissense_integration.py` — source code, no built index) |
+| `~/.cache/mrna_ai_tools/` exists?                                          | Yes, but only contains scgpt model files (no AM) |
+| `~/.cache/mrnavax/alphamissense_index.pkl` exists?                         | No |
 | `~/AlphaMissense_hg38.tsv.gz` (or .tsv) exists?                                        | No |
-| Any AlphaMissense TSV or pickle anywhere under `/Users/hermes`?                        | **No** (only the source file referenced above and `.pyc`) |
+| Any AlphaMissense TSV or pickle anywhere under `~`?                        | **No** (only the source file referenced above and `.pyc`) |
 
 Per the task constraint *"Do NOT re-download the TSV"* and the licence
 (*CC BY-NC-SA 4.0*, non-redistribution), we cannot ship or re-fetch the

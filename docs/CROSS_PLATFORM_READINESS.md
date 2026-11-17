@@ -29,7 +29,7 @@ one of `both`, `methylation_only`, `fragmentomics_only`, or `no_data`.
 | Pretrained HMM models (Zenodo 14013719)         | **MISSING**                   | ~150 kB on Zenodo; not downloaded |
 | Reference files (~1.4 GB: hg19.2bit + prior bw + CpG motif + mappability + chrom sizes) | **MISSING** | Multi-GB download not in budget |
 | FinaleMe output directory                       | **MISSING**                   | Requires JAR + models + references |
-| FinaleDB features cache                          | **PRESENT**                    | 627 samples × 5 channels in `/Users/hermes/cfdna-fragmentomics-pipeline/data/features/` |
+| FinaleDB features cache                          | **PRESENT**                    | 627 samples × 5 channels in `../cfdna-fragmentomics-pipeline/data/features/` |
 
 `data_source = fragmentomics_only` today. Cross-platform AUC is
 **NOT** printed — the validator emits `cross_platform_auc: null`
@@ -92,7 +92,7 @@ Operator checklist:
 
 ```bash
 # From the sibling repo, the FinaleMe install was validated end-to-end:
-cd /Users/hermes/deepcatch-methylation
+cd deepcatch-methylation
 ls scripts/download_hg19_parallel.sh
 ls scripts/download_tcga_methylation.py
 ls scripts/parse_finaleme_output.py

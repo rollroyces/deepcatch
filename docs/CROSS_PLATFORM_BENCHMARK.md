@@ -81,15 +81,15 @@ currently-available published numbers as inputs.
 
 ```bash
 # Full run (5 seeds × 5-fold CV, writes the JSON)
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/cross_platform_methylation_fusion.py
 
 # Smoke run (1 seed only)
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/cross_platform_methylation_fusion.py --seeds 1
 
 # Help / arg list
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     scripts/cross_platform_methylation_fusion.py --help
 ```
 
@@ -108,7 +108,7 @@ env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
 - End-to-end CLI integration runs and writes the JSON.
 
 ```bash
-env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python \
+env -u PYTHONPATH ./.venv/bin/python \
     -m pytest test/test_cross_platform_fusion.py -v
 ```
 

@@ -13,10 +13,10 @@ Searched every plausible location for FLARE-related data:
 
 | Path | Result |
 |---|---|
-| `/Users/hermes/deepcatch/validation/flare/` | does not exist |
-| `/Users/hermes/deepcatch/data/flare/` | does not exist |
-| `/Users/hermes/deepcatch/data/` | contains `FLARE_CONTACT_TEMPLATE.md` and `JIANG_DATA_REQUEST.md` only — no FLARE matrices on disk |
-| `/Users/hermes/deepcatch/data/GSE317007_*` | not present |
+| `validation/flare/` | does not exist |
+| `data/flare/` | does not exist |
+| `data/` | contains `FLARE_CONTACT_TEMPLATE.md` and `JIANG_DATA_REQUEST.md` only — no FLARE matrices on disk |
+| `data/GSE317007_*` | not present |
 | `/tmp/GSE317007*` | not present (per `data/README.md` the motif matrix once lived at `/tmp/GSE317007_motifs.txt.gz`; that path is now empty) |
 | `find . -iname "*flare*"` | only the metadata template, no data files |
 | `find . -iname "*.vcf*" -o -iname "*.maf*"` | only TCGA-LUAD MAFs (the training cohort); zero FLARE/HNSCC variant files anywhere |
@@ -71,7 +71,7 @@ Realistically this is a multi-day engineering task, not a single subagent scope.
 
 ## 8. Files written this session
 
-- `/Users/hermes/deepcatch/results/cadd_flare_validation.json` — structured honest-no-data record (paths checked, GEO inspection, alternatives evaluated, no fabricated metrics).
-- `/Users/hermes/deepcatch/docs/CADD_FLARE_VALIDATION.md` — this file.
+- `results/cadd_flare_validation.json` — structured honest-no-data record (paths checked, GEO inspection, alternatives evaluated, no fabricated metrics).
+- `docs/CADD_FLARE_VALIDATION.md` — this file.
 
 No source code, no test files, no CI-affecting paths were modified. Existing 51/51 test pass count on `main` is unchanged.

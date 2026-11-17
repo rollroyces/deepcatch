@@ -196,7 +196,7 @@ AUC. The driver-only panel should NOT be promoted to a product path.
   - `results/cadd_mutations_full.json` — 20 TCGA-LUAD patients × 5,738 mutations
   - `results/cadd_matches_augmented.json` — CADD scores (cached)
 - Pipeline reuses `cadd_weighted_llr.run_weighted_panel_detection`
-- Run with `env -u PYTHONPATH /Users/hermes/deepcatch/.venv/bin/python
+- Run with `env -u PYTHONPATH ./.venv/bin/python
   scripts/cadd_per_subgroup_llr.py`
 
 ## License

@@ -146,7 +146,7 @@ subset of the cross-study cfDNA cohort:
 | Cell-line samples | excluded by regex (`GM*`, HeLa, HepG2, K562, HL60, Jurkat, Raji, MCF7, U937, THP1, HEK293, HCT116, SW480, A549, GM12878) |
 | Feature dim (modality dict) | 83 (4+44+6+4+1+24) |
 | Feature dim (flat X) | 2256 (modality + DELFI profile: 5Mb ratio + 5Mb coverage + meanlen + motifs + WPS) |
-| Source | Pre-extracted artifacts at `/Users/hermes/cfdna-fragmentomics-pipeline/data/features/` originally produced by the companion pipeline's `fetch → extract → delete` recipe |
+| Source | Pre-extracted artifacts at `../cfdna-fragmentomics-pipeline/data/features/` originally produced by the companion pipeline's `fetch → extract → delete` recipe |
 
 The full pre-extracted cache contains **657 samples** (262 healthy
 + 275 cancer from Cristiano 2019; 32 healthy + 89 cancer from Jiang
@@ -301,7 +301,7 @@ truncated `*.frag.tsv.bgz` produces misleading fragment counts
 and biased DELFI ratios.
 
 The pre-extracted cache at
-`/Users/hermes/cfdna-fragmentomics-pipeline/data/features/` is the
+`../cfdna-fragmentomics-pipeline/data/features/` is the
 **same artifact** that the live fetch would produce — every sample
 in the cache was originally derived from a `*.frag.tsv.bgz`
 fetched via `scripts/fetch_finaledb.py` in the companion pipeline
@@ -337,7 +337,7 @@ from the pre-extracted cache.
 ## Reproducing this run
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python scripts/pretrain_synthetic_v0.py \
     --n-healthy 8 --n-cancer 8 \
     --epochs 5 --batch-size 8 \
@@ -437,7 +437,7 @@ End-to-end (cohort assembly + training + checkpoint + verify):
 ### Reproducing this run
 
 ```bash
-cd /Users/hermes/deepcatch
+cd deepcatch
 env -u PYTHONPATH ./.venv/bin/python \
     scripts/pretrain_production_finaledb.py \
     --max-samples 200 --p1-epochs 15 --p2-epochs 5 \

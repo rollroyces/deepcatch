@@ -281,7 +281,7 @@ It does **not** regenerate:
 - **Code**: MIT (see `LICENSE`).
 - **FinaleDB open data**: Jiang 2015 (pub 6) + Cristiano 2019 (pub 8)
   are the two cross-study cohorts. Pre-extracted under
-  `/Users/hermes/cfdna-fragmentomics-pipeline/data/features/`; the
+  `../cfdna-fragmentomics-pipeline/data/features/`; the
   `FINALEDB_FEATURES_DIR` env var overrides the path for non-Mac
   setups.
 - **TCGA-LUAD MAFs**: GDC open-access somatic mutations, cached under

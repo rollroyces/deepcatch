@@ -23,7 +23,7 @@
 
 ## 1. What was done (and what changed since commit 5cd6c3e)
 
-1. **Re-streamed the AlphaMissense TSV** (`/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz`,
+1. **Re-streamed the AlphaMissense TSV** (`~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz`,
    642 MB compressed → 71,697,625 rows on disk since commit 29374a6) against the
    augmented TCGA MAF pool's 71,414 distinct `(Uniprot, prot_pos, ref_aa, alt_aa)`
    keys in **47 seconds**. Full streaming scan, no early break.
@@ -239,7 +239,7 @@ aug = amw.load_tcga_mutations_with_protein('validation/tcga/tcga_cache')
 wanted = {f\"{m['uniprot']}:{int(m['prot_pos'])}:{m['ref_aa']}:{m['alt_aa']}\"
           for m in aug if m.get('ref_aa') and m.get('alt_aa')}
 scores = {}
-with gzip.open('/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz', 'rt') as f:
+with gzip.open('~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz', 'rt') as f:
     for row in f:
         f_ = row.rstrip('\n').split('\t')
         if len(f_) < 10: continue
@@ -295,5 +295,5 @@ from AlphaMissense.
 The TSV (~5.5 GB uncompressed, ~640 MB compressed, 71.7M rows) was
 downloaded once from
 `https://storage.googleapis.com/dm_alphamissense/AlphaMissense_hg38.tsv.gz`
-and is stored locally at `/Users/hermes/.cache/mrnavax/AlphaMissense_hg38.tsv.gz`.
+and is stored locally at `~/.cache/mrnavax/AlphaMissense_hg38.tsv.gz`.
 It is neither bundled with DeepCatch nor redistributed.
