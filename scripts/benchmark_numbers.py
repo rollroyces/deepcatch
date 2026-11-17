@@ -30,18 +30,22 @@ RESULTS_DIR = os.environ.get("DEEPCATCH_RESULTS_DIR") or os.path.join(
 QUOTED_NUMBERS = [
     ("external_validation_finaledb.json",
      ("per_publication_auc", "7", "auc"),
-     ["paper/paper.tex", "paper.md", "README.md",
-      "docs/EXTERNAL_VALIDATION.md"]),
+     ["paper/paper.tex", "paper.md", "README.md", "README.zh-CN.md",
+      "MODEL.md", "RESULTS.md", "TEAM.md", "CITATION.cff",
+      "docs/EXTERNAL_VALIDATION.md", "docs/JOURNAL_SUBMISSION.md",
+      "docs/site/index.html", "paper/README.md", "results/README.md"]),
     # The second held-out whole-genome publication, and the case-only
     # one reported as sensitivity at the training threshold.
     ("external_validation_finaledb.json",
      ("per_publication_auc", "1", "auc"),
-     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md",
-      "docs/EXTERNAL_VALIDATION.md"]),
+     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md", "README.zh-CN.md",
+      "RESULTS.md", "CITATION.cff", "docs/EXTERNAL_VALIDATION.md",
+      "results/README.md"]),
     ("external_validation_finaledb.json",
      ("pooled_external_auc_matched_publications_only", "auc"),
-     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md",
-      "docs/EXTERNAL_VALIDATION.md"]),
+     ["paper/METHODS_PAPER.md", "MODEL.md", "README.md", "README.zh-CN.md",
+      "RESULTS.md", "CITATION.cff", "docs/EXTERNAL_VALIDATION.md",
+      "results/README.md"]),
     # The case-only publication is reported as a sensitivity at the
     # threshold fixed in training, so the threshold and that sensitivity
     # are quoted numbers too.
@@ -60,9 +64,13 @@ QUOTED_NUMBERS = [
      ["paper/METHODS_PAPER.md", "docs/EXTERNAL_VALIDATION.md"]),
     ("cross_study_finallydb_gc_corrected.json",
      ("pooled", "harmonized", "auc_mean"),
-     ["paper/METHODS_PAPER.md", "paper.md", "README.md", "README.zh-CN.md",
-      "MODEL.md", "RESULTS.md", "TEAM.md", "results/README.md",
-      "ULTRA_EARLY_READINESS.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]),
+     ["paper/METHODS_PAPER.md", "paper.md", "README.md",
+      "README.zh-CN.md", "MODEL.md", "RESULTS.md", "TEAM.md", "REVIEWERS.md",
+      "CITATION.cff", "results/README.md",
+      "ULTRA_EARLY_READINESS.md", "USAGE.md",
+      "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
+      "docs/CROSS_PLATFORM_BENCHMARK.md", "docs/HARMONIZATION.md",
+      "docs/site/index.html", "paper/README.md", "paper/REPRODUCE.md"]),
     # The per-cohort rows of the same table. They were quoted from an
     # earlier, unseeded run for a long time, so they are on the list too.
     ("cross_study_finallydb_gc_corrected.json",
@@ -103,7 +111,12 @@ for _cancer in _TOP5_CANCERS:
     QUOTED_NUMBERS.append((
         "cross_study_finallydb_gc_corrected.json",
         ("per_cancer", _cancer, "auc_mean"),
-        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"],
+        # Every document that quotes the row is named, so a copy of one
+        # cannot drift unnoticed.
+        ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]
+        + (["docs/SENS_AT_SPEC_ABLATION.md"] if _cancer == "BRCA" else [])
+        + (["USAGE.md", "docs/ALPHAGENOME_PROXY_RESULTS.md",
+            "docs/CADD_PER_SUBGROUP_LLR.md"] if _cancer == "OV" else []),
     ))
     QUOTED_NUMBERS.append((
         "per_cancer_sens_at_spec.json",
@@ -118,6 +131,10 @@ QUOTED_SPECIAL = [
      "paper/paper.tex"),
     ("cross_study_loso.json", "loso cristiano -> jiang",
      "paper/paper.tex"),
+    # CITATION.cff is what GitHub's "Cite this repository" button hands a
+    # reader, and it quotes the jiang -> cristiano transfer direction.
+    ("cross_study_loso.json", "loso jiang -> cristiano",
+     "CITATION.cff"),
     # The model card and the results index quote both transfer directions.
     ("cross_study_loso.json", "loso jiang -> cristiano",
      "MODEL.md"),
@@ -130,6 +147,32 @@ QUOTED_SPECIAL = [
     ("fusion_ablation_isotonic.json", "naive_average",
      "paper/paper.tex"),
 ]
+
+# Every document that quotes a transfer direction or an in-domain
+# reference is named, so a copy of one cannot drift unnoticed. The
+# documents are the ones that actually quote the figure today; the
+# guard fails if one of them stops quoting it.
+_LOSO_DOCS = [
+    "NEXT_STEPS.md", "README.md", "README.zh-CN.md", "REVIEWERS.md",
+    "TEAM.md", "docs/CROSS_STUDY_BENCHMARK.md", "docs/CROSS_STUDY_LOSO.md",
+    "docs/JOURNAL_SUBMISSION.md", "docs/site/index.html", "paper.md",
+    "paper/METHODS_PAPER.md", "paper/README.md", "paper/REPRODUCE.md",
+    "results/README.md",
+]
+for _doc in _LOSO_DOCS:
+    QUOTED_SPECIAL.append(
+        ("cross_study_loso.json", "loso jiang -> cristiano", _doc))
+_LOSO_DOCS_CRISTIANO = [
+    "NEXT_STEPS.md", "REVIEWERS.md", "TEAM.md", "docs/CROSS_STUDY_LOSO.md",
+    "docs/site/index.html", "paper/METHODS_PAPER.md", "paper/README.md",
+    "paper/REPRODUCE.md", "results/README.md",
+]
+for _doc in _LOSO_DOCS_CRISTIANO:
+    QUOTED_SPECIAL.append(
+        ("cross_study_loso.json", "loso cristiano -> jiang", _doc))
+for _doc in ("docs/CROSS_STUDY_BENCHMARK.md", "paper/REPRODUCE.md"):
+    QUOTED_SPECIAL.append(("cross_study_loso.json", "in_domain jiang", _doc))
+
 
 # Figures that the v2.3.0 regeneration superseded. They must not reappear
 # in a current-facing document; the CHANGELOG and the dated audit records
@@ -321,7 +364,8 @@ QUOTED_NUMBERS.append(
      ("summary", "regularized_late_fusion", "auc_mean"),
      ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
       "docs/ULTRA_EARLY_READINESS_AUTO.md", "paper/METHODS_PAPER.md",
-      "paper/README.md", "results/README.md", "TEAM.md", "REVIEWERS.md"]))
+      "paper/README.md", "CITATION.cff",
+      "results/README.md", "TEAM.md", "REVIEWERS.md", "NEXT_STEPS.md"]))
 QUOTED_NUMBERS.append(
     ("fusion_regularized_smoke.json",
      ("summary", "bayesian_model_average", "auc_mean"),
@@ -330,7 +374,7 @@ QUOTED_NUMBERS.append(
      # requirement was satisfied by a coincidence and would have blocked
      # the correction of that stale number.
      ["MODEL.md", "README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
-      "paper/METHODS_PAPER.md", "paper/REPRODUCE.md"]))
+      "paper/METHODS_PAPER.md", "paper/REPRODUCE.md", "CITATION.cff"]))
 # The shuffled-label null. Six documents quote 0.4460 as "the signal is
 # not in the labels"; nothing pinned it.
 QUOTED_NUMBERS.append(

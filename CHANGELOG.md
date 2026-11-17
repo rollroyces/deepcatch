@@ -91,6 +91,16 @@ cohort size.
 
 ### Fixed
 
+- **The drift guard named fewer documents than quote the numbers.** The
+  audit walked every quoted figure and every current-facing document and
+  found the copies the guard did not name: `CITATION.cff` — the file
+  GitHub's "Cite this repository" button hands a reader — quoted seven
+  headline figures and was named by none of them, and the LOSO transfer
+  directions, the in-domain pair and the per-cancer rows were quoted by
+  a dozen documents the guard never looked at. Every document that
+  quotes a guarded figure is now named, so a copy of one cannot drift
+  unnoticed.
+  `scripts/benchmark_numbers.py`.
 - **The with-motifs benchmark never applied the GC correction, and the
   paper compared it against a GC-corrected headline anyway.** The
   loader chain took the `--include-motifs` branch first, so
