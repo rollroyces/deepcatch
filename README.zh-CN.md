@@ -205,11 +205,18 @@ pip install numpy scipy scikit-learn pandas statsmodels
 pip install "torch>=2.0.0" torch-geometric pysam
 ```
 
-**Docker：**
+**Docker**（跑的是 bioinformatics validation suite，不是 pipeline——
+pipeline 直接在 repo 里跑）：
 ```bash
 docker build -t deepcatch:latest .
 docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 ```
+
+**导入库：** 安装的发行包名是 `deepcatch`，其模块以仓库路径导入——
+`from src.fragmentomics import ...`；CLI 入口（`deepcatch-tumornaive`、
+`deepcatch-fusion`、`deepcatch-decisioncurve`）会作为命令安装。在仓库内部
+通常是把 `src/` 放进 `sys.path` 后以 `fragmentomics`、`foundation`、
+`methylation_gnn` 等名字导入。
 
 验证安装：
 ```bash

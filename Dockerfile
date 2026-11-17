@@ -3,12 +3,17 @@
 # Python 3.11-slim base image with all dependencies pinned to exact versions
 # for full computational reproducibility.
 #
+# This image runs the BIOINFORMATICS VALIDATION SUITE
+# (`run_full_validation.py`), not the DeepCatch pipeline. The pipeline
+# itself runs from the repository (see README "Installation"); the
+# image exists for the validation suite, which needs the pinned
+# scientific stack and nothing from the repository's own packages.
+#
 # Build:
-#   docker build -t deepcatch-validation:latest .
+#   docker build -t deepcatch:latest .
 #
 # Run:
-#   docker run --rm -v $(pwd)/results:/app/results \
-#       deepcatch-validation:latest python run_bioinfo_validation.py
+#   docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 #
 # Entry point runs the full 10-module bioinformatics validation suite.
 
@@ -16,7 +21,7 @@ FROM python:3.11-slim
 
 LABEL maintainer="DeepCatch Project"
 LABEL description="Bioinformatics validation suite for deep-learning cancer screening"
-LABEL version="1.0.0"
+LABEL version="2.3.0"
 
 # ── System dependencies ──────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \

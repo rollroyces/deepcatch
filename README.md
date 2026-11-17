@@ -207,11 +207,20 @@ pip install numpy scipy scikit-learn pandas statsmodels
 pip install "torch>=2.0.0" torch-geometric pysam
 ```
 
-**Docker:**
+**Docker** (runs the bioinformatics validation suite, not the pipeline —
+the pipeline runs from the repository):
 ```bash
 docker build -t deepcatch:latest .
 docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
 ```
+
+**Importing the library:** the installed distribution is `deepcatch`, and
+its modules are importable under their repository path — `from
+src.fragmentomics import ...` — while the CLI entry points
+(`deepcatch-tumornaive`, `deepcatch-fusion`, `deepcatch-decisioncurve`)
+are installed as commands. Inside the repository the same modules are
+usually imported with `src/` on `sys.path`, as `fragmentomics`,
+`foundation`, `methylation_gnn` and so on.
 
 Validate the install:
 ```bash

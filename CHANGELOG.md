@@ -1276,6 +1276,20 @@ cohort size.
   carry that scoped value, exactly as `results/README.md` is allowed to
   carry 0.9915.
 
+- **The installation instructions had three small mismatches.** The
+  Dockerfile's version label still read `1.0.0` while the repository is
+  at 2.3.0; the Dockerfile's header told the reader to build an image
+  called `deepcatch-validation:latest` while the README said
+  `deepcatch:latest`; and the README presented the image as "Docker:"
+  without saying that it runs the bioinformatics validation suite rather
+  than the pipeline. It also never said how to import the library: the
+  installed distribution is `deepcatch`, its modules are importable as
+  `src.fragmentomics`, and the CLI entry points are installed as
+  commands. Checked by building the wheel and installing it into a
+  clean virtual environment: the wheel carries `src/` and `validation`,
+  `import src.fragmentomics` works, and all three console scripts are
+  present.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every
