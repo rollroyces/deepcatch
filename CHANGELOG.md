@@ -1182,6 +1182,20 @@ cohort size.
   come from where. A fresh clone of the public repository was checked
   against this: every file the instructions name is present in it.
 
+- **The arXiv route had no source bundle, and a bundle made by hand would
+  have compiled with three missing figures.** arXiv takes a LaTeX source
+  archive, not a PDF, and the manuscript reaches outside the repository
+  for three figures — so copying `paper/paper.tex` alone produces an
+  archive whose `\includegraphics` paths do not resolve, and the
+  missing figures are invisible until a reader complains.
+  `scripts/make_arxiv_bundle.py` flattens the figures next to the
+  manuscript, writes `dist/deepcatch_v2_3_0.tar.gz`, and with
+  `--verify` compiles the archive standalone and compares it with the
+  committed PDF — 8 pages, the same. This is also the fallback that
+  needs no institutional affiliation, which is the field bioRxiv's
+  registration asks for. A guard now checks that every figure the
+  manuscript includes is in the repository.
+
 ### Changed
 
 - **The benchmark artifacts were regenerated from the seeded pipeline**, and every

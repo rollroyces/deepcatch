@@ -51,6 +51,9 @@ _MANUSCRIPT = _REPO_ROOT / "paper" / "METHODS_PAPER.md"
 # A repository-relative path to a model file, in backticks.
 _MODEL_PATH = re.compile(r"`([A-Za-z0-9_./-]+\.pt)`")
 
+# The figures the manuscript pulls in from the repository.
+_INCLUDE = re.compile(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}")
+
 # The phrase that makes a missing file an honest statement rather than a
 # broken promise.
 _NOT_DISTRIBUTED = "not distributed"
@@ -245,6 +248,29 @@ def test_the_readme_says_where_the_benchmark_input_comes_from():
             "cache -- it is in neither repository, so without this line "
             "the quick start cannot work"
         )
+
+
+def test_every_figure_the_manuscript_includes_exists():
+    """The manuscript's figures must be in the repository.
+
+    The arXiv source bundle is assembled from the manuscript and the
+    figures it includes, with their paths flattened. A manuscript that
+    includes a file the repository does not have produces a bundle that
+    compiles to a document with a missing figure -- and the missing
+    figure is invisible until a reader complains.
+    """
+    tex = (_REPO_ROOT / "paper" / "paper.tex").read_text(encoding="utf-8")
+    missing = []
+    for raw in _INCLUDE.findall(tex):
+        stripped = raw.strip()
+        relative = stripped[3:] if stripped.startswith("../") else stripped
+        if not (_REPO_ROOT / relative).exists():
+            missing.append(relative)
+    assert not missing, (
+        "the manuscript includes figures that are not in the repository: "
+        f"{missing}. The arXiv source bundle would compile with those "
+        "figures missing."
+    )
 
 
 def test_the_repository_really_has_no_checkpoint_directory_to_discover():

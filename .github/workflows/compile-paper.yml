@@ -11,6 +11,9 @@ on:
       # the manuscript embeds these, so a figure change must re-trigger it
       - 'docs/figures/**'
       - 'results/real_tcga_performance.png'
+      # the arXiv source bundle is built from the manuscript, so a change
+      # to its builder must re-trigger the job that verifies it
+      - 'scripts/make_arxiv_bundle.py'
   workflow_dispatch:
 
 jobs:
@@ -66,3 +69,16 @@ jobs:
           path: paper/*.pdf
           retention-days: 90
           if-no-files-found: error
+
+      # The arXiv source bundle is the fallback venue's artefact, and the
+      # submission PDF is uploaded before this runs on purpose: a broken
+      # bundle must never take the submission artefact down with it. The
+      # step reports the failure as a warning instead of failing the job.
+      - name: Verify the arXiv source bundle
+        continue-on-error: true
+        run: |
+          if python scripts/make_arxiv_bundle.py --verify; then
+            echo "::notice::the arXiv source bundle compiles standalone"
+          else
+            echo "::warning::the arXiv source bundle did not verify; the submission PDF above is unaffected"
+          fi
