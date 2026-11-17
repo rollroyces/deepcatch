@@ -9,12 +9,15 @@
 **Status (2026-11-17):** the §3 numbers are regenerated from the seeded
 benchmark — the GC-corrected cross-study sweep
 (`results/cross_study_finallydb_gc_corrected.json`), the per-cancer
-sens@spec table (`results/per_cancer_sens_at_spec.json`) and the
-leave-one-study-out transfer (`results/cross_study_loso.json`); §4.2's
-limits are tightened to the per-cancer numerators actually observed.
-The author line above still carries a placeholder: the manuscript is
-single-author unless a co-author is confirmed, and the line has to be
-settled before this is submitted anywhere.
+sens@spec table (`results/per_cancer_sens_at_spec.json`), the
+leave-one-study-out transfer (`results/cross_study_loso.json`), the
+shuffled-label null (`results/cross_study_finallydb_shuffled_control.json`)
+and the paired-cohort baselines (`results/fusion_regularized_smoke.json`,
+`results/sens_at_spec_ablation.json`); §4.2's limits are tightened to the
+per-cancer numerators actually observed. The author line above still
+carries a placeholder: the manuscript is single-author unless a
+co-author is confirmed, and the line has to be settled before this is
+submitted anywhere.
 
 ---
 
@@ -22,7 +25,7 @@ settled before this is submitted anywhere.
 
 **Background.** Cell-free DNA (cfDNA) fragmentomics — the joint analysis of fragment length, end-motif, copy-number, and coverage profiles from plasma sequencing — is a promising substrate for non-invasive multi-cancer detection. Published fragmentomics methods (DELFI, Galleri, FinaleMe) report compelling per-cancer discrimination, but their training data and validation cohorts are largely proprietary, and independent replication on harmonized open data is scarce.
 
-**Methods.** DeepCatch is an open-source software framework that turns public cfDNA resources (FinaleDB, GDC TCGA, FLARE/GSE317007) into reproducible fragmentomics experiments. The framework combines (i) a six-modality feature schema (5-channel DELFI, 4-mer end motifs, fragment size, coverage/CNV, serology, tissue-of-origin); (ii) a multi-modal fusion encoder with masked-modality self-supervised pre-training and cross-attention fusion; (iii) panel-based tumor-informed detection when a prior cohort is available; and (iv) a validation protocol built on 5-seed × 5-fold GroupKFold with shuffled-label and true-confound controls. The implementation is MIT-licensed, ships with 835 regression tests, and exposes every intermediate artifact (cohort matrices, per-seed AUC arrays, ablation JSONs) to the reader.
+**Methods.** DeepCatch is an open-source software framework that turns public cfDNA resources (FinaleDB, GDC TCGA, FLARE/GSE317007) into reproducible fragmentomics experiments. The framework combines (i) a six-modality feature schema (5-channel DELFI, 4-mer end motifs, fragment size, coverage/CNV, serology, tissue-of-origin); (ii) a multi-modal fusion encoder with masked-modality self-supervised pre-training and cross-attention fusion; (iii) panel-based tumor-informed detection when a prior cohort is available; and (iv) a validation protocol built on 5-seed × 5-fold GroupKFold with shuffled-label and true-confound controls. The implementation is MIT-licensed, ships with 837 regression tests, and exposes every intermediate artifact (cohort matrices, per-seed AUC arrays, ablation JSONs) to the reader.
 
 **Results.** On the paired 20-patient TCGA-LUAD synthetic-plasma cohort at 0.1% ctDNA, the foundation encoder honestly achieves AUC ≈ 0.55 (n=20 seeds, per-patient GroupKFold) — below the sklearn LR baseline (0.91) on the same channels, which is the expected outcome on this paired design and is itself a finding worth reporting. On the cross-study FinaleDB publications 6 + 8 (n=627 after missing-artifact filter), a 5-channel DELFI LR with per-study z-score harmonization + per-bin GC bias correction (default ON, see `docs/HARMONIZATION.md §3`) reaches pooled OOF AUC **0.9684 ± 0.0027** (with GC correction; legacy without GC: 0.9770 ± 0.0013 — the GC-corrected version is the more honest cancer signal per the per-publication coherence check), sens@95%=0.865, sens@98%=0.796, sens@99%=0.700. Per-cancer OvR (5-seed ± std) for the top-5 cancers (with GC correction): OV 0.989 ± 0.007, LUAD 0.981 ± 0.003, BRCA 0.973 ± 0.002, PAAD 0.967 ± 0.004, HCC_J 0.704 ± 0.014 (single-cohort reading). A **true-confound control** (cancer = 100% Jiang, healthy = 100% Cristiano) collapses to AUC 0.48 with harmonization vs 0.999 without — proving the pooled 0.968 (and the legacy 0.977) is a cancer signal, not a study batch. Three honest null/negative ablations (focal-BCE loss, sparse-aware projection, harmonization) are documented, and every benchmark number above is reproduced bit-for-bit by the committed code (seeded PCA, `test/test_benchmark_reproducibility.py`).
 
@@ -98,7 +101,7 @@ Every reported number follows one protocol:
 
 ### 2.5 Implementation and tests
 
-The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 835 tests run across the two CI jobs (649 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
+The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 837 tests run across the two CI jobs (651 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
 
 **Reproducibility is enforced, not assumed.** Every benchmark number in §3.2–§3.5 is a function of the committed code: the PCA inside each CV fold is seeded with the fold-split seed, and `test/test_benchmark_reproducibility.py` enforces two properties — an AST guard fails the build if any `PCA(...)` call in `scripts/` or `src/` is fitted without a `random_state`, and a behavioural test fits the benchmark twice and requires the two runs to agree exactly (with a further check that a different seed still gives a different answer, so the seed is not simply pinning everything). The guard exists because the opposite was true for an earlier revision: with an unseeded PCA, sklearn's randomised solver made every re-run of the benchmark drift (one publication's AUC moved 0.9789 → 0.9821 between two runs of the same command), which would have made the artifacts unverifiable. The numbers in this manuscript are from the seeded run; the artifacts, the narrative documents and the manuscript now come from a single command.
 
@@ -114,15 +117,23 @@ The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 835
 
 On 20 paired TCGA-LUAD patients at 0.1% ctDNA, real-panel + real-mutation-derived-frag, per-patient GroupKFold, 20 seeds:
 
-| Metric | Value | Source JSON |
+| Metric | Value | Source |
 |---|---|---|
-| `panel_only AUC` | 0.915 ± 0.003 | `results/sens_at_spec_ce_n20.json` |
-| `frag_only AUC` (real mutation-derived) | 0.620 ± 0.005 | `results/sens_at_spec_ce_n20.json` |
-| `foundation AUC` | **0.5588 ± 0.0094** | `results/sens_at_spec_ce_n20.json:foundation_aucs` |
-| `lr_baseline AUC` (sklearn LR on [panel, frag]) | 0.910 | `results/sens_at_spec_ce_n20.json:lr_baseline_aucs` |
-| `naive_avg AUC` | 0.915 | `results/sens_at_spec_ce_n20.json:naive_avg_aucs` |
-| `shuffled_foundation AUC` (label-permuted control) | 0.741 | `results/sens_at_spec_ce_n20.json:shuffled_foundation_aucs` |
-| `delta_auc_normalized` | −3.45 | `results/sens_at_spec_ce_n20.json` |
+| `panel_only AUC` | 0.915 ± 0.003 | `scripts/foundation_real_smoke.py` (audit-2 run; output artifact not committed) |
+| `frag_only AUC` (real mutation-derived) | 0.620 ± 0.005 | `scripts/foundation_real_smoke.py` (audit-2 run; output artifact not committed) |
+| `foundation AUC` | **0.5588 ± 0.0094** | `results/sens_at_spec_ablation.json` (`foundation_auc_mean_ce`, `foundation_auc_std_ce`) |
+| `lr_baseline AUC` (sklearn LR on [panel, frag]) | 0.910 | `results/fusion_regularized_smoke.json` (`baseline_reference.lr_baseline_auc`) |
+| `naive_avg AUC` | 0.915 | `results/fusion_regularized_smoke.json` (`baseline_reference.naive_average_auc`) |
+| `shuffled_foundation AUC` (label-permuted control) | 0.741 | `scripts/foundation_real_smoke.py` (audit-2 run; output artifact not committed) |
+| `delta_auc_normalized` | −3.45 | `scripts/foundation_real_smoke.py` (audit-2 run; output artifact not committed) |
+
+> **Provenance.** The foundation, LR-baseline and naive-average figures come
+> from committed artifacts and are checked by the drift guard; the
+> §3.1.1 estimators below are re-measured by the reproduction driver on
+> every run. The panel-only, frag-only and permuted-label figures come
+> from the audit-2 run of `scripts/foundation_real_smoke.py`, whose output
+> artifact is not committed — they are a record of that run rather than a
+> reproduction of it.
 
 **Honest framing (audit-2 P0-A→P0-F fixed):** under per-patient GroupKFold, the foundation model is honestly out-performed by the sklearn LR baseline on this paired design. The foundation picks up some pair-invariant signal even under pair-broken label shuffle (hence `shuffled_foundation AUC = 0.741 > 0.5`), but the real-label AUC is below the shuffled-label AUC on this cohort — the model overfits. The honest metric is the *delta* (foundation − shuffled), not the absolute AUC. See `AUDIT_2_FINDINGS.md`.
 

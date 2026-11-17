@@ -453,6 +453,26 @@ QUOTED_SPECIAL.append(
 # (the same quantity from a different run), and -- when ``source`` is
 # given -- must name that artifact in its source column.
 TABLE_ROWS = [
+    # The readiness document's panel-sweep table. The document-level check
+    # only asks whether 0.460 appears SOMEWHERE in it -- and it did, in
+    # another table -- while this table carried 0.490 for the same
+    # quantity. A row pin asks the ROW to quote the artifact's value.
+    {
+        "doc": "ULTRA_EARLY_READINESS.md",
+        "anchor": "**Sens @ 99% spec**",
+        "required": [("real_tcga_validation.json",
+                       ("panel_detection", "panel_llr", 18, "mean"))],
+        "forbidden": [],
+    },
+    {
+        "doc": "ULTRA_EARLY_READINESS.md",
+        "anchor": "**Panel AUC**",
+        "required": [("real_tcga_validation.json",
+                       ("panel_detection", "panel_llr", 16, "mean")),
+                     ("real_tcga_validation.json",
+                       ("panel_detection", "panel_llr", 16, "std"))],
+        "forbidden": [],
+    },
     {
         "doc": "paper/METHODS_PAPER.md",
         "anchor": "Can the features separate cancer from healthy",

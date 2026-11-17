@@ -106,6 +106,38 @@ cohort size.
 
 ### Fixed
 
+- **The readiness document's panel table still carried the wrong
+  sensitivity, and the guard could not see it.** The document's table
+  said **0.490** where the artifact says **0.460** — while another
+  table in the same file already said 0.460, so the document
+  contradicted itself and the document-level guard stayed green (it
+  asks whether the value appears *somewhere* in the file). Two row
+  pins now ask the ROW to quote the artifact's value; the guard was
+  red-green checked, and the panel AUC's standard deviation was
+  truncated (0.018) where the artifact says 0.0188.
+- **The methods paper's §3.1 cited an artifact that does not hold its
+  numbers.** Seven of its rows named `results/sens_at_spec_ce_n20.json`;
+  six of them did not match it (0.915 vs 0.9869, 0.620 vs 0.7238,
+  0.910 vs 0.9663, 0.915 vs 0.9869, 0.741 vs 0.6452, −3.45 vs −1.47).
+  That artifact is an EARLIER run of the same protocol: its
+  permuted-label entries for the LR and naive-average channels still
+  repeat the unpermuted values, which the audit-2 fix in
+  `scripts/foundation_real_smoke.py` says they must not. The table now
+  names the artifact behind each figure — the foundation, LR-baseline
+  and naive-average figures are in committed artifacts — and says
+  plainly that the panel-only, frag-only and permuted-label figures
+  come from an audit-2 run whose output artifact is not committed, so
+  they are a record rather than a reproduction.
+- **The README named a workflow that does not exist.** It said the 13
+  deselected slow tests "run in dedicated GitHub Actions workflows
+  (`foundation-real-smoke`, `validate.yml`)"; no such workflow has
+  ever existed in this repository. Eleven of the thirteen live in
+  `src/foundation/test_integration.py` and do run in the deep-learning
+  job of `validate.yml`, which does not deselect them; the other two
+  need the companion repository's feature cache and run only where it
+  is present. The PDF guard's figure list is now read out of
+  `paper.tex` rather than written out, so a new `\includegraphics` is
+  pixel-compared instead of merely counted.
 - **The last pointers to the earlier manuscript are gone, and the
   acknowledgements the team page promises do not exist.** The project
   metadata's "Paper" URL, the README's research-paper link, the methods

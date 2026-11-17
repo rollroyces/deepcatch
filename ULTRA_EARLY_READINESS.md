@@ -108,9 +108,9 @@ This is the assay-design benchmark — *not* a clinical readout. Source: `result
 
 | Spec | 0.1% ctDNA |
 |---|---|
-| **Panel AUC** | **0.921 ± 0.018** |
+| **Panel AUC** | **0.921 ± 0.0188** |
 | **Sens @ 95% spec** | **0.770** |
-| **Sens @ 99% spec** | **0.490** |
+| **Sens @ 99% spec** | **0.460** |
 
 20 patients, 5 seeds, GroupKFold per-patient, paired win-rate 1.0 (panel-LLR beats the LR baseline on every patient).
 

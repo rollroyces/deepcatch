@@ -41,7 +41,11 @@ _FIGURE = re.compile(r"(?<![\d.])\d+\.\d{3,4}(?![\d])")
 # count, the test-suite size. Two-digit and one-digit numbers are left
 # out (they are too generic to be a reliable signal), and four-digit
 # ones are covered by the comma-formatted ones the manuscript writes.
-_COUNT = re.compile(r"(?<![\d.,])\d{3}(?![\d.])")
+# A digit string that is part of a longer number is not a count: "103,863"
+# contributes 103, and "50{,}000" contributes nothing -- the lookbehind
+# rejects a preceding comma, a closing brace and a letter, so the two
+# renderings of the same quantity agree.
+_COUNT = re.compile(r"(?<![\d.,}\w])\d{3}(?![\d.])")
 
 
 @pytest.fixture(scope="module")
@@ -67,6 +71,19 @@ def _manuscript_figures() -> list[str]:
     body = re.sub(r"(?<!\\)%.*", "", body)
     body = re.sub(r"\\cite\{[^}]*\}", "", body)
     return sorted(set(_FIGURE.findall(body)) | set(_COUNT.findall(body)))
+
+
+def _manuscript_images() -> list[Path]:
+    """The figure files the manuscript includes, read out of the .tex.
+
+    The paths in paper.tex are relative to the paper/ directory, so they
+    are resolved against it.
+    """
+    tex = _TEX.read_text(encoding="utf-8")
+    body = tex[tex.index("\\begin{document}"):]
+    body = re.sub(r"(?<!\\)%.*", "", body)
+    paths = re.findall(r"\\includegraphics(?:\[[^\]]*\])?\{([^}]+)\}", body)
+    return [(_REPO_ROOT / "paper" / path).resolve() for path in paths]
 
 
 def test_the_submission_pdf_carries_every_figure_the_manuscript_states(
@@ -126,12 +143,12 @@ def test_the_submission_pdf_embeds_the_committed_figures():
                                        reason="Pillow is not installed here")
     numpy = pytest.importorskip("numpy")
 
-    # The figures the manuscript includes, in the order paper.tex does.
-    sources = [
-        _REPO_ROOT / "results" / "real_tcga_performance.png",
-        _REPO_ROOT / "docs" / "figures" / "fig1_pooled_roc.png",
-        _REPO_ROOT / "docs" / "figures" / "fig4_sens_operating_points.png",
-    ]
+    # The figures the manuscript includes, READ OUT of paper.tex rather
+    # than written out here: a hardcoded list is a second thing to
+    # maintain, and a new \includegraphics would be counted but never
+    # pixel-compared.
+    sources = _manuscript_images()
+    assert sources, "no \\includegraphics found in paper.tex -- the extractor broke"
     for source in sources:
         assert source.is_file(), f"{source} is missing; the PDF embeds it"
 

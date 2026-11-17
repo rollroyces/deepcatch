@@ -65,10 +65,11 @@ contributed code, design, or analysis**:
 
 These are credited as data sources and reviewers, not as authors: the
 manuscripts name the data in their data-availability statements
-(`paper/paper.tex`) and the reviews live in `docs/`. Neither manuscript
-has an acknowledgements section — the journal checklist lists that as an
-open item, because whom to name there (and how to disclose the
-AI-assisted audits) is the author's call.
+(`paper/paper.tex`) and the reviews live in `docs/`. Neither the preprint
+(`paper/paper.tex`) nor the long-form methods manuscript
+(`paper/METHODS_PAPER.md`) has an acknowledgements section — the journal
+checklist lists that as an open item, because whom to name there (and how
+to disclose the AI-assisted audits) is the author's call.
 
 ---
 
@@ -405,7 +406,7 @@ artifact no longer holds.
 | Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
 | Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
 | bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
-| 835 tests collected (`pytest src test -q`) | ✅ 649 core + 186 deep-learning, all green | `test/` + the per-module suites |
+| 837 tests collected (`pytest src test -q`) | ✅ 651 core + 186 deep-learning, all green | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
 | 3500+ lines of user documentation | ✓ | `USAGE.md` + `README.md` + `RESULTS.md` + audit reports |
