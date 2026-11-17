@@ -484,21 +484,28 @@ python scripts/auc_reproducibility_gate.py  # AUC floor 0.80
 
 | Repo | Tests | CI |
 |---|---|---|
-| DeepCatch | **28 tests** in `test/` (CI step), 228 across `src/` (counted by full repo discovery) | 6/6 jobs green |
-| Pipeline | 39 unit tests (across 6 test files: pipeline scripts, fetch_finaledb, nuc_features, gemma_baseline, auc_gate, lr_sweep_smoke) | 3/3 jobs green |
-| Combined | **67 tests** in CI; ~267 total tests when full discovery is enabled | **9/9 jobs green** |
+| DeepCatch | **650** in `test/`, **43** in `src/foundation/test_integration.py`, **878** across `pytest src test` | 10 jobs across 3 workflows green (8 of them in `validate.yml`) |
+| Pipeline | **126** unit tests across 21 test files, at its HEAD `eb1529e` | 4 jobs green |
+| Combined | **878** in DeepCatch + **126** in the pipeline | **14 jobs green** |
 
 The DL module tests (foundation, GNN, tissue deconv, priming) are
 *smoke tests* — they verify the models train and produce non-trivial
 outputs (e.g., AUC > 0.5 after training) but they are NOT
 performance benchmarks. See Section 11 for the distinction.
 
-Note on test counting: README.md's "228/228 tests" badge uses full
-repo discovery (`pytest src/`) which finds the embedded test_*.py
-files inside `src/foundation/`, `src/methylation_gnn/`, etc. The
-CI workflow instead runs `pytest test/` which collects only the 28
-standalone tests in that directory. Both numbers are correct for
-their respective scopes.
+Note on test counting: three numbers are in play, each with its own
+scope, and all three are current as of 2026-11-17. `pytest test/`
+collects **650** (the standalone test files); `pytest src/` collects
+**228** (it also finds the embedded `test_*.py` files inside
+`src/foundation/`, `src/methylation_gnn/`, and the other modules);
+`pytest src test` collects **878**, which is the number the README badge
+states. The CI core job runs `pytest test/` plus the module paths it
+names, and the deep-learning job runs the torch modules separately, so
+the two jobs together account for the 878.
+
+This table is repo state rather than a research result, so it is
+current; the research figures in Sections 1-7 remain the 2026-08-24
+snapshot the banner above describes.
 
 Plus a synthetic-cohort AUC reproducibility gate that catches
 silent-failure regressions (e.g., the FinaleDB 5/6-column parser
@@ -509,14 +516,15 @@ bug that was discovered and fixed).
 ## Section 9: How to cite
 
 ```bibtex
-@software{deepcatch_v2_2_0,
+@software{deepcatch_v2_3_0,
   author = {Yu Ching Lam},
-  title  = {DeepCatch v2.2.0: An Open-Source Benchmark for Panel-Based
-            Ultra-Sensitive Detection of Circulating Tumor DNA from
-            Real Tumor Mutations},
+  title  = {DeepCatch: Mutation-informed Ultra-Sensitive cfDNA Detection
+            (research-use-only open-data methods benchmark)},
   year   = {2026},
   url    = {https://github.com/rollroyces/deepcatch},
-  version = {2.2.0},
+  version = {2.3.0},
+  note   = {Research-use-only open-data benchmark. NOT clinically validated.
+            NOT FDA-approved. NOT a medical device. For methods research only.}
 }
 
 @software{cfdna_fragmentomics_v0_2_0,
@@ -542,8 +550,14 @@ For completeness, here are experiments that were *not* run:
   Gemma 2 9B result is already strong evidence the approach
   doesn't work for this data
 - **Real-data validation of the existing deep learning modules**
-  (foundation, GNN methylation, tissue deconv, priming) — currently
-  smoke-tested only; needs held-out patient cohort with labels
+  (foundation, GNN methylation, tissue deconv, priming) as *benchmarks*.
+  What has changed since this snapshot: the methylation channel now runs
+  end to end on real public fragments and is reported as a **null** (its
+  AUC equals the library-depth baseline), the GNN loads real loci
+  (`src/methylation_gnn/real_data.py`), and the fusion layer is
+  benchmarked on real data (regularized late fusion 0.9825 against the
+  neural encoder's 0.554). What is still missing is a held-out patient
+  cohort with labels
 - **Cross-platform replication** (Illumina vs ONT vs PacBio) —
   would need additional cohort access
 - **Production deployment** — needs regulatory framing that this
@@ -553,12 +567,6 @@ These are listed in `PATH_TO_IMPACT.md` (DeepCatch repo) as the
 next steps toward clinical validation.
 
 ---
-
-## Section 12: Audit
-
-See [`AUDIT_REPORT.md`](AUDIT_REPORT.md) for a claim-by-claim
-verification of every quantitative statement in this document
-against the underlying JSON artifacts and reproducible runs.
 
 ---
 
@@ -615,15 +623,34 @@ not from the torch models.
 
 ---
 
+## Section 12: Audit
+
+See [`AUDIT_REPORT.md`](AUDIT_REPORT.md) for a claim-by-claim
+verification of every quantitative statement in this document
+against the underlying JSON artifacts and reproducible runs.
+
+---
+
 ## Active extension project
 
 **Methylation channel** (started 2026-09-10): a complementary CpG-methylation
-detection channel is being added to the fragmentomics pipeline. Phase 0-2 of
-the plan will use FinaleMe (Liu 2024) to impute CpG methylation from the
-existing FinaleDB WGS — no new raw-data downloads required.
+detection channel was added to the fragmentomics pipeline, and it has since
+been measured rather than planned. FinaleMe (Liu 2024) imputes CpG methylation
+from the existing FinaleDB WGS — no new raw-data downloads required — and the
+channel is reported as a **null**: at 1.0893 observations per CpG the decoded
+methylome restates library depth, so its AUC equals the depth-matched
+coverage baseline (0.9444) and the matched-locus difference is 0.0 over
+103,863 CpGs (`results/methylation_cohort_channel.json`). The GNN that would
+consume it loads real loci (`src/methylation_gnn/real_data.py`).
 
 The full scope, data strategy, phased timeline, and exit criteria are in
 [`rollroyces/deepcatch/METHYLATION_PROJECT.md`](https://github.com/rollroyces/deepcatch/blob/main/METHYLATION_PROJECT.md).
 
 Headline question: *Does CpG methylation add signal beyond fragmentomics on
-a 627-sample cross-study cohort?* Answer expected end of Q1 2027.
+a 627-sample cross-study cohort?* **Answered: not on the reachable
+library.** The reachable FinaleDB libraries are trimmed at ~300 bp and
+deliver ~1.09 fragment observations per CpG, so the channel measures depth
+rather than methylation; a genuinely MspI-digested library is 41x deeper and
+does carry the signature, but it is the training cohort, so it would be a
+feasibility control rather than validation. The open item is a deep,
+size-unselected MspI cohort.

@@ -405,7 +405,7 @@ python scripts/adapter_auc_gate.py
 ## Citation
 
 ```bibtex
-@software{deepcatch_v2_2_0,
+@software{deepcatch_v2_3_0,
   author = {Yu Ching Lam},
   title  = {DeepCatch: Mutation-informed Ultra-Sensitive cfDNA Detection
             (research-use-only open-data methods benchmark)},

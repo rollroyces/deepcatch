@@ -164,6 +164,112 @@ def test_the_readme_suite_table_matches_reality():
         f"{stated_total.group(1)}; it collects {total}")
 
 
+def _collect_counts(*args: str) -> tuple[int, int]:
+    """(collected, deselected) for a pytest --collect-only run.
+
+    pytest prints "228/228 tests collected (11 deselected)" when a marker
+    deselects tests, so the two numbers have to be read separately: the
+    first is the whole suite, the second is what the marker removed.
+    """
+    import subprocess
+    import sys
+
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", *args, "--collect-only", "-q",
+         "-o", "addopts="],
+        cwd=_REPO_ROOT, capture_output=True, text=True, timeout=600,
+    )
+    if proc.returncode != 0:
+        pytest.skip(f"collection failed here: {proc.stderr[-300:]}")
+    match = re.search(r"(\d+)(?:/(\d+))? tests? collected", proc.stdout)
+    collected = int(match.group(2) or match.group(1)) if match else 0
+    dropped = re.search(r"(\d+) deselected", proc.stdout)
+    return collected, (int(dropped.group(1)) if dropped else 0)
+
+
+def _workflow_job_count() -> int:
+    """How many CI jobs the workflow files define.
+
+    Counted with a regex rather than a YAML parser: PyYAML is not among
+    the core job's installed packages, and a dependency added for a
+    guard would be a dependency the guard itself could fail on.
+    """
+    total = 0
+    for path in sorted((_REPO_ROOT / ".github" / "workflows").glob("*.yml")):
+        in_jobs = False
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if re.match(r"^jobs:\s*$", line):
+                in_jobs = True
+                continue
+            if not in_jobs:
+                continue
+            if line and not line[0].isspace() and not line.startswith("#"):
+                break
+            if re.match(r"^  [A-Za-z0-9_-]+:\s*$", line):
+                total += 1
+    return total
+
+
+def test_the_results_md_test_status_row_matches_the_measured_counts():
+    """RESULTS.md's test-status row must be the counts, not old ones.
+
+    RESULTS.md is the consolidated results document a reviewer opens
+    first, and its Section 8 said "28 tests in `test/`" while the suite
+    collected 645 -- three generations stale, and no check covered it.
+    The agreement test above covers the documents that state the TOTAL;
+    this row states three different numbers (the standalone directory,
+    the foundation integration file, and the whole suite), so it needs
+    its own check.
+    """
+    results = (_REPO_ROOT / "RESULTS.md").read_text(encoding="utf-8")
+    row = re.search(r"^\|\s*DeepCatch\s*\|(.+?)\|\s*$", results, re.M)
+    assert row, "RESULTS.md no longer states a DeepCatch test-status row"
+    stated = row.group(1)
+
+    for label, real in (
+        ("the standalone test directory", _collect_counts("test/")[0]),
+        ("the foundation integration file",
+         _collect_counts("src/foundation/test_integration.py")[0]),
+        ("the whole suite", _collect_counts("src", "test")[0]),
+    ):
+        assert f"**{real}**" in stated, (
+            f"RESULTS.md's test-status row does not state {label} as "
+            f"{real}: {stated.strip()}")
+
+    jobs = _workflow_job_count()
+    assert f"{jobs} jobs" in stated, (
+        f"RESULTS.md's test-status row does not state the CI job count "
+        f"as {jobs}: {stated.strip()}")
+
+
+def test_the_readme_src_discovery_row_matches_reality():
+    """The README's "Full src/ discovery" row must be the real numbers.
+
+    The row states three numbers -- collected, run, deselected -- and the
+    per-suite table guard below checks the named suites but not this one,
+    so the row could drift on its own.
+    """
+    readme = (_REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    stated = re.search(
+        r"\|\s*Full `src/` discovery\s*\|\s*(\d+)\s+collected\s*\|[^|]*?"
+        r"(\d+)\s+run\s*,\s*(\d+)\s+deselected",
+        readme,
+    )
+    assert stated, "the README no longer states the src/ discovery row"
+
+    all_collected, _ = _collect_counts("src/")
+    not_slow_collected, deselected = _collect_counts("src/", "-m", "not slow")
+    assert int(stated.group(1)) == all_collected, (
+        f"the README says src/ discovery collects {stated.group(1)}; it "
+        f"collects {all_collected}")
+    assert int(stated.group(2)) == not_slow_collected - deselected, (
+        f"the README says src/ discovery runs {stated.group(2)}; it runs "
+        f"{not_slow_collected - deselected}")
+    assert int(stated.group(3)) == deselected, (
+        f"the README says src/ discovery deselects {stated.group(3)}; it "
+        f"deselects {deselected}")
+
+
 def test_the_stated_count_matches_the_real_collection():
     """The stated count must be the count, not a number that used to be.
 
