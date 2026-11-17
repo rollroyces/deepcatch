@@ -82,3 +82,18 @@ jobs:
           else
             echo "::warning::the arXiv source bundle did not verify; the submission PDF above is unaffected"
           fi
+
+      # The bundle is uploaded rather than left on one person's machine:
+      # a source archive is what arXiv receives, and a local copy can be
+      # stale (it is a build product, not a tracked file). Building it
+      # here means the archive downloadable from this run is the one that
+      # was made from the committed manuscript. `if-no-files-found: warn`
+      # keeps the job green when the bundle step above failed — the PDF
+      # artefact is the one that must not be taken down.
+      - name: Upload the arXiv source bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepcatch-arxiv-source
+          path: dist/deepcatch_v2_3_0.tar.gz
+          retention-days: 90
+          if-no-files-found: warn

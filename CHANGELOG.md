@@ -106,6 +106,21 @@ cohort size.
 
 ### Fixed
 
+- **The arXiv source archive was stale, and nothing would have said so.**
+  `dist/deepcatch_v2_3_0.tar.gz` is a build product, not a tracked file, so
+  nothing kept it honest: the copy on this machine still carried a manuscript
+  that said "883 tests", long after the committed manuscript said 919 and then
+  924. A stale bundle is not obviously stale — it compiles, it produces the
+  same eight pages and it embeds every figure — so it is only visible by
+  comparing it with the manuscript it was built from. The paper workflow now
+  uploads the bundle as the `deepcatch-arxiv-source` artifact, which means
+  the archive that gets submitted is the one built from the committed
+  manuscript rather than a local copy that can be stale, and
+  `test/test_arxiv_bundle_is_current.py` fails when a local bundle disagrees
+  with a fresh build of the same kind. Adding it moved the suite from 924 to
+  926 tests, so the documents that quote the count were updated together and
+  both the submission PDF and the bundle were rebuilt.
+
 - **The user guide documented a command line that does not exist.**
   `docs/USER_GUIDE.md` told the reader to run `evaluate.py`,
   `agent2-multimodal-fusion/evaluate.py`,
