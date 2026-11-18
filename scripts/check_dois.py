@@ -43,7 +43,7 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 # BibTeX field or an escaped JSON quote are not part of it. Parentheses
 # are allowed because Elsevier's DOIs contain them.
 _DOI = re.compile(
-    r"10\.\d{4,9}/[^\s\"'<>,;\\\(\)\]]*"
+    r"10\.\d{4,9}/[^\s\"'<>,;\\\(\)\]]+"
     r"(?:\([^\s\"'<>,;\\\(\)\]]*\)[^\s\"'<>,;\\\(\)\]]*)*")
 
 
@@ -83,7 +83,11 @@ _INTENTIONALLY_UNRESOLVED = {
 
 
 def _tracked_text_files() -> list[Path]:
-    """Every tracked file worth reading as text."""
+    """Every tracked file worth reading as text.
+
+    This script is excluded: it contains the pattern that recognises a DOI,
+    and a checker that reads its own source reports its own pattern.
+    """
     try:
         proc = subprocess.run(
             ["git", "-C", str(_REPO_ROOT), "ls-files"],
@@ -93,6 +97,8 @@ def _tracked_text_files() -> list[Path]:
         raise SystemExit("not a git checkout; the tracked tree cannot be listed")
     out = []
     for name in proc.stdout.splitlines():
+        if name == str(Path(__file__).relative_to(_REPO_ROOT)):
+            continue
         path = _REPO_ROOT / name
         if path.suffix.lower() in _BINARY_SUFFIXES or not path.is_file():
             continue
