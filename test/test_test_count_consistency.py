@@ -44,6 +44,9 @@ COUNT_DOCS = [
     "docs/JOURNAL_SUBMISSION.md",
     "docs/PORTFOLIO_ROADMAP.md",
     "docs/PATH_TO_IMPACT.md",
+    # The public docs site quotes the suite's size in its quickstart, and
+    # a reader lands on it before anything else.
+    "docs/site/index.html",
 ]
 
 # "658 tests", "658 collected", "Tests-658%20collected", "(658 tests)"

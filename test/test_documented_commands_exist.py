@@ -59,6 +59,8 @@ _SCOPE = (
     "docs/USER_GUIDE.md",
     "wiki/Home.md",
     "wiki/Getting-Started.md",
+    # The public docs site's quickstart is a command a reader runs.
+    "docs/site/index.html",
 )
 
 # Scripts that live in the companion repository (cfdna-fragmentomics-pipeline)
@@ -79,6 +81,9 @@ _SCRIPT = re.compile(r"[A-Za-z0-9_./-]*[A-Za-z0-9_-]\.(?:py|sh)\b")
 _IMPORT = re.compile(r"\b(?:from|import)\s+$")
 
 _FENCE = re.compile(r"```.*?```", re.S)
+
+# A code block in the HTML docs site.
+_HTML_PRE = re.compile(r"<pre[^>]*>(.*?)</pre>", re.S)
 _INLINE = re.compile(r"`([^`\n]+)`")
 _LINK = re.compile(r"\]\(([^)]+)\)")
 
@@ -101,8 +106,12 @@ def _repo_filenames() -> set[str]:
 
 
 def _code_blocks(text: str) -> list[str]:
-    """Every fenced code block in `text`."""
-    return _FENCE.findall(text)
+    """Every code block in `text`.
+
+    Markdown fences and the HTML docs site's ``<pre>`` blocks: a reader of
+    the site copies the same commands a reader of the guide copies.
+    """
+    return _FENCE.findall(text) + _HTML_PRE.findall(text)
 
 
 def _script_tokens(text: str) -> list[tuple[str, str, bool]]:

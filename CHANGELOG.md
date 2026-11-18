@@ -106,6 +106,17 @@ cohort size.
 
 ### Fixed
 
+- **The public docs site's quickstart could not be run.** The site (GitHub
+  Pages — the first thing a reader sees) promised "256 tests, all pass" for
+  a suite that collects 934, and its second command was
+  `python scripts/real_tcga_validation.py --report`: the script is at the
+  repository root, not under `scripts/`, and it has no `--report` flag. Both
+  are fixed, and two guards now cover the site: the test-count guard reads
+  it as one of the documents that state the suite's size, and the
+  documented-commands guard reads its `<pre>` blocks as commands a reader
+  runs. Red-green verified: with the old text restored, one guard names
+  the missing script and the other names the disagreement between the
+  site's 256 and the suite's 934.
 - **The citation file still declared a DOI that does not exist.**
   `CITATION.cff` had been cleaned of its placeholder `doi:` key — a DOI that
   resolved to nothing, which rendered in GitHub's "Cite this repository" box
