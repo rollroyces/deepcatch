@@ -160,6 +160,11 @@ For each sample:
 | **LR no-PCA, C=1000 (recommended)** | **0.9782 ± 0.0012** | **+0.0050** |
 | Cross-study single-study Jiang (121 samples) | 0.9716 ± 0.003 | n/a |
 
+(The figures in this table that come from the companion repository are the
+companion's, at its commit `eb1529e`. They are quoted here so that the two
+repositories can be read together, and they move when the companion's
+benchmark is reseeded.)
+
 The C=1000 finding is meaningful: the documented baseline was
 sub-optimal. PCA(200) was throwing away signal. Removing PCA and
 using very weak L2 shrinkage (C=1000) gives a +0.0050 AUC improvement

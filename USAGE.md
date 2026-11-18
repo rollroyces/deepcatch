@@ -195,7 +195,7 @@ After running `run_cross_study.py` (§2.2), run:
 python scripts/honest_benchmark.py
 ```
 
-Output (abbreviated):
+Output (abbreviated), from the companion repository at `eb1529e`:
 ```
 === A: SINGLE-STUDY (Jiang 2015), 5-channel (PCA n=80) ===
   Cohort: 89 cancer + 32 healthy = 121 total
