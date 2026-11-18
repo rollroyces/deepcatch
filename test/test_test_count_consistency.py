@@ -67,6 +67,12 @@ _DOC_PATTERNS = {
 
 def _stated_counts(path: str) -> set[int]:
     text = (_REPO_ROOT / path).read_text(encoding="utf-8")
+    if path.endswith(".html"):
+        # The docs site's statistics live in markup: the number and the
+        # word "tests" are separate elements, so the tags have to go
+        # before the count can be read -- otherwise a stale number hides
+        # behind its own markup.
+        text = re.sub(r"<[^>]+>", " ", text)
     found = set()
     for pattern in _DOC_PATTERNS.get(path, _COUNT_PATTERNS):
         found.update(int(m) for m in re.findall(pattern, text))

@@ -33,6 +33,11 @@ Two kinds of link are resolved the way their host resolves them:
 * A link inside a code block is an example, not a link, and is skipped.
 * A link without a file extension inside `wiki/` is a GitHub wiki page,
   so `Home` means `Home.md` in the same directory.
+* A link on the public docs site that points at a file of this repository
+  is checked against the tree, whether it is written relatively or as an
+  absolute `github.com/rollroyces/deepcatch/blob/main/...` URL. The site
+  is the front door, and a link there to a file that has been renamed is
+  as dead as one in a markdown file.
 """
 from __future__ import annotations
 
@@ -52,9 +57,20 @@ _LINK = re.compile(r'\]\(([^)\s]+)(?:\s+"[^"]*")?\)')
 # A fenced code block: a link inside it is an example.
 _FENCE = re.compile(r"```.*?```", re.S)
 
+# A link attribute in the HTML docs site.
+_HTML_HREF = re.compile(r'href="([^"]+)"')
 
-def _tracked_markdown() -> list[str]:
-    """Every tracked markdown file, relative to the repository root."""
+
+# The public docs site: a front door with links of its own.
+_SITE = "docs/site/index.html"
+
+# A link on the site that names a file of this repository.
+_GITHUB_BLOB = re.compile(
+    r"^https://github\.com/rollroyces/deepcatch/blob/main/(?P<path>[^#?]+)")
+
+
+def _tracked_documents() -> list[str]:
+    """Every tracked markdown file, plus the docs site."""
     try:
         proc = subprocess.run(
             ["git", "-C", str(_REPO_ROOT), "ls-files", "*.md"],
@@ -62,16 +78,30 @@ def _tracked_markdown() -> list[str]:
         )
     except (OSError, subprocess.CalledProcessError):
         pytest.skip("not a git checkout; the tracked tree cannot be listed")
-    return [name for name in proc.stdout.splitlines() if name]
+    documents = [name for name in proc.stdout.splitlines() if name]
+    if (_REPO_ROOT / _SITE).is_file():
+        documents.append(_SITE)
+    return documents
 
 
 def _link_targets(text: str) -> list[str]:
-    """The link targets in a document, ignoring the ones in code blocks."""
-    return [m.group(1).strip() for m in _LINK.finditer(_FENCE.sub("", text))]
+    """The link targets in a document, ignoring the ones in code blocks.
+
+    The docs site is HTML, so its `href` attributes are read as well.
+    """
+    markdown = [m.group(1).strip()
+                for m in _LINK.finditer(_FENCE.sub("", text))]
+    html = [m.group(1).strip() for m in _HTML_HREF.finditer(text)]
+    return markdown + html
 
 
 def _candidates(doc: str, target: str) -> list[str]:
     """The paths a link target could mean, in the order the host tries."""
+    blob = _GITHUB_BLOB.match(target)
+    if blob:
+        # An absolute link to a file of this repository: the file has to
+        # be in the tree under the name the link uses.
+        return [os.path.normpath(unquote(blob.group("path")))]
     raw = unquote(target.split("#")[0])
     if not raw:
         return []
@@ -98,7 +128,7 @@ def test_internal_markdown_links_resolve():
     """Every relative link must land on a file that exists."""
     offenders: list[str] = []
 
-    for doc in _tracked_markdown():
+    for doc in _tracked_documents():
         path = _REPO_ROOT / doc
         try:
             text = path.read_text(encoding="utf-8")
@@ -106,7 +136,10 @@ def test_internal_markdown_links_resolve():
             continue
         for target in _link_targets(text):
             if target.startswith(("http://", "https://", "mailto:", "#")):
-                continue
+                # An absolute URL is another repository's business unless
+                # it names a file of this one, which is checked above.
+                if not _GITHUB_BLOB.match(target):
+                    continue
             # A path outside the repository belongs to another checkout.
             if target.startswith(("../", "/")):
                 continue

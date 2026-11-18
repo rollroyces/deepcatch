@@ -117,6 +117,17 @@ cohort size.
   runs. Red-green verified: with the old text restored, one guard names
   the missing script and the other names the disagreement between the
   site's 256 and the suite's 934.
+- **The public docs site still advertised 256 tests.** The quickstart's
+  comment was corrected, but the header's statistic — the number a reader
+  sees first, on the site GitHub Pages serves — was still the one from
+  several generations ago. It is corrected now, and the test-count guard
+  reads the site's markup (the number and the word "tests" are separate
+  elements, so a stale number could hide behind its own markup). The link
+  guard now covers the site as well: a link there that names a file of
+  this repository, whether written relatively or as an absolute
+  `github.com/rollroyces/deepcatch/blob/main/...` URL, has to resolve.
+  Both are red-green verified — with the old text restored, the guards
+  name the site's 256 and the dead link.
 - **The citation file still declared a DOI that does not exist.**
   `CITATION.cff` had been cleaned of its placeholder `doi:` key — a DOI that
   resolved to nothing, which rendered in GitHub's "Cite this repository" box
