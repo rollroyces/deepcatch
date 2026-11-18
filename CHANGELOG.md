@@ -106,6 +106,26 @@ cohort size.
 
 ### Fixed
 
+- **The guide's table of API response fields was checked against nothing.**
+  The user guide tells a reader what `POST /predict` returns --
+  `classical.mds_simpson`, `neural.probability`, `explanation.top_motifs`
+  and the three accepted method names -- and the API's schema declares them
+  by hand, so renaming a field in `api/schemas.py` changed the API
+  without changing the sentence that describes it.
+  `test/test_api_contract_matches_the_guide.py` now reads the field list
+  out of the guide itself (so it cannot drift into a second copy) and
+  requires every component to be a declared field of the schema, and every
+  method the guide shows to be a member of `PredictionMethod`. The field
+  lookup matches the *declaration*, not the name anywhere in the file: the
+  schema's docstrings carry JSON examples with the same names, and a
+  looser search passed even after the field had been renamed -- which the
+  red-green check caught.
+- **The collaborator intake template was outside every guard.** The issue
+  template a potential collaborator opens names the files they are asked to
+  look at (`src/fragmentomics/finale_features.py`,
+  `scripts/external_validation_finaledb.py`,
+  `scripts/cross_study_loso.py`), and it was the one user-facing document
+  no guard read. It is now in the documented-commands guard's scope.
 - **The LaTeX manuscript carried no ORCID, while the checklist said it did.**
   `docs/JOURNAL_SUBMISSION.md` lists the ORCID as present in the manuscript
   and in `CITATION.cff`; the LaTeX author block had neither, so a reviewer

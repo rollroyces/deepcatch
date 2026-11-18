@@ -61,6 +61,10 @@ _SCOPE = (
     "wiki/Getting-Started.md",
     # The public docs site's quickstart is a command a reader runs.
     "docs/site/index.html",
+    # The collaborator intake template names the files a collaborator is
+    # asked to look at; it is the first thing a potential collaborator
+    # opens.
+    ".github/ISSUE_TEMPLATE/external-cohort-collaboration.md",
 )
 
 # Scripts that live in the companion repository (cfdna-fragmentomics-pipeline)
