@@ -14,6 +14,12 @@ year: 2026
 # GitHub's "Cite this repository" box as a link to a record that does
 # not exist. The `doi:` key is added, with the minted value, by the
 # release that carries it -- see ZENODO_SETUP.md.
+#
+# There is no `identifiers:` entry for the same reason. It used to
+# declare a DOI whose value was the string "to be assigned (preprint)":
+# not a DOI at all, but sitting in a machine-readable field that says
+# `type: doi`, so a citation tool would record it as one. The preprint's
+# DOI is added when the preprint exists -- see ZENODO_SETUP.md section 5.
 url: "https://github.com/rollroyces/deepcatch"
 repository-code: "https://github.com/rollroyces/deepcatch"
 repository-companion: "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
@@ -49,7 +55,3 @@ abstract: >
   Bayesian model average (0.9650) rather than the neural encoder (0.554) at
   this sample size. The methylation path runs end to end on real public
   fragment data. Not clinically validated; research use only.
-identifiers:
-  - type: doi
-    value: "to be assigned (preprint)"
-    description: Preprint DOI — to be assigned upon submission

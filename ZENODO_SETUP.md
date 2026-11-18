@@ -164,6 +164,15 @@ GitHub's "Cite this repository" box), and "on-first-release" was no
 longer true — v2.2.0 was a release and got no DOI. So the key is
 *added* with the minted value, not substituted in place. Commit. Done.
 
+The same rule applies to the preprint's identifier. `CITATION.cff` used
+to carry an `identifiers:` entry of `type: doi` whose value was the
+string "to be assigned (preprint)" — not a DOI, but in a field that
+says `type: doi`, so a citation tool would record it as one. When the
+preprint is posted and has its DOI, add it as an `identifiers:` entry
+with the real value; until then the file declares no identifier at all.
+A test enforces this: a `doi:` key, or an `identifiers:` entry of type
+`doi`, must carry a DOI that looks like one.
+
 ## What the DOI gives you
 
 - **Permanence**: Zenodo DOIs don't break if GitHub does.

@@ -106,6 +106,18 @@ cohort size.
 
 ### Fixed
 
+- **The citation file still declared a DOI that does not exist.**
+  `CITATION.cff` had been cleaned of its placeholder `doi:` key — a DOI that
+  resolved to nothing, which rendered in GitHub's "Cite this repository" box
+  as a link to a record that does not exist — but the same defect survived
+  in another form: an `identifiers:` entry with `type: doi` whose value was
+  the string "to be assigned (preprint)". Not a DOI, but sitting in a
+  machine-readable field that says `type: doi`, so a citation tool would
+  record it as one. The entry is removed, the reason is written into the
+  file, and `test/test_citation_metadata_is_real.py` now requires every DOI
+  the file declares to look like one: a `doi:` key or an `identifiers:`
+  entry of type `doi` must carry a DOI-shaped value, while declaring no
+  identifier at all is the honest state until a release carries one.
 - **Seven of the model card's links led nowhere.** `MODEL.md` names the
   documents it points at — `docs/PRETRAINING.md`, `docs/PRETRAIN_BUG.md`,
   `docs/CROSS_STUDY_BENCHMARK.md`, `docs/FUSION_ISOTONIC.md`,
