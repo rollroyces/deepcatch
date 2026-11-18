@@ -179,21 +179,41 @@ def latex_title(tex: str) -> str:
     return plain(render_text(match.group(1)))
 
 
-def latex_author(tex: str) -> tuple[str, str]:
-    """The author name and the affiliation line under it."""
+def latex_author(tex: str) -> tuple[str, str, str]:
+    """The author name, the affiliation line under it, and the ORCID.
+
+    The author block is LaTeX, and the ORCID is a link in it
+    (`\\href{...}{...}`), so it has to be rendered rather than copied:
+    a pasted abstract carrying `\\href{https://orcid.org/...}` is markup
+    in a field that wants plain text. The ORCID is also kept out of the
+    affiliation -- it identifies the author, it is not an employer.
+    """
     match = re.search(r"\\author\{(.*?)\}\n", tex, re.S)
     if not match:
         raise ValueError("paper.tex has no \\author")
     lines = [ln.strip() for ln in match.group(1).split("\\\\") if ln.strip()]
     name = plain(render_text(lines[0]))
     affiliation = ""
+    orcid = ""
     for line in lines[1:]:
         text = re.sub(r"\\small\s*", "", line).strip()
         text = re.sub(r"\\url\{([^}]*)\}", r"\1", text)
+        text = re.sub(r"\\href\{([^}]*)\}\{([^}]*)\}", r"\2", text)
         text = text.replace("---", "—")
+        found = re.search(r"\b(\d{4}-\d{4}-\d{4}-\d{3}[\dX])\b", text)
+        if found:
+            orcid = found.group(1)
+            continue
         if text and "github.com" not in text:
             affiliation = text
-    return name, affiliation
+    return name, affiliation, orcid
+
+
+def citation_orcid(cff: str) -> str:
+    """The ORCID the citation metadata records."""
+    match = re.search(
+        r"orcid:\s*\"?https?://orcid\.org/(\d{4}-\d{4}-\d{4}-\d{3}[\dX])", cff)
+    return match.group(1) if match else ""
 
 
 def latex_abstract(tex: str) -> str:
@@ -234,7 +254,7 @@ def build_document() -> str:
     cff = open(CITATION, encoding="utf-8").read()
 
     title = latex_title(tex)
-    name, affiliation = latex_author(tex)
+    name, affiliation, orcid = latex_author(tex)
     abstract = latex_abstract(tex)
     length = abstract_length(tex)
     version = citation_field(cff, "version")
@@ -250,6 +270,19 @@ def build_document() -> str:
             f"titles it {title!r}; they must agree before the abstract is "
             f"published")
 
+    # The ORCID is the same fact in two places: the author block a reader
+    # sees on the first page, and the citation metadata a tool reads.
+    cff_orcid = citation_orcid(cff)
+    if orcid and cff_orcid and orcid != cff_orcid:
+        raise ValueError(
+            f"paper.tex gives the author ORCID {orcid}, but CITATION.cff "
+            f"gives {cff_orcid}; they must agree before the abstract is "
+            f"published")
+
+    author_line = f"**Authors:** {name} — {affiliation}"
+    if orcid:
+        author_line += f" (ORCID {orcid})"
+
     return (
         "<!-- GENERATED FILE - do not hand-edit.\n"
         "     Source: paper/paper.tex (the manuscript the PDF is compiled from).\n"
@@ -259,7 +292,7 @@ def build_document() -> str:
         "\n"
         f"# {title}\n"
         "\n"
-        f"**Authors:** {name} — {affiliation}\n"
+        f"{author_line}\n"
         "\n"
         f"**Repository:** {repo} (v{version})\n"
         "\n"

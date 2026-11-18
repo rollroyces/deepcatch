@@ -106,6 +106,22 @@ cohort size.
 
 ### Fixed
 
+- **The LaTeX manuscript carried no ORCID, while the checklist said it did.**
+  `docs/JOURNAL_SUBMISSION.md` lists the ORCID as present in the manuscript
+  and in `CITATION.cff`; the LaTeX author block had neither, so a reviewer
+  reading the paper and the citation metadata saw two different author
+  records. The author block now carries the same ORCID the repository
+  already publishes, and `test/test_author_affiliation_is_consistent.py`
+  keeps the three author blocks -- the LaTeX manuscript, the JOSS paper and
+  `CITATION.cff` -- from drifting apart: the JOSS manuscript keeps the
+  sections JOSS asks for, the three declare the same affiliation (an
+  employer named in one has to be named in all three), and the ORCID is the
+  same in each. It does not decide whether an institutional affiliation is
+  correct -- that is the author's fact, and `docs/JOURNAL_SUBMISSION.md`
+  keeps the question open -- it only makes sure the three statements agree
+  whichever way it is settled. Red-green verified: a removed JOSS section,
+  an employer in one author block and a missing ORCID each fail the test
+  that should catch them.
 - **Two paper builds at once are not two independent jobs.** The TeX Live
   install in the paper workflow holds the apt lock, so a second build waits
   behind the first for tens of minutes -- one run sat in "Install LaTeX"
