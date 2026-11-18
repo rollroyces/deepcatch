@@ -19,14 +19,14 @@ python run_jiang_analysis.py -i deepcatch_data.xlsx --cancer-type HCC --control-
 
 ## 🛡️ Badges
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/rollroyces/deepcatch/blob/main/LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
 [![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-blue.svg)]()
 
 To add these badges to your own fork or mirror, copy the Markdown below into your README:
 
 ```markdown
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/rollroyces/deepcatch/blob/main/LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
 [![Version: 2.3.0](https://img.shields.io/badge/Version-2.3.0-blue.svg)()
 ```

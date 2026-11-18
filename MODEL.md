@@ -80,11 +80,11 @@ Tumor-naive channel data: pre-computed by the companion pipeline
 format is documented in `src/fragmentomics/tumor_naive_adapter.py`.
 
 Foundation pretraining data: 200 samples from `data/finaledb_pretrain_cohort_PRODUCTION.npz`
-(real FinaleDB WGS, see [`docs/PRETRAINING.md`](PRETRAINING.md)). The
+(real FinaleDB WGS, see [`docs/PRETRAINING.md`](docs/PRETRAINING.md)). The
 pre-fix `*SYNTHETIC_v0*` artifacts in `checkpoints/` and `data/` are
 **NOT real-data-trained** — they bypassed the real cohort assembly
 under the synthetic-bypass bug documented in
-[`docs/PRETRAIN_BUG.md`](PRETRAIN_BUG.md). Do not load them as
+[`docs/PRETRAIN_BUG.md`](docs/PRETRAIN_BUG.md). Do not load them as
 "real-data-derived" checkpoints.
 
 ## Validation data
@@ -108,7 +108,7 @@ HCC, Cristiano is mostly healthy).
 
 Detailed per-cancer sens@spec with DeLong 95% CIs, pooled AUCs, and
 true-confound controls are in
-[`docs/CROSS_STUDY_BENCHMARK.md`](CROSS_STUDY_BENCHMARK.md). Headline
+[`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md). Headline
 numbers below for quick reference.
 
 ### Mutation-informed (5-seed, real TCGA mutations + simulated plasma)
@@ -268,11 +268,11 @@ holdout and must not be read as a generalisation claim.
 - **Driver-only panel** (TP53 + KRAS + EGFR + …) — Sens@99% = 0.19
   (catastrophic).
 - **Isotonic post-hoc calibration of LR fusion** — regresses on every
-  seed (mean Δ AUC = −0.0035). See [`docs/FUSION_ISOTONIC.md`](FUSION_ISOTONIC.md).
+  seed (mean Δ AUC = −0.0035). See [`docs/FUSION_ISOTONIC.md`](docs/FUSION_ISOTONIC.md).
 - **SensAtSpecLoss ablation** — no detectable effect on the n=20
-  foundation cohort. See [`docs/SENS_AT_SPEC_ABLATION.md`](SENS_AT_SPEC_ABLATION.md).
+  foundation cohort. See [`docs/SENS_AT_SPEC_ABLATION.md`](docs/SENS_AT_SPEC_ABLATION.md).
 - **Sparse-aware projection ablation** — null effect on this cohort.
-  See [`docs/SPARSE_AWARE_ABLATION.md`](SPARSE_AWARE_ABLATION.md).
+  See [`docs/SPARSE_AWARE_ABLATION.md`](docs/SPARSE_AWARE_ABLATION.md).
 - **Foundation vs LR** — foundation honestly loses to LR on the
   n=20 cohort. See `AUDIT_2_FINDINGS.md`.
 - **Methylation (V3) channel** — measured on 31 real FinaleDB samples and
@@ -330,7 +330,7 @@ holdout and must not be read as a generalisation claim.
    a dilution/spike-in benchmark, not a clinical plasma validation.
 
 7. **Batch effects are not exhaustively characterized.** The
-   harmonization check ([`docs/HARMONIZATION.md`](HARMONIZATION.md))
+   harmonization check ([`docs/HARMONIZATION.md`](docs/HARMONIZATION.md))
    is a synthetic fixture with NEUTRAL verdict; on a real
    multi-study plasma pool, larger batch effects are expected.
 
@@ -338,7 +338,7 @@ holdout and must not be read as a generalisation claim.
    Foundation-model pretraining uses 200 samples from
    `data/finaledb_pretrain_cohort_PRODUCTION.npz`. The pre-fix
    `*SYNTHETIC_v0*` artifacts are not real-data-trained (see
-   [`docs/PRETRAIN_BUG.md`](PRETRAIN_BUG.md)).
+   [`docs/PRETRAIN_BUG.md`](docs/PRETRAIN_BUG.md)).
 
 9. **The 99%-specificity operating point is in-sample.** Not
    externally validated, not calibrated against a screening cohort

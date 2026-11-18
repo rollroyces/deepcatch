@@ -209,7 +209,10 @@ pip install "torch>=2.0.0" torch-geometric pysam
 pipeline 直接在 repo 里跑）：
 ```bash
 docker build -t deepcatch:latest .
-docker run --rm -v $(pwd)/results:/app/results deepcatch:latest
+# 掛載你自己的目錄：validation suite 會寫入 /app/results，
+# 若掛載 repo 的 results/，這次執行就會覆蓋已發布的 artifact。
+mkdir -p /tmp/deepcatch-docker-results
+docker run --rm -v /tmp/deepcatch-docker-results:/app/results deepcatch:latest
 ```
 
 **导入库：** 安装的发行包名是 `deepcatch`，其模块以仓库路径导入——

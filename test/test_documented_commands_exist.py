@@ -44,6 +44,7 @@ does not explain itself is a bug waiting to happen.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -80,6 +81,9 @@ _IMPORT = re.compile(r"\b(?:from|import)\s+$")
 _FENCE = re.compile(r"```.*?```", re.S)
 _INLINE = re.compile(r"`([^`\n]+)`")
 _LINK = re.compile(r"\]\(([^)]+)\)")
+
+# A docker bind mount: the host side of "-v host:container".
+_MOUNT = re.compile(r"-v\s+([^\s:]+):[^\s:]+")
 
 # A command word immediately before the token: the token is what the reader
 # runs, so it has to resolve exactly.
@@ -186,6 +190,74 @@ def test_documented_scripts_exist():
           "A reader who follows it gets a usage error instead of a result."
     )
     assert checked > 0, "the extractor found nothing -- the guard is vacuous"
+
+
+def test_no_documented_command_writes_into_a_tracked_directory():
+    """A documented command must not overwrite the repository's own artifacts.
+
+    The README's Docker instruction mounted the repository's `results/`
+    directory into the container, whose entry point runs the validation
+    suite and writes its output there. Following the instruction replaced
+    the published artifacts with whatever the container produced -- the
+    same defect the top-level runner had, one layer further out.
+
+    The rule is about the mount: a `docker run` that bind-mounts a host
+    path which is a tracked directory of this repository hands the
+    container the right to overwrite it.
+    """
+    offenders: list[str] = []
+
+    for name in _SCOPE:
+        doc = _REPO_ROOT / name
+        if not doc.exists():
+            continue
+        text = doc.read_text(encoding="utf-8")
+        for line in text.splitlines():
+            if "docker run" not in line:
+                continue
+            for mount in _MOUNT.finditer(line):
+                host = mount.group(1)
+                relative = _repo_relative(host)
+                if relative is None:
+                    continue
+                if _tracks_files(relative):
+                    offenders.append(
+                        f"{name}: {line.strip()} (mounts the tracked directory "
+                        f"{relative}/)")
+
+    assert not offenders, (
+        "a documented command writes into a tracked directory of this "
+        "repository:\n  " + "\n  ".join(offenders)
+        + "\nPoint the mount at a directory of your own. A run that replaces "
+          "the published artifacts destroys the evidence the repository "
+          "cites."
+    )
+
+
+def _repo_relative(host: str) -> str | None:
+    """The repository path a mount's host side names, if it names one."""
+    # $(pwd)/results -> the repository's own results directory
+    candidate = host.strip()
+    if candidate.startswith("$(pwd)/"):
+        candidate = candidate[len("$(pwd)/"):]
+    elif candidate.startswith("/") or "$" in candidate:
+        return None
+    candidate = candidate.rstrip("/")
+    if not candidate or candidate.startswith(".."):
+        return None
+    return candidate
+
+
+def _tracks_files(relative: str) -> bool:
+    """Does the repository track files under this directory?"""
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(_REPO_ROOT), "ls-files", "--", relative],
+            capture_output=True, text=True, timeout=60, check=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return bool(proc.stdout.strip())
 
 
 def test_the_extractor_finds_a_known_script():

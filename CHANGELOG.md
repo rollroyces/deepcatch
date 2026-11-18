@@ -106,6 +106,32 @@ cohort size.
 
 ### Fixed
 
+- **Seven of the model card's links led nowhere.** `MODEL.md` names the
+  documents it points at — `docs/PRETRAINING.md`, `docs/PRETRAIN_BUG.md`,
+  `docs/CROSS_STUDY_BENCHMARK.md`, `docs/FUSION_ISOTONIC.md`,
+  `docs/SENS_AT_SPEC_ABLATION.md`, `docs/SPARSE_AWARE_ABLATION.md`,
+  `docs/HARMONIZATION.md` — but the link *targets* were the bare file names,
+  which resolve to the repository root, where those files do not live. Every
+  one of them was written correctly in the link text and incorrectly in the
+  target, which is why the source read fine. The model card is what a
+  reviewer opens before the paper, and in a repository whose argument is
+  that the evidence can be checked, its links are the argument. `wiki/Home.md`
+  had the same defect in the other direction: a licence badge pointing at
+  `LICENSE`, which is the repository's file, not a wiki page. Both are fixed,
+  and `test/test_internal_doc_links_resolve.py` now checks every relative
+  link in every tracked markdown file — resolving a wiki page the way the
+  wiki resolves it, and skipping a link that is an example inside a code
+  block.
+- **The Docker instruction replaced the published artifacts.** The README
+  mounted the repository's own `results/` directory into the container,
+  whose entry point runs the validation suite and writes its output there:
+  following the instruction overwrote the artifacts the repository cites.
+  The mount now points at a directory of the reader's own, and a guard
+  checks that no documented command bind-mounts a tracked directory of this
+  repository. Adding the two guards moved the suite from 926 to 930 tests,
+  so the documents that quote the count were updated together and the
+  submission PDF and the arXiv bundle were rebuilt.
+
 - **The arXiv source archive was stale, and nothing would have said so.**
   `dist/deepcatch_v2_3_0.tar.gz` is a build product, not a tracked file, so
   nothing kept it honest: the copy on this machine still carried a manuscript
