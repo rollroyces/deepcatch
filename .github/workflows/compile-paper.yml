@@ -16,6 +16,17 @@ on:
       - 'scripts/make_arxiv_bundle.py'
   workflow_dispatch:
 
+# One paper build at a time per branch, and the newer one wins.
+#
+# Two paper builds at once are not two independent jobs: the TeX Live
+# install in the first one holds the apt lock, and the second one waits
+# behind it for tens of minutes. A superseded commit's PDF is not worth
+# waiting for -- the PDF that matters is the one built from the commit
+# that is still the head.
+concurrency:
+  group: compile-paper-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   compile:
     runs-on: ubuntu-latest
