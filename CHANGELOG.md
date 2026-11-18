@@ -106,6 +106,19 @@ cohort size.
 
 ### Fixed
 
+- **The quickstart notebook did not run.** The README's second demo is a
+  recording of `notebooks/deepcatch_quickstart.ipynb`, and its histogram
+  cell wrote to a relative path -- `figures/fsi_hist.png` -- while no
+  directory of that name exists in the repository, so the cell failed
+  with a FileNotFoundError wherever the notebook was run from. The
+  committed outputs came from a machine where the directory happened to
+  exist, so nothing could see it: the notebook is not a test file, and no
+  test ran it. The cell now writes to a scratch directory (never into the
+  repository), and `test/test_quickstart_notebook_runs.py` executes every
+  computing cell of the notebook with the working directory the notebook
+  assumes, so the demo cannot rot again unnoticed. Red-green verified:
+  with the old path restored, the test fails on cell 5 with exactly the
+  FileNotFoundError a reader would have seen.
 - **The guide's table of API response fields was checked against nothing.**
   The user guide tells a reader what `POST /predict` returns --
   `classical.mds_simpson`, `neural.probability`, `explanation.top_motifs`
