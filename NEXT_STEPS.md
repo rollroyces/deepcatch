@@ -1,7 +1,7 @@
 # DeepCatch — Next Steps: From Research Simulation to Clinical Validation
 
 **Status (2026-11-16):** v2.3.0 is on `main` and the CI is green
-(950 tests, core + deep-learning + paper PDF + docs site). The P0 fixes
+(951 tests, core + deep-learning + paper PDF + docs site). The P0 fixes
 below were merged in August; section 1 (the Jiang nested CV) is still
 open and still blocked on one file. What is left before anything else is
 the preprint, and it is ready — section 0 is now that, not a branch push.

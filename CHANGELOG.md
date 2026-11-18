@@ -106,6 +106,14 @@ cohort size.
 
 ### Fixed
 
+- **The LaTeX manuscript gave a paper the wrong pages.** Its inline
+  bibliography gave the Jiang 2020 end-motif paper the pages "692-681" --
+  reversed, and not the published range; the methods manuscript's
+  bibliography file had the correct "664-673". Two manuscripts, two
+  versions of the same paper. Checked against the DOI registry, the other
+  eleven entries agree with the registry. The citation guard now compares
+  the two bibliographies for every work they share, so a page range (or a
+  volume, or an article number) cannot drift apart again.
 - **The methods manuscript cited numbered references and listed none.** The
   numbers it used were also inconsistent with each other: FinaleMe was
   `[8]` in one sentence and `[11]` in four others, and the held-out
