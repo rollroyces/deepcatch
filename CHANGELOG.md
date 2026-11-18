@@ -106,6 +106,14 @@ cohort size.
 
 ### Fixed
 
+- **Two paper builds at once are not two independent jobs.** The TeX Live
+  install in the paper workflow holds the apt lock, so a second build waits
+  behind the first for tens of minutes -- one run sat in "Install LaTeX"
+  for 45 minutes while the next one finished that step in two seconds,
+  because by then the packages were installed. The workflow now runs one
+  paper build per branch and the newer commit's build cancels the
+  superseded one: the PDF that matters is the one built from the commit
+  that is still the head.
 - **The public docs site's quickstart could not be run.** The site (GitHub
   Pages — the first thing a reader sees) promised "256 tests, all pass" for
   a suite that collects 934, and its second command was
