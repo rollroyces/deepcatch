@@ -17,7 +17,7 @@ author's bioRxiv account and the Zenodo DOI.
 | `PAPER.md` | The earlier panel-only manuscript, kept for reference | superseded by `paper.tex` |
 | `deepcatch_final.tex` | Deprecated v1.0 draft (April 2026), different title and scope | ✗ do not use |
 | `supplementary.tex` | The **deprecated v1.0 draft's** supplementary (the multi-modal product framing: CTC/miRNA detectors, contrastive variant calling, MAML, longitudinal CET monitoring). It describes figures S1–S10 and tables S1–S5 that the current manuscript does not contain, and it ships no image files. | ✗ do not upload with `paper.tex` |
-| `references_final.bib` | Bibliography for `paper.tex` | ✓ |
+| `references_final.bib` | BibTeX file from the Bioinformatics-targeted version of the manuscript. The current manuscript carries its references inline, so this file is not its bibliography and nothing in the repository builds from it | reference only |
 
 ## What the preprint now reports
 
@@ -60,7 +60,7 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 
 - [x] PDF compiles cleanly under tectonic and pdfTeX
 - [x] Both figures embedded and rendered from the committed artifacts
-- [x] All `\cite{}` keys resolve against `references_final.bib`
+- [x] All `\cite{}` keys in `paper.tex` resolve against the manuscript's own inline bibliography
 - [x] Abstract within bioRxiv's character limit
 - [x] Submission metadata in `BIORXIV_SUBMISSION.md`
 - [x] ORCID registered (`0009-0008-9113-769X`) and present in `CITATION.cff`

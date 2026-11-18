@@ -24,7 +24,7 @@ contribution is agreed (see `TEAM.md` §3).
 
 **Background.** Cell-free DNA (cfDNA) fragmentomics — the joint analysis of fragment length, end-motif, copy-number, and coverage profiles from plasma sequencing — is a promising substrate for non-invasive multi-cancer detection. Published fragmentomics methods (DELFI, Galleri, FinaleMe) report compelling per-cancer discrimination, but their training data and validation cohorts are largely proprietary, and independent replication on harmonized open data is scarce.
 
-**Methods.** DeepCatch is an open-source software framework that turns public cfDNA resources (FinaleDB, GDC TCGA, FLARE/GSE317007) into reproducible fragmentomics experiments. The framework combines (i) a six-modality feature schema (5-channel DELFI, 4-mer end motifs, fragment size, coverage/CNV, serology, tissue-of-origin); (ii) a multi-modal fusion encoder with masked-modality self-supervised pre-training and cross-attention fusion; (iii) panel-based tumor-informed detection when a prior cohort is available; and (iv) a validation protocol built on 5-seed × 5-fold GroupKFold with shuffled-label and true-confound controls. The implementation is MIT-licensed, ships with 945 regression tests, and exposes every intermediate artifact (cohort matrices, per-seed AUC arrays, ablation JSONs) to the reader.
+**Methods.** DeepCatch is an open-source software framework that turns public cfDNA resources (FinaleDB, GDC TCGA, FLARE/GSE317007) into reproducible fragmentomics experiments. The framework combines (i) a six-modality feature schema (5-channel DELFI, 4-mer end motifs, fragment size, coverage/CNV, serology, tissue-of-origin); (ii) a multi-modal fusion encoder with masked-modality self-supervised pre-training and cross-attention fusion; (iii) panel-based tumor-informed detection when a prior cohort is available; and (iv) a validation protocol built on 5-seed × 5-fold GroupKFold with shuffled-label and true-confound controls. The implementation is MIT-licensed, ships with 950 regression tests, and exposes every intermediate artifact (cohort matrices, per-seed AUC arrays, ablation JSONs) to the reader.
 
 **Results.** On the paired 20-patient TCGA-LUAD synthetic-plasma cohort at 0.1% ctDNA, the foundation encoder honestly achieves AUC ≈ 0.56 (n=20 seeds, per-patient GroupKFold) — below the sklearn LR baseline (0.90) on the same channels, which is the expected outcome on this paired design and is itself a finding worth reporting. On the cross-study FinaleDB publications 6 + 8 (n=627 after missing-artifact filter), a 5-channel DELFI LR with per-study z-score harmonization + per-bin GC bias correction (default ON, see `docs/HARMONIZATION.md §3`) reaches pooled OOF AUC **0.9684 ± 0.0027** (with GC correction; legacy without GC: 0.9770 ± 0.0013 — the GC-corrected version is the more honest cancer signal per the per-publication coherence check), sens@95%=0.865, sens@98%=0.796, sens@99%=0.700. Per-cancer OvR (5-seed ± std) for the top-5 cancers (with GC correction): OV 0.989 ± 0.007, LUAD 0.981 ± 0.003, BRCA 0.973 ± 0.002, PAAD 0.967 ± 0.004, HCC_J 0.704 ± 0.014 (single-cohort reading). A **true-confound control** (cancer = 100% Jiang, healthy = 100% Cristiano) collapses to AUC 0.48 with harmonization vs 0.999 without — proving the pooled 0.968 (and the legacy 0.977) is a cancer signal, not a study batch. Three honest null/negative ablations (focal-BCE loss, sparse-aware projection, harmonization) are documented, and every benchmark number above is reproduced bit-for-bit by the committed code (seeded PCA, `test/test_benchmark_reproducibility.py`).
 
@@ -45,9 +45,9 @@ This paper is about the second class. Fragmentomics-based multi-cancer detection
 - **DELFI (Cristiano et al. 2019 [7])** — 5-channel arm-level DELFI profile (short/medium/long fragment counts, coverage, per-arm copy number) at ~5 Mb resolution. The original paper trained a per-cancer gradient-boosted classifier on 232 plasma samples (HCC, breast, colorectal, lung, ovarian, pancreatic, gastric, bile-duct vs healthy) and reported AUCs ranging 0.86–0.97 per cancer.
 - **CAPP-Seq (Newman et al. 2014 [5], 2016 update [6])** — tumor-informed targeted panel with a Fisher-method aggregation across loci; underpins the Stanford clinical MRD workflow.
 - **CancerSEEK / Galleri (Klein et al. 2018 [9]; Liu et al. 2020 [10])** — combined mutation + protein biomarker (CancerSEEK); methylation-based multi-cancer detection (Galleri).
-- **FinaleMe (Liu et al. 2018 [11])** — fragment-end motif model using 4-mer end-sequence preferences.
-- **Jiang et al. 2020 [12]** — HCC-specific fragmentomics in a 222-patient cohort, one of the largest single-cancer fragmentomics datasets with public fragment files.
-- **FinaleDB / Finaletoolkit [13]** — public archive of fragmentomics datasets with harmonized `*.frag.tsv.bgz` files; the primary data source for the present work.
+- **FinaleMe (Liu et al. 2018 [8])** — fragment-end motif model using 4-mer end-sequence preferences.
+- **Jiang et al. 2020 [11]** — HCC-specific fragmentomics in a 222-patient cohort, one of the largest single-cancer fragmentomics datasets with public fragment files.
+- **FinaleDB / Finaletoolkit [12, 13]** — public archive of fragmentomics datasets with harmonized `*.frag.tsv.bgz` files; the primary data source for the present work.
 
 ### 1.3 Gap
 
@@ -95,12 +95,12 @@ Every reported number follows one protocol:
 1. **5-seed × 5-fold per-patient GroupKFold.** Seeds {0, 1, 2, 3, 4} (or {0..19} for higher-power ablations). Both arms of every paired patient stay in the same fold. This is the protocol audit-2 P0-A (commit `6231fcb`) installed to replace the leaky `StratifiedKFold` that originally inflated the foundation AUC to 0.94.
 2. **Shuffled-label control.** Labels are permuted independently in the pos-half and neg-half to break the pair structure. AUC against the shuffled labels is reported as `shuffled_foundation_auc`. The honest diagnostic on paired data is the *delta* between real-label AUC and shuffled-label AUC, not the absolute AUC.
 3. **True-confound control.** For cross-study experiments, per-study batch effects are injected on top of the synthetic signal and the per-study AUC is reported alongside the pooled AUC. A diagnostic (`delta_auc_pooled_minus_per_study_mean`) quantifies the gap. See `docs/HARMONIZATION.md`.
-4. **Per-cancer sensitivity at fixed specificity with DeLong CIs.** Per-cancer sensitivity at 95% and 99% specificity is computed by pooling OOF predictions across seeds, fixing the threshold at the empirical 95th / 99th percentile of the healthy controls, and applying the DeLong method to estimate the AUC confidence interval. See `results/per_cancer_sens_at_spec/`.
+4. **Per-cancer sensitivity at fixed specificity with DeLong CIs.** Per-cancer sensitivity at 95% and 99% specificity is computed by pooling OOF predictions across seeds, fixing the threshold at the empirical 95th / 99th percentile of the healthy controls, and applying the DeLong method [14] to estimate the AUC confidence interval. See `results/per_cancer_sens_at_spec/`.
 5. **Bit-identical paired-design sanity.** For every ablation, the non-ablation metrics (`panel_only_aucs`, `frag_only_aucs`, `lr_baseline_aucs`, `naive_avg_aucs`) are verified bit-identical to <1e-9 across the two JSONs, proving the only difference is the ablated knob.
 
 ### 2.5 Implementation and tests
 
-The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 945 tests run across the two CI jobs (759 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
+The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 950 tests run across the two CI jobs (764 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
 
 **Reproducibility is enforced, not assumed.** Every benchmark number in §3.2–§3.5 is a function of the committed code: the PCA inside each CV fold is seeded with the fold-split seed, and `test/test_benchmark_reproducibility.py` enforces two properties — an AST guard fails the build if any `PCA(...)` call in `scripts/` or `src/` is fitted without a `random_state`, and a behavioural test fits the benchmark twice and requires the two runs to agree exactly (with a further check that a different seed still gives a different answer, so the seed is not simply pinning everything). The guard exists because the opposite was true for an earlier revision: with an unseeded PCA, sklearn's randomised solver made every re-run of the benchmark drift (one publication's AUC moved 0.9789 → 0.9821 between two runs of the same command), which would have made the artifacts unverifiable. The numbers in this manuscript are from the seeded run; the artifacts, the narrative documents and the manuscript now come from a single command.
 
@@ -159,7 +159,7 @@ The re-computed LR baseline (0.9042, 3 seeds) and equal-weight average (0.9150) 
 
 ### 3.2 Cross-study AUC on FinaleDB publications 6 + 8 (n=627)
 
-The cross-study pool is the union of FinaleDB publication 6 (Jiang 2015 [16], n=121: 89 HCC + 32 healthy) and publication 8 (Cristiano 2019 [7], n=506: 274 cancer + 232 healthy) after the missing-artifact filter (31 samples dropped: 31/691 = 4.7%). Features are the canonical 5-channel DELFI profile (5 Mb ratio + 5 Mb coverage + 100 kb ratio + 100 kb counts + FSD-196, 63,246-dim), with the 4th channel being the GC-bias-corrected 100kb-coverage (`c100_gc_corrected`) per `scripts/gc_correction.py` (default ON; legacy `cn = c100 / median(c100)` retained under `--no-gc-correction` for backward compat). The pipeline is a 5-seed × 5-fold StratifiedKFold, LR(max_iter=2000) on PCA(200) of a per-study z-score StandardScaler fit on the **train** fold only. Source: `results/cross_study_finallydb_gc_corrected.json` (GC-OFF legacy: `results/cross_study_finallydb.json`; companion narrative `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`).
+The cross-study pool is the union of FinaleDB publication 6 (Jiang 2015 [15], n=121: 89 HCC + 32 healthy) and publication 8 (Cristiano 2019 [7], n=506: 274 cancer + 232 healthy) after the missing-artifact filter (31 samples dropped: 31/691 = 4.7%). Features are the canonical 5-channel DELFI profile (5 Mb ratio + 5 Mb coverage + 100 kb ratio + 100 kb counts + FSD-196, 63,246-dim), with the 4th channel being the GC-bias-corrected 100kb-coverage (`c100_gc_corrected`) per `scripts/gc_correction.py` (default ON; legacy `cn = c100 / median(c100)` retained under `--no-gc-correction` for backward compat). The pipeline is a 5-seed × 5-fold StratifiedKFold, LR(max_iter=2000) on PCA(200) of a per-study z-score StandardScaler fit on the **train** fold only. Source: `results/cross_study_finallydb_gc_corrected.json` (GC-OFF legacy: `results/cross_study_finallydb.json`; companion narrative `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`).
 
 || Cohort | n | Cancer | Healthy | AUC (5-seed mean ± std) |
 ||---|---:|---:|---:|---|
@@ -208,7 +208,7 @@ The pooled 0.9684 of §3.2 therefore **does not survive a publication holdout in
 
 #### 3.2.2 External validation on held-out public publications
 
-The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 and 8. This subsection evaluates on publications that are **never used for training, feature extraction statistics, or hyper-parameter selection**: publication 1 (Snyder 2016 [18], Cell), publication 7 (Sun 2019 [19], Genome Research) and publication 9 (Adalsteinsson 2017 [20], Nat Commun). The samples are fetched from the public FinaleDB REST API and the public S3 fragment objects by `scripts/fetch_external_cohort.py` — no IRB, no data-use agreement — and the 5-channel features are extracted by the self-contained `src/fragmentomics/finale_features.py`. Source: `scripts/external_validation_finaledb.py`; artifact `results/external_validation_finaledb.json`; narrative `docs/EXTERNAL_VALIDATION.md`.
+The pooled cohort of §3.2 and the holdout of §3.2.1 both use publications 6 and 8. This subsection evaluates on publications that are **never used for training, feature extraction statistics, or hyper-parameter selection**: publication 1 (Snyder 2016 [16], Cell), publication 7 (Sun 2019 [17], Genome Research) and publication 9 (Adalsteinsson 2017 [18], Nat Commun). The samples are fetched from the public FinaleDB REST API and the public S3 fragment objects by `scripts/fetch_external_cohort.py` — no IRB, no data-use agreement — and the 5-channel features are extracted by the self-contained `src/fragmentomics/finale_features.py`. Source: `scripts/external_validation_finaledb.py`; artifact `results/external_validation_finaledb.json`; narrative `docs/EXTERNAL_VALIDATION.md`.
 
 | Publication | Assay | n (ca/non-ca) | External AUC [DeLong 95% CI] |
 |---|---|---|---|
@@ -273,7 +273,7 @@ This is reported as a **null**. The methylation *extraction* path runs on real p
 
 ### 3.3 Per-cancer sensitivity at fixed specificity (with DeLong CIs)
 
-Per-cancer OvR is computed with **per-study z-score harmonization inside each CV fold** so the same offset that drove §3.2's pooled AUC is also removed in the per-cancer fits. Top-5 cancers by count, scored against ALL healthy samples (the cross-study generalization view). For sens@spec 95% CIs the standalone artifact uses **DeLong placement-value** CIs (`src/per_cancer_sens_at_spec.py`; Sun & Xu 2014 form); for the AUC variance we use the 5-seed ± std across the StratifiedKFold seeds. Every row below comes from the **GC-corrected** run (the headline pipeline): `results/cross_study_finallydb_gc_corrected.json:per_cancer` (5-seed point estimates + bootstrap 95% CIs on sens@spec) and `results/per_cancer_sens_at_spec.json` (DeLong CIs + PPV@prev, same pipeline).
+Per-cancer OvR is computed with **per-study z-score harmonization inside each CV fold** so the same offset that drove §3.2's pooled AUC is also removed in the per-cancer fits. Top-5 cancers by count, scored against ALL healthy samples (the cross-study generalization view). For sens@spec 95% CIs the standalone artifact uses **DeLong placement-value** CIs (`src/per_cancer_sens_at_spec.py`; Sun & Xu 2014 form [19]); for the AUC variance we use the 5-seed ± std across the StratifiedKFold seeds. Every row below comes from the **GC-corrected** run (the headline pipeline): `results/cross_study_finallydb_gc_corrected.json:per_cancer` (5-seed point estimates + bootstrap 95% CIs on sens@spec) and `results/per_cancer_sens_at_spec.json` (DeLong CIs + PPV@prev, same pipeline).
 
 | Cancer | n_cancer | n_total | AUC mean ± std (5-seed) | Sens@95% | Sens@98% | Sens@99% [bootstrap 95% CI] |
 |---|---:|---:|---|---:|---:|---|
@@ -322,9 +322,9 @@ DeepCatch reports a **0.968 pooled OOF AUC** on open data (FinaleDB publications
 |---|---|---:|---|---|
 | DELFI (Cristiano 2019 [7]) | discovery plasma | 232 (HCC, breast, colorectal, lung, ovarian, pancreatic, gastric, bile-duct) | AUC 0.94 (HCC-vs-healthy); per-cancer 0.86–0.97 | Nature 2019 |
 | CancerSEEK (Cohen/Klein 2018 [9]) | prospectively-collected plasma | 1,005 (8 cancers + healthy) | sens 0.70 @ spec 0.99 (median across 8 cancers); OvR AUC 0.91 | Science 2018 |
-| Galleri (Klein 2021 [10]) | independent validation plasma | 2,823 (50+ cancer signals vs healthy) | OvR AUC 0.92 across all cancer types | Annals of Oncology 2020 / 2021 PATHFINDER |
+| Galleri (Liu et al. 2020 [10]) | independent validation plasma | 2,823 (50+ cancer signals vs healthy) | OvR AUC 0.92 across all cancer types | Annals of Oncology 2020 / 2021 PATHFINDER |
 | CAPP-Seq (Newman 2014 [5] / 2016 [6]) | tumor-informed MRD, NSCLC pilot + integrated-error-suppression update | not pooled (per-cancer n's) | first prototype AUC ~0.86 in stage II–IV NSCLC; iDES-enhanced AUC >0.99 in stage II–IV | Nat Med 2014; Nat Biotechnol 2016 |
-| FinaleMe (Liu 2018 [11]) | plasma + reference methylome | 159 (training + held-out) | end-motif OvR AUC 0.91 | bioRxiv 2018 (preprint) |
+| FinaleMe (Liu 2018 [8]) | plasma + reference methylome | 159 (training + held-out) | end-motif OvR AUC 0.91 | bioRxiv 2018 (preprint) |
 | **DeepCatch §3.2 (this work, open data)** | FinaleDB open data, internal CV | **627** (Jiang+Cristiano) | pooled **AUC 0.968 ± 0.003**, sens@95=0.865, sens@98=0.796, sens@99=0.700 | `results/cross_study_finallydb_gc_corrected.json` |
 
 **Positioning (honest).** The published numbers above were generated by independent labs on larger, often proprietary, clinical-grade plasma cohorts. DeepCatch's §3.2 number is a **pooled open-data internal-CV** baseline on the same 5-channel DELFI feature (Cristiano-style) that DELFI itself uses. Pooled internal-CV at this scale is competitive in the AUC band of the published numbers (0.86–0.94 discovery-cohort range) — but ours is **not** an external validation, **not** a clinical operating point, and **not** an architectural contribution. The substantive contribution of DeepCatch is the reproducible engineering substrate that lets a researcher reproduce or extend these numbers on open data, not the headline AUC.
@@ -362,14 +362,14 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 3. **No real plasma in downstream validation.** The 0.1% ctDNA numbers are from synthetic reads. Real plasma has additional noise sources (PCR bias, mapping ambiguity, contamination) that the simulation does not capture.
 4. **FinaleDB access is partial, and one verdict in the repo was wrong.** The API is reachable again (it was down between 2026-09 and 2026-11-15), but S3 access is per-object: the `*.frag.tsv.bgz`, insert-size and `*.bigWig` objects return 200 while `*.bedGraph.bgz` returns 403. A single-key probe had previously reported the whole corpus as private; the multi-key probe in `scripts/fetch_external_cohort.py` is what corrected it.
 5. **Encoder size.** PRODUCTION_CONFIG is 543,872 parameters (embed_dim=128, 4 layers, 4 heads). State-of-the-art fragmentomics encoders are 10–100× larger. The present model fits on CPU in <5 seconds; clinical-grade models would require GPU training.
-6. **Two-channel only.** The pretraining data covers Cristiano 2019 + Jiang 2015 (publications 6 + 8). FinaleMe (Liu 2018 [11]) and the methylation-based MCED publications are not yet in the cohort.
+6. **Two-channel only.** The pretraining data covers Cristiano 2019 + Jiang 2015 (publications 6 + 8). FinaleMe (Liu 2018 [8]) and the methylation-based MCED publications are not yet in the cohort.
 7. **The methylation channel is not a feature on public libraries.** FinaleMe needs a deep, size-unselected MspI library to read methylation from the digestion pattern. The reachable FinaleDB libraries are trimmed at ~300 bp and deliver ~1.09 fragment observations per CpG, so the decoded methylome is a restatement of library depth (§3.2.4). The CRAG/Jiang chr22 BAMs on Zenodo 6914806 are 41x deeper and do carry the signature, but they are publication 6 — the training cohort — so they would give a feasibility test, not independent validation. No independent MspI cohort is currently reachable.
 
 ### 4.4 Future work
 
 - **Real-plasma paired cohort.** Requires IRB + collaborator with banked plasma + matched tumor sequencing. Estimated cost: $50K–$200K for a 50-patient pilot. Target: CCGA, TRACERx, or an in-house liquid-biopsy clinic.
 - **Cross-platform validation.** Apply the pretrained encoder to ONT / PacBio / single-cell cfDNA to test transfer. The 4-mer end-motif distribution should be platform-robust; the coverage/CNV channel may need per-platform recalibration.
-- **Methylation and fragment-end motifs.** The 256-channel 4-mer motif distribution (Liu 2018 [11]) is currently projected to 36 PCA components. A direct 256-channel input would test whether the PCA bottleneck costs signal.
+- **Methylation and fragment-end motifs.** The 256-channel 4-mer motif distribution (Liu 2018 [8]) is currently projected to 36 PCA components. A direct 256-channel input would test whether the PCA bottleneck costs signal.
 - **Larger pretraining cohort.** Scale from 200 → 2,000+ real FinaleDB samples once the API is restored. A 10× cohort with 50 epochs would push the encoder from "demonstration" to "useful."
 - **Independent replication.** A second lab, with its own implementation, running the same cohort through DeepCatch. The released artifacts (cohort matrices, per-seed AUC arrays, ablation JSONs) make this reproducible.
 
@@ -421,3 +421,74 @@ of GSE317007 and GSE185307.
 ---
 
 *Manuscript draft — 2026-09-23. Section 3 filled with the just-shipped cross-study and per-cancer numbers. See `paper/REPRODUCE.md` for one-command reproduction.*
+
+## 7. References
+
+1. Lo YMD, Corbetta N, Chamberlain PF, et al. Presence of fetal DNA in
+   maternal plasma and serum. *Lancet*. 1997;350:485–487.
+   doi:[10.1016/S0140-6736(97)02174-0](https://doi.org/10.1016/S0140-6736(97)02174-0)
+2. Wan JCM, Massie C, Garcia-Corbacho J, et al. Liquid biopsies come of age:
+   towards implementation of circulating tumour DNA. *Nat Rev Cancer*.
+   2017;17:223–238. doi:[10.1038/nrc.2017.7](https://doi.org/10.1038/nrc.2017.7)
+3. Heitzer E, Haque IS, Roberts CES, Speicher MR. Current and future
+   perspectives of liquid biopsies in genomics-driven oncology.
+   *Nat Rev Genet*. 2019;20:71–88.
+   doi:[10.1038/s41576-018-0071-5](https://doi.org/10.1038/s41576-018-0071-5)
+4. Ignatiadis M, Sledge GW, Jeffrey SS. Liquid biopsy enters the clinic —
+   implementation issues and future challenges. *Nat Rev Clin Oncol*.
+   2021;18:297–312.
+   doi:[10.1038/s41571-020-00457-x](https://doi.org/10.1038/s41571-020-00457-x)
+5. Newman AM, Bratman SV, To AT, et al. An ultrasensitive method for
+   quantitating circulating tumor DNA with broad patient coverage.
+   *Nat Med*. 2014;20:548–554.
+   doi:[10.1038/nm.3519](https://doi.org/10.1038/nm.3519)
+6. Newman AM, Lovejoy AF, Klass DM, et al. Integrated digital error
+   suppression for sensitive detection of circulating tumor DNA.
+   *Nat Biotechnol*. 2016;34:547–555.
+   doi:[10.1038/nbt.3520](https://doi.org/10.1038/nbt.3520)
+7. Cristiano S, Leal A, Phallen J, et al. Genome-wide cell-free DNA
+   fragmentation in patients with cancer. *Nature*. 2019;570:385–389.
+   doi:[10.1038/s41586-019-1272-6](https://doi.org/10.1038/s41586-019-1272-6)
+8. Liu X, Liu Z, Chen S, et al. Comprehensive DNA methylation analysis with a
+   scalable end-to-end workflow. *bioRxiv*. 2018.
+   doi:[10.1101/478222](https://doi.org/10.1101/478222)
+9. Klein JD, Cohen JD, Wang Y, et al. Detection and localization of
+   surgically resectable cancers with a multi-analyte blood test.
+   *Science*. 2018;359:926–930.
+   doi:[10.1126/science.aar3247](https://doi.org/10.1126/science.aar3247)
+10. Liu MC, Oxnard GR, Klein EA, et al. Sensitive and specific multi-cancer
+    detection and localization using methylation signatures in cell-free
+    DNA. *Ann Oncol*. 2020;31:745–759.
+    doi:[10.1016/j.annonc.2020.02.011](https://doi.org/10.1016/j.annonc.2020.02.011)
+11. Jiang P, Sun K, Peng W, et al. Plasma DNA end-motif profiling as a
+    fragmentomic marker in cancer, pregnancy, and transplantation.
+    *Cancer Discov*. 2020;10:664–673.
+    doi:[10.1158/2159-8290.CD-19-0622](https://doi.org/10.1158/2159-8290.CD-19-0622)
+12. EpiFluidLab. *FinaleDB*: a database of fragmentomics datasets. 2022.
+    <https://finaledb.epifluidlab.cchmc.org/>
+13. Straub J, Mathios D, Foda Z, et al. Finaletoolkit: an end-to-end
+    infrastructure for the analysis of cell-free DNA fragmentomics data.
+    *bioRxiv*. 2023. The identifier previously recorded for this preprint
+    does not resolve, so none is claimed here.
+14. DeLong ER, DeLong DM, Clarke-Pearson DL. Comparing the areas under two
+    or more correlated ROC curves: a nonparametric approach. *Biometrics*.
+    1988;44:837–845. doi:[10.2307/2531595](https://doi.org/10.2307/2531595)
+15. Jiang P, Chan KCA, Lo YMD. Lengthening and shortening of plasma DNA in
+    hepatocellular carcinoma patients. *PNAS*. 2015;112:E1317–E1325.
+    doi:[10.1073/pnas.1500076112](https://doi.org/10.1073/pnas.1500076112)
+16. Snyder MW, Kircher M, Hill AJ, Daza RM, Shendure J. Cell-free DNA
+    comprises an in vivo nucleosome footprint that informs its
+    tissues-of-origin. *Cell*. 2016;164:57–68.
+    doi:[10.1016/j.cell.2015.11.050](https://doi.org/10.1016/j.cell.2015.11.050)
+17. Sun K, Jiang P, Cheng SH, et al. Orientation-aware plasma cell-free DNA
+    fragmentation analysis in open chromatin regions informs tissue of
+    origin. *Genome Res*. 2019;29:418–427.
+    doi:[10.1101/gr.242719.118](https://doi.org/10.1101/gr.242719.118)
+18. Adalsteinsson VA, Ha G, Freeman SS, et al. Scalable whole-exome
+    sequencing of cell-free DNA reveals high concordance with metastatic
+    tumors. *Nat Commun*. 2017;8:1324.
+    doi:[10.1038/s41467-017-00965-y](https://doi.org/10.1038/s41467-017-00965-y)
+19. Sun X, Xu W. Fast implementation of DeLong's algorithm for comparing the
+    areas under correlated receiver operating characteristic curves.
+    *IEEE Signal Process Lett*. 2014;21:1389–1393.
+    doi:[10.1109/LSP.2014.2337313](https://doi.org/10.1109/LSP.2014.2337313)

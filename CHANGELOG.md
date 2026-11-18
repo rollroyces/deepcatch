@@ -106,6 +106,31 @@ cohort size.
 
 ### Fixed
 
+- **The methods manuscript cited numbered references and listed none.** The
+  numbers it used were also inconsistent with each other: FinaleMe was
+  `[8]` in one sentence and `[11]` in four others, and the held-out
+  publications were `[18]`, `[19]`, `[20]` against a bibliography file
+  that ordered them differently. A reader of a candidate PLOS or
+  Bioinformatics manuscript saw numbers pointing at nothing.
+  `paper/METHODS_PAPER.md` now carries a reference section, numbered by
+  first appearance, and every citation points at the right work (the
+  Galleri row also said "Klein 2021" for a paper by Liu and colleagues).
+  The works the manuscript cited but the bibliography file did not carry
+  were added to it.
+- **Three DOIs in the bibliography resolved to nothing.** Checked against
+  the DOI registry: the Heitzer review's identifier was unassigned (now
+  `10.1038/s41576-018-0071-5`), the Jiang 2020 entry named the PNAS paper
+  with an identifier that does not resolve (the manuscript describes the
+  Cancer Discovery paper -- the 222-patient cohort -- whose identifier
+  does), and the Finaletoolkit preprint's identifier could not be located
+  at all (its DOI is now dropped rather than kept as a link to nothing).
+  `test/test_manuscript_citations_resolve.py` checks that every numbered
+  citation resolves to a listed reference, that every listed reference is
+  cited, that the LaTeX manuscript's `\\cite{}` keys resolve against its
+  own inline bibliography, and that the compiled PDF carries no `[?]`
+  marker. `paper/README.md` no longer claims the orphan
+  `references_final.bib` is the manuscript's bibliography, and the upload
+  checklist no longer tells the author to upload it.
 - **A release could cite its DOI in one place and not in another.**
   `ZENODO_SETUP.md` says the minted DOI goes into four places: the
   citation metadata, the model card's BibTeX entry, the manuscript's
