@@ -68,7 +68,7 @@ Three real GUI demos recorded with browser automation — every frame is a real 
 
 ### 2. Notebook analysis with inline plots (~24s)
 
-The new `notebooks/deepcatch_quickstart.ipynb` runs against the installed `deepcatch.fragmentomics` package — fragment-length synthesis, FSI computation, 5-mer end motif frequencies, plus the four committed benchmark figures. Recorded live in JupyterLab on `127.0.0.1:8889`.
+The new `notebooks/deepcatch_quickstart.ipynb` runs against the repository's own `src/fragmentomics` package (it puts `../src` on the path itself) — fragment-length synthesis, FSI computation, 5-mer end motif frequencies, plus the four committed benchmark figures. A test executes the notebook's cells, so it cannot quietly stop working. Recorded live in JupyterLab on `127.0.0.1:8889`.
 
 [![Watch the Jupyter notebook walkthrough (~24s)](docs/demo/notebook_demo_thumb.png)](docs/demo/notebook_demo.webm)
 
