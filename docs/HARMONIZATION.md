@@ -109,9 +109,10 @@ and per-study AUC) and this file.
   with the cancer label.
 - n=160 (80 patients × 2) is small. Per-study n=20 keeps each fold
   small enough that train-only z-score fitting is still well-defined.
-- For the REAL cross-study pooling benchmark, use `scripts/run_cross_study.py`
-  against FinaleDB data (Cristiano 2019 + Jiang 2015). That pipeline
-  measures the same harmonization recipe on real data.
+- For the REAL cross-study pooling benchmark, use
+  `scripts/cross_study_finallydb.py` against FinaleDB data (Cristiano 2019 +
+  Jiang 2015). That pipeline measures the same harmonization recipe on real
+  data.
 
 ---
 
