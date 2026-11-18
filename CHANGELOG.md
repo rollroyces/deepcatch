@@ -106,6 +106,25 @@ cohort size.
 
 ### Fixed
 
+- **A release could cite its DOI in one place and not in another.**
+  `ZENODO_SETUP.md` says the minted DOI goes into four places: the
+  citation metadata, the model card's BibTeX entry, the manuscript's
+  data and code availability section and the methods manuscript's
+  availability section. Four files, one hand -- and nothing checked that
+  they agreed. A half-done release is worse than no release: a reader
+  who follows the citation metadata and a reader who follows the
+  manuscript get different answers, and one of them is a link to
+  nothing.
+  `test/test_release_doi_is_consistent.py` now requires a declared DOI
+  to appear in all four, forbids a placeholder DOI in any of them (the
+  repository once carried
+  `10.5281/zenodo.to-be-assigned-on-first-release`), and flags a DOI
+  that appears in an availability statement but in neither the citation
+  metadata nor the two public archives this repository cites. Red-green
+  verified for all three cases -- and the red-green check is what caught
+  a bug in the guard itself: its DOI pattern had a stray bracket, so it
+  never matched anything. A guard that cannot fire is worse than no
+  guard, because it looks like a check.
 - **The quickstart notebook did not run.** The README's second demo is a
   recording of `notebooks/deepcatch_quickstart.ipynb`, and its histogram
   cell wrote to a relative path -- `figures/fsi_hist.png` -- while no
