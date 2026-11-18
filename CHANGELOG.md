@@ -106,6 +106,21 @@ cohort size.
 
 ### Fixed
 
+- **Three DOIs in the repository resolved to nothing.** A DOI that does not
+  resolve is a dead link in a document a reader follows, and two of them
+  looked exactly like working DOIs: the Mathios 2021 lung-cancer
+  fragmentome paper had two digits transposed (`...-21394-w` for
+  `...-24994-w`), the JOSS manuscript still quoted the PNAS paper whose
+  identifier is unregistered (the other manuscripts describe the Cancer
+  Discovery paper, whose identifier resolves), and the Finaletoolkit
+  preprint's identifier could not be located. The JOSS manuscript also gave
+  the Newman 2014 paper another paper's pages.
+  `scripts/check_dois.py` now extracts every DOI from the tracked tree and
+  asks the registry that issued it -- Crossref for the journal literature,
+  DataCite for the Zenodo records, because a Zenodo DOI is not in Crossref
+  -- and `test/test_dois_in_the_tree_are_registered.py` runs it, skipping
+  when a registry is unreachable rather than failing. All 42 identifiers in
+  the tree resolve.
 - **The LaTeX manuscript gave a paper the wrong pages.** Its inline
   bibliography gave the Jiang 2020 end-motif paper the pages "692-681" --
   reversed, and not the published range; the methods manuscript's

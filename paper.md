@@ -141,7 +141,7 @@ Reproducibility is enforced rather than asserted:
   manuscript directly from the committed JSON, so the prose and the
   artifacts cannot drift apart.
 
-The suite is 951 tests (`pytest src test -q`), split across two CI jobs
+The suite is 952 tests (`pytest src test -q`), split across two CI jobs
 so that the core fragmentomics path stays installable without a deep
 learning stack.
 
@@ -195,11 +195,12 @@ GSE185307.
   hepatocellular carcinoma patients. *PNAS*. 2015;112(11):E1317–E1325.
   doi:[10.1073/pnas.1500076112](https://doi.org/10.1073/pnas.1500076112)
 - Jiang P, Sun K, Peng W, et al. Plasma DNA end-motif profiling as a
-  fragmentomic marker for cancer detection. *PNAS*. 2020;117(1):387–396.
-  doi:[10.1073/pnas.1915222117](https://doi.org/10.1073/pnas.1915222117)
+  fragmentomic marker in cancer, pregnancy, and transplantation.
+  *Cancer Discovery*. 2020;10(5):664–673.
+  doi:[10.1158/2159-8290.CD-19-0622](https://doi.org/10.1158/2159-8290.CD-19-0622)
 - Newman AM, Bratman SV, To AT, et al. An ultrasensitive method for
   quantitating circulating tumor DNA with broad patient coverage.
-  *Nature Medicine*. 2014;20(8):871–876.
+  *Nature Medicine*. 2014;20(4):548–554.
   doi:[10.1038/nm.3519](https://doi.org/10.1038/nm.3519)
 - Newman AM, Lovejoy AF, Ahrendt S, et al. Integrated digital error
   suppression for sensitive detection of circulating tumor DNA.
@@ -214,8 +215,8 @@ GSE185307.
   2018. doi:[10.1101/478222](https://doi.org/10.1101/478222)
 - Straub J, Mathios D, Foda Z, et al. Finaletoolkit: an end-to-end
   infrastructure for the analysis of cell-free DNA fragmentomics data.
-  *bioRxiv*. 2023.
-  doi:[10.1101/2023.10.13.23296542](https://doi.org/10.1101/2023.10.13.23296542)
+  *bioRxiv*. 2023. The identifier previously recorded for this preprint
+  does not resolve, so none is claimed here.
 - DeLong ER, DeLong DM, Clarke-Pearson DL. Comparing the areas under two
   or more correlated ROC curves: a nonparametric approach. *Biometrics*.
   1988;44(3):837–845.

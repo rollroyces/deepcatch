@@ -85,7 +85,7 @@ LANDMARK_STUDIES = {
     "Mathios_LUCAS_2021": {
         "citation": "Mathios D, Johansen JS, Cristiano S, et al. Detection and characterization "
                      "of lung cancer using cell-free DNA fragmentomes. Nat Commun 12, 5060 (2021).",
-        "doi": "10.1038/s41467-021-21394-w",
+        "doi": "10.1038/s41467-021-24994-w",
         "design": "Case-control (multi-center: LUCAS cohort + validation)",
         "n_total": "365 (94 lung cancer, 51 other cancer, 220 non-cancer)",
         "cancer_types": ["lung", "other"],

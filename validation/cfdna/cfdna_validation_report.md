@@ -269,7 +269,7 @@ Projected specificity: >99.5% (two orthogonal assays)
 
 5. **Liu MC, Oxnard GR, Klein EA, et al.** Sensitive and specific multi-cancer detection and localization using methylation signatures in cell-free DNA. *Ann Oncol* 31, 745-759 (2020). DOI: 10.1016/j.annonc.2020.02.011
 
-6. **Mathios D, Johansen JS, Cristiano S, et al.** Detection and characterization of lung cancer using cell-free DNA fragmentomes. *Nat Commun* 12, 5060 (2021). DOI: 10.1038/s41467-021-21394-w
+6. **Mathios D, Johansen JS, Cristiano S, et al.** Detection and characterization of lung cancer using cell-free DNA fragmentomes. *Nat Commun* 12, 5060 (2021). DOI: 10.1038/s41467-021-24994-w
 
 7. **Bettegowda C, Sausen M, Leary RJ, et al.** Detection of circulating tumor DNA in early- and late-stage human malignancies. *Sci Transl Med* 6, 224ra24 (2014). DOI: 10.1126/scitranslmed.3007094
 
