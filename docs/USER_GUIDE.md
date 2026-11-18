@@ -35,7 +35,7 @@
 | **GPU** | None required | CUDA-capable GPU (for GNN fusion, 8GB+ VRAM) |
 | **CPU** | 4 cores | 16+ cores |
 
-**For laptop users:** The full pipeline runs on a MacBook Pro (M1/M2, 16GB) in ~20-30 minutes. The `--demo` mode runs in under 2 minutes on any machine.
+**For laptop users:** the full validation suite runs in **about 8 minutes on an Apple M4** (measured end to end on 2026-11-19, including the TCGA step); expect longer on an older machine. `bash RUN_ALL.sh --quick` runs the same suite at reduced scale in about 3 minutes.
 
 ### 1.2 Clone + Install + Run (3 Commands)
 

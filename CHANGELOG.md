@@ -106,6 +106,23 @@ cohort size.
 
 ### Fixed
 
+- **The top-level runner's own artifact was four months stale.**
+  `results/final_cross_validated_results.json` was written on 2026-04-30 by
+  a quick-mode run of the script as it stood then, so running the
+  documented command today produced a different set of numbers from the
+  artifact the repository carries. The artifact is now the one the current
+  code produces (a full-mode run, 5 seeds), and its own metadata says so.
+  Nothing quoted it -- the paper's figures come from the cross-study
+  artifacts that `paper/REPRODUCE.sh` regenerates -- but a reader who ran
+  `bash RUN_ALL.sh` and compared the output with the committed file had no
+  way to tell which was which.
+- **The guide's runtime claim was stale and named a flag that does not
+  exist.** It said the full pipeline takes "~20-30 minutes" on a MacBook
+  Pro and that "the `--demo` mode runs in under 2 minutes" -- `--demo` is
+  not a flag the runner accepts (it now errors on an unknown flag), and
+  the measured full run takes 7.7 minutes on an Apple M4, with the
+  reduced-scale run at 3.2 minutes. The sentence now gives the measured
+  number, the machine and the date.
 - **Three DOIs in the repository resolved to nothing.** A DOI that does not
   resolve is a dead link in a document a reader follows, and two of them
   looked exactly like working DOIs: the Mathios 2021 lung-cancer
