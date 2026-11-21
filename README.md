@@ -383,6 +383,8 @@ env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
 # → 761 passed, 19 skipped, 13 deselected (slow real-data smoke)
+#   Without torch -- the runtime + dev install -- the deep-learning
+#   module is skipped instead: 685 passed, 54 skipped, 2 deselected.
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"

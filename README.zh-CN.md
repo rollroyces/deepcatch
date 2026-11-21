@@ -378,6 +378,8 @@ env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
 # → 761 passed, 19 skipped, 13 deselected (slow real-data smoke)
+#   没有 torch 时（即只装 runtime + dev），深度学习模块会被跳过：
+#   685 passed, 54 skipped, 2 deselected。
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"

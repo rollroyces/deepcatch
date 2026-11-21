@@ -74,6 +74,8 @@ def test_loader_splits_flat_X_into_expected_modality_shapes():
 def test_pretrained_checkpoint_loads_and_runs_forward():
     """End-to-end: NEW (real-data) loader → FoundationDownstream → finite output."""
     torch = pytest.importorskip("torch")
+    if getattr(torch, "__deepcatch_stub__", False):
+        pytest.skip("torch is not installed (only the CPU stub is available)")
     from src.foundation.config import MODALITY_DIMS, FoundationConfig
     from src.foundation.downstream import FoundationDownstream
     from finaledb_pretrained_loader import load_real_cohort, modalities_from_flat_X
@@ -141,6 +143,8 @@ def test_synthetic_v0_artifacts_still_load_for_provenance():
     them to "real-data-trained".
     """
     torch = pytest.importorskip("torch")
+    if getattr(torch, "__deepcatch_stub__", False):
+        pytest.skip("torch is not installed (only the CPU stub is available)")
     from src.foundation.config import MODALITY_DIMS, FoundationConfig
     from src.foundation.downstream import FoundationDownstream
     from finaledb_pretrained_loader import load_real_cohort, modalities_from_flat_X

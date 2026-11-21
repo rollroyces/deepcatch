@@ -28,6 +28,15 @@ torch = pytest.importorskip(
     "torch", reason="torch is not installed (the [api] extra provides it)"
 )
 
+# `src.multimodal_fusion.advanced_fusion` installs a STUB torch when the
+# real one is missing, so `import torch` can succeed without torch being
+# installed -- and the stub is not a training library. The tests below
+# need the real one, so the module is skipped when only the stub is
+# there.
+if getattr(torch, "__deepcatch_stub__", False):
+    pytest.skip("torch is not installed (only the CPU stub is available)",
+                allow_module_level=True)
+
 # Ensure deepcatch is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 

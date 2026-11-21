@@ -52,7 +52,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 _HAS_TORCH = False
 try:
     import torch
-    _HAS_TORCH = True
+    # `src.multimodal_fusion.advanced_fusion` installs a STUB torch when
+    # the real one is missing, so `import torch` succeeding does not mean
+    # torch is installed. The stub carries this marker, and these tests
+    # need the real library.
+    _HAS_TORCH = not getattr(torch, "__deepcatch_stub__", False)
 except ImportError:
     pass
 

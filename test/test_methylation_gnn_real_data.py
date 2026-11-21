@@ -223,6 +223,8 @@ def test_per_sample_data_matches_the_cohort(decoded_fixture):
 def test_real_cohort_builds_graphs(decoded_fixture):
     """End to end: real decoded calls → real loci → PyG graphs."""
     torch = pytest.importorskip("torch")
+    if getattr(torch, "__deepcatch_stub__", False):
+        pytest.skip("torch is not installed (only the CPU stub is available)")
     pytest.importorskip("torch_geometric")
 
     from src.methylation_gnn.graph_builder import RegulatoryGraphBuilder

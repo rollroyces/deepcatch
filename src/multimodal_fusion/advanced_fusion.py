@@ -152,11 +152,34 @@ except (ImportError, AttributeError):  # pragma: no cover
         mod.maximum = lambda x, y: x
         return mod
 
+    def _make_stub_torch_utils():
+        # `torch.utils.data` is imported at module level by the trainer
+        # and the pretrainer. Without it in `sys.modules`, `from
+        # torch.utils.data import ...` fails with "No module named
+        # 'torch.utils'; 'torch' is not a package" -- the stub is not a
+        # package, so the import machinery cannot find the submodule.
+        utils = _types.ModuleType("_stub_torch_utils")
+        data = _types.ModuleType("_stub_torch_utils_data")
+        data.DataLoader = lambda *a, **k: []
+        data.TensorDataset = lambda *a, **k: None
+        data.Dataset = object
+        utils.data = data
+        return utils
+
     fake_torch = _make_stub_torch()
+    # Mark the stub. `import torch` now succeeds for ANY module in the
+    # process, including the ones that need the real thing -- so a probe
+    # that only asks "is torch importable?" cannot tell a stub from the
+    # library. The marker is what lets the other modules say "no real
+    # torch here" instead of running against a placeholder.
+    fake_torch.__deepcatch_stub__ = True
+    fake_torch.utils = _make_stub_torch_utils()
     _sys.modules["torch"] = fake_torch
     _sys.modules["torch.nn"] = fake_torch.nn
     _sys.modules["torch.nn.functional"] = fake_torch.nn.functional
     _sys.modules["torch.nn.utils"] = fake_torch.nn.utils
+    _sys.modules["torch.utils"] = fake_torch.utils
+    _sys.modules["torch.utils.data"] = fake_torch.utils.data
     torch = fake_torch  # type: ignore
     nn = fake_torch.nn  # type: ignore
     F = fake_torch.nn.functional  # type: ignore

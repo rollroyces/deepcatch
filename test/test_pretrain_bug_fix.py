@@ -44,6 +44,12 @@ import pytest
 # `import torch` aborts collection for the WHOLE session, so every other
 # test in that job silently never runs. Skip this module instead.
 torch = pytest.importorskip("torch")
+# `src.multimodal_fusion.advanced_fusion` installs a STUB torch when
+# the real one is missing, so `import torch` can succeed without torch
+# being installed. These tests need the real library.
+if getattr(torch, "__deepcatch_stub__", False):
+    pytest.skip("torch is not installed (only the CPU stub is available)",
+                allow_module_level=True)
 
 # Make deepcatch importable regardless of pytest invocation cwd.
 ROOT = Path(__file__).resolve().parent.parent

@@ -63,7 +63,11 @@ try:
     # without torch, and a collection error interrupts the whole run.
     from src.priming.integration import PrimingIntegration
 
-    HAS_TORCH = True
+    # `src.multimodal_fusion.advanced_fusion` installs a STUB torch when
+    # the real one is missing, so `import torch` succeeding does not mean
+    # torch is installed. The stub carries this marker, and these tests
+    # need the real library.
+    HAS_TORCH = not getattr(torch, "__deepcatch_stub__", False)
 except ImportError:
     HAS_TORCH = False
     PrimingResponsePredictor = None

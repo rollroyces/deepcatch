@@ -135,6 +135,18 @@ cohort size.
   `__init__` catches, so the packages import without torch and the CPU
   tests still run. A guard collects the suite with `import torch` blocked
   and fails if anything errors.
+- **The repository's stub torch made every "is torch installed?" probe
+  lie.** `src/multimodal_fusion/advanced_fusion.py` installs a placeholder
+  torch in `sys.modules` when the real one is missing, so that the CPU
+  fusion path can import -- but from then on `import torch` succeeded for
+  the whole process, in every module. A probe that only asked "is torch
+  importable?" therefore believed torch was installed, and the deep
+  learning tests ran against a placeholder instead of skipping. The stub
+  now carries a marker, the probes honour it, and the stub also provides
+  `torch.utils.data` (without it, `from torch.utils.data import ...` failed
+  with "No module named 'torch.utils'; 'torch' is not a package"). A CPU
+  install now runs the gate as 685 passed + 54 skipped + 2 deselected, and
+  the README states that outcome next to the one with torch.
 - **Every quickstart installed the package without a test runner, then ran
   the test suite.** `pytest` is a development dependency: `pyproject.toml`
   puts it in the `dev` extra, not in the runtime `dependencies`. The

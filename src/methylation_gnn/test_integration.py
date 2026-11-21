@@ -48,7 +48,11 @@ _HAS_TORCH = False
 _HAS_PYG = False
 try:
     import torch
-    _HAS_TORCH = True
+    # `src.multimodal_fusion.advanced_fusion` installs a STUB torch when
+    # the real one is missing, so `import torch` succeeding does not mean
+    # torch is installed. The stub carries this marker, and these tests
+    # need the real library.
+    _HAS_TORCH = not getattr(torch, "__deepcatch_stub__", False)
 except ImportError:
     pass
 try:
