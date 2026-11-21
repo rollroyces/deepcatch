@@ -48,6 +48,16 @@ jobs:
       - name: Run foundation smoke tests (torch required)
         run: |
           python -m pytest test/test_foundation_smoke.py -q --no-header
+      # The guards that compare the documents' test counts and the
+      # documented commands' outcomes with the real suite need the FULL
+      # suite -- and the full suite only has its size where torch is
+      # installed. The core job above has no torch, so those checks skip
+      # there; they run here, where torch is present.
+      - name: Run the count and install guards (torch required)
+        run: |
+          python -m pytest test/test_test_count_consistency.py \
+            test/test_documented_install_provides_what_it_runs.py \
+            -q --no-header
 
   # ── Real-data pipeline smoke test (no data download) ──────────────────
   # Verifies the real-TCGA validation fails LOUDLY (not silently) when no

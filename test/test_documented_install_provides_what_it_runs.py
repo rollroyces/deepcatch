@@ -525,6 +525,30 @@ def _marker_of(command: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _real_torch_installed() -> bool:
+    """Is the real torch available?
+
+    The suite's size depends on the deep-learning extra: the foundation
+    module's tests are skipped without it, so the full-suite count only
+    exists where torch is installed. The repository installs a STUB
+    torch when the real one is missing (`src/multimodal_fusion/
+    advanced_fusion.py`), and the stub is not torch.
+    """
+    try:
+        import torch
+    except ImportError:
+        return False
+    return not getattr(torch, "__deepcatch_stub__", False)
+
+
+requires_real_torch = pytest.mark.skipif(
+    not _real_torch_installed(),
+    reason="the claimed outcomes are the full suite's, and the full suite "
+           "only has its size where torch is installed",
+)
+
+
+@requires_real_torch
 def test_a_documented_test_command_outcome_is_the_outcome():
     """A claim like "# -> 736 passed" must be what the command produces.
 
