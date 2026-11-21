@@ -106,6 +106,17 @@ cohort size.
 
 ### Fixed
 
+- **Five modules documented their maths in docstrings Python mangled.**
+  The LaTeX was written in ordinary strings, so `\frac` was read as a form
+  feed followed by "rac", and `\mid`, `\sum` and `\epsilon` produced
+  invalid-escape warnings on every import; Python has said for years that
+  such sequences "will not work in the future". The docstrings are raw
+  strings now, so the rendered text is the LaTeX that was written.
+  `test/test_no_invalid_escape_sequences.py` compiles every tracked module
+  and fails on an invalid escape sequence, so the mangling cannot come
+  back. It was found by installing the repository from a fresh clone --
+  the first time the warnings were visible, because the working copy had
+  been importing them long before.
 - **The top-level runner's own artifact was four months stale.**
   `results/final_cross_validated_results.json` was written on 2026-04-30 by
   a quick-mode run of the script as it stood then, so running the

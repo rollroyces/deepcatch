@@ -1,4 +1,4 @@
-"""
+r"""
 GC-Bias Normalization Module (FragmentoSign)
 
 Implements LOESS-based local normalization for cfDNA fragment coverage,
@@ -95,7 +95,7 @@ def loess_normalize(
     frac: float = 0.3,
     n_bins: int = 100
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """
+    r"""
     LOESS-based GC-bias correction for fragment coverage.
 
     Implements the DELFI supplementary protocol [1]_.
@@ -262,7 +262,7 @@ def DELFI_style_normalization(
 
 
 def compute_MDS(fragment_ends: np.ndarray, n_motifs: int = 256) -> float:
-    """
+    r"""
     Motif Diversity Score (MDS).
 
     MDS quantifies the diversity of fragment end motifs using the

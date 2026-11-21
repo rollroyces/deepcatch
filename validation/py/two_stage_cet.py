@@ -1,4 +1,4 @@
-"""
+r"""
 Two-Stage CET: Permissive Multi-Modal Screening → Confirmatory Fusion
 
 Implements a two-stage cancer screening pipeline that combines a
@@ -195,7 +195,7 @@ TISSUE_METHYLATION_MARKERS = {
 # GROWTH MODEL
 # ═══════════════════════════════════════════════════════════════════════════
 def gompertz_volume(t: float, params: Dict) -> float:
-    """
+    r"""
     Compute tumor volume at time *t* using the Gompertz growth model.
 
     The Gompertz model captures sigmoidal tumor growth with an initial
@@ -286,7 +286,7 @@ def _generate_tumor_params(cancer_type: str, stage: str,
 
 def _ctdna_from_volume(volume_mm3: float, shedding_factor: float,
                        rng: np.random.RandomState) -> float:
-    """
+    r"""
     Estimate ctDNA fraction from tumor volume with patient-specific shedding.
 
     Implements **Confounder 2** (Variable cfDNA Shedding).
@@ -335,7 +335,7 @@ def _ctdna_from_volume(volume_mm3: float, shedding_factor: float,
 # ═══════════════════════════════════════════════════════════════════════════
 def _generate_mutation_signal(patient: Dict, true_ctdna: float,
                                rng: np.random.RandomState) -> float:
-    """
+    r"""
     Generate simulated mutation-based signal with confounders.
 
     Models the variant calling signal as:
@@ -402,7 +402,7 @@ def _generate_mutation_signal(patient: Dict, true_ctdna: float,
 def _generate_methylation_signal(cancer_type: str, true_ctdna: float,
                                   is_cancer: bool, age: int,
                                   rng: np.random.RandomState) -> float:
-    """
+    r"""
     Generate methylation signal with age-dependent CHIP background.
 
     Implements **Confounder 1** (CHIP).
@@ -522,7 +522,7 @@ def _generate_all_modality_signals(patient: Dict, time_days: float,
 # STAGE 1: MULTI-MODAL CET (PERMISSIVE)
 # ═══════════════════════════════════════════════════════════════════════════
 class MultiModalCETTracker:
-    """
+    r"""
     Stage 1: Multi-modal Sequential Probability Ratio Test (SPRT).
 
     Accumulates evidence from up to 5 cfDNA modalities independently,
@@ -684,7 +684,7 @@ class MultiModalCETTracker:
 # STAGE 2: CONFIRMATORY FUSION (ULTRA-HIGH SPECIFICITY)
 # ═══════════════════════════════════════════════════════════════════════════
 class ConfirmatoryFusion:
-    """
+    r"""
     Stage 2: Ultra-high specificity confirmatory testing.
 
     Uses statistically **independent** features (different genomic loci,

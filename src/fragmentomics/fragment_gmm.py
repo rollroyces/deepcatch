@@ -1,4 +1,4 @@
-"""
+r"""
 Gaussian Mixture Model for cfDNA Fragment Length Distribution (FragmentoSign)
 
 Models cfDNA fragment size distribution as a GMM with 4 biologically meaningful
@@ -322,7 +322,7 @@ class FragmentLengthGMM:
         }
     
     def compute_delfi_score(self, fragment_lengths: np.ndarray) -> float:
-        """
+        r"""
         Compute DELFI-style fragmentomics score.
 
         Combines two orthogonal signals of cancer-associated fragmentation:
@@ -387,7 +387,7 @@ def compute_fragmentomics_features(
     fragment_lengths: np.ndarray,
     fit_gmm: bool = True
 ) -> Dict:
-    """
+    r"""
     Complete fragmentomics feature extraction pipeline (FragmentoSign).
 
     Combines GMM decomposition, DELFI-style features, and basic statistical

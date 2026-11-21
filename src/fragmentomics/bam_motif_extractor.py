@@ -367,7 +367,7 @@ def extract_end_motifs_from_fastq(
 
 
 def compute_MDS(motif_counts: np.ndarray) -> float:
-    """
+    r"""
     Compute Motif Diversity Score (MDS) from raw motif counts.
 
     MDS is the normalized Simpson diversity index [1]_.

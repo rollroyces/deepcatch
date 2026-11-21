@@ -1,4 +1,4 @@
-"""
+r"""
 Performance-Weighted Multi-Modal Fusion
 
 The key innovation of DeepCatch over Bie et al. (2023).
@@ -170,7 +170,7 @@ def performance_weighted_fusion(
 
 
 def simple_average_fusion(modality_predictions: List[np.ndarray]) -> np.ndarray:
-    """
+    r"""
     Bie et al. (2023) baseline: unweighted average of all modalities.
 
     .. math::
