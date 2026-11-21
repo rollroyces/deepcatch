@@ -115,6 +115,13 @@ cohort size.
   A script that cannot find the repository root is now a guard failure, and
   the check is mechanical -- it runs the same `cd` the script runs and
   compares the result with the root.
+- **The install demo's entry-point step found nothing, every time.** It
+  filtered the console scripts by their *value*
+  (`src.fragmentomics.train_tumor_naive:main`) while the name is what
+  carries `deepcatch`, so the step printed "CLI entry points (0)" on every
+  run while the three scripts `pyproject.toml` declares went unmentioned. A
+  guard now runs the demo's own filter against the declared entry points and
+  fails if it does not find them.
 - **Every quickstart installed the package without a test runner, then ran
   the test suite.** `pytest` is a development dependency: `pyproject.toml`
   puts it in the `dev` extra, not in the runtime `dependencies`. The

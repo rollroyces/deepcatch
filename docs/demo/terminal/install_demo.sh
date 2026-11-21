@@ -50,7 +50,7 @@ env -u PYTHONPATH ./.venv/bin/python -c "
 import importlib.metadata as md
 try:
     eps = md.entry_points(group='console_scripts')
-    ce = sorted([(ep.name, ep.value) for ep in eps if 'deepcatch' in (ep.value or '')])
+    ce = sorted([(ep.name, ep.value) for ep in eps if 'deepcatch' in (ep.name or '')])
     print(f'CLI entry points ({len(ce)}):')
     for n, v in ce[:8]:
         print(f'  {n:25s} -> {v}')

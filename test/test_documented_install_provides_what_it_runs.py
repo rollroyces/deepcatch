@@ -751,3 +751,71 @@ def test_the_root_resolver_tells_a_wrong_depth_from_the_right_one():
     assert os.path.realpath(resolved) != os.path.realpath(str(_REPO_ROOT)), (
         "the resolver cannot tell a wrong depth from the right one"
     )
+
+
+# --------------------------------------------------------------------------
+# rule 7: the demo's entry-point check finds the entry points
+# --------------------------------------------------------------------------
+
+_ENTRY_POINT_FILTER = re.compile(r"for ep in eps if (?P<cond>.+)\]\)")
+
+
+class _EntryPoint:
+    """Stand-in for an `importlib.metadata` entry point."""
+
+    def __init__(self, name: str, value: str) -> None:
+        self.name = name
+        self.value = value
+
+
+def _declared_scripts() -> dict[str, str]:
+    """The console scripts `pyproject.toml` declares."""
+    body = _section(_pyproject(), "project.scripts")
+    out: dict[str, str] = {}
+    for name, value in re.findall(r'^\s*([\w.-]+)\s*=\s*"([^"]+)"', body,
+                                   re.M):
+        out[name] = value
+    return out
+
+
+def test_the_demo_finds_the_console_scripts_it_installs():
+    """The demo's entry-point check must actually find the entry points.
+
+    The demo printed "CLI entry points (0)" on every run: it filtered
+    the entry points by their *value* (`src.fragmentomics...:main`) and
+    the name is what carries `deepcatch`. The step claimed to confirm
+    the CLI entry points and confirmed nothing, while the three scripts
+    `pyproject.toml` declares went unmentioned.
+    """
+    script = "docs/demo/terminal/install_demo.sh"
+    text = (_REPO_ROOT / script).read_text(encoding="utf-8")
+    match = _ENTRY_POINT_FILTER.search(text)
+    assert match, "the demo no longer filters the entry points"
+
+    declared = _declared_scripts()
+    assert declared, "pyproject.toml declares no console scripts"
+
+    condition = match.group("cond")
+    found = {
+        ep.name for ep in (_EntryPoint(n, v) for n, v in declared.items())
+        if eval(condition, {"ep": ep})  # noqa: S307 - the demo's own filter
+    }
+    assert found == set(declared), (
+        "the demo's entry-point filter does not find the console scripts "
+        f"pyproject.toml declares: found {sorted(found)}, declared "
+        f"{sorted(declared)}. The filter is {condition!r}."
+    )
+
+
+def test_the_filter_check_can_see_a_wrong_filter():
+    """The check must notice a filter that finds nothing."""
+    declared = _declared_scripts()
+    wrong = "'deepcatch' in (ep.value or '')"
+    found = {
+        ep.name for ep in (_EntryPoint(n, v) for n, v in declared.items())
+        if eval(wrong, {"ep": ep})  # noqa: S307 - the wrong filter, on purpose
+    }
+    assert found != set(declared), (
+        "the filter check cannot tell a filter that finds nothing from one "
+        "that finds everything"
+    )
