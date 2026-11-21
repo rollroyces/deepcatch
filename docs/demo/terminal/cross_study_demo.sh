@@ -6,7 +6,7 @@ set -e
 # The repository root, derived from this script's own location, so the
 # demo runs for anyone who clones the repository -- it used to point at
 # the machine it was recorded on.
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "${REPO_ROOT}"
 export TERM=xterm-256color
 export COLUMNS=110

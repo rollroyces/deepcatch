@@ -124,6 +124,38 @@ def test_table_row_quotes_one_run_only(doc, anchor, required, forbidden,
             f"It quotes: {row.strip()}")
 
 
+def test_the_per_cancer_prose_quotes_the_artifact_sensitivity():
+    """The paragraph under the per-cancer table must quote the artifact.
+
+    The table's rows are pinned to the committed per-cancer artifact, but
+    the paragraph that reads the table quotes OV's sens@95 in prose as
+    well -- two places for one number. The paragraph is a single long
+    line that contains several other numbers, so a per-line presence
+    check cannot tell which of them was meant; this one looks at the
+    number that sits immediately before the words.
+
+    The reason it exists: a blanket search-and-replace of the suite's
+    test count rewrote that number from 0.964 to 0.967 -- a different
+    quantity -- and every guard in the repository stayed green.
+    """
+    artifact = _numbers.load("per_cancer_sens_at_spec.json")
+    if artifact is None:
+        pytest.skip("the per-cancer artifact is not present")
+    value = _numbers.dig_number(
+        artifact, ("per_cancer", "OV", "sens_at_95"))
+
+    text = _read("paper/METHODS_PAPER.md")
+    match = re.search(r"the ([\d.]+) sens@95 is consistent", text)
+    assert match, (
+        "the paragraph under the per-cancer table no longer quotes a "
+        "sens@95; the number it states must come from the artifact")
+    written = match.group(1)
+    decimals = len(written.split(".")[1]) if "." in written else 0
+    assert abs(float(written) - value) <= 0.5 * (10.0 ** -decimals) + 1e-9, (
+        f"the paragraph quotes {written} where the artifact holds "
+        f"{value:.6f} for OV's sens@95")
+
+
 def test_methylation_null_is_quoted_with_its_permutation_p_value():
     """The null must be quoted together with the test that establishes it."""
     tex = _read("paper/paper.tex")

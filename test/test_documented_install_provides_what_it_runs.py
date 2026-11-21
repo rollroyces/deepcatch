@@ -62,6 +62,7 @@ of extra.
 """
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -672,3 +673,81 @@ def test_the_table_reader_finds_a_table():
     rows = _table_after(_doc_text("README.md"), _EN_TABLE)
     assert len(rows) > 3, rows
     assert _numbers_in(rows), rows
+
+
+# --------------------------------------------------------------------------
+# rule 6: a script that finds the repository root finds it
+# --------------------------------------------------------------------------
+
+_DEMO_SCRIPTS = (
+    "docs/demo/terminal/install_demo.sh",
+    "docs/demo/terminal/ablation_demo.sh",
+    "docs/demo/terminal/cross_study_demo.sh",
+)
+
+_ROOT_ASSIGNMENT = re.compile(
+    r'REPO_ROOT="\$\(cd "\$\(dirname "\$\{BASH_SOURCE\[0\]\}"\)(/[^"]*)" && pwd\)"'
+)
+
+
+def _declared_root(script: str) -> str | None:
+    """The directory a script's `REPO_ROOT` assignment resolves to.
+
+    The shell's own `cd` is used, because that is what the script does:
+    `cd "$(dirname "${BASH_SOURCE[0]}")/../.."` keeps the `..` components
+    in the path it prints, so the number of them decides whether the
+    script lands on the repository root or one directory short of it.
+    """
+    text = (_REPO_ROOT / script).read_text(encoding="utf-8")
+    match = _ROOT_ASSIGNMENT.search(text)
+    if not match:
+        return None
+    proc = subprocess.run(
+        ["bash", "-c", 'cd "$(dirname "$1")"/"$2" && pwd', "_", script,
+         match.group(1)],
+        cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=60,
+    )
+    if proc.returncode != 0:
+        return None
+    return proc.stdout.strip()
+
+
+def test_a_demo_script_finds_the_repository_root():
+    """A demo script must resolve the repository root, not its parent.
+
+    The three demo scripts derive the repository root from their own
+    location, so that the demo runs for anyone who clones the repository.
+    They were one directory short: `docs/demo/terminal/../..` is
+    `docs/`, not the root, so the demo installed the package inside
+    `docs/`, ran the venv's python against `docs/test/...`, and printed
+    its success anyway -- the install failure was swallowed by `|| true`.
+    """
+    offenders: list[str] = []
+
+    for script in _DEMO_SCRIPTS:
+        resolved = _declared_root(script)
+        assert resolved is not None, f"{script} no longer derives REPO_ROOT"
+        if os.path.realpath(resolved) != os.path.realpath(str(_REPO_ROOT)):
+            offenders.append(f"{script}: {resolved}")
+
+    assert not offenders, (
+        "a demo script resolves the repository root to the wrong "
+        "directory:\n  " + "\n  ".join(offenders)
+        + "\nThe script's own directory is three levels below the root "
+          "(docs/demo/terminal), so the path needs three `..`."
+    )
+
+
+def test_the_root_resolver_tells_a_wrong_depth_from_the_right_one():
+    """The resolver must be able to see the wrong depth, or the rule is
+    vacuous."""
+    proc = subprocess.run(
+        ["bash", "-c", 'cd "$(dirname "$1")"/"$2" && pwd', "_",
+         "docs/demo/terminal/install_demo.sh", "/../.."],
+        cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=60,
+    )
+    resolved = proc.stdout.strip()
+    assert resolved, "the resolver produced nothing"
+    assert os.path.realpath(resolved) != os.path.realpath(str(_REPO_ROOT)), (
+        "the resolver cannot tell a wrong depth from the right one"
+    )

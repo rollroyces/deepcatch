@@ -106,6 +106,15 @@ cohort size.
 
 ### Fixed
 
+- **The three demo scripts were one directory short of the repository
+  root.** Each derives the root from its own location -- `docs/demo/terminal`
+  is three levels down, so the path needs three `..` -- and each used two.
+  `docs/demo/terminal/../..` is `docs/`, so the install demo installed the
+  package inside `docs/`, ran the venv's python against `docs/test/...`, and
+  printed its success anyway: the install failure was swallowed by `|| true`.
+  A script that cannot find the repository root is now a guard failure, and
+  the check is mechanical -- it runs the same `cd` the script runs and
+  compares the result with the root.
 - **Every quickstart installed the package without a test runner, then ran
   the test suite.** `pytest` is a development dependency: `pyproject.toml`
   puts it in the `dev` extra, not in the runtime `dependencies`. The
@@ -145,6 +154,20 @@ cohort size.
   a drift inside one of them -- and the Chinese README was not in its
   list at all. It is now, and a documented command's claimed outcome is
   compared with what the command actually selects.
+- **The methods paper's per-cancer sensitivity columns were not pinned to
+  the artifact that holds them.** Section 3.3 quotes each cancer's
+  sens@95/98/99 from `results/per_cancer_sens_at_spec.json`, and the
+  artifact carries all three for all five cancers -- but no guard required
+  the rows to quote it. A blanket search-and-replace of the suite's test
+  count rewrote OV's sens@95 from 0.964 to 0.967 in the table and in the
+  paragraph under it, and every guard stayed green. The five rows are
+  pinned now, and the paragraph's number is checked at the place it sits
+  (the paragraph is one long line, so a per-line presence check cannot
+  tell which of its numbers was meant). The rows' AUC column and
+  bootstrap CI are still outside the guard: they come from the paper's
+  5-seed run, and the committed artifact holds a single-seed AUC and its
+  own bootstrap draw, so pinning them there would fail on numbers that
+  are not wrong.
 
 - **Five modules documented their maths in docstrings Python mangled.**
   The LaTeX was written in ordinary strings, so `\frac` was read as a form

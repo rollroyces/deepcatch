@@ -1167,6 +1167,88 @@ TABLE_ROWS = [
               "harmonized", "auc_mean")),
         ],
     },
+    # The methods paper's section 3.3 per-cancer rows. Their three
+    # sensitivity columns are pinned to the committed per-cancer artifact,
+    # which carries them for every cancer. They were not pinned before,
+    # and the gap had teeth: a blanket search-and-replace of the suite's
+    # test count rewrote OV's sens@95 from 0.964 to 0.967 -- a different
+    # quantity -- and every guard stayed green.
+    #
+    # The AUC column and the bootstrap CI are NOT pinned here: they come
+    # from the paper's 5-seed run, and the committed artifact holds a
+    # single-seed AUC (auc_std 0) and its own bootstrap draw. Pinning them
+    # to that artifact would fail on numbers that are not wrong, so they
+    # stay outside this guard.
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| HCC_J | 89 | 353 (jiang only) |",
+        "required": [
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "HCC_J", "sens_at_95")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "HCC_J", "sens_at_98")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "HCC_J", "sens_at_99")),
+        ],
+        "forbidden": [],
+        "source": None,
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| LUAD | 79 | 343 |",
+        "required": [
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "LUAD", "sens_at_95")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "LUAD", "sens_at_98")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "LUAD", "sens_at_99")),
+        ],
+        "forbidden": [],
+        "source": None,
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| PAAD | 60 | 324 |",
+        "required": [
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "PAAD", "sens_at_95")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "PAAD", "sens_at_98")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "PAAD", "sens_at_99")),
+        ],
+        "forbidden": [],
+        "source": None,
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| BRCA | 53 | 317 |",
+        "required": [
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "BRCA", "sens_at_95")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "BRCA", "sens_at_98")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "BRCA", "sens_at_99")),
+        ],
+        "forbidden": [],
+        "source": None,
+    },
+    {
+        "doc": "paper/METHODS_PAPER.md",
+        "anchor": "| OV | 28 | 292 |",
+        "required": [
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "OV", "sens_at_95")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "OV", "sens_at_98")),
+            ("per_cancer_sens_at_spec.json",
+             ("per_cancer", "OV", "sens_at_99")),
+        ],
+        "forbidden": [],
+        "source": None,
+    },
 ]
 
 
