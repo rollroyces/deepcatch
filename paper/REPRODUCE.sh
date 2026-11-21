@@ -560,6 +560,15 @@ else
     echo "================================================================"
     echo "[GATE] Pytest gate (cross-study + per-cancer + pretrain + harmony + projection)"
     echo "================================================================"
+    # `pytest` is a development dependency: it lives in the `dev` extra,
+    # not in the runtime dependencies. A venv with only the base install
+    # fails below with "No module named pytest", which reads like a
+    # broken gate rather than a missing extra.
+    if ! "${PYTHON}" -c "import pytest" 2>/dev/null; then
+        echo "[REPRODUCE] pytest is not installed in ${PYTHON}."
+        echo "[REPRODUCE] Install the dev extra first: pip install -e \".[dev]\""
+        exit 1
+    fi
     # `--timeout` needs the pytest-timeout plugin. It is not part of the
     # declared dependencies, so passing it unconditionally made pytest reject
     # the unknown argument and the gate fail on a clean checkout. Add it

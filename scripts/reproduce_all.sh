@@ -82,7 +82,7 @@ done
 # ─── 2. Confirm venv + Python before we start ────────────────────────
 if [ ! -x "$PY" ]; then
     echo "❌ missing venv python at $PY" >&2
-    echo "   Create with: python3 -m venv .venv && pip install -e ." >&2
+    echo "   Create with: python3 -m venv .venv && pip install -e \".[dev]\"" >&2
     exit 1
 fi
 
@@ -263,6 +263,15 @@ run_step() {
             fi
             ;;
         pytest_tests)
+            # `pytest` is a development dependency: it lives in the `dev`
+            # extra, not in the runtime dependencies. A venv that only has
+            # the base install fails here with "No module named pytest",
+            # which reads like a broken script rather than a missing extra.
+            if ! env -u PYTHONPATH "$PY" -c "import pytest" 2>/dev/null; then
+                echo "    pytest is not installed in $PY -- install the dev extra first:" >&2
+                echo "      $PY -m pip install -e \".[dev]\"" >&2
+                return 1
+            fi
             env -u PYTHONPATH "$PY" -m pytest \
                 "$REPO_ROOT/test/" \
                 "$REPO_ROOT/src/foundation/test_integration.py" \

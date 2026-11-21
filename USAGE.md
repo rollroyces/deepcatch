@@ -81,8 +81,12 @@ pip install --upgrade pip
 ```bash
 git clone https://github.com/rollroyces/cfdna-fragmentomics-pipeline
 cd cfdna-fragmentomics-pipeline
-pip install -e .
+pip install -e ".[dev]"
 ```
+
+The `[dev]` extra is what provides `pytest` for the verification step in
+§1.5; the base install of either repository does not include a test
+runner.
 
 This installs the package and 4 console scripts: `cfdna-fetch`,
 `cfdna-classify`, `cfdna-fsd`, `cfdna-delfi`. See [§4 CLI reference](#4-cli-reference).
@@ -93,7 +97,7 @@ This installs the package and 4 console scripts: `cfdna-fetch`,
 cd ..  # back to wherever you keep your repos
 git clone https://github.com/rollroyces/deepcatch
 cd deepcatch
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 This installs 3 more console scripts: `deepcatch-tumornaive`,
@@ -104,7 +108,7 @@ directory.
 ### 1.5 Verify installation
 
 ```bash
-# 57 + 28 = 85 unit tests across both repos
+# 739 in deepcatch's test/ + 126 in the pipeline's (at eb1529e)
 cd cfdna-fragmentomics-pipeline && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 cd ../deepcatch && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 

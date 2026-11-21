@@ -108,6 +108,8 @@ env -u PYTHONPATH ./.venv/bin/python \
 - End-to-end CLI integration runs and writes the JSON.
 
 ```bash
+# the [dev] extra provides pytest; the base install does not
+pip install -e ".[dev]"
 env -u PYTHONPATH ./.venv/bin/python \
     -m pytest test/test_cross_platform_fusion.py -v
 ```

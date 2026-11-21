@@ -675,7 +675,8 @@ python -c "from validation.py.config import *; print(f'DeepCatch config loaded')
 # List all available options
 python run_full_validation.py --help
 
-# Run the test suite
+# Run the test suite (the [dev] extra provides pytest; the base install does not)
+pip install -e ".[dev]"
 python3 -m pytest test/ -q
 
 # View the cross-validated results

@@ -93,6 +93,8 @@ edit:
 
 ```bash
 cd deepcatch
+# the [dev] extra provides pytest; the base install does not
+pip install -e ".[dev]"
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/test_biomedical_review_fixes.py \
     test/test_sparse_aware_projection.py \

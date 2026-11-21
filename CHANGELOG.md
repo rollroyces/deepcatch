@@ -106,6 +106,46 @@ cohort size.
 
 ### Fixed
 
+- **Every quickstart installed the package without a test runner, then ran
+  the test suite.** `pytest` is a development dependency: `pyproject.toml`
+  puts it in the `dev` extra, not in the runtime `dependencies`. The
+  README's install block, the Chinese README, `CONTRIBUTING.md`,
+  `docs/USER_GUIDE.md`, `docs/REPRODUCE.md`, `USAGE.md`, the docs site's
+  quickstart and the install demo script all installed the base
+  distribution and then ran `pytest`, which fails on a clean virtualenv
+  with `No module named pytest` before a single test runs. The demo was
+  worse twice over: it installed with the ambient `pip` rather than the
+  venv's own, and then ran the venv's python. `paper/REPRODUCE.sh` and
+  `scripts/reproduce_all.sh` now check that pytest is importable and say
+  what to install.
+  `test/test_documented_install_provides_what_it_runs.py` requires that a
+  documented pytest run is preceded by an install that provides pytest
+  (or by a check that says how to get it), that `pytest` really is a
+  development dependency, that a document's "installed automatically by
+  `pip install -e .`" list is the runtime dependency list, that a
+  documented command's claimed outcome is what the command selects, and
+  that the two READMEs state the same test numbers. Red-green verified:
+  six of its tests fail against the documents as they were.
+- **The wiki promised packages the base install does not bring.**
+  `wiki/Getting-Started.md` listed `torch` and `statsmodels` under "Core
+  Python dependencies (installed automatically by `pip install -e .`)".
+  Neither is a runtime dependency -- `torch` is in the `api` extra and
+  `statsmodels` is in no extra at all -- while the list omitted
+  `requests` and `tqdm`, which are. The list is the runtime list now, and
+  the optional packages are listed separately with the extra that provides
+  each.
+- **Three test counts in the READMEs had drifted.** The English README
+  claimed "15 passed" for the publication-readiness suite, which collects
+  16, and "702 passed, 19 skipped, 13 deselected" for the fast-path gate,
+  which adds up to 734 while the gate collects 768. The Chinese README
+  had drifted further: its badge said 919 where the English one said
+  953, its table said the gate collects 734 where the English one said
+  768, and its tree said 46 test files where the English one said 57. The
+  count guard compared the documents with each other, so it could not see
+  a drift inside one of them -- and the Chinese README was not in its
+  list at all. It is now, and a documented command's claimed outcome is
+  compared with what the command actually selects.
+
 - **Five modules documented their maths in docstrings Python mangled.**
   The LaTeX was written in ordinary strings, so `\frac` was read as a form
   feed followed by "rac", and `\mid`, `\sum` and `\epsilon` produced

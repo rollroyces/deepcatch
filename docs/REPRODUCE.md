@@ -40,11 +40,14 @@ cd deepcatch
 # Create venv — required so deps don't conflict with Hermes's global
 # Python on macOS (see deepcatch skill pitfall #1).
 python3 -m venv .venv
-.venv/bin/pip install -e .
+.venv/bin/pip install -e ".[dev]"
 
 # Optional deps for the foundation / GNN steps:
-.venv/bin/pip install -e .[api]
+.venv/bin/pip install -e ".[api]"
 ```
+
+The `[dev]` extra provides `pytest`, which the reproduction's test step
+runs; the base install does not include a test runner.
 
 ---
 

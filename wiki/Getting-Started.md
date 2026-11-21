@@ -19,11 +19,22 @@ Core Python dependencies (installed automatically by `pip install -e .`):
 numpy >= 1.24.0
 scipy >= 1.10.0
 scikit-learn >= 1.3.0
+pandas >= 2.0.0
 matplotlib >= 3.7.0
 seaborn >= 0.12.0
-pandas >= 2.0.0
-torch >= 2.0.0          # Deep learning models (optional for basic CET)
-statsmodels             # LOESS normalisation (optional)
+requests >= 2.31.0
+tqdm >= 4.65.0
+```
+
+**Not** installed by that command — each of these needs its own line:
+
+```text
+torch >= 2.0.0             # deep-learning models         → pip install -e ".[api]"
+torch-geometric >= 2.4.0   # the GNN backbone             → pip install -e ".[api]"
+fastapi, uvicorn, pydantic # the REST API                 → pip install -e ".[api]"
+pytest >= 7.0.0            # the test suite               → pip install -e ".[dev]"
+statsmodels                # LOESS GC correction; optional — without it the
+                           # GC correction falls back to a quadratic regression
 ```
 
 ---

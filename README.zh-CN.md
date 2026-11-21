@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-919%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-967%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -186,8 +186,12 @@ python run_cross_study.py --parallel 8 --max-mb 500
 # 3. 然后是 DeepCatch 本体。
 cd ../deepcatch
 python3.11 -m venv .venv && source .venv/bin/activate
-pip install -e .        # 可编辑安装 + CLI 入口
+pip install -e ".[dev]"   # 可编辑安装 + CLI 入口；[dev] 额外带上 pytest
 ```
+
+`dev` extra 会加入 `pytest`（以及 `pytest-cov`、`mypy`）；只装运行时的话用
+`pip install -e .`。**下面的测试命令需要这个 extra**——基础安装不含
+`pytest`，只装运行时后执行 `pytest -q` 会得到 `No module named pytest`。
 
 两个仓库并排放着，所有脚本与复现 driver 就能自动找到缓存、标签与 sister
 pipeline，无需再做任何配置。完整顺序（含各平台注意事项）见
@@ -224,7 +228,7 @@ docker run --rm -v /tmp/deepcatch-docker-results:/app/results deepcatch:latest
 验证安装：
 ```bash
 env -u PYTHONPATH ./.venv/bin/python -m pytest test/test_publication_readiness.py -m "not slow" -q
-# → 15 passed
+# → 16 passed
 ```
 
 ---
@@ -373,7 +377,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 702 passed, 19 skipped, 13 deselected (slow real-data smoke)
+# → 750 passed, 19 skipped, 13 deselected (slow real-data smoke)
 
 # Full per-module discovery
 env -u PYTHONPATH ./.venv/bin/python -m pytest src/ -m "not slow"
@@ -394,10 +398,11 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_publication_readiness.py` | 16 | ✅ 全部通过 |
 | `test/test_biomedical_review_fixes.py` | 37 | ✅ 全部通过 |
 | `test/test_foundation_smoke.py` | 8 | ✅ 全部通过 |
+| `test/test_label_control.py` | 17 | ✅ 全部通过 |
 | `test/test_public_tree_has_no_personal_contact.py` | 3 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 734** | **702 通过 + 19 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 782** | **750 通过 + 19 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 
@@ -447,7 +452,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 46 test files (691 fast-path tests)
+├── test/                         # 58 test files (739 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts

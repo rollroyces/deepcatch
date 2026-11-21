@@ -38,6 +38,11 @@ COUNT_DOCS = [
     "paper/PAPER.md",
     "paper.md",
     "README.md",
+    # The Chinese README is a translation of the English one, and its
+    # badge had drifted to 919 while the English one said 953 -- the
+    # agreement test below compared the documents with each other and
+    # the Chinese README was not among them.
+    "README.zh-CN.md",
     "REVIEWERS.md",
     "NEXT_STEPS.md",
     "TEAM.md",
@@ -62,6 +67,10 @@ _COUNT_PATTERNS = (
 # tests. Only its badge counts as the suite's size.
 _DOC_PATTERNS = {
     "README.md": (r"Tests-(\d{3})%20",),
+    # Same reason for the Chinese README: its badge states the suite's
+    # size; its table states other numbers (the src/ discovery, the gate)
+    # that belong to their own checks.
+    "README.zh-CN.md": (r"Tests-(\d{3})%20",),
 }
 
 

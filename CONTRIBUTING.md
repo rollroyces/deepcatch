@@ -31,7 +31,7 @@ Two traps this project has already fallen into, so you do not have to:
 git clone https://github.com/rollroyces/deepcatch
 cd deepcatch
 python3 -m venv .venv
-./.venv/bin/pip install -e ".[api]"     # the [api] extra adds torch + the DL suite
+./.venv/bin/pip install -e ".[dev,api]"   # [dev] adds pytest, [api] adds torch + the DL suite
 ```
 
 The fragmentomics benchmarks read a **feature cache** extracted from
