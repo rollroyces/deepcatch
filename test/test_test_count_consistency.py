@@ -74,6 +74,29 @@ _DOC_PATTERNS = {
 }
 
 
+def _real_torch_installed() -> bool:
+    """Is the real torch available?
+
+    The suite's size depends on the deep-learning extra: the foundation
+    module's tests are skipped without it, so the full-suite count only
+    exists where torch is installed. The repository installs a STUB
+    torch when the real one is missing (`src/multimodal_fusion/
+    advanced_fusion.py`), and the stub is not torch.
+    """
+    try:
+        import torch
+    except ImportError:
+        return False
+    return not getattr(torch, "__deepcatch_stub__", False)
+
+
+requires_real_torch = pytest.mark.skipif(
+    not _real_torch_installed(),
+    reason="the suite's size depends on the deep-learning extra; the "
+           "[api] extra provides torch",
+)
+
+
 def _stated_counts(path: str) -> set[int]:
     text = (_REPO_ROOT / path).read_text(encoding="utf-8")
     if path.endswith(".html"):
@@ -108,6 +131,7 @@ def test_all_documents_quote_the_same_test_count():
     )
 
 
+@requires_real_torch
 def test_the_ci_split_adds_up_to_the_total():
     """The two CI jobs must account for every test."""
     total = None
@@ -127,6 +151,7 @@ def test_the_ci_split_adds_up_to_the_total():
             f"total {total}")
 
 
+@requires_real_torch
 def test_the_readme_suite_table_matches_reality():
     """The README's per-suite test table must be the counts, not old ones.
 
@@ -228,6 +253,7 @@ def _workflow_job_count() -> int:
     return total
 
 
+@requires_real_torch
 def test_the_results_md_test_status_row_matches_the_measured_counts():
     """RESULTS.md's test-status row must be the counts, not old ones.
 
@@ -260,6 +286,7 @@ def test_the_results_md_test_status_row_matches_the_measured_counts():
         f"as {jobs}: {stated.strip()}")
 
 
+@requires_real_torch
 def test_the_readme_src_discovery_row_matches_reality():
     """The README's "Full src/ discovery" row must be the real numbers.
 
@@ -288,6 +315,7 @@ def test_the_readme_src_discovery_row_matches_reality():
         f"deselects {deselected}")
 
 
+@requires_real_torch
 def test_the_stated_count_matches_the_real_collection():
     """The stated count must be the count, not a number that used to be.
 
