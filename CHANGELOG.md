@@ -122,6 +122,19 @@ cohort size.
   run while the three scripts `pyproject.toml` declares went unmentioned. A
   guard now runs the demo's own filter against the declared entry points and
   fails if it does not find them.
+- **A CPU-only install could not collect the suite at all.** `torch` is an
+  optional dependency -- the `api` extra provides it -- and four modules
+  needed it at import time: `src/foundation/test_integration.py` imported
+  it outright, and `src/tissue_deconv/model.py` and
+  `src/priming/response_predictor.py` set the name to `None` and then
+  subclassed `nn.Module`, so they raised `AttributeError` at import. A
+  collection error is not a skip: pytest interrupted the whole run, so a
+  reader who installed the runtime and ran the documented test command got
+  no test results at all, not even the CPU ones. The modules now skip
+  (`pytest.importorskip`) or raise a clear ImportError that the packages'
+  `__init__` catches, so the packages import without torch and the CPU
+  tests still run. A guard collects the suite with `import torch` blocked
+  and fails if anything errors.
 - **Every quickstart installed the package without a test runner, then ran
   the test suite.** `pytest` is a development dependency: `pyproject.toml`
   puts it in the `dev` extra, not in the runtime `dependencies`. The

@@ -108,7 +108,7 @@ directory.
 ### 1.5 Verify installation
 
 ```bash
-# 749 in deepcatch's test/ + 126 in the pipeline's (at eb1529e)
+# 750 in deepcatch's test/ + 126 in the pipeline's (at eb1529e)
 cd cfdna-fragmentomics-pipeline && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 cd ../deepcatch && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 

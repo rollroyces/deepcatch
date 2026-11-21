@@ -47,7 +47,6 @@ from src.priming.data import (
     apply_priming_effect,
     simulate_clinical_trial,
 )
-from src.priming.integration import PrimingIntegration
 from src.priming.whitepaper import generate_whitepaper_sections
 from src.priming.pitch_deck import generate_pitch_deck, generate_slide_list
 
@@ -59,12 +58,17 @@ try:
         PrimingResponsePredictor,
         PatientStratifier,
     )
+    # `integration` needs torch too, so it belongs here: importing it at
+    # module level made the COLLECTION of this file an error in a venv
+    # without torch, and a collection error interrupts the whole run.
+    from src.priming.integration import PrimingIntegration
 
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
     PrimingResponsePredictor = None
     PatientStratifier = None
+    PrimingIntegration = None
 
 
 # ── Fixtures ─────────────────────────────────────────────────────

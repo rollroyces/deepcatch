@@ -819,3 +819,66 @@ def test_the_filter_check_can_see_a_wrong_filter():
         "the filter check cannot tell a filter that finds nothing from one "
         "that finds everything"
     )
+
+
+# --------------------------------------------------------------------------
+# rule 8: the suite collects without the deep-learning extra
+# --------------------------------------------------------------------------
+
+_BLOCK_TORCH_PLUGIN = '''
+"""A pytest plugin that makes `import torch` fail, as a CPU-only install
+does."""
+import sys
+
+
+class _BlockTorch:
+    def find_spec(self, name, path=None, target=None):
+        if name == "torch" or name.startswith("torch."):
+            # ModuleNotFoundError, not a bare ImportError: that is what a
+            # missing module raises, and it is what `pytest.importorskip`
+            # turns into a skip.
+            raise ModuleNotFoundError(f"No module named {name!r}", name=name)
+        return None
+
+
+sys.meta_path.insert(0, _BlockTorch())
+'''
+
+
+def test_the_suite_collects_without_the_deep_learning_extra():
+    """A CPU-only install must be able to collect the whole suite.
+
+    `torch` is an optional dependency -- the `api` extra provides it --
+    and the runtime install does not. A test module that imports it at
+    module level turns the COLLECTION into an error, and a collection
+    error interrupts the whole run: the reader who installed the runtime
+    and ran the documented test command got no test results at all, not
+    even the CPU ones. `src/foundation/test_integration.py` did exactly
+    that.
+
+    The check collects the suite with `import torch` blocked, which is
+    what a CPU-only install looks like.
+    """
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        plugin = Path(tmp) / "blocktorch.py"
+        plugin.write_text(_BLOCK_TORCH_PLUGIN, encoding="utf-8")
+        env = dict(os.environ)
+        env["PYTHONPATH"] = tmp + os.pathsep + env.get("PYTHONPATH", "")
+        proc = subprocess.run(
+            [sys.executable, "-m", "pytest", "src", "test", "--collect-only",
+             "-q", "-o", "addopts=", "-p", "blocktorch"],
+            cwd=_REPO_ROOT, capture_output=True, text=True, timeout=900,
+            env=env,
+        )
+        output = proc.stdout + proc.stderr
+
+    assert "error" not in output.lower().split("collected")[-1], (
+        "collecting the suite without torch must not error:\n"
+        + output[-1500:])
+    assert proc.returncode == 0, (
+        f"collecting the suite without torch exited {proc.returncode}:\n"
+        + output[-1500:])
+    assert "tests collected" in output or "test collected" in output, (
+        "the collection produced no test count:\n" + output[-1500:])

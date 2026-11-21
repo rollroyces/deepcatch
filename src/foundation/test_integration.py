@@ -16,7 +16,17 @@ import tempfile
 
 import numpy as np
 import pytest
-import torch
+
+# `torch` is an optional dependency: it lives in the `api` extra, not in
+# the runtime dependencies. Importing it at module level made the
+# COLLECTION of this file an error in a venv without it, and a collection
+# error interrupts the whole run -- so a reader who installed the
+# runtime and ran the documented test command got no test results at
+# all, not even the CPU ones. `importorskip` skips the module instead,
+# which is what the other torch-dependent test modules already do.
+torch = pytest.importorskip(
+    "torch", reason="torch is not installed (the [api] extra provides it)"
+)
 
 # Ensure deepcatch is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))

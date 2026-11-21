@@ -54,10 +54,18 @@ try:
 
     _HAS_TORCH = True
 except ImportError:
+    # `torch` is an optional dependency: it lives in the `api` extra, not
+    # in the runtime dependencies. Setting the names to None and carrying
+    # on did not work: the classes below subclass `nn.Module`, so the
+    # module raised `AttributeError: 'NoneType' object has no attribute
+    # 'Module'` at import -- an error, not a skip, which interrupted the
+    # collection of a CPU-only install. Raising the ImportError itself
+    # says what is missing, and the package's `__init__` catches it.
     _HAS_TORCH = False
-    torch = None
-    nn = None
-    F = None
+    raise ImportError(
+        "torch is required for src.tissue_deconv.model -- install the "
+        "extra: pip install -e \".[api]\""
+    ) from None
 
 from .config import TissueDeconvConfig, DEFAULT_CONFIG, SUPPORTED_TISSUES
 
