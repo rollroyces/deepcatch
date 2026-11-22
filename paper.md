@@ -141,7 +141,7 @@ Reproducibility is enforced rather than asserted:
   manuscript directly from the committed JSON, so the prose and the
   artifacts cannot drift apart.
 
-The suite is 978 tests (`pytest src test -q`), split across two CI jobs
+The suite is 980 tests (`pytest src test -q`), split across two CI jobs
 so that the core fragmentomics path stays installable without a deep
 learning stack.
 
@@ -159,10 +159,14 @@ methylation pipeline, harmonization, the two readiness reports);
 
 MIT-licensed, at <https://github.com/rollroyces/deepcatch>. Install with
 `pip install -e .` (Python ≥3.10; the CPU fragmentomics path needs only
-NumPy, SciPy, scikit-learn, pandas and statsmodels). Docker images and
-the full CI configuration are included. The experiment scripts refetch
-their public inputs, and the artifacts they produce are committed to the
-repository so that the numbers can be checked without running anything.
+NumPy, SciPy, scikit-learn, pandas, matplotlib, seaborn, requests and
+tqdm). The test suite needs `pip install -e ".[dev]"`, which adds
+pytest; the deep-learning extras are `pip install -e ".[api]"`, and
+without them the deep-learning tests skip instead of failing. Docker
+images and the full CI configuration are included. The experiment
+scripts refetch their public inputs, and the artifacts they produce are
+committed to the repository so that the numbers can be checked without
+running anything.
 
 # Limitations
 

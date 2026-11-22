@@ -135,6 +135,19 @@ cohort size.
   `__init__` catches, so the packages import without torch and the CPU
   tests still run. A guard collects the suite with `import torch` blocked
   and fails if anything errors.
+- **The JOSS paper told a reviewer to install the runtime and then run
+  the suite.** `paper.md` -- the file a JOSS reviewer reads -- said "install
+  with `pip install -e .`" and, a few lines later, "the suite is 978
+  tests". The base install has no pytest, so the reviewer who follows the
+  instruction and runs the suite gets "No module named pytest", on the
+  very claim the paper makes about reproducibility. The paragraph now
+  names the dev extra for the test suite and the api extra for the
+  deep-learning modules, and lists the dependencies the runtime install
+  actually brings (it also said "the CPU fragmentomics path needs only
+  NumPy, SciPy, scikit-learn, pandas and statsmodels": `statsmodels` is
+  in no dependency set at all, and `matplotlib`, `seaborn`, `requests` and
+  `tqdm` are). A document that quotes the suite's size must now also say
+  how to get a test runner.
 - **The repository's stub torch made every "is torch installed?" probe
   lie.** `src/multimodal_fusion/advanced_fusion.py` installs a placeholder
   torch in `sys.modules` when the real one is missing, so that the CPU

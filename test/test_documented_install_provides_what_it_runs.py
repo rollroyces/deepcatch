@@ -874,6 +874,67 @@ def test_the_filter_check_can_see_a_wrong_filter():
 
 
 # --------------------------------------------------------------------------
+# rule 9: a document that quotes the suite's size says how to get a runner
+# --------------------------------------------------------------------------
+
+_SUITE_SIZE = re.compile(
+    r"\b\d{3}\s+tests?\b|\b\d{3}\s+collected\b|Tests-\d{3}%20"
+)
+
+
+def test_a_document_that_quotes_the_suite_size_says_how_to_get_the_runner():
+    """A document that states the suite's size must also install pytest.
+
+    The JOSS paper is the file a JOSS reviewer reads, and it said
+    "install with `pip install -e .`" -- and, a few lines later, "the
+    suite is 978 tests". The base install has no pytest, so the
+    reviewer who follows the instruction and then runs the suite gets
+    "No module named pytest" -- on the very claim the paper makes about
+    reproducibility.
+    """
+    offenders: list[str] = []
+
+    for name in _DOCS:
+        text = _doc_text(name)
+        if not _SUITE_SIZE.search(text):
+            continue
+        installs = [line for line in _lines_of(name) if _INSTALL.match(line)]
+        if not installs:
+            # The document states a size but tells the reader nothing
+            # about installing; that is a different (weaker) problem.
+            continue
+        if any(_provides_pytest(line) for line in installs):
+            continue
+        offenders.append(f"{name}: {installs[0].strip()}")
+
+    assert not offenders, (
+        "a document states the suite's size but only installs the runtime:\n  "
+        + "\n  ".join(offenders)
+        + "\nAdd the dev extra -- `pip install -e \".[dev]\"` -- so the reader "
+          "can run the suite the document talks about."
+    )
+
+
+def test_the_size_rule_would_catch_the_joss_paper():
+    """The rule must reject a document with a runtime-only install."""
+    runtime_only = [
+        line for line in (
+            "pip install -e .",
+            "pip install numpy scipy",
+        )
+        if _INSTALL.match(line)
+    ]
+    assert runtime_only, "the extractor found no install command"
+    assert not any(_provides_pytest(line) for line in runtime_only), (
+        "the rule cannot tell a runtime-only install from one that provides "
+        "pytest"
+    )
+    assert any(
+        _provides_pytest(line) for line in ('pip install -e ".[dev]"',)
+    ), "the rule rejects an install that does provide pytest"
+
+
+# --------------------------------------------------------------------------
 # rule 8: the suite collects without the deep-learning extra
 # --------------------------------------------------------------------------
 
