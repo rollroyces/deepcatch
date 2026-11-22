@@ -199,10 +199,11 @@ pipeline，无需再做任何配置。完整顺序（含各平台注意事项）
 每个数字所来自的公开档案见
 [`docs/PUBLIC_DATA_SOURCES.md`](docs/PUBLIC_DATA_SOURCES.md)。
 
-**最小依赖**（仅 CPU 片段组学）：
-```bash
-pip install numpy scipy scikit-learn pandas statsmodels
-```
+**依赖**：运行时安装已带上 NumPy、SciPy、scikit-learn、pandas、matplotlib、
+seaborn、requests 与 tqdm——不必手动再装。`statsmodels` 是**选装**：它提供
+库内 GC 校正的 LOWESS 平滑，缺少时该校正会退回二次多项式回归。已发表的
+cross-study 数字不依赖它：它们的 GC 校正通道是随仓库发布的 artifact
+（`scripts/gc_correction.py`），不是运行时算出来的平滑。
 
 **可选**——深度学习（GNN、foundation、组织解卷积）、BAM/FASTQ：
 ```bash

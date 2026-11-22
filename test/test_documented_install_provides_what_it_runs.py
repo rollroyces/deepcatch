@@ -136,7 +136,16 @@ _SHELL_LANGUAGES = {
 }
 
 # The phrase that ties a package list to the base install.
-_AUTO_INSTALLED = "installed automatically"
+# Phrases that tie a list of packages to what `pip install -e .` brings.
+# The README's "Minimum dependencies" was the same claim in other words:
+# it listed `statsmodels`, which no dependency set declares (the code
+# falls back to a quadratic regression without it), and it told the reader
+# to install by hand the packages the runtime install already brings.
+_AUTO_INSTALLED = (
+    "installed automatically",
+    "Minimum dependencies",
+    "最小依赖",
+)
 
 
 # --------------------------------------------------------------------------
@@ -389,19 +398,27 @@ def _auto_install_offenders(text: str, runtime: set[str]) -> list[str]:
     the ones that really are runtime dependencies.
     """
     offenders: list[str] = []
-    for match in re.finditer(re.escape(_AUTO_INSTALLED), text):
-        tail = text[match.end():]
-        block = re.search(r"```[a-z]*\n(.*?)```", tail, re.S)
-        if not block:
-            continue
-        for line in block.group(1).splitlines():
-            entry = line.split("#")[0].strip()
-            if not entry:
+    for phrase in _AUTO_INSTALLED:
+        for match in re.finditer(re.escape(phrase), text):
+            tail = text[match.end():]
+            block = re.search(r"```[a-z]*\n(.*?)```", tail, re.S)
+            if not block:
                 continue
-            package = _package_name(entry.split()[0])
-            if not package or package in runtime:
-                continue
-            offenders.append(entry)
+            for line in block.group(1).splitlines():
+                entry = line.split("#")[0].strip()
+                if not entry:
+                    continue
+                # A list can be written one package per line (`text`
+                # block) or as a command (`pip install numpy scipy`).
+                if entry.startswith(("pip install", "python -m pip install")):
+                    names = entry.split("install", 1)[1].split()
+                else:
+                    names = entry.split()[:1]
+                for name in names:
+                    package = _package_name(name)
+                    if not package or package in runtime:
+                        continue
+                    offenders.append(f"{entry} ({package})")
     return offenders
 
 
@@ -435,17 +452,28 @@ def test_the_automatic_install_check_catches_an_extra_package():
         "```text\nnumpy >= 1.24.0\ntorch >= 2.0.0\n```\n"
     )
     offenders = _auto_install_offenders(text, {"numpy"})
-    assert offenders == ["torch >= 2.0.0"], offenders
+    assert offenders == ["torch >= 2.0.0 (torch)"], offenders
+
+    # The same claim written as the command a reader would run: the
+    # packages are the ones after "install", not the word "pip".
+    command = (
+        "**Minimum dependencies** (CPU fragmentomics only):\n"
+        "```bash\npip install numpy scipy statsmodels\n```\n"
+    )
+    offenders = _auto_install_offenders(command, {"numpy", "scipy"})
+    assert offenders == ["pip install numpy scipy statsmodels (statsmodels)"], (
+        offenders)
 
 
 def test_the_wiki_lists_the_runtime_dependencies_it_promises():
     """The wiki's own list must be the runtime list, not a subset."""
     text = _doc_text("wiki/Getting-Started.md")
-    assert _AUTO_INSTALLED in text, "the wiki no longer makes this claim"
+    phrase = _AUTO_INSTALLED[0]
+    assert phrase in text, "the wiki no longer makes this claim"
 
     runtime = {_package_name(req) for req in _runtime_dependencies()}
     block = re.search(
-        r"```[a-z]*\n(.*?)```", text.split(_AUTO_INSTALLED, 1)[1], re.S
+        r"```[a-z]*\n(.*?)```", text.split(phrase, 1)[1], re.S
     )
     assert block, "the wiki no longer has the dependency list"
     listed = {

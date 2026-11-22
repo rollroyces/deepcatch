@@ -174,7 +174,13 @@ cohort size.
   `statsmodels` is in no extra at all -- while the list omitted
   `requests` and `tqdm`, which are. The list is the runtime list now, and
   the optional packages are listed separately with the extra that provides
-  each.
+  each. The READMEs made the same claim as "Minimum dependencies" and
+  told the reader to install by hand the packages the runtime install
+  already brings, including `statsmodels` -- which is optional (the GC
+  correction falls back to a quadratic regression without it, and the
+  published cross-study numbers use the committed GC artifact rather than
+  a smoothing computed at run time). A list that claims to be what the
+  install provides can now only name packages that the install provides.
 - **Three test counts in the READMEs had drifted.** The English README
   claimed "15 passed" for the publication-readiness suite, which collects
   16, and "702 passed, 19 skipped, 13 deselected" for the fast-path gate,

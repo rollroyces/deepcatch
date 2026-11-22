@@ -202,10 +202,13 @@ documents the one-command reproduction; and
 [`docs/PUBLIC_DATA_SOURCES.md`](docs/PUBLIC_DATA_SOURCES.md) lists the
 public archives every number comes from.
 
-**Minimum dependencies** (CPU fragmentomics only):
-```bash
-pip install numpy scipy scikit-learn pandas statsmodels
-```
+**Dependencies:** the runtime install brings NumPy, SciPy, scikit-learn,
+pandas, matplotlib, seaborn, requests and tqdm — nothing to install by
+hand. `statsmodels` is **optional**: it provides the LOWESS smoothing for
+the library's GC correction, and without it that correction falls back to
+a quadratic regression. The published cross-study numbers do not depend on
+it: their GC-corrected channel is a committed artifact
+(`scripts/gc_correction.py`), not a smoothing computed at run time.
 
 **Optional** — deep learning (GNN, foundation, tissue deconv), BAM/FASTQ:
 ```bash
