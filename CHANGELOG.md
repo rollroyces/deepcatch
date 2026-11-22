@@ -106,6 +106,28 @@ cohort size.
 
 ### Fixed
 
+- **The documented command for rebuilding the held-out cohort selected
+  nothing.** `scripts/fetch_external_cohort.py` caps how many samples each
+  publication contributes, and its quota defaulted to empty while
+  `--max-per-publication` defaulted to 0 -- so the command the
+  reproduction driver tells a reader to run selected no samples and
+  stopped with "nothing selected". The `--help` example
+  (`9=240,7=31,1=12`) was worse: it ran, and it selected a cohort that
+  is not the published one (publication 1 contributed 12 samples where
+  the committed cohort has 52). The default is now the quota that
+  reproduces the committed cohort, and a guard compares it with the
+  per-publication counts in the published artifact -- offline, so it needs
+  neither the API nor the S3 bucket.
+- **The FinaleDB API is up, and the repository said it was down.**
+  `docs/PRETRAINING.md`, `paper/REPRODUCE.md` and `paper/REPRODUCE.sh`
+  all stated that the API had been degraded since 2026-09-21. The
+  repository's own probe (`scripts/_verify_publication_readiness.py`)
+  reports the verdict `ok` as of 2026-11-22 -- every endpoint answers
+  200 and `/seqrun` enumerates 2,579 runs -- and a real fetch downloaded
+  and extracted samples from the public S3 bucket. The S3 probe reports
+  `partial`: the fragment objects it checks are reachable, some other
+  keys answer 403. The claims are corrected, with the date they were
+  measured.
 - **Three documents quoted the headline figures without being pinned to
   them.** `paper/METHODS_PAPER_STATUS.md` restates the methods paper's
   §3.2 rows, `wiki/Jiang-4mer-Validation.md` quotes the Jiang

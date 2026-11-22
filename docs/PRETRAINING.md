@@ -318,9 +318,9 @@ For a future PR with a non-truncating network path, the live fetch
 (see the commented `extract_5channel_from_frag()` function and the
 `stream_download()` 500 MB guard).
 
-### 6. FinaleDB REST API in degraded state
+### 6. The FinaleDB REST API: down in September, up now
 
-As of 2026-09-21:
+On 2026-09-21 the API was in a degraded state:
 
 - `GET /api/v1/misc` → 200 OK
 - `GET /api/v1/seqrun` → 500 Internal Server Error (Postgres down)
@@ -328,11 +328,26 @@ As of 2026-09-21:
 - S3 bucket `finaledb.epifluidlab.cchmc.org` → public, `HEAD` 200 OK on
   individual `entries/EE*/hg38/EE*.hg38.frag.tsv.bgz` keys
 
-Without the API we cannot enumerate the sample-name → EE-id mapping
-to do a fresh live-fetch at scale. The hard-coded mapping
-`{"C330": 85756}` in the script is the only confirmed pair from a
-prior session's working pipeline; the rest of the cohort was loaded
-from the pre-extracted cache.
+**As of 2026-11-22 the API is up again.** The repository's own probe
+(`scripts/_verify_publication_readiness.py`, which checks `/misc`,
+`/publication`, `/seqrun` and `/summary`) reports the verdict `ok`:
+every endpoint answers 200, and `/seqrun` enumerates 2,579 runs. The S3
+probe reports `partial`: the fragment objects it checks are reachable,
+while some other keys answer 403.
+
+So the sample-name → EE-id mapping can be enumerated again, and the
+held-out cohort can be fetched from the public API and S3 with no IRB
+and no credentials — `scripts/fetch_external_cohort.py` does it, and its
+default quota reproduces the committed cohort (240 + 31 + 60 samples
+selected, 322 extracted after the too-large or unreachable ones are
+dropped).
+
+What did not change is the reason the cross-study pool is not rebuilt
+by the reproduction driver: the training features are ~100 GB of
+fragment files, so the driver runs against the pre-extracted cache.
+The hard-coded mapping `{"C330": 85756}` in
+`scripts/pretrain_synthetic_v0.py` is still only a single confirmed
+pair from a prior session's working pipeline.
 
 ## Reproducing this run
 

@@ -467,8 +467,10 @@ def main() -> int:
                 "to a future PR with a non-truncating network path."
             ),
             "finaledb_status_at_run_time": (
-                "REST API in degraded state (500 on /api/v1/seqrun); "
-                "S3 bucket public and serving *.frag.tsv.bgz."
+                "REST API in degraded state at the 2026-09-21 run (500 on "
+                "/api/v1/seqrun); it answered 200 on 2026-11-22, see "
+                "docs/PRETRAINING.md section 6. The S3 bucket is public and "
+                "serves *.frag.tsv.bgz."
             ),
         },
         "sample_ids": sample_ids,

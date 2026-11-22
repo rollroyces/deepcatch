@@ -24,7 +24,8 @@
 # Requirements:
 #   - Python 3.x with the repo venv at .venv/ (a system python3 also works)
 #   - FinaleDB features already pre-extracted to $DEEPCATCH_FEATURES_DIR
-#     (the FinaleDB REST API is in a degraded state as of 2026-09-21)
+#     (re-extracting means re-downloading ~100 GB; the API itself is up
+#     -- checked 2026-11-22 with scripts/_verify_publication_readiness.py)
 #   - the held-out external cohort fetched into $DEEPCATCH_EXTERNAL_DIR
 #     (scripts/fetch_external_cohort.py — public API + S3, no IRB needed)
 #   - for the methylation channel only: java + FinaleMe 0.58 + the cached
@@ -341,6 +342,7 @@ echo "================================================================"
 if [[ ! -d "${EXTERNAL_DIR}" ]]; then
     echo "[REPRODUCE] !! external cohort not found: ${EXTERNAL_DIR}" >&2
     echo "[REPRODUCE]    run scripts/fetch_external_cohort.py first (public API + S3)." >&2
+    echo "[REPRODUCE]    Its default quota reproduces the committed cohort." >&2
     exit 4
 fi
 "${PYTHON}" scripts/external_validation_finaledb.py \

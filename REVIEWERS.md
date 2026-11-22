@@ -38,7 +38,7 @@ Fragmentomics cross-validated on independent real cfDNA (FLARE/GSE317007).
 
 All code open source. All data from GDC (TCGA-LUAD MAFs), GEO
 (GSE317007, GSE185307) and the public FinaleDB API/S3 (no IRB, no data-use
-agreement).  994 tests across the two CI jobs (808 core + 186 deep-learning).
+agreement).  998 tests across the two CI jobs (812 core + 186 deep-learning).
 
 ---
 
@@ -141,7 +141,7 @@ Output: `results/real_tcga_validation.json` with all AUCs, sweep, and
 per-seed metrics.  Requires only numpy/scipy/scikit-learn — the GDC MAFs
 are downloaded automatically on first run (open access).
 
-Full test suite: `pytest src test -q` — 994 collected on Python 3.11-3.14,
+Full test suite: `pytest src test -q` — 998 collected on Python 3.11-3.14,
 torch 2.13, torch_geometric.
 
 ---

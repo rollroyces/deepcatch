@@ -260,15 +260,29 @@ def download_and_extract(job: dict, out_dir: str, raw_dir: str,
         return {**job, "status": "error", "error": f"{type(exc).__name__}: {exc}"}
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
+    """The argument parser.
+
+    Split out of `main()` so that a test can read the defaults without
+    running the fetch: the default quota is what makes the documented
+    command reproduce the committed cohort, and that is a property of
+    the script, not of a network call.
+    """
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--out-dir", default="data/external_cohort")
     ap.add_argument("--publications", type=int, nargs="+", default=[9, 7, 1])
-    ap.add_argument("--quota", default="",
-                    help="per-publication sample budget, e.g. '9=240,7=31,1=12'. "
-                         "Publications not listed are skipped.")
-    ap.add_argument("--max-per-publication", type=int, default=0,
+    ap.add_argument("--quota", default="9=240,7=31,1=240",
+                    help="per-publication sample budget, e.g. '9=240,7=31,"
+                         "1=240'. The default is the quota that reproduces "
+                         "the committed cohort (results/"
+                         "external_validation_finaledb.json): 240 + 31 + 60 "
+                         "samples selected, 322 extracted after the "
+                         "too-large or unreachable ones are dropped. A "
+                         "smaller cap for a publication yields a DIFFERENT "
+                         "cohort, so the published numbers do not reproduce "
+                         "with it. Publications not listed are skipped.")
+    ap.add_argument("--max-per-publication", type=int, default=240,
                     help="fallback budget for publications not in --quota")
     ap.add_argument("--max-mb", type=float, default=400.0,
                     help="skip samples whose fragment file exceeds this size")
@@ -282,7 +296,11 @@ def main() -> int:
               "files again. Use this to enlarge an existing cohort: the "
               "manifest still describes every sample, and only the new "
               "ones cost bandwidth."))
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> int:
+    args = build_parser().parse_args()
 
     out_dir = os.path.abspath(args.out_dir)
     raw_dir = os.path.join(out_dir, "raw")

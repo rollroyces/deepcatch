@@ -220,9 +220,15 @@ same numbers, to the last digit.
   per-script drivers documented in `docs/SENS_AT_SPEC_ABLATION.md`
   and `docs/SPARSE_AWARE_ABLATION.md`.
 - It does **not** contact the FinaleDB REST API — the cross-study pool runs
-  against the pre-extracted feature cache (FinaleDB API has been degraded
-  since 2026-09-21; see `docs/PRETRAINING.md`). The held-out external cohort
-  is the exception: fetch it once with `scripts/fetch_external_cohort.py`.
+  against the pre-extracted feature cache (re-extracting it means
+  re-downloading ~100 GB). The API itself is up (checked 2026-11-22: the
+  repository's own probe in `scripts/_verify_publication_readiness.py`
+  reports the verdict `ok`, with every endpoint answering 200), so a
+  fresh cohort CAN be enumerated; see `docs/PRETRAINING.md` for the
+  current state of the API and the S3 bucket. The held-out external
+  cohort is the exception: fetch it once with
+  `scripts/fetch_external_cohort.py`, whose default quota reproduces the
+  committed cohort.
 - It does **not** rebuild the CpG matrices from raw fragments. That is the
   FinaleMe BAM+matrix stage (≈12 min per sample, whole genome); see
   `docs/METHYLATION_PIPELINE.md` §4. The driver reuses the cached matrices.
