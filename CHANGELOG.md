@@ -106,6 +106,17 @@ cohort size.
 
 ### Fixed
 
+- **Three documents quoted the headline figures without being pinned to
+  them.** `paper/METHODS_PAPER_STATUS.md` restates the methods paper's
+  §3.2 rows, `wiki/Jiang-4mer-Validation.md` quotes the Jiang
+  publication's per-publication AUC, and `docs/V3_DESIGN.md` quotes the
+  panel LLR anchor -- and none of the three was named in the list of
+  documents a quoted number must appear in. A regenerated artifact could
+  have moved them without anything noticing. They are named now, each pin
+  read in its document first: a document that merely ROUNDS to the same
+  number (a range's endpoint, or a threshold written as a target) is
+  not named, because the quote test matches at three decimals and such a
+  document would pass the check without ever quoting the figure.
 - **The submission PDF was never checked for the things a preprint
   server rejects.** There is a guard for whether the PDF is the
   manuscript (the figures, the numbers); there was none for whether the

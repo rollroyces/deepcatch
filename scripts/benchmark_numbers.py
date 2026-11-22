@@ -329,6 +329,46 @@ EXTRA_DOCS = {
         "paper/METHODS_PAPER.md",
         "results/README.md",
     ],
+    # Three more documents that quote the headline figures and were not
+    # named: the methods-paper status file, the wiki's Jiang page and the
+    # V3 design note. They quote the numbers, so a regenerated artifact
+    # could have moved them without anything noticing.
+    #
+    # Each pin was read in its document before it was added: the status
+    # file restates the methods paper's §3.2 rows (Jiang 0.9789,
+    # Cristiano 0.9704, pooled 0.9770, and the GC-corrected 0.9661 /
+    # 0.9698 / 0.9684 with sens@99 0.700), the wiki's LC-vs-Control row
+    # is the Jiang publication's per-publication AUC, and the V3 design
+    # note quotes the panel LLR anchor (0.921). A document that merely
+    # rounds to the same number -- a range's endpoint, or a threshold
+    # written as a target -- is NOT named here: the quote test matches
+    # at three decimals, so such a document would pass the check without
+    # ever quoting the figure.
+    ("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+        "wiki/Jiang-4mer-Validation.md",
+    ],
+    ("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'sens_at_spec_99')): [
+        "paper/METHODS_PAPER_STATUS.md",
+    ],
+    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')): [
+        "docs/V3_DESIGN.md",
+    ],
 }
 
 QUOTED_SPECIAL = [
