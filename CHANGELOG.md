@@ -106,6 +106,18 @@ cohort size.
 
 ### Fixed
 
+- **The submission PDF was never checked for the things a preprint
+  server rejects.** There is a guard for whether the PDF is the
+  manuscript (the figures, the numbers); there was none for whether the
+  file is one a server can process. `test/test_submission_pdf_is_submittable.py`
+  now requires every font in the PDF to be embedded -- an unembedded one
+  is substituted when the PDF is rendered, so the paper comes out in the
+  wrong typeface -- the PDF not to be encrypted (bioRxiv's submission
+  help lists locked or encrypted PDFs among the formats it does not
+  support), its text to be extractable (a scanned page cannot be
+  proof-read or indexed), and its size to be inside arXiv's 10 MB limit.
+  The PDF this repository builds is 8 pages, 265 KB, with all sixteen
+  fonts embedded.
 - **The arXiv source bundle was never checked against arXiv's own rules.**
   arXiv does not compile a submission with the author's toolchain: it
   unpacks the archive and compiles it with its own TeX Live, with no

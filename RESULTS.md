@@ -507,9 +507,9 @@ so its sens@spec and calibration figures move for the same reason.
 
 | Repo | Tests | CI |
 |---|---|---|
-| DeepCatch | **762** in `test/`, **43** in `src/foundation/test_integration.py`, **990** across `pytest src test` | 10 jobs across 3 workflows green (8 of them in `validate.yml`) |
+| DeepCatch | **766** in `test/`, **43** in `src/foundation/test_integration.py`, **994** across `pytest src test` | 10 jobs across 3 workflows green (8 of them in `validate.yml`) |
 | Pipeline | **126** unit tests across 21 test files, at its HEAD `eb1529e` | 4 jobs green |
-| Combined | **990** in DeepCatch + **126** in the pipeline | **14 jobs green** |
+| Combined | **994** in DeepCatch + **126** in the pipeline | **14 jobs green** |
 
 The DL module tests (foundation, GNN, tissue deconv, priming) are
 *smoke tests* — they verify the models train and produce non-trivial
@@ -518,13 +518,13 @@ performance benchmarks. See Section 11 for the distinction.
 
 Note on test counting: three numbers are in play, each with its own
 scope, and all three are current as of 2026-11-18. `pytest test/`
-collects **762** (the standalone test files); `pytest src/` collects
+collects **766** (the standalone test files); `pytest src/` collects
 **228** (it also finds the embedded `test_*.py` files inside
 `src/foundation/`, `src/methylation_gnn/`, and the other modules);
-`pytest src test` collects **990**, which is the number the README badge
+`pytest src test` collects **994**, which is the number the README badge
 states. The CI core job runs `pytest test/` plus the module paths it
 names, and the deep-learning job runs the torch modules separately, so
-the two jobs together account for the 990.
+the two jobs together account for the 994.
 
 This table is repo state rather than a research result, so it is
 current; the research figures in Sections 1-7 remain the 2026-08-24
