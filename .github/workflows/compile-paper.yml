@@ -14,6 +14,9 @@ on:
       # the arXiv source bundle is built from the manuscript, so a change
       # to its builder must re-trigger the job that verifies it
       - 'scripts/make_arxiv_bundle.py'
+      # and the guards that check the bundle against arXiv's own rules
+      - 'test/test_arxiv_bundle_is_submittable.py'
+      - 'test/test_arxiv_bundle_is_current.py'
   workflow_dispatch:
 
 # One paper build at a time per branch, and the newer one wins.
@@ -84,15 +87,29 @@ jobs:
       # The arXiv source bundle is the fallback venue's artefact, and the
       # submission PDF is uploaded before this runs on purpose: a broken
       # bundle must never take the submission artefact down with it. The
-      # step reports the failure as a warning instead of failing the job.
+      # step REPORTS the failure rather than swallowing it -- with
+      # `continue-on-error` the job stayed green and the broken archive was
+      # uploaded anyway, which is the one outcome the ordering was meant
+      # to prevent. The PDF artefact is already uploaded by this point, so
+      # failing here costs the bundle and not the PDF.
       - name: Verify the arXiv source bundle
-        continue-on-error: true
         run: |
           if python scripts/make_arxiv_bundle.py --verify; then
             echo "::notice::the arXiv source bundle compiles standalone"
           else
-            echo "::warning::the arXiv source bundle did not verify; the submission PDF above is unaffected"
+            echo "::error::the arXiv source bundle did not verify; the submission PDF above is unaffected"
+            exit 1
           fi
+
+      # The bundle is what arXiv receives, and arXiv compiles it with its
+      # own TeX Live, without shell escape and without the author's
+      # toolchain. The checks below are the rules arXiv applies on top of
+      # "it compiles"; they need the bundle, which only this job has.
+      - name: Check the arXiv bundle against arXiv's submission rules
+        run: |
+          python -m pip install -q pytest
+          python -m pytest test/test_arxiv_bundle_is_submittable.py \
+            test/test_arxiv_bundle_is_current.py -q --no-header
 
       # The bundle is uploaded rather than left on one person's machine:
       # a source archive is what arXiv receives, and a local copy can be

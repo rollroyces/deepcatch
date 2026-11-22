@@ -106,6 +106,27 @@ cohort size.
 
 ### Fixed
 
+- **The arXiv source bundle was never checked against arXiv's own rules.**
+  arXiv does not compile a submission with the author's toolchain: it
+  unpacks the archive and compiles it with its own TeX Live, with no
+  shell escape and no external programs. A bundle that works locally can
+  still come back as "no output produced", and the author learns it from
+  an error screen rather than from a check. The bundle this repository
+  builds is deliberately plain -- `article`, `hyperref`, `geometry`,
+  `amsmath`, `booktabs`, `graphicx`, and the bibliography written inline
+  -- and `test/test_arxiv_bundle_is_submittable.py` now keeps it that
+  way: no package arXiv cannot run, no shell escape, no absolute path,
+  every figure it names a member of the bundle, no build leftovers, no
+  file above arXiv's 10 MB limit, and a compiled `.bbl` whenever the
+  manuscript reads its references from a bibliography file.
+- **A broken arXiv bundle would have been uploaded as if it were fine.**
+  The paper workflow verified the bundle with `continue-on-error: true`,
+  so the job stayed green and the broken archive was uploaded anyway --
+  the one outcome the step's own comment said it was there to prevent.
+  The step now fails the job (the submission PDF is uploaded before it,
+  so the PDF artefact is unaffected), and the paper job runs the bundle
+  guards, which it did not: the bundle exists only in that job, so the
+  checks had no job to run in.
 - **The three demo scripts were one directory short of the repository
   root.** Each derives the root from its own location -- `docs/demo/terminal`
   is three levels down, so the path needs three `..` -- and each used two.
