@@ -668,10 +668,20 @@ def test_advanced_fusion_imports_without_torch():
     import sys
     import types
 
-    # Save real torch
-    real_torch = sys.modules.get("torch")
-    real_nn = sys.modules.get("torch.nn")
-    real_func = sys.modules.get("torch.nn.functional")
+    # Save real torch -- and every key the stub installs, so that the
+    # test can put all of them back. Leaving one behind shadows the real
+    # module for the rest of the session: "torch.utils" left behind is
+    # not a package, so the real torch's own
+    # `from torch.utils.serialization import config` (inside torch.save)
+    # fails with "No module named 'torch.utils'; 'torch' is not a
+    # package" -- and the failure surfaces in an unrelated test.
+    saved = {
+        key: sys.modules.get(key)
+        for key in (
+            "torch", "torch.nn", "torch.nn.functional",
+            "torch.nn.utils", "torch.utils", "torch.utils.data",
+        )
+    }
 
     try:
         # Stub torch with no nn.Module (simulates partial install)
@@ -703,13 +713,13 @@ def test_advanced_fusion_imports_without_torch():
         except (ImportError, RuntimeError) as e:
             assert "torch" in str(e).lower(), f"error should mention torch, got: {e}"
     finally:
-        # Restore real torch
-        if real_torch is not None:
-            sys.modules["torch"] = real_torch
-        if real_nn is not None:
-            sys.modules["torch.nn"] = real_nn
-        if real_func is not None:
-            sys.modules["torch.nn.functional"] = real_func
+        # Restore real torch -- every key the stub touched, not just the
+        # three it replaced.
+        for key, value in saved.items():
+            if value is not None:
+                sys.modules[key] = value
+            else:
+                sys.modules.pop(key, None)
         # Drop cached modules
         for mod in list(sys.modules):
             if "src.multimodal_fusion" in mod:

@@ -180,6 +180,20 @@ except (ImportError, AttributeError):  # pragma: no cover
     _sys.modules["torch.nn.utils"] = fake_torch.nn.utils
     _sys.modules["torch.utils"] = fake_torch.utils
     _sys.modules["torch.utils.data"] = fake_torch.utils.data
+    # Every key the stub installs. A test that simulates a torch-free
+    # environment has to put them all back: leaving one behind shadows
+    # the real module for the rest of the session -- and "torch.utils"
+    # left behind is not a package, so the real torch's own
+    # `from torch.utils.serialization import config` fails with
+    # "No module named 'torch.utils'; 'torch' is not a package".
+    _STUB_INSTALLED_KEYS = (
+        "torch",
+        "torch.nn",
+        "torch.nn.functional",
+        "torch.nn.utils",
+        "torch.utils",
+        "torch.utils.data",
+    )
     torch = fake_torch  # type: ignore
     nn = fake_torch.nn  # type: ignore
     F = fake_torch.nn.functional  # type: ignore

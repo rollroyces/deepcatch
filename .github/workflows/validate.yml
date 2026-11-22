@@ -58,6 +58,23 @@ jobs:
           python -m pytest test/test_test_count_consistency.py \
             test/test_documented_install_provides_what_it_runs.py \
             -q --no-header
+      # The reproduction driver's own gate set, in one session. The
+      # combination matters: one of these tests simulates a torch-free
+      # environment, and the foundation tests that follow it in the same
+      # session are the ones that break if the simulation leaves
+      # anything in sys.modules. The DL job above runs the foundation
+      # module on its own and the core job runs these tests on their
+      # own -- so without this step the interaction was covered by
+      # nothing.
+      - name: Run the reproduction gate set (torch required)
+        run: |
+          python -m pytest test/test_biomedical_review_fixes.py \
+            test/test_sparse_aware_projection.py \
+            test/test_finaledb_pretrained_loader.py \
+            test/test_pretrain_bug_fix.py \
+            test/test_harmonization_check.py \
+            test/test_per_cancer_sens_at_spec.py \
+            src/foundation/test_integration.py -q --no-header
 
   # ── Real-data pipeline smoke test (no data download) ──────────────────
   # Verifies the real-TCGA validation fails LOUDLY (not silently) when no

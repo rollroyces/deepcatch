@@ -147,6 +147,24 @@ cohort size.
   with "No module named 'torch.utils'; 'torch' is not a package"). A CPU
   install now runs the gate as 685 passed + 54 skipped + 2 deselected, and
   the README states that outcome next to the one with torch.
+- **The stub torch leaked into the session and broke the real torch's own
+  imports.** The stub installs `torch`, `torch.nn`, `torch.nn.functional`
+  and `torch.nn.utils` into `sys.modules` when torch is missing.
+  `test/test_biomedical_review_fixes.py` simulates a torch-free
+  environment by putting a fake torch there and restoring the real one
+  afterwards -- but it restored only three of the keys, so the stub's
+  `torch.nn.utils` survived the test. When the stub was extended with
+  `torch.utils` (so that `from torch.utils.data import ...` can work in
+  a CPU-only install), the leak grew into a crash: the real torch's
+  `torch.save` does `from torch.utils.serialization import config`, and
+  with the stub's `torch.utils` in `sys.modules` -- which is not a
+  package -- that raised "No module named 'torch.utils'; 'torch' is not
+  a package", and two checkpoint tests failed in the reproduction
+  driver's gate. The stub now lists every key it installs, the test
+  restores all of them, and the deep-learning CI job runs the
+  reproduction driver's gate set in one session: the DL job ran the
+  foundation module on its own and the core job ran those tests on their
+  own, so the interaction was covered by nothing.
 - **Every quickstart installed the package without a test runner, then ran
   the test suite.** `pytest` is a development dependency: `pyproject.toml`
   puts it in the `dev` extra, not in the runtime `dependencies`. The
