@@ -212,14 +212,23 @@ def test_the_bundle_carries_no_build_leftovers():
     )
 
 
+def _sizes() -> list[tuple[str, int]]:
+    """The bundle's members, name -> size in bytes."""
+    if not _BUNDLE.exists():
+        pytest.skip(
+            "no local arXiv bundle; CI builds one from the committed "
+            "manuscript and publishes it as `deepcatch-arxiv-source`")
+    with tarfile.open(_BUNDLE, "r:gz") as tar:
+        return [(member.name, member.size) for member in tar.getmembers()]
+
+
 def test_no_file_in_the_bundle_exceeds_arxivs_limit():
     """arXiv's limit is 10 MB for the output PDF or for any single file."""
-    with tarfile.open(_BUNDLE, "r:gz") as tar:
-        too_big = [
-            f"{member.name} ({member.size} bytes)"
-            for member in tar.getmembers()
-            if member.size > _MAX_FILE_BYTES
-        ]
+    too_big = [
+        f"{name} ({size} bytes)"
+        for name, size in _sizes()
+        if size > _MAX_FILE_BYTES
+    ]
     assert not too_big, (
         "the arXiv bundle holds a file above arXiv's 10 MB limit:\n  "
         + "\n  ".join(too_big)
