@@ -136,10 +136,19 @@ population — but they are not IRB-free.
   the assay is comparable (0.9444 on the matched whole-genome
   publication) and blunted when it is not (0.6938 / 0.7127 on the
   whole-exome one).
-- The **stage breakdown** remains the one readiness gap: FinaleDB
-  carries no stage labels, and the only stage-annotated public
-  fragment resources are either inside the CRAG re-packaging of
-  publication 6 (no stage column) or behind an EGA DAC. Jiang 2015's
+- The **stage breakdown** remains the one readiness gap, and it is
+  sharper than it looked: FinaleDB carries no stage labels, and the
+  only stage-annotated public fragment resources are either inside the
+  CRAG re-packaging of publication 6 (no stage column) or behind an EGA
+  DAC. But the held-out cohort's own publications do describe their
+  stage in public records that are reachable without a DAC -- GEO's
+  extract protocol for publication 1 (GSE71378) says its 52 cancer
+  samples are **Stage IV**, and publication 9 is a **metastatic**
+  cohort by its paper's title. So the open cohort carries no Stage I
+  case that the public records identify
+  (`results/external_cohort_stage_annotation.json`), and the external
+  AUCs are a late-stage transfer result rather than an early-detection
+  one. Jiang 2015's
   own supplementary table would carry the HCC stage, but the article is
   not open access (Europe PMC refuses the supplementary bundle:
   "Article with id PMC4372002 is not open access one") and PNAS blocks

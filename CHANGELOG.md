@@ -119,6 +119,30 @@ cohort size.
 
 ### Fixed
 
+- **The external AUCs were quoted without saying what stage the held-out
+  cohort was at.** 0.9444, 0.708 and the pooled 0.7385 are the
+  project's headline generalisation number, and nothing in the
+  repository said what stage those samples were at -- so a reader could
+  take them for an early-detection result. FinaleDB's sample record
+  carries no stage field, so the stage was read from the records that
+  describe each publication: **publication 1's GEO extract protocol
+  states that all 52 of its cancer samples come from individuals with a
+  clinical diagnosis of Stage IV cancer**, and **publication 9 is a
+  metastatic cohort** by its paper's own title ("high concordance with
+  metastatic tumors"). Publication 7's per-sample annotation lives in
+  its supplementary tables, which PMC serves behind a proof-of-work and
+  reCAPTCHA gate; that row is recorded as unresolved rather than
+  guessed, and a collaborator with journal access can finish it. The
+  consequence is stated wherever the numbers are read -- the
+  external-validation document, the preprint (results and
+  limitations), the methods paper (§3.2.2 and a new limitation), the
+  readiness document and the public-data survey: the external AUCs
+  measure **late-stage discrimination** and carry no statement about
+  Stage I detection. The characterisation lives in
+  `results/external_cohort_stage_annotation.json`, with the record it
+  came from, the sentence it says and the date it was read, and
+  `test/test_external_cohort_stage_is_stated_where_it_matters.py`
+  keeps the documents and the artifact from drifting apart.
 - **The model card pointed at a commit 134 commits behind the release.**
   `MODEL.md` said "DeepCatch v2.3.0 (commit `7f9613b` on `main`)", and
   `7f9613b` is the 2026-11-16 paper commit -- the release is the tag

@@ -85,7 +85,7 @@ FLARE dataset (GSE317007; 12 plasma cfDNA samples, 6 HNSCC patients, ONT sequenc
 
 \subsection{Implementation}
 
-Python (numpy, scipy, scikit-learn, torch, torch\_geometric), MIT license, 1011 tests across the two CI jobs (825 core + 186 deep-learning). Reproduce: \texttt{python real\_tcga\_validation.py --n-patients 20 --seeds 5 --cancer-types LUAD}.
+Python (numpy, scipy, scikit-learn, torch, torch\_geometric), MIT license, 1015 tests across the two CI jobs (829 core + 186 deep-learning). Reproduce: \texttt{python real\_tcga\_validation.py --n-patients 20 --seeds 5 --cancer-types LUAD}.
 
 \section{Results}
 \label{sec:results}
@@ -152,6 +152,18 @@ The pooled cross-study figure in the abstract is an out-of-fold number on the co
 
 Held-out whole-genome study (publication 7): AUC \textbf{0.9444}, DeLong 95\% CI 0.8731--1.0000 (n=31, 18 colorectal cancer / 13 liver-transplant controls). A second held-out whole-genome study (publication 1, Snyder 2016) reaches 0.708 (0.5148--0.9012, n=52, 43 cancer / 9 controls) across thirteen tumour types. Pooled over the held-out studies that carry both classes: 0.7385 (0.6281--0.8488, n=83). The held-out whole-\emph{exome} study (publication 9, 239 cancer samples, no controls) transfers only partially (breast 0.6938, prostate 0.7127 against the same controls), and the same classifier loses most of its pooled AUC when one publication is held out of \emph{training} rather than of testing (0.6805 in the single-type direction, 0.9361 in the other).
 
+The stage of the held-out cohort is a third boundary, and it is the
+one that decides how these numbers may be read. FinaleDB carries no
+stage field, so the stage was read from the records that describe each
+publication (\texttt{results/external\_cohort\_stage\_annotation.json}):
+publication 1's GEO record states that all 52 of its cancer samples come
+from individuals with a clinical diagnosis of Stage IV cancer, and
+publication 9 is a metastatic-tumour cohort by the paper's own title.
+The held-out cohort therefore contains no case that the public records
+place at Stage I, and the external AUCs above measure late-stage
+discrimination between cancer plasma and non-cancer plasma --- a
+cross-study transfer result, not an early-detection result.
+
 Two boundaries are therefore visible that a pooled cross-validation cannot show, and both are weaker than a single held-out cohort suggested. The assay platform must be comparable: whole-genome features transfer to an exome-targeted coverage profile far less well than they transfer between whole-genome studies (0.69--0.71 against 0.71--0.94). And the training cohort must contain more than one cancer type: a single-type training set yields a type-specific decision boundary. Transfer between whole-genome studies is real but far from uniform --- publication 7 reaches 0.94 and publication 1 only 0.71 --- so the held-out cohort is reported per publication rather than as one pooled number.
 
 \begin{figure}[ht]
@@ -179,7 +191,7 @@ This work establishes an open, reproducible benchmark for panel-based ultra-sens
 
 The three scoring methods provide a method-comparison reference: the LLR sum (sufficient statistic) outperforms Fisher combination at the sensitivity limit, an observation relevant to the MRD community.
 
-\textbf{Limitations.} (1) Plasma reads are simulated, not real sequencing; real data introduces library-prep bias, UMI handling, and capture efficiency not captured by the model. (2) The design is tumor-informed (correct for MRD, not screening). (3) Twenty patients is modest. (4) The error model is biology-informed but not assay-calibrated. (5) Open-access MAFs lack matched-normal read counts, limiting empirical CHIP filtering validation. (6) The fragmentomics channel's headline number is a within-cohort pooled AUC; its external behaviour is uneven between studies (one held-out whole-genome study reaches 0.9444, a second 0.708, and a held-out whole-exome study only partially transfers), so the pooled figure should not be read as a generalisation claim. (7) The external cohort's control arm is liver-transplant patients rather than healthy donors, and its largest held-out study contributes cases without controls, which is why we report sensitivity at a training-fixed threshold there rather than an AUC. (8) The methylation channel is not a validated feature on the publicly reachable libraries: their size selection at ~300\,bp and their ~1.09 observations per CpG remove the digestion signature FinaleMe reads, and the decoded methylome is indistinguishable from library depth. The deep MspI library that does carry the signature (CRAG/Jiang chr22 BAMs) is publication 6, i.e. the training cohort, so it can give a feasibility test but not independent validation.
+\textbf{Limitations.} (1) Plasma reads are simulated, not real sequencing; real data introduces library-prep bias, UMI handling, and capture efficiency not captured by the model. (2) The design is tumor-informed (correct for MRD, not screening). (3) Twenty patients is modest. (4) The error model is biology-informed but not assay-calibrated. (5) Open-access MAFs lack matched-normal read counts, limiting empirical CHIP filtering validation. (6) The fragmentomics channel's headline number is a within-cohort pooled AUC; its external behaviour is uneven between studies (one held-out whole-genome study reaches 0.9444, a second 0.708, and a held-out whole-exome study only partially transfers), so the pooled figure should not be read as a generalisation claim. (7) The external cohort's control arm is liver-transplant patients rather than healthy donors, and its largest held-out study contributes cases without controls, which is why we report sensitivity at a training-fixed threshold there rather than an AUC. Its cancer arm is also advanced-stage where the public records characterise it: publication 1 is Stage IV throughout (per its GEO extract protocol) and publication 9 is metastatic, so the external AUCs are a late-stage transfer result and carry no statement about Stage I detection. (8) The methylation channel is not a validated feature on the publicly reachable libraries: their size selection at ~300\,bp and their ~1.09 observations per CpG remove the digestion signature FinaleMe reads, and the decoded methylome is indistinguishable from library depth. The deep MspI library that does carry the signature (CRAG/Jiang chr22 BAMs) is publication 6, i.e. the training cohort, so it can give a feasibility test but not independent validation.
 
 \textbf{Essential next step.} Validation on real plasma cfDNA sequencing from patients with known outcomes. The pipeline is data-ready; we invite the community to contribute real data for co-authored validation.
 

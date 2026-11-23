@@ -54,7 +54,28 @@
 | Testicular cancer | - | skipped (n=2) |
 | Uterine cancer | - | skipped (n=2) |
 
+## What stage is this cohort at?
+
+**Late stage, where the public records say so.** FinaleDB's sample
+record carries no stage field, so the stage had to be read from the
+records that describe each publication
+(`results/external_cohort_stage_annotation.json`, read 2026-11-23):
+
+| Publication | Stage | Where the statement comes from |
+|---|---|---|
+| 1 — Snyder 2016 | **Stage IV** for all 52 cancer samples | the GEO record's own extract protocol for GSE71378: "Human peripheral blood plasma for 52 individuals with clinical diagnosis of Stage IV cancer" |
+| 7 — Sun 2019 | not resolved here | the per-sample annotation is in the paper's supplementary tables (PMC6396422), which are served behind a proof-of-work and reCAPTCHA gate; a collaborator with journal access can finish this row |
+| 9 — Adalsteinsson 2017 | **metastatic tumors** | the paper's own title and abstract (Nat Commun 8:1324); the sample identifiers agree (`MBC_1330_1` and 138 siblings) |
+
+So the external AUCs below measure **late-stage discrimination** --
+cancer plasma against non-cancer plasma -- and they are a cross-study
+transfer result, not an early-detection result. No case in the held-out
+cohort is placed at Stage I by the records that were read. The
+breakdown machinery is ready (`build_stage_breakdown_table` in
+`src/per_cancer_sens_at_spec.py`); what is missing is a cohort that
+carries early-stage labels.
+
 ## Honest framing
 
-The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. Read the per-publication and per-disease rows before quoting the pooled number.
+The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. The cancer arm is advanced-stage where the public records characterise it (see the section above), so these numbers say nothing about early detection. Read the per-publication and per-disease rows before quoting the pooled number.
 
