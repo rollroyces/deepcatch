@@ -119,6 +119,16 @@ cohort size.
 
 ### Fixed
 
+- **The docs site stopped deploying because the Pages action looked for
+  the artifact before the artifact list had caught up.** The deploy step
+  finds the artifact by NAME through the artifact list API, and that
+  list can lag a second or two behind the upload's own success
+  message: on 2026-11-23 the upload finalised the artifact and printed
+  its ID, and the lookup ran 19 ms later and reported "Found 0
+  artifact(s)" for an artifact that existed in the same run. The
+  workflow now waits for the artifact to become visible before it
+  deploys it, and the deploys are serialised so that two pushes cannot
+  deploy at once.
 - **Two manuscripts carried no ORCID, and the author identity was only
   checked in three of the six places it appears.** Google Scholar
   matches a paper to a profile by the NAME string, the affiliation and
