@@ -43,7 +43,7 @@
                     <span class="stat-label">cross-study samples</span>
                 </div>
                 <div class="stat">
-                    <span class="stat-value">1009</span>
+                    <span class="stat-value">1011</span>
                     <span class="stat-label">tests, all passing</span>
                 </div>
                 <div class="stat">
@@ -61,7 +61,7 @@
 <pre><code>git clone https://github.com/rollroyces/deepcatch.git
 cd deepcatch &amp;&amp; python -m venv .venv &amp;&amp; source .venv/bin/activate
 pip install -e ".[dev]"      # [dev] adds pytest; the base install does not
-pytest -q                     # 1009 tests (the deep-learning ones skip
+pytest -q                     # 1011 tests (the deep-learning ones skip
                               #   without the [api] extra)
 bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</code></pre>
             <p>Validated end-to-end on real TCGA-LUAD mutations (GDC, open access) and FLARE/GSE317007 real cfDNA.</p>

@@ -52,6 +52,14 @@ Loris De Cecco (loris.dececco@istitutotumori.mi.it)
 IRCSS Istituto Nazionale Tumori, Milan, Italy
 See `FLARE_CONTACT_TEMPLATE.md` for email draft.
 
+This is the contact GEO publishes for the dataset itself: the
+`GSE317007` record lists `Loris, De Cecco` as its contributor and its
+contact, with the same address and institute
+(`https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE317007&targ=self&form=text&view=brief`,
+public since 2026-04-01). The address is a role contact for the
+dataset, not a private detail of a collaborator, and it can be checked
+against the public record.
+
 ---
 
 ## 4. Public cfDNA datasets for future validation

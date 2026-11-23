@@ -119,6 +119,17 @@ cohort size.
 
 ### Fixed
 
+- **The model card pointed at a commit 134 commits behind the release.**
+  `MODEL.md` said "DeepCatch v2.3.0 (commit `7f9613b` on `main`)", and
+  `7f9613b` is the 2026-11-16 paper commit -- the release is the tag
+  `v2.3.0` at `170a46a`. A commit hash in a version pointer is a
+  promise that cannot be kept: `main` moves, the hash stays, and a
+  reader who checks it out gets a tree whose numbers are not the
+  numbers the card states. The version is named by its release tag
+  (and its DOI) now, which cannot drift, and a new guard fails if a
+  current-facing document points at a version with a commit hash. The
+  changelog and the dated audit reports are exempt: naming the old
+  commit is the point of those files.
 - **The DOI check reported the release's own DOI as unregistered.**
   `scripts/check_dois.py` trims the trailing punctuation of a captured
   DOI but not markdown emphasis, so a DOI written in bold

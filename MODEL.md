@@ -24,7 +24,7 @@ It has not been validated on a held-out clinical cohort. See
 | | |
 |---|---|
 | **Model name** | DeepCatch v2.3.0 |
-| **Version** | 2.3.0 (commit `7f9613b` on `main`) |
+| **Version** | 2.3.0 (release tag `v2.3.0`; archived at 10.5281/zenodo.24453044) |
 | **Date** | 2026-09-23 |
 | **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
@@ -420,7 +420,9 @@ python scripts/adapter_auc_gate.py
 
 ## Versioning
 
-This model card applies to **DeepCatch v2.3.0** (commit `7f9613b` on
-`main`). Subsequent versions may update the headline numbers; check
-the `results/` directory and the README for the latest validated
-metrics.
+This model card applies to **DeepCatch v2.3.0** (release tag `v2.3.0`,
+archived at 10.5281/zenodo.24453044). The tag is named rather than a
+commit hash because a tag cannot drift: a commit named here would
+quietly stop being the commit this card describes. Subsequent versions
+may update the headline numbers; check the `results/` directory and
+the README for the latest validated metrics.

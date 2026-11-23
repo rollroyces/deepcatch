@@ -2,6 +2,7 @@
 
 **Recipient:** Loris De Cecco (loris.dececco@istitutotumori.mi.it)
 **Institution:** IRCSS Istituto Nazionale Tumori, Milan, Italy
+(the contact GEO publishes for GSE317007 itself)
 **Dataset:** GSE317007 — FLARE: Long-Read Nanopore Fragmentomics for Liquid Biopsy
 
 ---
