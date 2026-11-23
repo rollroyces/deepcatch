@@ -119,6 +119,26 @@ cohort size.
 
 ### Fixed
 
+- **Two manuscripts carried no ORCID, and the author identity was only
+  checked in three of the six places it appears.** Google Scholar
+  matches a paper to a profile by the NAME string, the affiliation and
+  the email -- it does not read an ORCID to find an author -- and it
+  follows the ORCID to link the work to the profile afterwards. So a
+  name that differs by a hyphen or an initial splits the author's works
+  across two profiles, invisibly. `paper/PAPER.md` and
+  `paper/METHODS_PAPER.md` carried no ORCID at all, and the guard only
+  compared three author blocks. Both manuscripts now carry the ORCID,
+  and the guard compares the name string and the ORCID across all six
+  surfaces an index reads (the LaTeX manuscript, the JOSS paper, both
+  markdown manuscripts, `CITATION.cff` and `AUTHORS`).
+- **`docs/SCHOLAR_VISIBILITY.md`: what the three indexes need, and
+  what only the author can do.** It records the measured state of each
+  source (the ORCID name matches every surface, its works list is
+  empty, the Zenodo record is complete with the ORCID, the preprint
+  does not exist yet) and the ordered steps: post the preprint, add the
+  two DOIs to the ORCID record with Search & Link against DataCite,
+  and claim exactly one Scholar profile with the same affiliation the
+  preprint carries.
 - **Three documents described the submission PDF with a figure count the
   PDF does not have.** The PDF embeds three figures -- the panel-LLR
   performance figure, the pooled ROC and the sensitivity-at-specificity

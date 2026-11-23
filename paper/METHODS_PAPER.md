@@ -2,7 +2,7 @@
 
 **Authors:** Yu Ching Lam¹ (sole author — see `AUTHORS`)
 
-¹ DeepCatch Project — github.com/rollroyces/deepcatch (Independent researcher)
+¹ DeepCatch Project — github.com/rollroyces/deepcatch (Independent researcher) · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
 
 **Venue target:** PLOS Computational Biology or Bioinformatics Advances
 
@@ -100,7 +100,7 @@ Every reported number follows one protocol:
 
 ### 2.5 Implementation and tests
 
-The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 1017 tests run across the two CI jobs (831 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
+The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 1018 tests run across the two CI jobs (832 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
 
 **Reproducibility is enforced, not assumed.** Every benchmark number in §3.2–§3.5 is a function of the committed code: the PCA inside each CV fold is seeded with the fold-split seed, and `test/test_benchmark_reproducibility.py` enforces two properties — an AST guard fails the build if any `PCA(...)` call in `scripts/` or `src/` is fitted without a `random_state`, and a behavioural test fits the benchmark twice and requires the two runs to agree exactly (with a further check that a different seed still gives a different answer, so the seed is not simply pinning everything). The guard exists because the opposite was true for an earlier revision: with an unseeded PCA, sklearn's randomised solver made every re-run of the benchmark drift (one publication's AUC moved 0.9789 → 0.9821 between two runs of the same command), which would have made the artifacts unverifiable. The numbers in this manuscript are from the seeded run; the artifacts, the narrative documents and the manuscript now come from a single command.
 

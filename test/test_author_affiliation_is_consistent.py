@@ -144,13 +144,92 @@ def test_the_author_blocks_declare_the_same_affiliation():
     )
 
 
-def test_the_orcid_is_the_same_in_the_three_author_blocks():
+def _markdown_author_block(path: str) -> str:
+    """The author line and its footnote of a markdown manuscript."""
+    text = (_REPO_ROOT / path).read_text(encoding="utf-8")
+    lines = text.split("\n")
+    for index, line in enumerate(lines):
+        if line.startswith("**Authors:**"):
+            block = [line]
+            for following in lines[index + 1:index + 6]:
+                if following.startswith("\u00b9") or following.startswith("1 "):
+                    block.append(following)
+                    break
+            return "\n".join(block)
+    return ""
+
+
+def _authors_file_block() -> str:
+    """The lead author entry of the AUTHORS file."""
+    text = (_REPO_ROOT / "AUTHORS").read_text(encoding="utf-8")
+    match = re.search(r"^- \*\*.+?\*\*.*$", text, re.M)
+    return match.group(0) if match else ""
+
+
+def _latex_author_name(block: str) -> str:
+    """The name in the LaTeX author block: its first line."""
+    return block.strip().split("\n")[0].strip().rstrip("\\").strip()
+
+
+def _joss_author_name(block: str) -> str:
+    """The name in the JOSS front matter."""
+    match = re.search(r"name:\s*(.+)", block)
+    return match.group(1).split(" (")[0].strip() if match else ""
+
+
+def _markdown_author_name(block: str) -> str:
+    """The name in a markdown manuscript's author line."""
+    match = re.search(r"\*\*Authors:\*\*\s*(.+)", block)
+    if not match:
+        return ""
+    return re.split(r"[\u00b9\u00b2]", match.group(1))[0].split(" (")[0].strip()
+
+
+def _citation_author_name(block: str) -> str:
+    """The name in the citation metadata's structured fields."""
+    given = re.search(r'given-names:\s*"?([^"\n]+)"?', block)
+    family = re.search(r'family-names:\s*"?([^"\n]+)"?', block)
+    if given and family:
+        return f"{given.group(1).strip()} {family.group(1).strip()}"
+    return ""
+
+
+def _authors_file_name(block: str) -> str:
+    """The name in the AUTHORS file's lead entry."""
+    match = re.search(r"^- \*\*(.+?)\*\*", block)
+    return match.group(1).strip() if match else ""
+
+
+# Every surface an index reads the author from, with the block that
+# carries the author and the reader that finds the name in it.
+#
+# Google Scholar matches a paper to a profile by the NAME string, the
+# affiliation and the email -- it does not read an ORCID to find an
+# author -- and it follows the ORCID to link the work to the profile
+# afterwards. So the surfaces that matter are the ones a preprint
+# server, a journal form or an archive reads: the LaTeX manuscript, the
+# JOSS paper, the two markdown manuscripts, the citation metadata
+# (which is what Zenodo archives), and the author list.
+_AUTHOR_SURFACES = {
+    "paper/paper.tex": (_latex_author_block, _latex_author_name),
+    "paper.md": (lambda: _front_matter(_joss_manuscript()), _joss_author_name),
+    "paper/PAPER.md": (lambda: _markdown_author_block("paper/PAPER.md"),
+                       _markdown_author_name),
+    "paper/METHODS_PAPER.md": (lambda: _markdown_author_block("paper/METHODS_PAPER.md"),
+                               _markdown_author_name),
+    "CITATION.cff": (_citation_author_block, _citation_author_name),
+    "AUTHORS": (_authors_file_block, _authors_file_name),
+}
+
+
+def _all_author_blocks() -> dict:
+    """The author block of every surface an index reads."""
+    return {name: read() for name, (read, _) in _AUTHOR_SURFACES.items()}
+
+
+def test_the_orcid_is_the_same_in_every_author_block():
     """The identifier that names the author cannot differ between files."""
-    blocks = {
-        "paper/paper.tex": _latex_author_block(),
-        "paper.md": _front_matter(_joss_manuscript()),
-        "CITATION.cff": _citation_author_block(),
-    }
+    blocks = _all_author_blocks()
     orcids = {
         name: set(_ORCID.findall(block)) for name, block in blocks.items()
     }
@@ -158,12 +237,34 @@ def test_the_orcid_is_the_same_in_the_three_author_blocks():
     assert not empty, (
         "the author block of " + ", ".join(empty) + " carries no ORCID. "
         "The repository's citation metadata and the model card both carry "
-        "it, and bioRxiv's form asks for it."
+        "it, bioRxiv's form asks for it, and it is what lets an index "
+        "attach the work to the author's profile."
     )
     distinct = {frozenset(found) for found in orcids.values()}
     assert len(distinct) == 1, (
-        "the three author blocks carry different ORCIDs:\n"
+        "the author blocks carry different ORCIDs:\n"
         + "\n".join(f"  {name}: {sorted(found)}" for name, found in orcids.items())
+    )
+
+
+def test_the_author_name_is_the_same_string_everywhere():
+    """The name is what an index matches a paper to a profile by.
+
+    A name that differs by a hyphen, an initial or a particle splits the
+    author's works across two profiles, and the split is invisible until
+    the works have to be merged by hand. The ORCID check above covers
+    the other half -- the identifier that links them afterwards.
+    """
+    blocks = _all_author_blocks()
+    names = {name: reader(blocks[name])
+             for name, (read, reader) in _AUTHOR_SURFACES.items()}
+    empty = [name for name, found in names.items() if not found]
+    assert not empty, (
+        "no author name could be read from " + ", ".join(empty))
+    distinct = set(names.values())
+    assert len(distinct) == 1, (
+        "the surfaces spell the author's name differently:\n"
+        + "\n".join(f"  {name}: {found!r}" for name, found in names.items())
     )
 
 

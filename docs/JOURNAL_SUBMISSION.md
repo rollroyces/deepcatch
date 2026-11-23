@@ -74,6 +74,7 @@ independent researcher can produce.
 | **Direct transfer to the journal (B2J)** | ✅ **available for the target venues, and it saves re-typing the paper.** bioRxiv's submission guide: "bioRxiv can save authors time in submitting papers to journals or peer review services by transmitting their manuscript files and metadata directly from the bioRxiv site." The partner list includes **PLOS Computational Biology, PLOS Genetics, PLOS Biology, PLOS Medicine, PLOS One, Bioinformatics, Bioinformatics Advances, GigaScience, eLife, PNAS, Nature and Science**. So the preprint is not just a priority record: it is also the submission form, already filled in, for every venue on the list — which makes "preprint first, then PLOS Comp Bio / Bioinformatics Advances / GigaScience" a one-click handoff rather than a re-entry |
 | **A posted preprint is permanent** | ℹ️ "After an article is deposited in bioRxiv, it is citable and therefore cannot be removed." Revisions keep the same DOI and must carry their supplemental material again, so the PDF uploaded is the version that stays — which is the reason the uploaded PDF is the committed, CI-built `paper/biorxiv_submission_v2.3.0.pdf` and not a locally rebuilt one |
 | **Corresponding-author email** | ⬜ author action — deliberately not in the repo |
+| **Discoverability (ORCID, Google Scholar)** | ✅ the metadata is consistent and guarded; the three account-side steps are in [`docs/SCHOLAR_VISIBILITY.md`](SCHOLAR_VISIBILITY.md) (post the preprint, add the two works to the ORCID record, claim one Scholar profile) |
 
 ### JOSS — one structural gap
 
@@ -81,7 +82,7 @@ independent researcher can produce.
 |---|---|
 | Public, versioned repository | ✅ MIT-licensed, tagged releases |
 | Installable package | ✅ `pyproject.toml` |
-| Test suite | ✅ 1017 tests (`pytest src test -q`), split across two CI jobs |
+| Test suite | ✅ 1018 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
 | Contribution guidelines | ✅ `CONTRIBUTING.md` (setup, the drift-guard rules, how to bring a cohort in) |
