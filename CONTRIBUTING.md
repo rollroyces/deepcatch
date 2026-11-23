@@ -109,6 +109,15 @@ To bring a cohort into the benchmark:
 - Tags and releases are cut by the maintainer after the reproduction
   check passes; a PR that changes a headline number should say which
   artifact it changed.
+- Zenodo's GitHub integration is enabled for this repository, so a
+  published release is archived automatically and mints a DOI. The DOI
+  is declared in `CITATION.cff`, in `MODEL.md`'s BibTeX entry and in
+  both manuscripts' availability sections, and
+  `test/test_release_doi_is_consistent.py` checks that they agree
+  (see `ZENODO_SETUP.md`).
+- The version a document states is named by its **release tag**, never
+  by a commit hash: a tag cannot drift, and a commit hash in a version
+  pointer quietly stops being the commit the document describes.
 - See `TEAM.md` for the governance model and the roles that are still
   open, and `docs/COLLABORATOR_DATA_INTERFACE.md` for what a clinical
   cohort needs to look like.
