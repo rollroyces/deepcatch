@@ -18,11 +18,17 @@ permissions:
   pages: write
   id-token: write
 
-# Cancel any in-flight deploys when a new push arrives — Pages hosts one
-# build at a time, so this prevents stuck runs from blocking a fresh release.
+# Serialise the deploys: Pages hosts one build at a time, and a run that
+# is cancelled mid-flight can leave its artifact uploaded to blob storage
+# but NOT registered with the artifact API -- the next deploy then fails
+# with "Found 0 artifact(s)" even though its own upload succeeded. That
+# is exactly what happened on 2026-11-23 (two pushes four minutes
+# apart: the first deploy was cancelled while its upload was being
+# finalised, and the second could not see any artifact). GitHub's own
+# Pages template uses `cancel-in-progress: false` for the same reason.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
