@@ -878,7 +878,7 @@ def test_the_filter_check_can_see_a_wrong_filter():
 # --------------------------------------------------------------------------
 
 _SUITE_SIZE = re.compile(
-    r"\b\d{3}\s+tests?\b|\b\d{3}\s+collected\b|Tests-\d{3}%20"
+    r"\b\d{3,4}\s+tests?\b|\b\d{3,4}\s+collected\b|Tests-\d{3,4}%20"
 )
 
 

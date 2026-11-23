@@ -55,22 +55,26 @@ COUNT_DOCS = [
 ]
 
 # "658 tests", "658 collected", "Tests-658%20collected", "(658 tests)"
+#
+# The counts are three or four digits: the suite passed a thousand tests,
+# and a three-digit-only pattern stops matching the badge ("Tests-1002%20")
+# -- which leaves the README looking as if it states no count at all.
 _COUNT_PATTERNS = (
-    r"(\d{3})\s+tests\b",
-    r"(\d{3})\s+collected\b",
-    r"Tests-(\d{3})%20",
-    r"\((\d{3})\s+tests\)",
+    r"(\d{3,4})\s+tests\b",
+    r"(\d{3,4})\s+collected\b",
+    r"Tests-(\d{3,4})%20",
+    r"\((\d{3,4})\s+tests\)",
 )
 
 # The README also describes a narrower gate ("Combined fast-path gate |
 # 233 collected"), which is a different number about a different set of
 # tests. Only its badge counts as the suite's size.
 _DOC_PATTERNS = {
-    "README.md": (r"Tests-(\d{3})%20",),
+    "README.md": (r"Tests-(\d{3,4})%20",),
     # Same reason for the Chinese README: its badge states the suite's
     # size; its table states other numbers (the src/ discovery, the gate)
     # that belong to their own checks.
-    "README.zh-CN.md": (r"Tests-(\d{3})%20",),
+    "README.zh-CN.md": (r"Tests-(\d{3,4})%20",),
 }
 
 
@@ -139,7 +143,7 @@ def test_the_ci_split_adds_up_to_the_total():
     for path in COUNT_DOCS:
         text = (_REPO_ROOT / path).read_text(encoding="utf-8")
         for match in re.finditer(
-                r"(\d{3})\s+tests?[^.]*?\((\d{3})\s+core\s*\+\s*(\d{3})\s+deep",
+                r"(\d{3,4})\s+tests?[^.]*?\((\d{3,4})\s+core\s*\+\s*(\d{3,4})\s+deep",
                 text):
             total = int(match.group(1))
             splits.append((int(match.group(2)), int(match.group(3))))

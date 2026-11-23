@@ -108,7 +108,7 @@ directory.
 ### 1.5 Verify installation
 
 ```bash
-# 770 in deepcatch's test/ + 126 in the pipeline's (at eb1529e)
+# 774 in deepcatch's test/ + 126 in the pipeline's (at eb1529e)
 cd cfdna-fragmentomics-pipeline && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 cd ../deepcatch && env -u PYTHONPATH ./.venv/bin/python -m pytest test/
 
@@ -245,7 +245,7 @@ BEST: l2 C=1000.0  AUC=0.9782
 sklearn `C=1.0` over-shrinks. The optimum sits in a wide plateau
 (300-1500) at AUC ≈ 0.978.
 
-### 3.4 "I want the cross-repo fusion AUC 0.989" (DeepCatch)
+### 3.4 "I want the cross-repo fusion AUC 0.9884" (DeepCatch)
 
 ```bash
 cd ../deepcatch
@@ -268,9 +268,9 @@ Output (abbreviated):
 
 **Interpreting fusion output**:
 - `tumor_naive` (~0.974): 5-channel fragmentomics alone.
-- `naive_average` (~0.989): equal-weighted average of tumor-naive and
+- `naive_average` (~0.988): equal-weighted average of tumor-naive and
   synthetic mutation.
-- `lr_fusion` (~0.989): LR-learned fusion weights.
+- `lr_fusion` (~0.988): LR-learned fusion weights.
 - `lr_fusion > naive_average` indicates the LR is learning useful
   fusion weights; if they're equal, use naive average (simpler).
 - The +0.0143 gain over tumor_naive alone is **partly synthetic**:

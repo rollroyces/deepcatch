@@ -9,7 +9,7 @@
 
 ## 1. Why this project exists
 
-The fragmentomics pipeline (`rollroyces/cfdna-fragmentomics-pipeline`) achieves **AUC 0.974-0.978** on a 627-sample cross-study cohort using only **fragment-length features** (FSD + DELFI 5Mb/100kb ratios). The DeepCatch framework (`rollroyces/deepcatch`) adds a **mutation-channel fusion** that lifts headline to **AUC 0.989** on a synthetic cohort.
+The fragmentomics pipeline (`rollroyces/cfdna-fragmentomics-pipeline`, at its commit `eb1529e`) achieves **AUC 0.974-0.978** on a 627-sample cross-study cohort using only **fragment-length features** (FSD + DELFI 5Mb/100kb ratios). The DeepCatch framework (`rollroyces/deepcatch`) adds a **mutation-channel fusion** that lifts headline to **AUC 0.9884** on a synthetic cohort (`results/fusion_ablation_isotonic.json`).
 
 **What fragmentomics cannot do:**
 - Identify **tissue of origin** (FOI) beyond what the cancer-vs-healthy signal already encodes.
@@ -163,7 +163,7 @@ This is the **only realistic path to methylation features on a 627-sample cohort
 | Fusion adapter | `src/methylation_gnn/integration.py` (408 lines) | Done; not wired into headline fusion |
 | Reference-data catalog | `src/methylation_gnn/data.py` (619 lines) | URL list only; no downloader |
 | 46 smoke tests | `src/methylation_gnn/test_integration.py` | All synthetic; need real-data thresholds |
-| Fragmentomics pipeline (cross-study baseline) | `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py` | Production; AUC 0.974-0.978 |
+| Fragmentomics pipeline (cross-study baseline) | `cfdna-fragmentomics-pipeline/scripts/honest_benchmark.py` | Production; AUC 0.974-0.978 (at `eb1529e`) |
 | 5-fold pooled OOF protocol | `cfdna-fragmentomics-pipeline/scripts/evaluate_cv.py` | Production |
 | Adapter to fragmentomics output | `deepcatch/src/fragmentomics/tumor_naive_adapter.py` | Production; extends to methylation trivially |
 | FinaleDB ingestion | `cfdna-fragmentomics-pipeline/scripts/fetch_finaledb.py` | Production; the WGS we already have |

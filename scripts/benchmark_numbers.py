@@ -89,7 +89,10 @@ QUOTED_NUMBERS = [
       "ULTRA_EARLY_READINESS.md", "USAGE.md",
       "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
       "docs/CROSS_PLATFORM_BENCHMARK.md", "docs/HARMONIZATION.md",
-      "docs/site/index.html", "paper/README.md", "paper/REPRODUCE.md"]),
+      "docs/site/index.html", "paper/README.md", "paper/REPRODUCE.md",
+      # The EGA/dbGaP access request states the pooled AUC to justify the
+      # request ("reports AUC 0.968 +/- 0.003"), so it is live in it.
+      "data/EGA_DBGAP_DATA_ACCESS_TEMPLATE.md"]),
     # The per-cohort rows of the same table. They were quoted from an
     # earlier, unseeded run for a long time, so they are on the list too.
     ("cross_study_finallydb_gc_corrected.json",
@@ -150,9 +153,7 @@ for _cancer in _TOP5_CANCERS:
         # Every document that quotes the row is named, so a copy of one
         # cannot drift unnoticed.
         ["paper/METHODS_PAPER.md", "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md"]
-        + (["docs/SENS_AT_SPEC_ABLATION.md"] if _cancer == "BRCA" else [])
-        + (["USAGE.md", "docs/ALPHAGENOME_PROXY_RESULTS.md",
-            "docs/CADD_PER_SUBGROUP_LLR.md"] if _cancer == "OV" else []),
+        + (["docs/SENS_AT_SPEC_ABLATION.md"] if _cancer == "BRCA" else []),
     ))
     QUOTED_NUMBERS.append((
         "per_cancer_sens_at_spec.json",
@@ -169,8 +170,17 @@ for _cancer in _TOP5_CANCERS:
 # own matcher; the historical records (the changelog, the audit reports,
 # the deprecated v1.0 draft, the dated status note) are excluded, because
 # naming them would require them to keep quoting figures forever.
-EXTRA_DOCS = {
-    ("external_validation_finaledb.json", ('per_publication_auc', '7', 'auc')): [
+EXTRA_DOCS_ENTRIES = [
+    # The entries below are PAIRS, not dict keys. A dict literal
+    # with a repeated key silently keeps only the LAST list, so
+    # naming a document for a figure that already had an entry
+    # dropped the earlier documents from the guard without any
+    # error. Seven keys here were repeated, which had already
+    # removed 31 document/figure protections -- including the
+    # documents the superseded-figure guard is scoped to. The
+    # pairs are merged by union below, so a repeated key adds to
+    # the protection instead of replacing it.
+    (("external_validation_finaledb.json", ('per_publication_auc', '7', 'auc')), [
         "NEXT_STEPS.md",
         "REVIEWERS.md",
         "ULTRA_EARLY_READINESS.md",
@@ -180,11 +190,11 @@ EXTRA_DOCS = {
         "docs/PUBLIC_DATA_SOURCES.md",
         "paper/METHODS_PAPER.md",
         "paper/REPRODUCE.md",
-    ],
-    ("external_validation_finaledb.json", ('per_publication_auc', '7', 'ci_lo')): [
+    ]),
+    (("external_validation_finaledb.json", ('per_publication_auc', '7', 'ci_lo')), [
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
-    ],
-    ("external_validation_finaledb.json", ('pooled_external_auc_matched_publications_only', 'auc')): [
+    ]),
+    (("external_validation_finaledb.json", ('pooled_external_auc_matched_publications_only', 'auc')), [
         "REVIEWERS.md",
         "TEAM.md",
         "docs/CADD_PER_SUBGROUP_LLR.md",
@@ -193,49 +203,49 @@ EXTRA_DOCS = {
         "paper/README.md",
         "paper/REPRODUCE.md",
         "paper/paper.tex",
-    ],
-    ("external_validation_finaledb.json", ('training_derived_threshold', 'threshold')): [
+    ]),
+    (("external_validation_finaledb.json", ('training_derived_threshold', 'threshold')), [
         "RESULTS.md",
         "paper/REPRODUCE.md",
-    ],
-    ("external_validation_finaledb.json", ('per_publication_auc', '9', 'sensitivity_at_train_threshold_99spec')): [
+    ]),
+    (("external_validation_finaledb.json", ('per_publication_auc', '9', 'sensitivity_at_train_threshold_99spec')), [
         "MODEL.md",
         "README.md",
         "README.zh-CN.md",
         "TEAM.md",
         "paper/REPRODUCE.md",
         "results/README.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')), [
         "docs/CADD_PER_SUBGROUP_LLR.md",
         "docs/ULTRA_EARLY_READINESS_AUTO.md",
         "docs/USER_GUIDE.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')), [
         "MODEL.md",
         "docs/CROSS_STUDY_BENCHMARK.md",
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')), [
         "docs/site/index.html",
         "paper/PAPER.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')), [
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
         "paper/METHODS_PAPER.md",
-    ],
-    ("cross_study_finallydb.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('true_confound_control', 'cancer_jiang_healthy_cristiano', 'harmonized', 'auc_mean')), [
         "docs/HARMONIZATION.md",
-    ],
-    ("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')), [
         "ZENODO_SETUP.md",
         "docs/CROSS_PLATFORM_BENCHMARK.md",
         "docs/HARMONIZATION.md",
         "docs/site/index.html",
         "paper/README.md",
         "paper/REPRODUCE.md",
-    ],
-    ("methylation_cohort_channel.json", ('beta_summary_auc_loo',)): [
+    ]),
+    (("methylation_cohort_channel.json", ('beta_summary_auc_loo',)), [
         "CITATION.cff",
         "NEXT_STEPS.md",
         "README.zh-CN.md",
@@ -250,8 +260,8 @@ EXTRA_DOCS = {
         "docs/site/index.html",
         "paper/REPRODUCE.md",
         "results/README.md",
-    ],
-    ("methylation_cohort_channel.json", ('common_cpg_set', 'per_cpg_test', 'n_cpgs_tested')): [
+    ]),
+    (("methylation_cohort_channel.json", ('common_cpg_set', 'per_cpg_test', 'n_cpgs_tested')), [
         "MODEL.md",
         "README.zh-CN.md",
         "RESULTS.md",
@@ -262,29 +272,29 @@ EXTRA_DOCS = {
         "docs/site/index.html",
         "paper.md",
         "results/README.md",
-    ],
-    ("per_cancer_sens_at_spec.json", ('per_cancer', 'OV', 'sens_at_99')): [
+    ]),
+    (("per_cancer_sens_at_spec.json", ('per_cancer', 'OV', 'sens_at_99')), [
         "docs/USER_GUIDE.md",
-    ],
-    ("per_cancer_sens_at_spec.json", ('per_cancer', 'PAAD', 'sens_at_99')): [
+    ]),
+    (("per_cancer_sens_at_spec.json", ('per_cancer', 'PAAD', 'sens_at_99')), [
         "docs/CADD_GDC_VALIDATION.md",
-    ],
-    ("per_cancer_sens_at_spec.json", ('per_cancer', 'HCC_J', 'sens_at_99')): [
+    ]),
+    (("per_cancer_sens_at_spec.json", ('per_cancer', 'HCC_J', 'sens_at_99')), [
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
-    ],
-    ("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')), [
         "MODEL.md",
         "TEAM.md",
         "docs/CADD_ALPHAMISSENSE_COMBINED.md",
         "docs/CROSS_STUDY_LOSO.md",
         "paper/METHODS_PAPER.md",
         "results/README.md",
-    ],
-    ("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')), [
         "docs/site/index.html",
         "paper/PAPER.md",
-    ],
-    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')): [
+    ]),
+    (("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')), [
         "RESULTS.md",
         "docs/ALPHAMISSENSE_REAL_LLR.md",
         "docs/ALPHAMISSENSE_WEIGHTED_LLR.md",
@@ -294,41 +304,41 @@ EXTRA_DOCS = {
         "docs/PREPRINT_ABSTRACT.md",
         "paper/README.md",
         "paper/REPRODUCE.md",
-    ],
-    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 18, 'mean')): [
+    ]),
+    (("real_tcga_validation.json", ('panel_detection', 'panel_llr', 18, 'mean')), [
         "RESULTS.md",
         "docs/CADD_PER_SUBGROUP_LLR.md",
         "docs/CADD_WEIGHTED_LLR.md",
-    ],
-    ("fusion_regularized_smoke.json", ('summary', 'regularized_late_fusion', 'auc_mean')): [
+    ]),
+    (("fusion_regularized_smoke.json", ('summary', 'regularized_late_fusion', 'auc_mean')), [
         "RESULTS.md",
         "ZENODO_SETUP.md",
         "docs/CADD_PER_SUBGROUP_LLR.md",
         "docs/CROSS_STUDY_BENCHMARK.md",
         "docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md",
         "paper/REPRODUCE.md",
-    ],
-    ("fusion_regularized_smoke.json", ('summary', 'bayesian_model_average', 'auc_mean')): [
+    ]),
+    (("fusion_regularized_smoke.json", ('summary', 'bayesian_model_average', 'auc_mean')), [
         "docs/CROSS_STUDY_BENCHMARK.md",
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
-    ],
-    ("cross_study_finallydb_with_motifs.json", ('pooled', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_with_motifs.json", ('pooled', 'harmonized', 'auc_mean')), [
         "docs/ALPHAMISSENSE_REAL_LLR.md",
-    ],
-    ("cross_study_finallydb_with_motifs.json", ('per_publication', '6', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_with_motifs.json", ('per_publication', '6', 'auc_mean')), [
         "RESULTS.md",
         "USAGE.md",
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
         "docs/PORTFOLIO_ROADMAP.md",
-    ],
-    ("cross_study_finallydb_with_motifs.json", ('per_publication', '8', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_with_motifs.json", ('per_publication', '8', 'auc_mean')), [
         "USAGE.md",
         "docs/CROSS_STUDY_BENCHMARK_with_motifs.md",
-    ],
-    ("decision_curve.json", ('per_strategy', 'tumor_naive', 'auc')): [
+    ]),
+    (("decision_curve.json", ('per_strategy', 'tumor_naive', 'auc')), [
         "paper/METHODS_PAPER.md",
         "results/README.md",
-    ],
+    ]),
     # Three more documents that quote the headline figures and were not
     # named: the methods-paper status file, the wiki's Jiang page and the
     # V3 design note. They quote the numbers, so a regenerated artifact
@@ -344,31 +354,125 @@ EXTRA_DOCS = {
     # written as a target -- is NOT named here: the quote test matches
     # at three decimals, so such a document would pass the check without
     # ever quoting the figure.
-    ("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')): [
+    (("cross_study_finallydb.json", ('per_publication', '6', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
         "wiki/Jiang-4mer-Validation.md",
-    ],
-    ("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('per_publication', '8', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb.json", ('pooled', 'harmonized', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('per_publication', '8', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'auc_mean')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'sens_at_spec_99')): [
+    ]),
+    (("cross_study_finallydb_gc_corrected.json", ('pooled', 'harmonized', 'sens_at_spec_99')), [
         "paper/METHODS_PAPER_STATUS.md",
-    ],
-    ("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')): [
+    ]),
+    (("real_tcga_validation.json", ('panel_detection', 'panel_llr', 16, 'mean')), [
         "docs/V3_DESIGN.md",
-    ],
+    ]),
+]
+
+# Merge the pairs by union. ``EXTRA_DOCS`` keeps the mapping the
+# rest of the module (and the guard) reads; a repeated key now
+# ADDS its documents to the protection instead of replacing it.
+EXTRA_DOCS: dict[tuple, list] = {}
+for _extra_key, _extra_docs in EXTRA_DOCS_ENTRIES:
+    _known = EXTRA_DOCS.setdefault(_extra_key, [])
+    _known.extend(_doc for _doc in _extra_docs if _doc not in _known)
+
+# Documents that RECORD the project's history rather than state its
+# current results: the changelog and the dated audit reports. They name
+# superseded figures on purpose -- describing the old value is the point
+# of those files -- so they are not held to the current artifacts. The
+# changelog has no "unreleased" section: every entry in it is a released,
+# dated record.
+HISTORICAL_RECORDS = {
+    "CHANGELOG.md",
+    "AUDIT_REPORT.md",
+    "AUDIT_REPORT_2.md",
+    "AUDIT_2_FINDINGS.md",
+}
+
+# Documents whose text HAPPENS to contain the digits of a pinned figure
+# without quoting that figure: a range that spans it, a target written in
+# a design table, a dated review record, or a number that belongs to a
+# different experiment. Each one is listed with the reason it is not a
+# copy, and the guard checks the list in both directions -- an excuse
+# that stops being needed fails, and an excuse with no reason fails, so
+# the list cannot quietly become a place where drift is allowed.
+#
+# The figure is named by (artifact, path) so a document can be excused
+# for one figure and stay protected for another.
+EXCUSED_COPIES = {
+    ("external_validation_finaledb.json",
+     ("per_publication_auc", "7", "ci_lo")): {
+        "docs/V3_DESIGN.md":
+            "a design-table TARGET ('now >= 0.873'), not a quote of the "
+            "held-out study's DeLong lower bound",
+    },
+    ("cross_study_finallydb_gc_corrected.json",
+     ("per_cancer", "OV", "auc_mean")): {
+        "results/prof_jiang_4mer_analysis/summary_for_professor_jiang.md":
+            "HCC-vs-control AUCs from the 4-mer analysis (0.9845 / "
+            "0.9885 / 0.9886); the match with the ovarian per-cancer AUC "
+            "is a coincidence, not a quote of it",
+        "docs/ALPHAGENOME_PROXY_RESULTS.md":
+            "the AlphaGenome proxy methods' own AUCs (all eight at >= "
+            "0.989), not the ovarian per-cancer AUC",
+        "docs/CADD_PER_SUBGROUP_LLR.md":
+            "the Top-K=200 AUC of the STK11-mutant subgroup (0.989 +/- "
+            "0.015), not the ovarian per-cancer AUC",
+    },
+    ("cross_study_finallydb_gc_corrected.json",
+     ("per_cancer", "PAAD", "auc_mean")): {
+        "review/agent_review_2026-08-10.md":
+            "a dated review record quoting a sensitivity table (0.969 / "
+            "0.967), not the pancreatic per-cancer AUC",
+    },
+    ("fusion_regularized_smoke.json",
+     ("summary", "regularized_late_fusion", "auc_mean")): {
+        "review/agent_review_2026-08-10.md":
+            "a dated review record listing the OLD README's 0.982, not "
+            "the late-fusion AUC",
+    },
+    ("cross_study_finallydb_with_motifs.json",
+     ("per_publication", "6", "auc_mean")): {
+        "METHYLATION_PROJECT.md":
+            "the companion repository's cross-study AUC range "
+            "(0.974-0.978), not the with-motifs Jiang row",
+        "docs/V3_DESIGN.md":
+            "the v2.2 design baseline ('already at AUC 0.978'), not the "
+            "with-motifs Jiang row",
+    },
+    ("cross_study_finallydb_with_motifs.json",
+     ("per_publication", "8", "auc_mean")): {
+        "METHYLATION_PROJECT.md":
+            "the companion repository's cross-study AUC range "
+            "(0.974-0.978), not the with-motifs Cristiano row",
+    },
+    ("decision_curve.json",
+     "decision curve tumor_naive @0.95 threshold"): {
+        "results/prof_jiang_4mer_analysis/summary_for_professor_jiang.md":
+            "the LC-vs-Control sensitivity 0.700 in the 4-mer analysis "
+            "table, not the decision curve's operating threshold",
+        "paper/METHODS_PAPER_STATUS.md":
+            "the pooled sensitivity at 99% specificity (sens@99 = 0.700), "
+            "not the decision curve's operating threshold",
+    },
+    ("cross_study_loso.json", "in_domain cristiano"): {
+        "review/agent_review_2026-08-10.md":
+            "a dated review record quoting a variant-caller AUC table "
+            "(0.969 / 0.967), not the within-publication reference AUC",
+    },
 }
 
 QUOTED_SPECIAL = [
@@ -524,6 +628,9 @@ QUOTED_SPECIAL_EXTRA = [
     ("fusion_ablation_isotonic.json", "naive_average", "paper/PAPER.md"),
     ("fusion_ablation_isotonic.json", "naive_average", "paper/README.md"),
     ("fusion_ablation_isotonic.json", "naive_average", "results/README.md"),
+    # The project note quotes the same fusion headline (it used to carry
+    # the older run's 0.989, which no artifact holds).
+    ("fusion_ablation_isotonic.json", "naive_average", "METHYLATION_PROJECT.md"),
     ("cross_study_loso.json", "in_domain jiang", "docs/CADD_ALPHAMISSENSE_COMBINED.md"),
     ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "MODEL.md"),
     ("decision_curve.json", "decision curve tumor_naive @0.95 threshold", "README.md"),
@@ -708,7 +815,12 @@ QUOTED_NUMBERS.append(
     ("cross_study_finallydb_shuffled_control.json",
      ("pooled_auc_mean",),
      ["README.md", "README.zh-CN.md", "ULTRA_EARLY_READINESS.md",
-      "paper/METHODS_PAPER.md"]))
+      "paper/METHODS_PAPER.md",
+      # The EGA/dbGaP access request states the headline AUC and the
+      # shuffled-label null side by side ("AUC 0.968 +/- 0.003 with
+      # shuffled-label null 0.446") to justify the request, so both
+      # figures are live in it.
+      "data/EGA_DBGAP_DATA_ACCESS_TEMPLATE.md"]))
 # The with-motifs benchmark: a third tumor-naive run, quoted by eight
 # documents as "the same pipeline with 4-mer end motifs".
 QUOTED_NUMBERS.append(
@@ -1517,8 +1629,14 @@ def quoted_artifacts():
     return names
 
 
-def quoted_values(results_dir: str | None = None):
-    """Yield (label, value, artifact, documents) for every quoted number."""
+def quoted_entries(results_dir: str | None = None):
+    """Yield (label, value, artifact, key, documents) for every quoted figure.
+
+    ``key`` is the pair the figure is filed under -- ``(artifact, path)``
+    for a number and ``(artifact, what)`` for a special lookup -- which
+    is the key ``EXCUSED_COPIES`` uses. It is what lets a document be
+    excused from one figure and stay protected for another.
+    """
     for artifact_name, path, documents in QUOTED_NUMBERS:
         artifact = load(artifact_name, results_dir)
         if artifact is None:
@@ -1528,19 +1646,26 @@ def quoted_values(results_dir: str | None = None):
             if doc not in named:
                 named.append(doc)
         yield (f"{artifact_name}:{'.'.join(map(str, path))}",
-               dig_number(artifact, path), artifact_name, named)
+               dig_number(artifact, path), artifact_name,
+               (artifact_name, tuple(path)), named)
     for artifact_name, what, document in QUOTED_SPECIAL:
         artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
         value, label = special_value(artifact_name, artifact, what)
-        yield (label, value, artifact_name, [document])
+        yield (label, value, artifact_name, (artifact_name, what), [document])
     for artifact_name, what, document in QUOTED_SPECIAL_EXTRA:
         artifact = load(artifact_name, results_dir)
         if artifact is None:
             continue
         value, label = special_value(artifact_name, artifact, what)
-        yield (label, value, artifact_name, [document])
+        yield (label, value, artifact_name, (artifact_name, what), [document])
+
+
+def quoted_values(results_dir: str | None = None):
+    """Yield (label, value, artifact, documents) for every quoted number."""
+    for label, value, artifact_name, _key, named in quoted_entries(results_dir):
+        yield (label, value, artifact_name, named)
 
 
 def table_row_values(results_dir: str | None = None):

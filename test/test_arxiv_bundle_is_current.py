@@ -103,4 +103,4 @@ def _stated_counts(text: str) -> list[str]:
     """The 'N tests' figures a text states."""
     import re
 
-    return re.findall(r"(\d{3})\s+tests\b", text)
+    return re.findall(r"(\d{3,4})\s+tests\b", text)

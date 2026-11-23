@@ -52,7 +52,7 @@ _FIGURE = re.compile(r"(?<![\d.])\d+\.\d{3,4}(?![\d])")
 # contributes 103, and "50{,}000" contributes nothing -- the lookbehind
 # rejects a preceding comma, a closing brace and a letter, so the two
 # renderings of the same quantity agree.
-_COUNT = re.compile(r"(?<![\d.,}\w])\d{3}(?![\d.])")
+_COUNT = re.compile(r"(?<![\d.,}\w])\d{3,4}(?![\d.])")
 
 
 @pytest.fixture(scope="module")

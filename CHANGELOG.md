@@ -106,6 +106,58 @@ cohort size.
 
 ### Fixed
 
+- **The list of documents a quoted figure must appear in was a dict
+  literal, and a repeated key silently dropped half of it.** The guard
+  reads `EXTRA_DOCS` to learn which documents quote which figure, and
+  seven keys in it were written twice -- the second time for a document
+  added later. A Python dict keeps the LAST value for a repeated key,
+  so the earlier list was gone: **31 document/figure protections were
+  lost**, including the documents the superseded-figure guard is scoped
+  to, so a superseded number could have come back into them unnoticed.
+  The entries are now PAIRS merged by union, so a repeated key adds to
+  the protection instead of replacing it, and
+  `test/test_every_figure_copy_is_protected.py` fails on any dict
+  literal with a duplicate key anywhere in the repository -- the
+  duplicate is silently lossy and nothing about it looks like a
+  mistake when reading the source.
+- **The guard checked that named documents quote a figure, never that
+  unnamed ones do.** A document that quotes a figure but was never
+  named is a copy that can drift silently: the artifact is regenerated,
+  the named documents are updated, and this one keeps the old number.
+  That gap is now mechanical: the same test walks every tracked
+  document, and a document that quotes a pinned figure must be named
+  for it or carry an excuse that says what its number is instead. The
+  excuses are checked in both directions -- one that stops being needed,
+  stops quoting the figure, or loses its reason fails.
+- **Three documents were named for a figure they do not quote.**
+  `USAGE.md`, `docs/ALPHAGENOME_PROXY_RESULTS.md` and
+  `docs/CADD_PER_SUBGROUP_LLR.md` were named for the ovarian
+  per-cancer AUC because they contain the digits `0.989` -- in a stale
+  fusion rendering, an AlphaGenome proxy AUC and a subgroup AUC
+  respectively. The name was satisfied by the wrong number, which hid
+  the first of them: `USAGE.md` carried **0.989** for the cross-repo
+  fusion, the older run's value, while the artifact holds 0.9884.
+  `USAGE.md` and `METHYLATION_PROJECT.md` now quote the artifact's
+  value, and the two documents that quote something else are excused
+  instead of named.
+- **A document quoted the companion repository's figures without naming
+  the commit it read them from.** `METHYLATION_PROJECT.md` states the
+  companion pipeline's cross-study AUC (0.974-0.978) as a range; every
+  other document that quotes the companion now names its commit, and a
+  range is a copy that goes wrong the moment the other repository's
+  numbers move. It names `eb1529e` now.
+- **The guards read the suite's size with a three-digit pattern, and the
+  suite passed a thousand tests.** `(\d{3})` matches "998" and not
+  "1002", so the moment the count crossed four digits the README badge
+  looked as if it stated no count at all -- the count guard failed with
+  "the README no longer states the suite's test count", and the arXiv
+  bundle and submission-PDF checks were matching counts that were no
+  longer there. The patterns read three or four digits now, in the four
+  places that read a count. The suite is **1002 tests** (816 core + 186
+  deep-learning), and every document that states it has been updated
+  together -- the counts are moved by an anchored replacement, never by
+  a raw find-and-replace, which is how a research figure was corrupted
+  once already.
 - **The documented command for rebuilding the held-out cohort selected
   nothing.** `scripts/fetch_external_cohort.py` caps how many samples each
   publication contributes, and its quota defaulted to empty while
