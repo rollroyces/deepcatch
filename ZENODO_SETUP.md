@@ -50,8 +50,9 @@ now returns `1`. The v2.3.0 release is archived and published as
 <https://zenodo.org/records/24453044>), and the DOI is wired into
 `CITATION.cff`, `MODEL.md`, the methods paper's availability section
 and the preprint's data-availability section. v2.2.0 still carries no
-DOI — it predates the integration, and Zenodo does not archive it
-retroactively.
+DOI — it predates the integration, and Zenodo did not archive it
+retroactively. It can still be pointed at that release by hand from the
+same settings page, which would give v2.2.0 a DOI of its own.
 
 Check the toggle **before** tagging, not after. A release published
 while the integration is off gets a GitHub release and **no DOI**, and

@@ -42,6 +42,11 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 # A DOI in running text: the trailing characters of a markdown link, a
 # BibTeX field or an escaped JSON quote are not part of it. Parentheses
 # are allowed because Elsevier's DOIs contain them.
+#
+# The trimming below also drops markdown emphasis: a DOI written in
+# bold (**10.5281/zenodo.24453044**) or italics is a DOI, not a DOI
+# with asterisks, and the emphasis markers used to survive the scan and
+# be reported as an unregistered identifier.
 _DOI = re.compile(
     r"10\.\d{4,9}/[^\s\"'<>,;\\\(\)\]]+"
     r"(?:\([^\s\"'<>,;\\\(\)\]]*\)[^\s\"'<>,;\\\(\)\]]*)*")
@@ -106,6 +111,24 @@ def _tracked_text_files() -> list[Path]:
     return out
 
 
+def _dois_in_text(text: str) -> list[str]:
+    """The DOIs a piece of text names, without their markup.
+
+    A DOI written in bold (**10.5281/zenodo.24453044**), in italics,
+    inside a markdown link or inside a LaTeX ``\\url{...}`` names the
+    same identifier as a bare one. The markup is not part of it, and a
+    scanner that keeps the markers reports a DOI that resolves to
+    nothing -- which is how a bold DOI becomes a false failure.
+    """
+    found: list[str] = []
+    for raw in _DOI.findall(text):
+        doi = _trim_unbalanced(raw)
+        doi = _trim_unbalanced(doi.rstrip("`}*_.,;:\\，；：。（）、"))
+        if doi:
+            found.append(doi)
+    return found
+
+
 def _dois_in_tree() -> dict[str, set[str]]:
     """Every DOI in the tracked tree, and where it is mentioned."""
     found: dict[str, set[str]] = {}
@@ -114,11 +137,8 @@ def _dois_in_tree() -> dict[str, set[str]]:
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
-        for raw in _DOI.findall(text):
-            doi = _trim_unbalanced(raw)
-            doi = _trim_unbalanced(doi.rstrip("`}.,;:\\，；：。（）、"))
-            if doi:
-                found.setdefault(doi, set()).add(str(path.relative_to(_REPO_ROOT)))
+        for doi in _dois_in_text(text):
+            found.setdefault(doi, set()).add(str(path.relative_to(_REPO_ROOT)))
     return found
 
 

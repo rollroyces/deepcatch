@@ -119,6 +119,16 @@ cohort size.
 
 ### Fixed
 
+- **The DOI check reported the release's own DOI as unregistered.**
+  `scripts/check_dois.py` trims the trailing punctuation of a captured
+  DOI but not markdown emphasis, so a DOI written in bold
+  (**10.5281/zenodo.24453044**) was read as an identifier ending in
+  asterisks -- one that resolves to nothing -- and the check that exists
+  to catch dead links failed on the DOI the release had just minted.
+  The trimming drops the emphasis markers now, the extraction is a
+  function of its own so that it can be tested, and seven forms are
+  pinned: bare, bold, bold with a full stop, italic, a trailing full
+  stop, a markdown link and a LaTeX `\url{}`.
 - **The list of documents a quoted figure must appear in was a dict
   literal, and a repeated key silently dropped half of it.** The guard
   reads `EXTRA_DOCS` to learn which documents quote which figure, and

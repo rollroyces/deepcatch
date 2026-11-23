@@ -29,6 +29,7 @@ broken DOI.
 """
 from __future__ import annotations
 
+import importlib.util
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +38,37 @@ import pytest
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _CHECKER = _REPO_ROOT / "scripts" / "check_dois.py"
+
+
+def _load_checker():
+    """The checker, loaded from its path."""
+    spec = importlib.util.spec_from_file_location("check_dois", _CHECKER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+@pytest.mark.parametrize("text", [
+    "10.5281/zenodo.24453044",
+    "**10.5281/zenodo.24453044**",
+    "**10.5281/zenodo.24453044.**",
+    "_10.5281/zenodo.24453044_",
+    "The DOI is 10.5281/zenodo.24453044.",
+    "[10.5281/zenodo.24453044](https://doi.org/10.5281/zenodo.24453044)",
+    "\\url{https://doi.org/10.5281/zenodo.24453044}",
+])
+def test_markup_is_not_part_of_the_identifier(text):
+    """A DOI written in bold, italics, a link or a macro is the same DOI.
+
+    The scanner used to keep the markdown emphasis, so a DOI written in
+    bold was reported as an identifier that resolves to nothing -- a
+    false failure in the check that is supposed to catch dead links.
+    The failure it caused was the same kind of thing the check exists
+    for, so it is worth a test of its own.
+    """
+    found = _load_checker()._dois_in_text(text)
+    assert set(found) == {"10.5281/zenodo.24453044"}, (
+        f"the DOI in {text!r} was read as {found}")
 
 
 def test_every_doi_in_the_tree_is_registered():
