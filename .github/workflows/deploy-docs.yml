@@ -56,6 +56,18 @@ jobs:
         with:
           path: ./docs/site
 
+      # Wait for the artifact to become visible.
+      #
+      # The deploy step finds the artifact by NAME through the artifact
+      # LIST API, and that list can lag a second or two behind the
+      # upload's own "Artifact github-pages has been successfully
+      # uploaded!" message. The lookup ran 19 ms after the upload
+      # finalised on 2026-11-23 and reported "Found 0 artifact(s)" for an
+      # artifact whose ID it had just printed. The action's own advice is
+      # to try again later; this is that wait, before the action runs.
+      - name: Wait for the artifact to be visible
+        run: sleep 20
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
