@@ -45,7 +45,8 @@ The submission metadata is in `paper/BIORXIV_SUBMISSION.md`; the venue
 map for what comes after the preprint is in
 `docs/JOURNAL_SUBMISSION.md` (preprint first, then JOSS or PLOS
 Computational Biology). The ORCID is already registered and in
-`CITATION.cff`; the DOI goes there too once Zenodo mints it.
+`CITATION.cff`, and the release carries the DOI
+10.5281/zenodo.24453044 (v2.3.0), declared there too.
 
 ---
 

@@ -157,7 +157,8 @@ methylation pipeline, harmonization, the two readiness reports);
 
 # Code availability
 
-MIT-licensed, at <https://github.com/rollroyces/deepcatch>. Install with
+MIT-licensed, at <https://github.com/rollroyces/deepcatch>; the archived
+release of this version is 10.5281/zenodo.24453044. Install with
 `pip install -e .` (Python ≥3.10; the CPU fragmentomics path needs only
 NumPy, SciPy, scikit-learn, pandas, matplotlib, seaborn, requests and
 tqdm). The test suite needs `pip install -e ".[dev]"`, which adds

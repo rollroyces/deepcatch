@@ -378,6 +378,8 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 ## 5. Availability
 
 - **Source code:** github.com/rollroyces/deepcatch
+- **Archived release (DOI):** 10.5281/zenodo.24453044 -- the archived
+  source of the v2.3.0 tag this manuscript describes (MIT)
 - **License:** MIT
 - **Data** (all public; re-fetched by the scripts in `scripts/`; no
   patient-identifiable data is redistributed):

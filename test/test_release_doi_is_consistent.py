@@ -44,11 +44,18 @@ _TEX = _REPO_ROOT / "paper" / "paper.tex"
 _METHODS = _REPO_ROOT / "paper" / "METHODS_PAPER.md"
 
 # A DOI-shaped string.
-_DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>,\\]+")
+#
+# The character class stops at a closing brace as well: a DOI inside a
+# LaTeX macro -- \url{https://doi.org/10.5281/zenodo.24453044} -- is
+# followed by the macro's own brace, and a pattern that swallows it
+# reads the DOI as "10.5281/zenodo.24453044}", which is no record.
+# A markdown link is the same trap: the DOI is followed by the link's
+# own brackets, so the class stops at ']' and ')' too.
+_DOI = re.compile(r"10\.\d{4,9}/[^\s\"'<>,\}\]\)]+")
 
 # A DOI that is a promise rather than a record.
 _PLACEHOLDER = re.compile(
-    r"10\.\d{4,9}/[^\s\"'<>,\]]*"
+    r"10\.\d{4,9}/[^\s\"'<>,\}\]\)]*"
     r"(to-be-assigned|to-be-minted|to-be-added|todo|tbd|xxx|placeholder)",
     re.I,
 )

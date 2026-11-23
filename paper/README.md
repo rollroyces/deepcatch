@@ -66,7 +66,7 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 - [x] ORCID registered (`0009-0008-9113-769X`) and present in `CITATION.cff`
 - [ ] **Upload `biorxiv_submission_v2.3.0.pdf`** — needs the author's bioRxiv account
 - [ ] **Add the corresponding-author email** to the submission form (kept out of the repo on purpose)
-- [ ] **Enable Zenodo's GitHub integration** so the release gets a DOI, then tag `v2.3.0` (see `ZENODO_SETUP.md`)
+- [x] **Zenodo's GitHub integration enabled and `v2.3.0` tagged** — the release is archived as **10.5281/zenodo.24453044** (see `ZENODO_SETUP.md`)
 
 ## Figures
 

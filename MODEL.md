@@ -410,6 +410,7 @@ python scripts/adapter_auc_gate.py
   title  = {DeepCatch: Mutation-informed Ultra-Sensitive cfDNA Detection
             (research-use-only open-data methods benchmark)},
   year   = {2026},
+  doi    = {10.5281/zenodo.24453044},
   url    = {https://github.com/rollroyces/deepcatch},
   version = {2.3.0},
   note   = {Research-use-only open-data benchmark. NOT clinically validated.

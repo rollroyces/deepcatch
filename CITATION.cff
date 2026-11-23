@@ -7,25 +7,23 @@ authors:
     affiliation: "Independent Researcher (no institutional affiliation; verified email domain umich.edu)"
     orcid: "https://orcid.org/0009-0008-9113-769X"
 year: 2026
-# There is no `doi:` key here yet, and that is deliberate. This
-# repository has no Zenodo record of its own: the Zenodo API returns
-# zero records for it, so the DOI of the v2.2.0 release was never
-# minted either. A placeholder string under `doi:` would render in
-# GitHub's "Cite this repository" box as a link to a record that does
-# not exist. The `doi:` key is added, with the minted value, by the
-# release that carries it -- see ZENODO_SETUP.md.
+# The DOI of the archived release. Zenodo's GitHub integration was
+# enabled on 2026-11-23 and archived the v2.3.0 release automatically;
+# the record is published, not a draft, and is registered with DataCite
+# (10.5281/zenodo.24453044, v2.3.0, MIT).
 #
-# There is no `identifiers:` entry for the same reason. It used to
-# declare a DOI whose value was the string "to be assigned (preprint)":
-# not a DOI at all, but sitting in a machine-readable field that says
-# `type: doi`, so a citation tool would record it as one. The preprint's
-# DOI is added when the preprint exists -- see ZENODO_SETUP.md section 5.
+# The key was absent before that, deliberately: the repository had no
+# Zenodo record of its own, and a placeholder string under `doi:` would
+# render in GitHub's "Cite this repository" box as a link to a record
+# that does not exist. The same reason applies to `identifiers:` --
+# there is no preprint DOI yet, so that entry is not declared either.
+doi: "10.5281/zenodo.24453044"
 url: "https://github.com/rollroyces/deepcatch"
 repository-code: "https://github.com/rollroyces/deepcatch"
 repository-companion: "https://github.com/rollroyces/cfdna-fragmentomics-pipeline"
 license: MIT
 version: "2.3.0"
-date-released: 2026-11-16
+date-released: 2026-11-23
 keywords:
   - "cfDNA"
   - "ctDNA"

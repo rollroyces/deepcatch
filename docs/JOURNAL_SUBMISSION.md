@@ -38,7 +38,7 @@ one upload.
 | Data/code required | code URL | **public repo, installable, versioned** | data availability statement | data availability | data + workflow |
 | Needs clinical cohort | no | no | no (but reviewers will ask) | no | likely |
 | Time to decision | days | 1–3 months | 2–4 months | 1–3 months | 2–4 months |
-| DOI | yes (auto) | **yes (Zenodo, needs the GitHub integration)** | yes | yes | yes |
+| DOI | yes (auto) | **yes (Zenodo: 10.5281/zenodo.24453044)** | yes | yes | yes |
 
 **Recommendation.** Submit the preprint to bioRxiv now, then target
 **JOSS** with the software framing (the reproducibility guarantees,
@@ -87,7 +87,7 @@ independent researcher can produce.
 | Contribution guidelines | ✅ `CONTRIBUTING.md` (setup, the drift-guard rules, how to bring a cohort in) |
 | Author list | ✅ `AUTHORS` |
 | Code of conduct | ✅ `CODE_OF_CONDUCT.md` |
-| **DOI** | ⬜ requires Zenodo's GitHub integration + the `v2.3.0` tag |
+| **DOI** | ✅ **10.5281/zenodo.24453044** (v2.3.0, archived and published; declared in `CITATION.cff`, `MODEL.md` and both manuscripts) |
 | **Paper file discoverable from the repo root** | ✅ `paper.md` in the repo root, in JOSS format (summary, statement of need, features, quality/reproducibility, documentation, code availability, limitations, acknowledgements) |
 | **Short description** (the JOSS submission form's one-paragraph field) | ✅ the Summary section of `paper.md` is the one-paragraph description |
 

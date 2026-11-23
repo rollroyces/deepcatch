@@ -4,7 +4,7 @@ All notable changes to DeepCatch are recorded here. The project follows
 [semantic versioning](https://semver.org/); the Zenodo DOI for each
 release is minted from the corresponding GitHub release.
 
-## [2.3.0] — 2026-11-16
+## [2.3.0] — 2026-11-23
 
 The release that turns the internal benchmark into an externally validated
 one, and replaces the neural fusion layer with an estimator that fits the
@@ -91,6 +91,19 @@ cohort size.
 
 ### Added
 
+- **The release is archived and citable: 10.5281/zenodo.24453044.**
+  Zenodo's GitHub integration is enabled for this repository, and the
+  v2.3.0 release was archived and published automatically: the record
+  is <https://zenodo.org/records/24453044> (v2.3.0, MIT, the source
+  archive `rollroyces/deepcatch-v2.3.0.zip`), the DOI is registered
+  with DataCite, and the GitHub release carries the submission PDF.
+  The DOI is declared in `CITATION.cff`, in `MODEL.md`'s BibTeX entry,
+  in the methods paper's availability section and in the preprint's
+  data-availability section, and
+  `test/test_release_doi_is_consistent.py` checks that all four agree,
+  that none of them carries a placeholder, and that no DOI appears in
+  an availability statement without being declared. The v2.2.0 release
+  predates the integration and still carries no DOI.
 - **The files a software-engineering journal asks for.** The JOSS
   checklist wants a contribution guide, an author list and a code of
   conduct; none of the three was in the repository. `CONTRIBUTING.md`

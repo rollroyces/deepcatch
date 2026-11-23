@@ -44,6 +44,15 @@ placeholder string under `doi:` for exactly that reason, and it has
 been removed (a `doi:` key that resolves to nothing renders in
 GitHub's "Cite this repository" box as a broken link).
 
+**Updated 2026-11-23:** the integration is enabled and the check above
+now returns `1`. The v2.3.0 release is archived and published as
+**10.5281/zenodo.24453044** (v2.3.0, MIT;
+<https://zenodo.org/records/24453044>), and the DOI is wired into
+`CITATION.cff`, `MODEL.md`, the methods paper's availability section
+and the preprint's data-availability section. v2.2.0 still carries no
+DOI — it predates the integration, and Zenodo does not archive it
+retroactively.
+
 Check the toggle **before** tagging, not after. A release published
 while the integration is off gets a GitHub release and **no DOI**, and
 Zenodo has to be pointed at that release separately afterwards — so the
@@ -156,13 +165,21 @@ Repeat for the pipeline repo.
 Add the minted DOI to `CITATION.cff` as a `doi:` key, and replace any
 other placeholder DOIs with the real ones Zenodo assigned.
 
-`CITATION.cff` deliberately carries **no** `doi:` key while no DOI
-exists. It used to hold the placeholder string
+`CITATION.cff` carried **no** `doi:` key for as long as no DOI
+existed. It used to hold the placeholder string
 `10.5281/zenodo.to-be-assigned-on-first-release`, which had two
 problems: it was a DOI that resolved to nothing (a broken link in
 GitHub's "Cite this repository" box), and "on-first-release" was no
 longer true — v2.2.0 was a release and got no DOI. So the key is
 *added* with the minted value, not substituted in place. Commit. Done.
+
+**Done 2026-11-23** for v2.3.0: `CITATION.cff` now carries
+`doi: "10.5281/zenodo.24453044"`, and the same DOI appears in
+`MODEL.md`'s BibTeX entry, in the methods paper's availability section
+and in the preprint's data-availability section.
+`test/test_release_doi_is_consistent.py` checks that all four agree,
+that none of them carries a placeholder, and that no DOI appears in an
+availability statement without being declared.
 
 The same rule applies to the preprint's identifier. `CITATION.cff` used
 to carry an `identifiers:` entry of `type: doi` whose value was the
