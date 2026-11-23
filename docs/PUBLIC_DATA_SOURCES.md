@@ -140,7 +140,9 @@ population — but they are not IRB-free.
   sharper than it looked: FinaleDB carries no stage labels, and the
   only stage-annotated public fragment resources are either inside the
   CRAG re-packaging of publication 6 (no stage column) or behind an EGA
-  DAC. But the held-out cohort's own publications do describe their
+  DAC -- and the held-out cohort's own publication 7 is one of them: its
+  11 CRC patients and 14 liver-transplant recipients were submitted to the
+  EGA under `EGAS00001003117` and `EGAS00001003116`. But the held-out cohort's own publications do describe their
   stage in public records that are reachable without a DAC -- GEO's
   extract protocol for publication 1 (GSE71378) says its 52 cancer
   samples are **Stage IV**, and publication 9 is a **metastatic**
