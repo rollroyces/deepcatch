@@ -1,7 +1,7 @@
 # DeepCatch — Next Steps: From Research Simulation to Clinical Validation
 
 **Status (2026-11-23):** v2.3.0 is released (tag `v2.3.0`, DOI
-10.5281/zenodo.24453044) and the CI is green (1015 tests, core +
+10.5281/zenodo.24453044) and the CI is green (1017 tests, core +
 deep-learning + paper PDF + docs site). The P0 fixes
 below were merged in August; section 1 (the Jiang nested CV) is still
 open and still blocked on one file. What is left before anything else is
@@ -22,7 +22,7 @@ asserts that the manuscript quotes the artifacts.
 ## 0. Publish the preprint (TODAY — 10 minutes)
 
 The PDF is compiled and current: **`paper/biorxiv_submission_v2.3.0.pdf`**
-(8 pages, 2 figures, all results current). Three steps, all of them
+(8 pages, 3 figures, all results current). Three steps, all of them
 need your browser session:
 
 ```bash

@@ -119,6 +119,18 @@ cohort size.
 
 ### Fixed
 
+- **Three documents described the submission PDF with a figure count the
+  PDF does not have.** The PDF embeds three figures -- the panel-LLR
+  performance figure, the pooled ROC and the sensitivity-at-specificity
+  panel -- and the venue map said "2 figures embedded"; the paper
+  README hedged with "2 figures - 3 embedded images"; the next-steps
+  note said "2 figures". A count in prose about a binary artefact is
+  exactly what drifts: nothing regenerates it. `docs/JOURNAL_SUBMISSION.md`,
+  `paper/README.md` and `NEXT_STEPS.md` now state 8 pages and 3 figures,
+  and `test/test_submission_description_matches_the_pdf.py` reads the
+  page count from the committed PDF and the figure count from the
+  manuscript's own `\includegraphics` calls, so a prose count that
+  stops matching the artefact fails the build.
 - **The external AUCs were quoted without saying what stage the held-out
   cohort was at.** 0.9444, 0.708 and the pooled 0.7385 are the
   project's headline generalisation number, and nothing in the

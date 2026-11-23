@@ -10,7 +10,7 @@ author's bioRxiv account and the Zenodo DOI.
 | File | What it is | State |
 |------|------------|-------|
 | `paper.tex` | **Primary manuscript** (preprint). Panel-based MRD detection, the tumor-naive fragmentomics channel, the held-out external validation, the leave-one-study-out transfer measurement and the methylation null. | ✓ compiles; `biorxiv_submission_v2.3.0.pdf` is the submission artefact |
-| `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (8 pages, 2 figures — 3 embedded images) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
+| `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (8 pages, 3 figures) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
 | `METHODS_PAPER.md` | The long-form methods manuscript (the PLOS Computational Biology / Bioinformatics Advances article; JOSS gets the root `paper.md`). Same evidence, more detail, per-cancer tables and a reproducibility paragraph. | ✓ numbers regenerated from the seeded benchmark |
 | `BIORXIV_SUBMISSION.md` | Submission-form metadata: what the preprint claims, what it must not claim, and what still needs the author | ✓ (gitignored — it holds personal details) |
 | `METHODS_PAPER_STATUS.md` | Section-by-section status meta-doc for the methods manuscript | ✓ updated with the v2.3.0 numbers |
@@ -59,7 +59,7 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 ## Submission checklist (bioRxiv)
 
 - [x] PDF compiles cleanly under tectonic and pdfTeX
-- [x] Both figures embedded and rendered from the committed artifacts
+- [x] All three figures embedded and rendered from the committed artifacts
 - [x] All `\cite{}` keys in `paper.tex` resolve against the manuscript's own inline bibliography
 - [x] Abstract within bioRxiv's character limit
 - [x] Submission metadata in `BIORXIV_SUBMISSION.md`
