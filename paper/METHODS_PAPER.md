@@ -423,6 +423,17 @@ replication possible: the FinaleDB and FinaleMe teams (Zenodo
 Commons for TCGA open-access somatic mutations, and the GEO depositors
 of GSE317007 and GSE185307.
 
+Generative AI tools (OpenAI, Anthropic, Google and MiniMax models, used
+through their coding assistants) assisted with this work: they wrote and
+reviewed parts of the analysis code, ran the analysis scripts, performed
+the multi-persona audits recorded in `AUDIT_2_FINDINGS.md`, and drafted
+and edited parts of this manuscript. They did not generate, alter or
+interpret any primary data, figure or statistical result — every number
+reported here is produced by the committed code from the artifact
+committed in this repository, and every correction the audits produced is
+verified by a test that fails when the defect is reintroduced. The author
+reviewed and edited all content and takes full responsibility for it.
+
 ---
 
 *Manuscript draft — 2026-09-23. Section 3 filled with the just-shipped cross-study and per-cancer numbers. See `paper/REPRODUCE.md` for one-command reproduction.*

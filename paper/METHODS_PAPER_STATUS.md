@@ -3,7 +3,7 @@
 > **This is a dated snapshot (2026-09-23), not the current state.**
 > The methods paper is no longer a skeleton: it is written, its numbers
 > are regenerated from the seeded pipeline, and it is compiled to
-> `paper/biorxiv_submission_v2.3.0.pdf` (8 pages). The per-cohort and
+> `paper/biorxiv_submission_v2.3.0.pdf` (9 pages). The per-cohort and
 > pooled figures quoted below are the September values and have been
 > superseded — the current ones are in `paper/METHODS_PAPER.md` §3 and
 > `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md`, each tied to the

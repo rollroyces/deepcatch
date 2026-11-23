@@ -117,6 +117,25 @@ cohort size.
   present a simulation result as a clinical one). None of the three
   adds a personal contact detail to the repository.
 
+### Added
+
+- **Both manuscripts now carry the AI-use disclosure.** bioRxiv expects
+  it, arXiv asks for it, and PLOS's Ethical Publishing Practice requires
+  it ("must be clearly reported in a dedicated section of the Methods,
+  or in the Acknowledgements section") and treats its absence as
+  misrepresentation of methods and contributions. The paragraph names
+  the tools the repository's own records name -- `TEAM.md` §1.2: the
+  OpenAI / Anthropic / Google providers behind the multi-persona audit
+  agents -- plus MiniMax, which ran the current audit-and-fix round.
+  It says what the tools did (wrote and reviewed analysis code, ran the
+  scripts, performed the audits recorded in `AUDIT_2_FINDINGS.md`,
+  drafted and edited parts of the manuscript) and what they did not do
+  (generate, alter or interpret any primary data, figure or statistical
+  result), and that every number is produced by the committed code from
+  the committed artifact. The disclosure took the submission PDF from 8
+  pages to 9, and every document that states the page count was
+  updated with it.
+
 ### Fixed
 
 - **The docs site stopped deploying because the Pages action looked for

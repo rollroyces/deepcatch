@@ -22,7 +22,7 @@ asserts that the manuscript quotes the artifacts.
 ## 0. Publish the preprint (TODAY — 10 minutes)
 
 The PDF is compiled and current: **`paper/biorxiv_submission_v2.3.0.pdf`**
-(8 pages, 3 figures, all results current). Three steps, all of them
+(9 pages, 3 figures, all results current). Three steps, all of them
 need your browser session:
 
 ```bash
