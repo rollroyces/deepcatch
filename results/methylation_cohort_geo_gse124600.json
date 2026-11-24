@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-24T05:11:38.393060+00:00",
+  "accession": "GSE124600",
+  "question": "What does the deposited GSE124600 plasma methylation matrix contain, and what can be read from it -- including the stage breakdown this repository's readiness document was waiting for?",
+  "cohort": {
+    "n_samples": 274,
+    "n_cancer": 142,
+    "n_healthy": 132,
+    "n_loci": 205250,
+    "stage_distribution": {
+      "Stage_I": 30,
+      "Stage_II": 65,
+      "Stage_III": 42,
+      "Stage_IV": 5
+    },
+    "median_called_loci_healthy": 15637.0,
+    "median_called_loci_cancer": 20129.5
+  },
+  "matrix_semantics": {
+    "fraction_of_cells_exactly_zero": 0.911,
+    "max_value": 6949.25,
+    "min_nonzero_value": 0.47999998927116394,
+    "reading": "A methylated-CpG CALL matrix with normalised counts, not a fractional methylome: 91% of the cells are 0, which means 'this CpG was not called methylated in this sample', not 'this CpG is 0% methylated'. The per-locus summaries are anti-correlated with cancer because the signal is spread over more loci, which is what a normalised count matrix does."
+  },
+  "summaries": {
+    "shared_loci_at_50pct": {
+      "n_shared_loci": 14005,
+      "mean_over_shared_loci": {
+        "auc": 0.3661,
+        "permutation_p": 1.0
+      },
+      "mean_of_nonzero_values": {
+        "auc": 0.2722,
+        "permutation_p": 1.0
+      },
+      "called_loci_count": {
+        "auc": 0.7688,
+        "permutation_p": 5e-05
+      },
+      "total_signal": {
+        "auc": 0.4069,
+        "permutation_p": 0.9968
+      }
+    },
+    "shared_loci_at_90pct": {
+      "n_shared_loci": 7595,
+      "mean_over_shared_loci": {
+        "auc": 0.3594,
+        "permutation_p": 1.0
+      },
+      "mean_of_nonzero_values": {
+        "auc": 0.2722,
+        "permutation_p": 1.0
+      },
+      "called_loci_count": {
+        "auc": 0.7688,
+        "permutation_p": 5e-05
+      },
+      "total_signal": {
+        "auc": 0.4069,
+        "permutation_p": 0.9968
+      }
+    }
+  },
+  "per_stage_called_loci": {
+    "Stage_I": {
+      "n": 30,
+      "median_called_loci": 18919.0,
+      "auc_vs_healthy": 0.713
+    },
+    "Stage_II": {
+      "n": 65,
+      "median_called_loci": 20078.0,
+      "auc_vs_healthy": 0.8223
+    },
+    "Stage_III": {
+      "n": 42,
+      "median_called_loci": 20780.5,
+      "auc_vs_healthy": 0.7188
+    },
+    "Stage_IV": {
+      "n": 5,
+      "median_called_loci": 21620.0,
+      "auc_vs_healthy": 0.8288
+    }
+  },
+  "stage_monotonicity": {
+    "spearman_rho_stage_vs_called_loci": 0.0961,
+    "p": 0.2552,
+    "n_cancer": 142,
+    "reading": "The called-CpG count does NOT rise with stage, so the stage-labelled cohort does not deliver a stage-stratified early-detection result. The per-stage AUCs are noisy at these arm sizes."
+  },
+  "conclusion": "The cohort reproduces this repository's methylation finding on an independent, larger, stage-labelled deposit: the matrix yields a coverage/burden signal, not a methylation-level signal. It therefore closes the readiness gap with a measurement rather than a plan, and the negative answer is the answer."
+}
