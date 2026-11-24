@@ -63,8 +63,8 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 - [x] All `\cite{}` keys in `paper.tex` resolve against the manuscript's own inline bibliography
 - [x] Abstract within bioRxiv's character limit
 - [x] Submission metadata in `BIORXIV_SUBMISSION.md`
-- [x] ORCID registered (`0009-0008-9113-769X`) and present in `CITATION.cff`
-- [ ] **Upload `biorxiv_submission_v2.3.0.pdf`** — needs the author's bioRxiv account
+- [x] ORCID registered (`0009-0008-9113-769X`) and present in `CITATION.cff` — and in all four author blocks (`test/test_author_affiliation_is_consistent.py`)
+- [ ] **Upload `biorxiv_submission_v2.3.0.pdf`** — everything is ready (the file is current, 9 pages, the disclosure is in it); the last step is the ORCID sign-in on submit.biorxiv.org, which only the author can do
 - [ ] **Insert the AI-use disclosure** into `paper.tex` and `METHODS_PAPER.md`
       (Block A + Block B in `BIORXIV_SUBMISSION.md` §7) -- bioRxiv, arXiv and
       PLOS all expect it, and the tool list is the one line only the author
