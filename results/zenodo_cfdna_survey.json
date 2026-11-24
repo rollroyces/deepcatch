@@ -1,0 +1,406 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-24T04:45:37.822510+00:00",
+  "surveyed": "2026-11-24",
+  "method": {
+    "api": "https://zenodo.org/api/records",
+    "type_filter": "dataset",
+    "page_size": 25,
+    "note": "Zenodo's free-text search is an OR over the query terms, so the hit counts are large; the candidates were picked by hand from the first page of each query and are listed here with their DOIs so a reader can check each one.",
+    "queries": [
+      {
+        "query": "cell-free DNA fragmentomics",
+        "dataset_hits": 28016,
+        "returned": 25
+      },
+      {
+        "query": "cfDNA fragment length",
+        "dataset_hits": 21711,
+        "returned": 25
+      },
+      {
+        "query": "circulating tumor DNA fragmentome",
+        "dataset_hits": 16069,
+        "returned": 25
+      },
+      {
+        "query": "plasma fragmentome",
+        "dataset_hits": 3748,
+        "returned": 25
+      },
+      {
+        "query": "DELFI fragmentomics",
+        "dataset_hits": 34,
+        "returned": 25
+      },
+      {
+        "query": "cfDNA plasma methylation",
+        "dataset_hits": 4870,
+        "returned": 25
+      },
+      {
+        "query": "cfDNA fragment length matrix",
+        "dataset_hits": 31903,
+        "returned": 25
+      },
+      {
+        "query": "liquid biopsy fragmentome",
+        "dataset_hits": 3870,
+        "returned": 25
+      }
+    ]
+  },
+  "records_seen_in_the_first_pages": 142,
+  "candidates": [
+    {
+      "doi": "10.5281/zenodo.21269430",
+      "title": "Cell-free DNA fragment files (hg38) from renal cell carcinoma patients and healthy controls",
+      "publication_date": "2026-07-08",
+      "creators": [
+        "Heydari, Hamed",
+        "Zhao, Jing",
+        "Goodarzi, Hani",
+        "Najafabadi, Hamed"
+      ],
+      "description": "This dataset contains cell-free DNA (cfDNA) fragment files generated from plasma of clear cell renal cell carcinoma (ccRCC) patients and healthy control individuals. The dataset comprises 12 samples: - 6 ccRCC patients (labelled PID019, PID020, PID038, PID039, PID040, PID041) - 6 healthy controls (labelled HC001, HC007, HC009, HC010, HC012, HC013) Within the archive, each sample includes two files: - &lt;sample&gt;.hg38.frag.bed.gz: bgzip-compressed BED file of cfDNA fragment coordinates aligned to the human reference genome GRCh38/hg38. - &lt;sample&gt;.hg38.frag.bed.gz.tbi: the corresponding tabix index. A sample metadata table is also provided as zenodo_cfdna_sample_metadata.tsv. Sample identifiers have been coded/de-identified; the file names contain no personal identifiers, and no directly identifying patient information is included in this deposit.",
+      "keywords": [],
+      "n_files": 2,
+      "total_bytes": 105849322,
+      "files": [
+        {
+          "key": "inhouse_cfdna_frag.tar.gz",
+          "size": 105847937
+        },
+        {
+          "key": "zenodo_cfdna_sample_metadata.tsv",
+          "size": 1385
+        }
+      ],
+      "related_identifiers": [],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.17253504",
+      "title": "cirDNA End-Motif Frequencies (2- and 4-mers) from sWGS",
+      "publication_date": "2025-10-02",
+      "creators": [
+        "Pisareva, Ekaterina",
+        "Marianne, Richaud"
+      ],
+      "description": "Processed end-motif frequency tables (2- and 4-mers) from cfDNA shallow WGS. Rows are motifs (ACGT lexicographic), columns are samples; values are per-sample fractions (and counts where provided). Methods: fragment 5&prime; boundary from paired-end alignments (min reference_start/max reference_end), motifs from reference genome at boundary; primary alignments, proper pairs; duplicates and vendor QC-fail excluded; MAPQ &ge; 30; GRCh38.",
+      "keywords": [
+        "cirDNA",
+        "shallow WGS",
+        "end motif"
+      ],
+      "n_files": 21,
+      "total_bytes": 2337376,
+      "files": [
+        {
+          "key": "HI25_SSP_2bp_5pr.xlsx",
+          "size": 21389
+        },
+        {
+          "key": "BC_DSP_4bp_5pr.xlsx",
+          "size": 370082
+        },
+        {
+          "key": "NSCLC_DSP_4bp_5pr.xlsx",
+          "size": 413770
+        },
+        {
+          "key": "HI37_DSP_2bp_5pr.xlsx",
+          "size": 27468
+        },
+        {
+          "key": "mCRC_DSP_4bp_5pr.xlsx",
+          "size": 122954
+        },
+        {
+          "key": "BC_DSP_2bp_5pr.xlsx",
+          "size": 33442
+        },
+        {
+          "key": "HI25_DSP_4bp_5pr.xlsx",
+          "size": 191902
+        },
+        {
+          "key": "HI25_SSP_3bp_5pr.xlsx",
+          "size": 54471
+        },
+        {
+          "key": "mCRC_SSP_3bp_5pr.xlsx",
+          "size": 36982
+        },
+        {
+          "key": "NSCLC_DSP_3bp_5pr.xlsx",
+          "size": 110850
+        },
+        {
+          "key": "HI37_DSP_3bp_5pr.xlsx",
+          "size": 77012
+        },
+        {
+          "key": "mCRC_SSP_2bp_5pr.xlsx",
+          "size": 16681
+        },
+        {
+          "key": "mCRC_SSP_4bp_5pr.xlsx",
+          "size": 122485
+        },
+        {
+          "key": "HI25_SSP_4bp_5pr.xlsx",
+          "size": 191195
+        },
+        {
+          "key": "HI25_DSP_3bp_5pr.xlsx",
+          "size": 54870
+        },
+        {
+          "key": "mCRC_DSP_2bp_5pr.xlsx",
+          "size": 16780
+        },
+        {
+          "key": "HI25_DSP_2bp_5pr.xlsx",
+          "size": 21484
+        },
+        {
+          "key": "HI37_DSP_4bp_5pr.xlsx",
+          "size": 279304
+        },
+        {
+          "key": "mCRC_DSP_3bp_5pr.xlsx",
+          "size": 37375
+        },
+        {
+          "key": "BC_DSP_3bp_5pr.xlsx",
+          "size": 99918
+        },
+        {
+          "key": "NSCLC_DSP_2bp_5pr.xlsx",
+          "size": 36962
+        }
+      ],
+      "related_identifiers": [
+        {
+          "relation": "isDocumentedBy",
+          "identifier": "10.1101/2025.09.17.676909"
+        },
+        {
+          "relation": "isSupplementedBy",
+          "identifier": "10.5281/zenodo.17253415"
+        }
+      ],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.23195882",
+      "title": "LEAF-1 pretraining corpus: cfDNA fragments",
+      "publication_date": "2026-10-06",
+      "creators": [
+        "Zhao, Jing",
+        "Heydari, Hamed",
+        "Goodarzi, Hani",
+        "Najafabadi, Hamed"
+      ],
+      "description": "This record documents the cell-free DNA (cfDNA) portion of the pretraining corpus of LEAF-1, a DNA language model of cell-free DNA and chromatin-accessibility fragments. The fragment files themselves (211 GB bgzip-compressed, 34.0 billion fragments) are too large for Zenodo and are hosted on Hugging Face: huggingface.co/datasets/jing-z/leaf1-pretraining-cfdna . Paper: bioRxiv 10.64898/2026.07.09.737627 scATAC-seq portion of the pretraining corpus: 10.5281/zenodo.23176597 TCGA ATAC-seq portion (controlled access; sample manifest and processing code): 10.5281/zenodo.23195360 This record contains the sample manifest and md5 checksums of the uncompressed and compressed files. Fragments derive from FinaleDB (Zheng et al., 2021, Bioinformatics) and the studies of Adalsteinsson et al. 2017, Cristiano et al. 2019, Jiang et al. 2015 and Sun et al. 2019; please cite them when reusing the data.",
+      "keywords": [],
+      "n_files": 3,
+      "total_bytes": 545305,
+      "files": [
+        {
+          "key": "checksums.tsv",
+          "size": 322470
+        },
+        {
+          "key": "samples.tsv",
+          "size": 220846
+        },
+        {
+          "key": "README.md",
+          "size": 1989
+        }
+      ],
+      "related_identifiers": [
+        {
+          "relation": "isSupplementedBy",
+          "identifier": "https://huggingface.co/datasets/jing-z/leaf1-pretraining-cfdna"
+        },
+        {
+          "relation": "isSupplementTo",
+          "identifier": "10.64898/2026.07.09.737627"
+        },
+        {
+          "relation": "isDerivedFrom",
+          "identifier": "10.1093/bioinformatics/btaa919"
+        }
+      ],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.15097509",
+      "title": "SAUNA paper - cfDNA Fragment dataset",
+      "publication_date": "2025-03-30",
+      "creators": [
+        "Bal\u00e1zs, Zsolt"
+      ],
+      "description": "SAUNA - Simulated Annealing for Unique Nucleosome Arrangements The dataset contains the data used in the publication of the SAUNA tool. 9 medium coverage (14-30x) cfDNA-sequencing files were mapped to the hg38 build of the human genome using bwa mem. Mapped sequence (Bam) files were converted into paired-end bed files using the `bedtools -pe` command. Consequently, the fragment information was extracted using the following commands. gunzip -c $file | awk 'BEGIN {OFS=\"\\t\"} $1 == $4 &amp;&amp; ($6 - $2) &lt;= 2000' | cut --output-delimiter=$'\\t' -f1,2,6,8,9 | sort -k1,1V -k2,2n -k3,3n | bgzip &gt; \"${file%.sortByName.bed.gz}_hg38.frag.tsv.bgz\" The resulting data files do not contain sequence information but can be converted back into bam files using Fragmentstein (https://github.com/uzh-dqbm-cmi/fragmentstein/, https://academic.oup.com/bioinformatics/article/40/1/btae017/7550024) and can be used for most analyses relevant in cfDNA-sequencing, with the exception of calling point mutations.",
+      "keywords": [],
+      "n_files": 10,
+      "total_bytes": 13142837183,
+      "files": [
+        {
+          "key": "SeCT-20_hg38.frag.tsv.bgz",
+          "size": 1113163576
+        },
+        {
+          "key": "SeCT-22_hg38.frag.tsv.bgz",
+          "size": 1594415308
+        },
+        {
+          "key": "SeCT-26_t2_hg38.frag.tsv.bgz",
+          "size": 1553575617
+        },
+        {
+          "key": "SeCT-61_hg38.frag.tsv.bgz",
+          "size": 1515425280
+        },
+        {
+          "key": "SeCT-26_t1_hg38.frag.tsv.bgz",
+          "size": 1607812689
+        },
+        {
+          "key": "SeCT-26_t3_hg38.frag.tsv.bgz",
+          "size": 1651328775
+        },
+        {
+          "key": "SeCT-58_hg38.frag.tsv.bgz",
+          "size": 882257781
+        },
+        {
+          "key": "SeCT-82_hg38.frag.tsv.bgz",
+          "size": 1506282712
+        },
+        {
+          "key": "metadata.tsv",
+          "size": 907
+        },
+        {
+          "key": "SeCT-47_hg38.frag.tsv.bgz",
+          "size": 1718574538
+        }
+      ],
+      "related_identifiers": [],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.23196827",
+      "title": "Chromatin landscapes and cell-free DNA fragmentation in colorectal cancer development",
+      "publication_date": "2026-11-17",
+      "creators": [
+        "Vulpescu, Nicholas",
+        "Foda, Zacharaiah",
+        "Scharpf, Robert",
+        "Velculescu, Victor"
+      ],
+      "description": "Data and code for reproducing analyses found in Chromatin landscapes and cell-free DNA fragmentation in colorectal cancer development .",
+      "keywords": [],
+      "n_files": 3,
+      "total_bytes": 6686599718,
+      "files": [
+        {
+          "key": "CRC_chromatin_landscapes_src_data.tar.gz",
+          "size": 6635751966
+        },
+        {
+          "key": "CRC_chromatin_landscapes.tar.gz",
+          "size": 88338
+        },
+        {
+          "key": "CRC_chromatin_landscapes_reference_data.tar.gz",
+          "size": 50759414
+        }
+      ],
+      "related_identifiers": [],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.15738112",
+      "title": "dataset for Genome-Wide Variations of End Motif in Cell-Free DNA Fragments Distinguish Immunotherapy Responders from Non-Responders in Head and Neck Cancer: A Multi-Institute Prospective Study",
+      "publication_date": "2025-06-25",
+      "creators": [
+        "Liu, Yaping"
+      ],
+      "description": "de-identified cfDNA WGS fragment files mapped to hg38",
+      "keywords": [],
+      "n_files": 1,
+      "total_bytes": 35029388807,
+      "files": [
+        {
+          "key": "Frag_Files.tar.gz",
+          "size": 35029388807
+        }
+      ],
+      "related_identifiers": [],
+      "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.15109495",
+      "title": "Cell-free DNA Fragmentomics and Second Malignant Neoplasm Risk in Patients with PTEN Hamartoma Tumor Syndrome",
+      "publication_date": "2025-03-30",
+      "creators": [
+        "Liu, Darren1,2",
+        "Lamis Yehia1",
+        "Andrew Dhawan1,3,4",
+        "Ying Ni2, 5",
+        "Charis Eng1,2,4,6,7,8"
+      ],
+      "description": "Supplementary dataset for manuscript: Cell-free DNA Fragmentomics and Second Malignant Neoplasm Risk in Patients with PTEN Hamartoma Tumor Syndrome Affiliations: 1 Genomic Medicine Institute, Lerner Research Institute, Cleveland Clinic, Cleveland, OH 44195, USA 2 Cleveland Clinic Lerner College of Medicine of Case Western Reserve University, Cleveland, OH 44195, USA 3 Rose Ella Burkhardt Brain Tumor and Neuro-Oncology Center, Cleveland Clinic, Cleveland, OH 44195, USA 4 Center for Personalized Genetic Healthcare, Medical Specialties Institute, Cleveland Clinic, Cleveland, OH 44195, USA 5 Center for Immunotherapy and Precision Immuno-oncology, Cleveland Clinic, Cleveland, OH 44195, USA 6 Taussig Cancer Institute, Cleveland Clinic, Cleveland, OH 44195, USA 7 Department of Genetics and Genome Sciences, Case Western Reserve University School of Medicine, Cleveland, OH 44106, USA 8 Germline High Risk Cancer Focus Group, Case Comprehensive Cancer Center, Case Western Reserve University, Cleveland, OH 44106, USA Correspondence : Darren Liu, MD, MS ( https://orcid.org/0000-0002-3693-5145) Cleveland Clinic Genomic Medicine Institute 9500 Euclid Avenue, Cleveland, OH 44195, USA E-mail: liud5",
+      "keywords": [
+        "Cell-free DNA",
+        "Whole-genome sequencing",
+        "PTEN",
+        "PTEN Hamartoma Tumor Syndrome",
+        "Cancer screening"
+      ],
+      "n_files": 3,
+      "total_bytes": 7604629026,
+      "files": [
+        {
+          "key": "phtscfx_meta.csv",
+          "size": 15253
+        },
+        {
+          "key": "13-fragratio_corr_summary.rds",
+          "size": 19454
+        },
+        {
+          "key": "02-bamtobed.tar.gz",
+          "size": 7604594319
+        }
+      ],
+      "related_identifiers": [
+        {
+          "relation": "isSupplementTo",
+          "identifier": "10.1016/j.xcrm.2023.101384"
+        },
+        {
+          "relation": "isDescribedBy",
+          "identifier": "10.1016/j.xpro.2024.103357"
+        }
+      ],
+      "html": null
+    }
+  ],
+  "conclusion": {
+    "fragment_files_usable_directly": [
+      "10.5281/zenodo.21269430 -- per-sample hg38 fragment BED files, 12 samples (6 ccRCC, 6 healthy), with a sample metadata table carrying pT stage"
+    ],
+    "processed_end_motif_tables": [
+      "10.5281/zenodo.17253504 -- per-sample 2/3/4-mer end-motif frequency tables for healthy, breast, metastatic colorectal and NSCLC cohorts"
+    ],
+    "manifests_pointing_elsewhere": [
+      "10.5281/zenodo.23195882 -- the LEAF-1 pretraining corpus; the fragments (211 GB) are on Hugging Face, this record holds the manifest and checksums"
+    ]
+  }
+}

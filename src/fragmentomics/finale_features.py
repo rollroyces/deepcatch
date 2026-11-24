@@ -97,6 +97,20 @@ _TOTAL_100KB = int(_N_BINS_100KB.sum())
 _TOTAL_5MB = int(_N_BINS_5MB.sum())
 
 
+def _bed_header_rows(path: str) -> int:
+    """How many leading lines to skip: 1 when the file carries a BED header.
+
+    FinaleDB's fragment files have no header, but a standard BED file
+    does -- "#chrom start end name mapq strand" -- and reading one of
+    those as data fails on the header's non-numeric "start" column. The
+    header is detected by its leading '#', which is the BED convention
+    and never appears on a data row.
+    """
+    with gzip.open(path, "rt") as handle:
+        first = handle.readline()
+    return 1 if first.startswith("#") else 0
+
+
 def read_fragments(path: str, mapq_threshold: int = 0):
     """Read a FinaleDB fragment file into arrays.
 
@@ -107,12 +121,13 @@ def read_fragments(path: str, mapq_threshold: int = 0):
     Vectorised with pandas: the training-cohort files hold ~37 M
     fragments each, and a per-line Python loop takes minutes per sample.
     """
+    skiprows = _bed_header_rows(path)
     header = pd.read_csv(path, sep="\t", header=None, nrows=2,
-                         compression="gzip", engine="c")
+                         compression="gzip", engine="c", skiprows=skiprows)
     n_fields = header.shape[1]
     usecols = [0, 1, 2, _mapq_index(n_fields)]
     df = pd.read_csv(path, sep="\t", header=None, usecols=usecols,
-                     compression="gzip", engine="c",
+                     compression="gzip", engine="c", skiprows=skiprows,
                      names=["chrom", "start", "end", "mapq"])
     chrom = df["chrom"].astype(str).to_numpy()
     start = df["start"].to_numpy(dtype=np.int64)

@@ -84,6 +84,8 @@ bash RUN_ALL.sh
 | `cross_study_finallydb_shuffled_control.json` | Shuffled-label null control |
 | `cross_study_loso.json` | Leave-one-study-out transfer |
 | `external_validation_finaledb.json` | Held-out external validation on publications 1 / 7 / 9 |
+| `external_cohort_zenodo_ccrcc.json` | A **second external family**: ccRCC plasma from Zenodo 10.5281/zenodo.21269430 (AUC 0.9444, exact permutation p = 0.0043; all six patients are pT3a, and the absolute threshold does not travel) |
+| `zenodo_cfdna_survey.json` | The Zenodo-side public-data survey: the queries, their hit counts and the candidate records that were read |
 | `geo_gse124600_cohort.json` | The GEO survey's GSE124600 record, **measured** from the deposited files: 142 cancer + 132 control = 274 plasma samples with `crc grade: Stage_I` / `Stage_II` / `Stage_III` / `Stage_IV`, and the methylation matrices' coverage |
 | `per_cancer_sens_at_spec.json` | Per-cancer-type AUC, sens@spec and PPV |
 | `fusion_ablation_isotonic.json` | Cross-repo fusion ablation (10 seeds) |

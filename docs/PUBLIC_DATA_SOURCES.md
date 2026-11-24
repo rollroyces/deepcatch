@@ -168,7 +168,104 @@ request. These are exactly the cohorts that would make the assay-shift
 finding moot — the same lab, the same protocol, a different disease
 population — but they are not IRB-free.
 
-## 6. What this means for the paper
+## 6. Zenodo — the cfDNA search (2026-11-24)
+
+The GEO survey (§4) answered the fragment/methylation question for GEO.
+Zenodo held two known records (§2, §3) and **no search**, so it was
+searched: eight queries against the Zenodo records API with
+`type=dataset`, 25 records per page. The queries, their hit counts on
+the day, and the records that were read are in
+`results/zenodo_cfdna_survey.json`, written by
+`scripts/zenodo_cfdna_survey.py`. Zenodo's search is an OR over the
+query terms, so the hit counts are large (3,748–31,903 dataset hits,
+except one query at 34) and **142 distinct records** came back across
+the first pages; the candidates below were read by hand.
+
+| Record | What it holds | Usable here? |
+|---|---|---|
+| **[10.5281/zenodo.21269430](https://doi.org/10.5281/zenodo.21269430)** | 12 plasma samples (6 clear-cell renal cell carcinoma, 6 healthy controls) as **per-sample hg38 fragment BED files** + a sample metadata table with pT stage; 105,849,322 bytes | **yes — extracted and scored, see §6.1** |
+| [10.5281/zenodo.15097509](https://doi.org/10.5281/zenodo.15097509) | the SAUNA paper's cfDNA fragments as per-sample `*.hg38.frag.tsv.bgz` files (10 files, 13.1 GB) | the same artifact type, so the same extractor would read it; not extracted here (the labels are not in the record) |
+| [10.5281/zenodo.17253504](https://doi.org/10.5281/zenodo.17253504) | per-sample 2/3/4-mer **end-motif frequency tables** (21 files, 2.3 MB) for healthy, breast, metastatic colorectal and NSCLC cohorts | processed features, but motif frequencies only — not the five-channel profile this repository scores |
+| [10.5281/zenodo.23195882](https://doi.org/10.5281/zenodo.23195882) | the LEAF-1 pretraining corpus: 211 GB of cfDNA fragments hosted on Hugging Face; this record holds the manifest and checksums | a manifest, not the data — and its fragments come from FinaleDB and the classic plasma studies this repository already has |
+| [10.5281/zenodo.23196827](https://doi.org/10.5281/zenodo.23196827) | chromatin landscapes and cfDNA fragmentation in colorectal cancer development (6.7 GB) | the fragments are bundled with chromatin data, not released per sample |
+| [10.5281/zenodo.15738112](https://doi.org/10.5281/zenodo.15738112) | head-and-neck immunotherapy end-motif study: a 35 GB `Frag_Files.tar.gz` | per-sample fragments, but 35 GB for the archive and no per-sample label table in the record |
+| [10.5281/zenodo.15109495](https://doi.org/10.5281/zenodo.15109495) | cfDNA fragmentomics in PTEN hamartoma tumour syndrome (7.6 GB) | the fragments are inside a BAM archive, not per-sample BED files |
+
+So the Zenodo side of the goal — processed cfDNA features that are public
+and re-fetchable without an IRB — is **real and larger than GEO's**, and
+one of the records is directly usable by this repository's own
+extractor.
+
+### 6.1 A second external family: ccRCC plasma from Zenodo
+
+The held-out cohort's three FinaleDB publications are one cohort shape.
+This is another: a **different cancer type** (clear-cell renal cell
+carcinoma), a **different laboratory and protocol** (an in-house
+clinical study), and a **different data source** (a Zenodo deposit of
+per-sample fragment BED files rather than a FinaleDB publication).
+
+`scripts/external_cohort_zenodo_ccrcc.py` extracts the repository's five
+benchmark channels from the 12 deposited fragment files and scores the
+cohort with the model trained on FinaleDB publications 6 + 8, using the
+**same protocol as `scripts/external_validation_finaledb.py`** (imported
+from it, not re-implemented: per-study z-score harmonisation on the
+training side, per-publication on the held-out side, PCA fitted on the
+training cohort only, logistic regression fitted on the training cohort
+only, the held-out cohort scored once). The result is in
+`results/external_cohort_zenodo_ccrcc.json`.
+
+| | |
+|---|---|
+| Cohort | 6 ccRCC patients vs 6 healthy controls, matched within one study |
+| Stage | **all six patients are pT3a (stage III)**; two have distant metastasis (M1 / Mx) |
+| **AUC** | **0.9444**, DeLong 95% CI [0.8156, 1.0] |
+| Exact permutation p | **0.0043** (all 924 label assignments; the scores never see the held-out labels) |
+| Harmonisation sensitivity | 0.9444 (per study / per publication) and 0.9722 (both global variants) — the ranking does not depend on the choice |
+| Assay depth | median 1,106,290 fragments per patient and 931,526 per control, against about 30 M in the training cohort |
+
+Four things are true about this number, and only the first is a result:
+
+1. **The ranking transfers.** A model that never saw this cancer type,
+   this laboratory or this data source ranks all six patients above
+   four of the six controls, at p = 0.0043 by an exact permutation test.
+   That is a second external family with the same qualitative behaviour
+   as the FinaleDB held-out cohorts (0.9444 on publication 7, 0.708 on
+   publication 1).
+2. **The absolute threshold does not transfer.** At the training
+   cohort's own 99%-specificity threshold (0.9766), all six patients
+   are above it — and so are three of the six controls, so the
+   specificity on this cohort is **0.5**. The reason is visible in the
+   scores: this cohort's controls have a median score of 0.869 against
+   0.003 for the training cohort's controls, i.e. the whole cohort sits
+   high on the score axis. That is a cohort-level shift (a different
+   library preparation), not a cancer signal, and an AUC is a rank
+   statistic — which is why the rank is the honest number to quote for
+   a held-out cohort and a probability threshold taken from another
+   cohort is not.
+3. **It is a late-stage cohort.** All six are pT3a; two have distant
+   metastasis. Like the repository's other held-out cohorts, it says
+   nothing about early detection.
+4. **It is small.** n = 6 vs 6. The point estimate is the finding; the
+   interval is wide, and the specificity grid is not resolvable at this
+   n (six controls quantise specificity to multiples of 1/6, so every
+   value above 83.3% is the same threshold).
+
+**What it changes.** The pooled external number in the manuscript
+(0.7385 over publications 1 and 7) is a statement about one cohort
+shape; this is a second shape with the same behaviour. Whether it is
+folded into that pooled number, or reported alongside it as a separate
+cohort, is a decision about the manuscript's headline and is the
+author's — the artifact and this section exist so the choice can be
+made on the numbers.
+
+**One change to the repository's code came out of it.** The deposited
+fragment files are standard BED files and carry a header line
+(`#chrom start end name mapq strand`), which the fragment reader
+could not parse; `read_fragments` now skips a leading `#` line, which
+the FinaleDB files do not have. Without that, the cohort is not
+readable by the repository's own extractor.
+
+## 7. What this means for the paper
 
 - The external validation is on **public, re-fetchable data with a
   scripted provenance** (`scripts/fetch_external_cohort.py` + the

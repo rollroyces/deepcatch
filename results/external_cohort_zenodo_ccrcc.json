@@ -1,0 +1,194 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-24T04:43:45.956661+00:00",
+  "design": {
+    "question": "Does the tumour-naive fragmentomics model, trained on FinaleDB publications 6+8, separate ccRCC plasma from matched healthy plasma in a cohort it has never seen?",
+    "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019), n=627",
+    "test": "Zenodo 10.5281/zenodo.21269430 -- https://zenodo.org/records/21269430",
+    "harmonization": "per study on the training side, per publication on the held-out side",
+    "pca_components": 200,
+    "model": "LogisticRegression(max_iter=2000) on the training cohort",
+    "threshold": "transferred from the training cohort's OOF scores at 99% specificity"
+  },
+  "cohort": {
+    "doi": "10.5281/zenodo.21269430",
+    "record": "https://zenodo.org/records/21269430",
+    "publication_id": "zenodo_21269430",
+    "n": 12,
+    "n_cancer": 6,
+    "n_healthy": 6,
+    "cancer_type": "clear-cell renal cell carcinoma (ccRCC)",
+    "samples": [
+      "HC001",
+      "HC007",
+      "HC009",
+      "HC010",
+      "HC012",
+      "HC013",
+      "PID019",
+      "PID020",
+      "PID038",
+      "PID039",
+      "PID040",
+      "PID041"
+    ],
+    "labels": {
+      "HC001": 0,
+      "HC007": 0,
+      "HC009": 0,
+      "HC010": 0,
+      "HC012": 0,
+      "HC013": 0,
+      "PID019": 1,
+      "PID020": 1,
+      "PID038": 1,
+      "PID039": 1,
+      "PID040": 1,
+      "PID041": 1
+    },
+    "stage": {
+      "HC001": "-",
+      "HC007": "-",
+      "HC009": "-",
+      "HC010": "-",
+      "HC012": "-",
+      "HC013": "-",
+      "PID019": "pT3a",
+      "PID020": "pT3a",
+      "PID038": "pT3a",
+      "PID039": "pT3a",
+      "PID040": "pT3a",
+      "PID041": "pT3a"
+    },
+    "disease": {
+      "HC001": "Healthy Control",
+      "HC007": "Healthy Control",
+      "HC009": "Healthy Control",
+      "HC010": "Healthy Control",
+      "HC012": "Healthy Control",
+      "HC013": "Healthy Control",
+      "PID019": "ccRCC",
+      "PID020": "ccRCC",
+      "PID038": "ccRCC",
+      "PID039": "ccRCC",
+      "PID040": "ccRCC",
+      "PID041": "ccRCC"
+    },
+    "fragment_counts": {
+      "HC001": 875455,
+      "HC007": 963482,
+      "HC009": 926181,
+      "HC010": 867172,
+      "HC012": 936871,
+      "HC013": 1192186,
+      "PID019": 1373159,
+      "PID020": 1221435,
+      "PID038": 882637,
+      "PID039": 983687,
+      "PID040": 991146,
+      "PID041": 1612570
+    },
+    "median_fragment_count_ccrcc": 1106290,
+    "median_fragment_count_healthy": 931526
+  },
+  "result": {
+    "auc": 0.9444,
+    "ci_lo": 0.8156,
+    "ci_hi": 1.0,
+    "n_pos": 6,
+    "n_neg": 6,
+    "exact_permutation_p": 0.004329,
+    "exact_permutations": 924,
+    "sensitivity_at_spec": {
+      "0.95": 0.6667,
+      "0.98": 0.6667,
+      "0.99": 0.6667,
+      "0.995": 0.6667,
+      "0.999": 0.6667
+    },
+    "sensitivity_at_spec_note": "With 6 controls the specificity is quantised to multiples of 1/6, so a threshold that keeps 0 false positives is the only one available above 83.3% specificity. These values are reported for completeness and are NOT resolvable at this n; the threshold transfer below is the informative number.",
+    "train_threshold_99spec": 0.9766021734146575,
+    "n_above_train_threshold": 9,
+    "n_cancer_above_train_threshold": 6,
+    "n_healthy_above_train_threshold": 3,
+    "specificity_at_train_threshold": 0.5,
+    "per_sample_score": {
+      "HC001": 0.999078,
+      "HC007": 0.683246,
+      "HC009": 0.752495,
+      "HC010": 0.985808,
+      "HC012": 0.999889,
+      "HC013": 0.230547,
+      "PID019": 0.999999,
+      "PID020": 1.0,
+      "PID038": 0.999736,
+      "PID039": 0.999164,
+      "PID040": 1.0,
+      "PID041": 1.0
+    }
+  },
+  "training_score_reference": {
+    "oof_score_quantiles_cancer": {
+      "p5": 0.2646,
+      "p25": 0.9868,
+      "p50": 1.0,
+      "p75": 1.0,
+      "p95": 1.0
+    },
+    "oof_score_quantiles_healthy": {
+      "p5": 0.0,
+      "p25": 0.0001,
+      "p50": 0.0027,
+      "p75": 0.0406,
+      "p95": 0.6561
+    },
+    "oof_score_max_cancer": 1.0,
+    "oof_score_max_healthy": 0.9984,
+    "heldout_score_quantiles_cancer": {
+      "p5": 0.9993,
+      "p25": 0.9998,
+      "p50": 1.0,
+      "p75": 1.0,
+      "p95": 1.0
+    },
+    "heldout_score_quantiles_healthy": {
+      "p5": 0.3437,
+      "p25": 0.7006,
+      "p50": 0.8692,
+      "p75": 0.9958,
+      "p95": 0.9997
+    },
+    "heldout_median_score_healthy": 0.8692,
+    "training_median_oof_score_healthy": 0.0027
+  },
+  "cohort_shift_note": "the held-out cohort's controls score higher than the training cohort's own controls -- a cohort-level shift, so the RANKING travels but an absolute threshold does not",
+  "harmonization_sensitivity": {
+    "train_global_test_global": {
+      "auc": 0.9722,
+      "ci_lo": 0.8952,
+      "ci_hi": 1.0,
+      "n_pos": 6,
+      "n_neg": 6
+    },
+    "train_global_test_per_publication": {
+      "auc": 0.9722,
+      "ci_lo": 0.8952,
+      "ci_hi": 1.0,
+      "n_pos": 6,
+      "n_neg": 6
+    },
+    "train_per_study_test_per_publication": {
+      "auc": 0.9444,
+      "ci_lo": 0.8156,
+      "ci_hi": 1.0,
+      "n_pos": 6,
+      "n_neg": 6
+    }
+  },
+  "limits": [
+    "n=6 vs 6: the point estimate is the finding, the interval is wide.",
+    "All six patients are pT3a (stage III); two have distant metastasis (M1/Mx). This is a LATE-STAGE cohort and says nothing about early detection.",
+    "The assay depth is about 30x lower than the training cohort's; all five channels are scale-free by construction, but the per-bin ratios are noisier at this depth.",
+    "The RANKING transfers; the ABSOLUTE THRESHOLD does not. At the training cohort's 99%-specificity threshold the held-out cohort's specificity is far below 99% -- see result.specificity_at_train_threshold and training_score_reference. An AUC is a rank statistic and is the honest number to report for a held-out cohort; a probability threshold taken from another cohort is not."
+  ]
+}

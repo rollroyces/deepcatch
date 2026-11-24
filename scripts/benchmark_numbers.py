@@ -199,6 +199,9 @@ EXTRA_DOCS_ENTRIES = [
         "TEAM.md",
         "docs/CADD_PER_SUBGROUP_LLR.md",
         "docs/CROSS_STUDY_BENCHMARK.md",
+        # The public-data survey quotes the pooled figure when it says
+        # what the ccRCC cohort would change about it (§6).
+        "docs/PUBLIC_DATA_SOURCES.md",
         "docs/site/index.html",
         "paper/README.md",
         "paper/REPRODUCE.md",

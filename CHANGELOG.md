@@ -171,6 +171,47 @@ cohort size.
   The three new checks move the suite from 1024 to 1027 tests, so every
   document that states the count moves with them and the submission PDF
   and the arXiv bundle are rebuilt.
+- **Zenodo was searched for the first time, and it holds a second external
+  cohort this repository can score.** The goal asked for processed cfDNA
+  features that are public and need no IRB, and the survey had covered
+  GEO over 99 series but only two known Zenodo records. Eight queries
+  against the Zenodo records API (`scripts/zenodo_cfdna_survey.py`,
+  artifact `results/zenodo_cfdna_survey.json`) brought back **142
+  distinct records** in the first pages, and one of them is exactly what
+  the goal names: **10.5281/zenodo.21269430**, per-sample hg38 fragment
+  BED files for 12 plasma samples -- 6 clear-cell renal cell carcinoma
+  patients and 6 matched healthy controls -- with a sample metadata table
+  carrying the pT stage.
+
+  `scripts/external_cohort_zenodo_ccrcc.py` extracts the repository's
+  five benchmark channels from those files and scores them with the model
+  trained on FinaleDB publications 6 + 8, importing the protocol from
+  `scripts/external_validation_finaledb.py` rather than re-implementing
+  it -- the same training-derived threshold (0.976602) comes out of both.
+  The result is in `results/external_cohort_zenodo_ccrcc.json`: **AUC
+  0.9444**, DeLong 95% CI [0.8156, 1.0], **exact permutation p =
+  0.0043** over all 924 label assignments, and the ranking is stable
+  across the three harmonisations (0.9444 / 0.9722 / 0.9722).
+
+  This is a second external family -- a different cancer type, a
+  different laboratory, a different data source -- and three honest
+  limits travel with the number: all six patients are **pT3a (stage
+  III)** and two have distant metastasis, so it is a late-stage cohort;
+  the assay is about 30x shallower than the training cohort's; and the
+  **absolute threshold does not travel** (at the training cohort's
+  99%-specificity threshold the cohort's specificity is 0.5, because the
+  whole cohort sits high on the score axis -- the controls' median score
+  is 0.869 against 0.003 for the training cohort's). An AUC is a rank
+  statistic, which is why the rank is the honest number to quote for a
+  held-out cohort and a probability threshold taken from another cohort
+  is not. `test/test_zenodo_cfdna_survey_and_ccrcc_cohort.py` keeps the
+  artifacts, the documents and the pins together.
+
+  Reading the deposited fragments needed one change to the repository's
+  own code: the files are standard BED files and carry a header line
+  (`#chrom start end name mapq strand`), which `read_fragments` could
+  not parse, so it now skips a leading `#` line. The FinaleDB files do
+  not have one, so the training cohort's features are unchanged.
 
 ### Fixed
 
