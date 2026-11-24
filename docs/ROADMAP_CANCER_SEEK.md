@@ -110,10 +110,29 @@ Month 9-12: Beta + Validation
 |--------|--------|
 | Stage I sensitivity | >=80% |
 | Overall specificity | >=99.5% |
-| Limit of Detection (LOD) | 0.001% VAF confirmed |
+| Limit of Detection (LOD) | 0.001% VAF **target** — not yet achieved; see below |
 | Report turnaround | <72 hours |
 | User satisfaction (physicians) | >=4.5/5.0 |
 | Cost per screen | <$500 (target: <$200) |
+
+> **Correction (2026-10-17, during the DeepCatch v2.4.0 integration).** This
+> table originally read "0.001% VAF confirmed". It was a target, never a
+> result. The spike-in simulator that was supposed to support it
+> (`src/ultrasensitive/spike_in_simulator.py`) could not detect anything at
+> any VAF: it drew mutant reads from the molecules physically present in a
+> 100 bp window — 50,000 genome equivalents put 0.0016 molecules there — so
+> the Poisson mean was ~1e-8, while its power analysis (computed genome-wide)
+> reported power 1.0. The two columns contradicted each other.
+>
+> The simulator has been rewritten to a depth-based model and now reports
+> what the physics actually implies: at 50,000 genome equivalents, 0.001% VAF
+> is **0.5 mutant molecules in the whole genome**, and 100,000x depth yields
+> **1 mutant read** at a target site — below the 3-supporting-read threshold.
+> Reaching 80% power at 0.001% VAF needs roughly **430,000x**, which is why
+> the design depends on UMI error correction and on the number of
+> *independent* molecules, not on the number of reads.
+>
+> Until a real spiked-in wet-lab experiment runs, the LOD is **unvalidated**.
 
 ## Collaboration Opportunities
 

@@ -10,7 +10,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-1024%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-1041%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -97,6 +97,7 @@ Real `uvicorn api.main:app` server on `127.0.0.1:8000`. The recording shows Swag
 - **Late fusion that works at this sample size** — the neural encoder scores 0.554 on the honest paired cohort against an LR baseline of 0.910; a regularized late fusion reaches **0.9825 ± 0.0094** and a Bayesian model average **0.9650 ± 0.0089** on the same folds (`src/foundation/regularized_fusion.py`).
 - **Longitudinal Bayes Kalman** — architecture-only (synthetic data, not plasma-validated); CET pipeline (Capture → Enhance → Triage) designed for serial quarterly draws.
 - **Methylation extraction on real public data — and a measured null** — FinaleMe runs end-to-end on FinaleDB fragment files (frag → BAM → per-CpG matrix → WGBS prior → HMM decode). Scored on 31 real samples (pub 7, 18 colorectal / 13 liver-transplant) the decoded β summary reaches LOO AUC 0.9444 — *exactly* the AUC of the covered-CpG count and of the observations-per-CpG count alone; at the 103,863 loci where both arms have coverage, each tested on the samples that cover it, the median cancer-minus-control difference is exactly 0.0 (permutation p = 1.0). The public libraries are size-selected at ~300 bp and deliver 1.09 observations per CpG, so the digestion signature FinaleMe reads is absent. The extraction path works; **the channel is not a validated feature** — see [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
+- **CANCER-SEEK ultra-sensitive path (v2.4.0+)** — optional `pip install 'deepcatch[ultra]'` enables a second, independent route to the same problem: UMI-based error correction for 0.001%-VAF ctDNA, a low-VAF variant caller with matched-WBC CHIP filtering, CNV segmentation, β-value methylation processing, an XGBoost+SHAP triage classifier, a β-VAE anomaly detector, a 4-modality FusionNet, and a spike-in LOD simulator; plus a SAC-like RL agent over a 10,000-patient simulated cohort for adaptive screening cadence. **These modules are reference ports with no real-cohort benchmark** — see [`docs/CANCER_SEEK_ARCHITECTURE.md`](docs/CANCER_SEEK_ARCHITECTURE.md).
 
 ## Why it matters
 
@@ -335,6 +336,63 @@ The 5-channel + 4-mer pooled fragmentomics benchmark + the per-cancer sens@spec 
 
 ---
 
+## CANCER-SEEK ultra-sensitive path (v2.4.0+)
+
+> **Reference ports, not a benchmark.** The modules below were folded into
+> this repository from the now-archived `rollroyces/cancer-screening`,
+> `rollroyces/deepcatch-methylation` and `rollroyces/cfDNA-Fragmentomics`.
+> They have **no real-cohort validation** — every number they produce is a
+> synthetic-fixture simulation output. They are gated behind an optional
+> extra so the default install and the headline benchmark are untouched.
+
+```bash
+pip install -e ".[ultra]"     # xgboost + shap
+pip install -e ".[ultra-rl]"  # + stable-baselines3 + gymnasium
+```
+
+| Module | What it does |
+|---|---|
+| `src/ultrasensitive/umi.py` | UMI-based error correction: family formation, Hamming clustering, duplex consensus. Targets a 10⁻⁸ effective error rate |
+| `src/ultrasensitive/variant_calling.py` | Low-VAF variant caller: binomial/Poisson background filter + strand balance + matched-WBC CHIP filter |
+| `src/ultrasensitive/cnv_analyzer.py` | CNV detection: GC correction, circular binary segmentation, tumour-fraction estimate from CNV magnitude |
+| `src/ultrasensitive/methylation.py` | β-value methylation processing, DMR detection, tissue-of-origin scoring |
+| `src/ultrasensitive/xgboost_classifier.py` | XGBoost triage baseline with per-sample SHAP explanations (needs `[ultra]`) |
+| `src/ultrasensitive/methylation_encoder.py` | Transformer β-value encoder — architecture-only; real-data validation is Phase 4 of `METHYLATION_PROJECT.md` |
+| `src/ultrasensitive/fusion_net.py` | 4-modality (genomic+methylation+protein+clinical) FusionNet with cross-attention gating |
+| `src/ultrasensitive/vae_anomaly.py` | β-VAE unsupervised anomaly detection for subtypes absent from training |
+| `src/ultrasensitive/spike_in_simulator.py` | Spike-in LOD simulator — the `deepcatch-lod` CLI |
+| `src/screening_policy/rl_agent.py` | SAC-like RL agent over a 10,000-patient simulated cohort (QALY reward) |
+| `src/methylation/cfrna_coupling.py` | Read-side companion to `mrnavax-rare`: lifts a persistence prediction into a CDM feature schema |
+| `src/methylation/methylation_reader.py` | Tissue-of-origin signature extraction + persistence-input normaliser |
+
+### What the LOD simulator actually says
+
+`deepcatch-lod` models the honest physics rather than asserting a number:
+
+```bash
+deepcatch-lod --vaf-range 1e-2,1e-3,1e-4,1e-5 --n-samples 20 --sequencing-depth 100000
+```
+
+At 50,000 genome equivalents (≈10 mL of plasma), **0.001% VAF is 0.5 mutant
+molecules in the entire genome**. 100,000× depth yields **1 mutant read** at
+a target site — below the 3-supporting-read calling threshold — so the
+simulator reports a 0% detection rate there and states that roughly
+**430,000×** is needed for 80% power. The LOD is therefore a **design
+target, not a validated result**, and no spiked-in wet-lab experiment has
+been run.
+
+> The simulator shipped in the original `cancer-screening` repo could not
+> detect anything at any VAF (it sampled mutant reads from a 100 bp window
+> holding 0.0016 molecules, while reporting power computed genome-wide), and
+> the "0.001% VAF confirmed" claim that rested on it was false. Both were
+> corrected during this integration; see `docs/ROADMAP_CANCER_SEEK.md` and
+> the regression tests in `test/test_ultrasensitive.py`.
+
+Design rationale: [`docs/CANCER_SEEK_ARCHITECTURE.md`](docs/CANCER_SEEK_ARCHITECTURE.md).
+Integration roadmap: [`docs/ROADMAP_CANCER_SEEK.md`](docs/ROADMAP_CANCER_SEEK.md).
+
+---
+
 ## Biomedical review fixes (passed; full history in git log)
 
 The post-v2.2.0 biomedical review closed 9 classes of issues; **37 regression tests** in `test/test_biomedical_review_fixes.py` guarantee they don't regress.
@@ -373,8 +431,11 @@ Deep details live in each module's docstrings (e.g. `python -c "import src.fragm
 | `src/synthetic_data/` | MultiModalDataGenerator, TissueAtlas | — |
 | `src/variant_calling/` | Bayesian + contrastive DL (synthetic) | `docs/CADD_FLARE_VALIDATION.md` |
 | `src/preprocessing/` | CHIP filter | — |
+| **`src/ultrasensitive/`** | CANCER-SEEK ultra-sensitive modules: UMI consensus, low-VAF caller, CNV CBS, β-value methylation, XGBoost+SHAP, β-VAE anomaly, 4-modality FusionNet, spike-in LOD simulator | `docs/CANCER_SEEK_ARCHITECTURE.md` |
+| **`src/screening_policy/`** | SAC-like RL agent + 10,000-patient simulated cohort for adaptive screening cadence | module docstrings |
+| **`src/methylation/`** | cfRNA persistence coupling + methylation-array reader (read-side companion to `mrnavax-rare`) | `docs/ultrasensitive/PHASE0_PLAN.md` |
 
-For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CADD_PER_SUBGROUP_LLR.md`, `docs/CADD_GDC_VALIDATION.md`, `docs/CADD_ALPHAMISSENSE_COMBINED.md`, `docs/ALPHAMISSENSE_REAL_LLR.md`. For **tumor-naive + fusion** see `docs/FUSION_ISOTONIC.md` and `docs/CROSS_STUDY_BENCHMARK.md`. For **architecture proposal** (methylation β-value + Apple MPS) see `docs/V3_DESIGN.md`.
+For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CADD_PER_SUBGROUP_LLR.md`, `docs/CADD_GDC_VALIDATION.md`, `docs/CADD_ALPHAMISSENSE_COMBINED.md`, `docs/ALPHAMISSENSE_REAL_LLR.md`. For **tumor-naive + fusion** see `docs/FUSION_ISOTONIC.md` and `docs/CROSS_STUDY_BENCHMARK.md`. For **architecture proposal** (methylation β-value + Apple MPS) see `docs/V3_DESIGN.md`. For the **CANCER-SEEK ultra-sensitive path** see `docs/CANCER_SEEK_ARCHITECTURE.md` and `docs/ROADMAP_CANCER_SEEK.md`.
 
 ---
 
@@ -385,7 +446,7 @@ For the **mutation-informed channel** see `docs/CADD_WEIGHTED_LLR.md`, `docs/CAD
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 807 passed, 19 skipped, 13 deselected (slow real-data smoke)
+# → 824 passed, 19 skipped, 13 deselected (slow real-data smoke)
 #   Without torch -- the runtime + dev install -- the deep-learning
 #   module is skipped instead: 685 passed, 54 skipped, 2 deselected.
 
@@ -412,7 +473,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_public_tree_has_no_personal_contact.py` | 3 | ✅ all passing |
 | `src/foundation/test_integration.py` | 43 | ✅ all passing |
 | Full `src/` discovery | 228 collected | ✅ 217 run, 11 deselected (slow) |
-| **Combined fast-path gate** | **839 collected** | **807 passed + 19 skipped + 13 deselected** |
+| **Combined fast-path gate** | **856 collected** | **824 passed + 19 skipped + 13 deselected** |
 
 The 13 deselected tests are the slow real-data foundation smoke and per-study harmonization checks. Eleven of them live in `src/foundation/test_integration.py` and run in the deep-learning job of `validate.yml`, which does not deselect them. The other two — `test/test_cross_study_per_cancer_integration.py` and `test/test_load5_with_motifs.py` — need the companion repository's extracted feature cache, which CI does not have; they are deselected here and run only where that cache is present.
 
@@ -456,16 +517,23 @@ deepcatch/
 │   ├── ensemble/                 # MAML meta-learning
 │   ├── synthetic_data/           # MultiModalDataGenerator, TissueAtlas
 │   ├── variant_calling/          # Bayesian + contrastive DL
-│   └── preprocessing/            # CHIP filter
+│   ├── preprocessing/            # CHIP filter
+│   ├── ultrasensitive/   <-- v2.4.0 CANCER-SEEK ultra-sensitive modules
+│   ├── screening_policy/ <-- v2.4.0 Adaptive Screening Policy RL
+│   └── methylation/      <-- v2.4.0 cfRNA persistence coupling
 ├── scripts/                      # CLI entry points (cross_study_finallydb.py, etc.)
 ├── validation/                   # Statistical validation suite
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 66 test files (796 fast-path tests)
+├── test/                         # 68 test files (813 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
+│   ├── CANCER_SEEK_ARCHITECTURE.md  <-- v2.4.0
+│   ├── ROADMAP_CANCER_SEEK.md        <-- v2.4.0
+│   ├── legacy/DATA_SCIENCE_ML.md     <-- v2.4.0 legacy reference
+│   └── ultrasensitive/PHASE0_PLAN.md <-- v2.4.0
 └── review/                       # Peer review history
 ```
 
@@ -475,7 +543,8 @@ deepcatch/
 
 | Commit | What changed |
 |---|---|
-| **v2.3.0** (HEAD) | **External validation on held-out public publications** (AUC 0.9444 on pub 7 WGS, 0.708 on pub 1, 0.7385 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments, and the channel is **measured to be a null** (0.9444 = the coverage baseline; matched-locus difference 0.0, p = 1.0) · CI repaired from 2 red jobs to 8 green |
+| **v2.4.0** (HEAD) | **CANCER-SEEK integration** — the ultra-sensitive screening scaffold from the archived `cancer-screening`, `deepcatch-methylation` and `cfDNA-Fragmentomics` repos folded in as `src/ultrasensitive/`, `src/screening_policy/` and `src/methylation/`, behind optional `[ultra]` / `[ultra-rl]` extras · the spike-in LOD simulator rewritten to a depth-based model (the ported version could not detect anything at any VAF and its power analysis contradicted its own detection rate) · the false "0.001% VAF confirmed" claim removed from the ported docs · `deepcatch-lod` CLI added |
+| **v2.3.0** | **External validation on held-out public publications** (AUC 0.9444 on pub 7 WGS, 0.708 on pub 1, 0.7385 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments, and the channel is **measured to be a null** (0.9444 = the coverage baseline; matched-locus difference 0.0, p = 1.0) · CI repaired from 2 red jobs to 8 green |
 | **c782efc** | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
 | `eb9948a` | Fix: refuse to fabricate cross-platform AUC from `synth_*` files |
 | `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |

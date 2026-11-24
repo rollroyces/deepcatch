@@ -17,6 +17,21 @@ current operating spec lives in:
 **Ported from `rollroyces/cancer-screening` DATA_SCIENCE_ML.md on 2026-10-16
 without content edits** so the historical reference is byte-for-byte faithful.
 
+> **Correction (2026-10-17).** Two edits were made during the DeepCatch v2.4.0
+> integration, both to remove claims the code did not support:
+>
+> 1. The evaluation-target list below read "LOD confirmed at 0.001% VAF".
+>    It is a **target**, not a result. The spike-in simulator that was meant to
+>    support it could not detect anything at any VAF (it sampled mutant reads
+>    from a 100 bp window holding 0.0016 molecules, while its power analysis
+>    used genome-wide counts and reported power 1.0). The simulator has been
+>    rewritten to a depth-based model; at 100,000x it detects 0% at 0.001%
+>    VAF, and ~430,000x is needed for 80% power.
+> 2. The line "reuses Python's `transformer_layer`" elsewhere in the repo's
+>    prose was corrected -- this module has no such dependency.
+>
+> Everything else is verbatim.
+
 ---
 
 ## 1. Overview -- Why AI is Essential Here
@@ -193,7 +208,7 @@ Primary:
   - AUC-PR   >= 0.85 (imbalanced)
   - Sens at 99% spec >= 75% (Stage I)
   - Sens at 99.5% spec >= 60% (Stage I)
-  - LOD confirmed at 0.001% VAF
+  - LOD at 0.001% VAF  [TARGET, NOT YET VALIDATED -- see the correction below]
 
 Clinical:
   - NPV >= 99.9%

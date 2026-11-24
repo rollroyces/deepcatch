@@ -4,6 +4,78 @@ All notable changes to DeepCatch are recorded here. The project follows
 [semantic versioning](https://semver.org/); the Zenodo DOI for each
 release is minted from the corresponding GitHub release.
 
+## [Unreleased] — 2.4.0
+
+The CANCER-SEEK integration: the ultra-sensitive screening scaffold from
+three now-archived sibling repositories folded into the umbrella.
+
+**No headline number changes.** The external validation, the cross-study
+benchmark and the fusion results in the 2.3.0 section below are untouched.
+
+### Added
+
+- **The ultra-sensitive screening path, as three new modules.**
+  `src/ultrasensitive/` carries the CANCER-SEEK scaffold that used to live
+  in `rollroyces/cancer-screening`: UMI-based error correction with duplex
+  consensus (`umi.py`), a low-VAF variant caller with a binomial/Poisson
+  background filter, strand-balance check and matched-WBC CHIP filter
+  (`variant_calling.py`), CNV detection with GC correction and circular
+  binary segmentation (`cnv_analyzer.py`), β-value methylation processing
+  with DMR detection (`methylation.py`), an XGBoost triage classifier with
+  per-sample SHAP attribution (`xgboost_classifier.py`), a Transformer
+  β-value encoder (`methylation_encoder.py`), a 4-modality FusionNet with
+  cross-attention gating (`fusion_net.py`), and a β-VAE unsupervised anomaly
+  detector (`vae_anomaly.py`).
+- **`src/screening_policy/`** — the Adaptive Screening Policy: a
+  SAC-like RL agent over a 10,000-patient simulated cohort, scoring
+  screening cadence against a QALY reward.
+- **`src/methylation/`** — the cfRNA persistence coupling and the
+  methylation-array reader, ported from `rollroyces/deepcatch-methylation`.
+  They are a read-side companion to `mrnavax-rare` and share no runtime
+  code with it; the coupling is a strict TypedDict contract.
+- **`deepcatch-lod` CLI** — the spike-in LOD simulator, with
+  `--vaf-range`, `--n-samples`, `--sequencing-depth` and `--genome-equivalents`.
+- **Optional extras** — `[ultra]` (xgboost, shap) and `[ultra-rl]`
+  (stable-baselines3, gymnasium). The default install and the 2.3.0
+  headline benchmark are unaffected.
+- **`docs/CANCER_SEEK_ARCHITECTURE.md`**, **`docs/ROADMAP_CANCER_SEEK.md`**,
+  **`docs/ultrasensitive/PHASE0_PLAN.md`**, **`docs/legacy/DATA_SCIENCE_ML.md`**.
+
+### Fixed
+
+- **The spike-in LOD simulator could not detect anything at any VAF.** The
+  ported version drew mutant reads from the molecules physically present in
+  a 100 bp window — 50,000 genome equivalents put 0.0016 molecules there —
+  so the Poisson mean was ~1e-8 and every hotspot came back undetected,
+  while its power analysis (computed genome-wide) reported power 1.0. The
+  two columns contradicted each other. The simulator now samples
+  `sequencing_depth` reads at a target site, so the expected mutant count
+  is `depth * VAF` and the power analysis and the simulated detector agree.
+- **`estimate_tumor_fraction` had no guard against a small variant count**
+  and produced a tumour fraction from one or two variants. It now requires
+  at least three and returns 0.0 with a warning otherwise.
+- **`cnv_analyzer.py` called `logging.getLogger(__Logger(__name__))`** — a
+  typo that would have failed at import.
+- **`test_ultrasensitive.py` / `test_methylation.py` were shipped as
+  `__init__.py`** and pytest never collected them.
+
+### Changed
+
+- **The "0.001% VAF confirmed" claim has been removed** from the ported
+  documentation. It was a target, never a result. At 50,000 genome
+  equivalents 0.001% VAF is 0.5 mutant molecules in the whole genome, and
+  100,000x depth yields one mutant read at a target site — below the
+  three-supporting-read threshold. The simulator now reports 0% detection
+  there and puts 80% power at roughly 430,000x. The LOD remains
+  **unvalidated** until a real spiked-in wet-lab experiment runs.
+
+### Removed
+
+- Nothing. The archived sibling repositories (`rollroyces/cancer-screening`,
+  `rollroyces/deepcatch-methylation`, `rollroyces/cfDNA-Fragmentomics`) keep
+  their history and their README redirect banners; `rollroyces/cfdna-fragmentomics-pipeline`
+  remains the production sister pipeline and is unchanged.
+
 ## [2.3.0] — 2026-11-23
 
 The release that turns the internal benchmark into an externally validated

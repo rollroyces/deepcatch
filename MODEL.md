@@ -1,10 +1,18 @@
-# Model Card — DeepCatch v2.3.0
+# Model Card — DeepCatch v2.4.0
 
 > **⚠️ STATUS: research-use-only software benchmark.**
 > NOT clinically validated. NOT a medical device. NOT FDA-approved.
 > NOT intended for clinical diagnosis, treatment selection, screening,
 > or patient stratification.
 > For methods research only.
+
+> **v2.4.0 (2026-10-17) — CANCER-SEEK integration.** This release folds the
+> ultra-sensitive screening scaffold from the now-archived `cancer-screening`,
+> `deepcatch-methylation` and `cfDNA-Fragmentomics` repositories into the
+> DeepCatch umbrella. **No headline number in this card changes.** The new
+> modules are reference ports with **no real-cohort benchmark**; see
+> [CANCER-SEEK ultra-sensitive path](#cancer-seek-ultra-sensitive-path-v240).
+> v2.3.0 remains the release that carries the external validation.
 
 ## Overview
 
@@ -23,9 +31,9 @@ It has not been validated on a held-out clinical cohort. See
 
 | | |
 |---|---|
-| **Model name** | DeepCatch v2.3.0 |
-| **Version** | 2.3.0 (release tag `v2.3.0`; archived at 10.5281/zenodo.24453044) |
-| **Date** | 2026-09-23 |
+| **Model name** | DeepCatch v2.4.0 |
+| **Version** | 2.4.0 (unreleased working tree on `feat/cancer-seek-integration`; the last tagged release is `v2.3.0`, archived at 10.5281/zenodo.24453044) |
+| **Date** | 2026-10-17 |
 | **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
 | **Repository** | https://github.com/rollroyces/deepcatch |
@@ -69,6 +77,7 @@ It has not been validated on a held-out clinical cohort. See
 | Mutation-informed (panel LLR, Fisher, strand) | Real TCGA MAFs (GDC) + Poisson-sampled reads | 20 TCGA-LUAD patients, 5,738 mutations | Real mutations, simulated plasma |
 | Tumor-naive (5-channel fragmentomics) | FinaleDB (live cfDNA WGS) | 363 cancer + 264 healthy across Jiang 2015 + Cristiano 2019 | Real cfDNA (low-pass WGS) |
 | Foundation-model pretraining | Open FinaleDB cache (publications 6 + 8) | 200 samples, `data/finaledb_pretrain_cohort_PRODUCTION.npz` | Real cfDNA WGS (single open cohort) |
+| CANCER-SEEK ultra-sensitive (v2.4.0+) | Synthetic spike-in + synthetic multi-omics fixtures | configurable, no real cohort | **Synthetic only** |
 
 Mutation channel data: fetched from the GDC open-access API on first
 run; cached in `validation/tcga/tcga_cache/`. Synthetic data is
@@ -286,6 +295,41 @@ holdout and must not be read as a generalisation claim.
   channel is **not** a validated feature. See
   [`docs/METHYLATION_PIPELINE.md`](docs/METHYLATION_PIPELINE.md).
 
+### CANCER-SEEK ultra-sensitive path (v2.4.0)
+
+> **No new validation numbers.** The CANCER-SEEK modules are **reference
+> ports** of the archived `cancer-screening`, `deepcatch-methylation` and
+> `cfDNA-Fragmentomics` repositories. They have **no real-cohort benchmark**:
+> every number they produce is a synthetic-fixture simulation output, and
+> none of it is comparable to the open-data numbers above.
+
+| Module | What is validated | What is not |
+|---|---|---|
+| `src/ultrasensitive/spike_in_simulator.py` | The Poisson/binomial arithmetic and the calling threshold; the depth needed for a given power | The 0.001% LOD itself — it is a **target**, and no spiked-in wet-lab experiment has been run |
+| `src/ultrasensitive/umi.py` | UMI family formation, Hamming clustering, duplex-consensus arithmetic | The 10⁻⁸ effective error rate — the duplex BAM reader is still a placeholder |
+| `src/ultrasensitive/variant_calling.py` | The binomial/Poisson background filter, strand balance, CHIP filtering | Any call rate on real plasma |
+| `src/ultrasensitive/cnv_analyzer.py` | GC correction, CBS segmentation, tumour-fraction arithmetic | CNV calls on real plasma; the BAM reader is a placeholder |
+| `src/ultrasensitive/xgboost_classifier.py` | Training and SHAP attribution on synthetic multi-omics features | Any performance figure; the synthetic generator is not a cohort |
+| `src/ultrasensitive/methylation_encoder.py` | Architecture and training loop only | Real-data performance — Phase 4 of `METHYLATION_PROJECT.md` |
+| `src/ultrasensitive/fusion_net.py` | Architecture and training loop only | Real-data performance |
+| `src/ultrasensitive/vae_anomaly.py` | Architecture, loss and scoring | Any detection rate; the healthy manifold is synthetic |
+| `src/screening_policy/rl_agent.py` | The reward model and the learning loop on a simulated cohort | Screening policy performance; the cohort is synthetic and the Q-function is linear, not a neural SAC |
+| `src/methylation/cfrna_coupling.py` | The TypedDict contract and the residual arithmetic | Anomaly thresholds — `ANOMALY_RATIO_LOW`/`HIGH` are research-use defaults; no patient data has been processed |
+
+**What the LOD simulator reports, and why it differs from the original
+claim.** At 50,000 genome equivalents (≈10 mL of plasma), 0.001% VAF is
+**0.5 mutant molecules in the whole genome**. 100,000× depth — the figure the
+CANCER-SEEK architecture document specifies — yields **one** mutant read at a
+target site, below the three-supporting-read calling threshold, so the
+simulator reports a 0% detection rate at that VAF and puts 80% power at
+roughly **430,000×**. The original simulator, in the archived
+`cancer-screening` repository, could not detect anything at any VAF (it drew
+mutant reads from a 100 bp window holding 0.0016 molecules) while its power
+analysis — computed genome-wide — reported power 1.0; the two columns
+contradicted each other, and the "0.001% VAF confirmed" claim that rested on
+it was false. Both were corrected here, and `test/test_ultrasensitive.py`
+pins the corrected behaviour.
+
 ## Limitations
 
 1. **Cohort sizes are small.**
@@ -347,6 +391,25 @@ holdout and must not be read as a generalisation claim.
 10. **No FDA pathway, no regulatory submission.** DeepCatch is
     research-use-only software.
 
+11. **(v2.4.0+) The CANCER-SEEK ultra-sensitive modules have no
+    real-cohort benchmark.** `src/ultrasensitive/`,
+    `src/screening_policy/` and `src/methylation/` are reference ports of
+    three now-archived repositories. They require the optional `[ultra]` /
+    `[ultra-rl]` extras, so the default install and the headline benchmark
+    are untouched, but every number they produce is a synthetic-fixture
+    output.
+
+12. **(v2.4.0+) The 0.001% LOD is a target, not a result.** At 50,000
+    genome equivalents, 0.001% VAF is 0.5 mutant molecules genome-wide, and
+    100,000× depth yields one mutant read at a target site — below the
+    three-supporting-read threshold. The simulator reports that honestly and
+    puts 80% power at roughly 430,000×. No spiked-in wet-lab experiment has
+    been run.
+
+13. **(v2.4.0+) The Adaptive Screening Policy uses a linear Q-function on
+    a synthetic cohort**, not a neural SAC on real screening data. Its
+    detect-rate and false-positive figures are simulation outputs only.
+
 ## Honest evaluation (target venue)
 
 The intended submission venue is a **methods-focused** journal such
@@ -400,6 +463,11 @@ deepcatch-decisioncurve \
 
 # Synthetic-cohort AUC gate (no network, <30 s)
 python scripts/adapter_auc_gate.py
+
+# CANCER-SEEK spike-in LOD simulation (requires the [ultra] extra)
+pip install -e ".[ultra]"
+deepcatch-lod --vaf-range 1e-2,1e-3,1e-4,1e-5 --n-samples 20 \
+  --sequencing-depth 100000
 ```
 
 ## Citation
@@ -420,9 +488,11 @@ python scripts/adapter_auc_gate.py
 
 ## Versioning
 
-This model card applies to **DeepCatch v2.3.0** (release tag `v2.3.0`,
-archived at 10.5281/zenodo.24453044). The tag is named rather than a
-commit hash because a tag cannot drift: a commit named here would
-quietly stop being the commit this card describes. Subsequent versions
-may update the headline numbers; check the `results/` directory and
-the README for the latest validated metrics.
+This model card applies to **DeepCatch v2.4.0** (the CANCER-SEEK integration
+branch). The last **tagged release** is `v2.3.0`, archived at
+10.5281/zenodo.24453044, and it remains the release that carries the
+external validation — v2.4.0 adds modules and documentation, and changes no
+headline number. The tag is named rather than a commit hash because a tag
+cannot drift: a commit named here would quietly stop being the commit this
+card describes. Subsequent versions may update the headline numbers; check
+the `results/` directory and the README for the latest validated metrics.
