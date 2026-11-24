@@ -135,6 +135,20 @@ cohort size.
   the committed artifact. The disclosure took the submission PDF from 8
   pages to 9, and every document that states the page count was
   updated with it.
+- **The GSE124600 cohort is now measured, not quoted.** The GEO survey
+  described GSE124600 from the series description; this measures it.
+  `results/geo_gse124600_cohort.json` records what the three deposited
+  supplementary files actually contain -- 205,250 CpG loci per matrix,
+  **274 plasma sample columns** across the two plasma files (268 + 6) and
+  66 tissue columns (33 colorectal cancer tissue + 33 adjacent mucosa) --
+  with each file's byte count and sha256, the stage-label distribution
+  counted from the GEO sample records, and the series record's own design
+  quote and the quality-control arithmetic behind the cohort size.
+  `test/test_geo_gse124600_cohort_is_consistent.py` keeps that artifact and
+  the documents that quote the cohort honest: it checks the artifact's own
+  arithmetic, pins the cohort size and the stage distribution, and finds
+  the documents by scanning the tree for the accession, so a document that
+  quotes GSE124600 without the artifact's numbers fails.
 
 ### Fixed
 
@@ -146,8 +160,9 @@ cohort size.
   and false for methylation: GEO hosts per-sample **methylation
   matrices**, and for plasma cfDNA cohorts it hosts them **with
   per-sample stage labels**. GSE124600 (blood-based colorectal cancer
-  detection) carries 142 cancer and 93 healthy plasma samples with
-  `crc grade: Stage_I`, `Stage_II` and `Stage_III`, plus per-sample
+  detection) carries 142 cancer and 132 control plasma samples (274 in
+  total) with `crc grade: Stage_I`, `Stage_II`, `Stage_III` and
+  `Stage_IV` on the cancer plasma, plus per-sample
   methylation matrices -- the first public cohort carrying the stage
   labels the readiness document says the open-data cohort lacks. It is
   a *methylation* cohort, so it cannot be scored with this repository's
@@ -156,6 +171,27 @@ cohort size.
   cfDNA cancer cohort (the one recent fragment study deposits coverage
   tracks and uses serum), which is why the held-out cohort comes from
   FinaleDB, whose fragment files are served directly.
+- **The GEO survey's cohort size was wrong, and the matrices turned out to
+  be complete.** The entry above gave the wrong number of control plasma
+  samples for GSE124600. The series record says plasma from 147 CRC
+  patients and 134 controls, of which 5 patients and 2 controls failed
+  quality control, so the deposited cohort is **142 cancer + 132 control =
+  274 plasma samples**; the survey had also left `Stage_IV` (5 samples) out
+  of the stage set it listed. Downloading the three deposited files and
+  counting their columns shows **205,250 CpG
+  loci** in every matrix and **274 plasma sample columns** in total -- 268
+  in `sumP_..._dup1.5_...` and 6 in `sumP_..._nodup1.5_...` -- which
+  covers every plasma sample in the series, plus 66 tissue columns (33
+  colorectal cancer tissue + 33 adjacent mucosa). The measurements, the
+  file hashes and the provenance are in
+  `results/geo_gse124600_cohort.json`, and
+  `test/test_geo_gse124600_cohort_is_consistent.py` keeps the documents and
+  the artifact from drifting apart again.
+  *(The earlier note that the 1.9 MB supplementary file was a truncated
+  download was wrong too: macOS `zcat` cannot read a `.gz` file and fails
+  with `can't stat`, which looks exactly like a truncated transfer.
+  `gzip -dc` reads the file, and its byte count matches the FTP
+  `Content-Length` exactly.)*
 - **The docs site stopped deploying because the Pages action looked for
   the artifact before the artifact list had caught up.** The deploy step
   finds the artifact by NAME through the artifact list API, and that

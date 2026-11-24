@@ -1,0 +1,127 @@
+{
+  "accession": "GSE124600",
+  "study": "Aberrant DNA hypermethylation of CpG islands occurs frequently throughout the genome in human colorectal cancer (CRC) -- MCTA-Seq plasma cohort (Kang et al.)",
+  "retrieved": "2026-11-24",
+  "why_this_record": "The GEO survey said this series carries per-sample stage labels and per-sample methylation matrices but did not verify either against the downloaded files. This artifact is the verification: every number below was measured from the deposited supplementary files and the GEO sample records, not quoted from the series description.",
+  "sources": {
+    "series_record": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124600&targ=self&form=text&view=brief",
+    "sample_records": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE124600&targ=gsm&form=text&view=brief",
+    "supplementary_directory": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE124nnn/GSE124600/suppl/"
+  },
+  "design": {
+    "quote": "The methylated CpG tandems amplification and sequencing (MCTA-Seq) method was applied to 33 tumor tissues, 33 adjacent tumor tissues and plasma samples from 147 CRC patients and 134 controls in which 5 from the CRC patients and 2 from the control subjects failed to pass a quality control value and were excluded from further analysis.",
+    "source": "series_record !Series_overall_design",
+    "crc_patients_enrolled": 147,
+    "controls_enrolled": 134,
+    "crc_patients_excluded_by_qc": 5,
+    "controls_excluded_by_qc": 2,
+    "crc_patients_after_qc": 142,
+    "controls_after_qc": 132
+  },
+  "cohort": {
+    "samples_in_geo": 340,
+    "plasma_samples": 274,
+    "tissue_samples": {
+      "Adjacent mucosa": 33,
+      "Colorectal cancer tissue": 33,
+      "Plasma": 274
+    },
+    "plasma_samples_with_a_stage_label": 142,
+    "plasma_samples_without_a_stage_label": 132,
+    "stage_distribution": {
+      "Stage_I": 30,
+      "Stage_II": 65,
+      "Stage_III": 42,
+      "Stage_IV": 5
+    }
+  },
+  "stage_labels": {
+    "field": "!Sample_characteristics_ch1 = crc grade: <stage>",
+    "on_plasma_samples": 142,
+    "distribution": {
+      "Stage_I": 30,
+      "Stage_II": 65,
+      "Stage_III": 42,
+      "Stage_IV": 5
+    },
+    "note": "The stage label is on the cancer plasma samples only; the control plasma samples carry no stage label."
+  },
+  "matrices": [
+    {
+      "file": "GSE124600_MePM_of_tissues_v1.txt.gz",
+      "bytes": 7333412,
+      "sha256": "4ffde8cbf143e84ec3e54d8fe3d131615cf570739e48b66604f4b5bc4f8ff736",
+      "gzip_ok": true,
+      "cpg_loci": 205250,
+      "sample_columns": 66,
+      "sample_kind": "tissue",
+      "first_sample_names": [
+        "Tcrc1",
+        "Tcrc2",
+        "Tcrc3"
+      ],
+      "last_sample_names": [
+        "Tnm31",
+        "Tnm32",
+        "Tnm33"
+      ]
+    },
+    {
+      "file": "GSE124600_sumP_20181112CRC_uploadGEO_dup1.5_6_12_C_umepm.txt.gz",
+      "bytes": 14341039,
+      "sha256": "ce097701fa67390328b188f405d5c5ab40625ef8db4424e3e92e53182941b272",
+      "gzip_ok": true,
+      "cpg_loci": 205250,
+      "sample_columns": 268,
+      "sample_kind": "plasma",
+      "first_sample_names": [
+        "Pcrc1_m_dup1.5",
+        "Pcrc7_m_dup1.5",
+        "Pcrc12_m_dup1.5"
+      ],
+      "last_sample_names": [
+        "Pn204_dup1.5",
+        "Pn205_dup1.5",
+        "Pn207_dup1.5"
+      ]
+    },
+    {
+      "file": "GSE124600_sumP_20181112CRC_uploadGEO_nodup1.5_6_12_C_umepm.txt.gz",
+      "bytes": 1897647,
+      "sha256": "13df47ab4a83a6f60847f9cbc85474cec3b6300fc7bf30c2791c86b815fe18d4",
+      "gzip_ok": true,
+      "cpg_loci": 205250,
+      "sample_columns": 6,
+      "sample_kind": "plasma",
+      "first_sample_names": [
+        "Pcrc90",
+        "Pcrc88",
+        "Pcrc89"
+      ],
+      "last_sample_names": [
+        "Pn43_m",
+        "Pn165",
+        "Pn167"
+      ]
+    }
+  ],
+  "coverage": {
+    "cpg_loci_per_matrix": [
+      205250
+    ],
+    "plasma_samples_in_geo": 274,
+    "plasma_sample_columns_in_matrices": 274,
+    "plasma_coverage": "274/274",
+    "tissue_sample_columns_in_matrices": 66,
+    "tissue_breakdown": {
+      "colorectal_cancer_tissue": 33,
+      "adjacent_mucosa": 33
+    }
+  },
+  "caveats": [
+    "This is a METHYLATION cohort: the matrices carry methylation values at CpG loci, not fragment-length distributions, so it cannot be scored with this repository's fragmentomics model.",
+    "The plasma matrix is split across two deposited files (268 columns in the 'dup' file and 6 in the 'nodup' file); together they cover every plasma sample in the series.",
+    "The per-sample supplementary files in GEO are NONE -- the matrices are combined per series into these three files, so the per-sample view requires splitting the columns by the sample names in the header row.",
+    "The header row of the plasma matrices carries its sample names space-separated inside one tab field, while the data rows are tab-separated; a parser that splits the header on tabs alone will read one sample instead of 268."
+  ]
+}

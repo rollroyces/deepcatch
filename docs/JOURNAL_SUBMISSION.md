@@ -82,7 +82,7 @@ independent researcher can produce.
 |---|---|
 | Public, versioned repository | ✅ MIT-licensed, tagged releases |
 | Installable package | ✅ `pyproject.toml` |
-| Test suite | ✅ 1018 tests (`pytest src test -q`), split across two CI jobs |
+| Test suite | ✅ 1024 tests (`pytest src test -q`), split across two CI jobs |
 | Documentation | ✅ `README.md`, `MODEL.md`, `USAGE.md`, `docs/` |
 | Citation metadata | ✅ `CITATION.cff` |
 | Contribution guidelines | ✅ `CONTRIBUTING.md` (setup, the drift-guard rules, how to bring a cohort in) |

@@ -16,7 +16,7 @@ sequencer the exact specifications they need:
 
 This is not a guess.  It is computed from real TCGA mutations (5,738
 mutations, 20 patients) with a context-aware error model.  All code is
-open-source and tested (1018 tests).  Anyone with a sequencer and your
+open-source and tested (1024 tests).  Anyone with a sequencer and your
 specs can build an assay that works at 0.1% ctDNA.
 
 Your role is not to build the assay.  Your role is to be the computational
@@ -59,7 +59,7 @@ Post exactly these three things:
 >
 > Body: real TCGA mutations as ground truth, 0.922 AUC at 0.1% ctDNA,
 > duplex-UMI sweep → actionable assay specs. All code open-source,
-> 1018 tests green. Would value feedback on the error model and scoring.
+> 1024 tests green. Would value feedback on the error model and scoring.
 
 **ResearchGate:**
 > Create a project: "DeepCatch — Open-Source MRD Detection Benchmark"
@@ -101,7 +101,7 @@ to say.
 > against real TCGA tumor mutations.  Key result: panel AUC 0.922 at 0.1%
 > ctDNA; duplex-UMI + 50k× depth → Sens@95% = 1.000.
 
-> The entire pipeline is open-source (MIT license), tested (1018 tests),
+> The entire pipeline is open-source (MIT license), tested (1024 tests),
 > and reproducible with a single command.  All data is open-access (TCGA
 > GDC, GEO).  The assay sweep gives actionable production specifications.
 

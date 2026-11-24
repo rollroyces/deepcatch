@@ -108,7 +108,7 @@ stage labels**.
 
 | Accession | Study | Deposited artifact | Labels | Usable here? |
 |---|---|---|---|---|
-| **GSE124600** | blood-based colorectal cancer detection (Kang et al.) | per-sample **methylation matrices** (`sumP_..._umepm.txt.gz`) | plasma, CRC patient / healthy, and **crc grade: Stage_I / Stage_II / Stage_III** on the cancer plasma | a *methylation* cohort with stage labels -- not the fragmentomics channel this repository scores |
+| **GSE124600** | blood-based colorectal cancer detection (Kang et al.) | per-sample **methylation matrices** (`sumP_..._umepm.txt.gz`): 205,250 CpG loci x **274 plasma** samples (268 + 6 columns across the two deposited plasma files), plus 66 tissue samples | plasma, CRC patient / healthy, and **crc grade: Stage_I / Stage_II / Stage_III / Stage_IV** on the cancer plasma (142 labelled, 132 controls unlabelled) | a *methylation* cohort with stage labels -- not the fragmentomics channel this repository scores |
 | GSE97932 | cell-free DNA methylation markers, lung cancer | one combined processed matrix (485k CpGs) | cancer / normal | same caveat |
 | GSE97923 | the same study, colorectal | one combined processed matrix | cancer / normal | same caveat |
 | GSE118690 | genome-scale methylation, tissue-of-origin of plasma cfDNA | per-sample + combined matrices | tissue-of-origin labels | same caveat |
@@ -121,14 +121,32 @@ stage labels**.
 Two findings worth keeping:
 
 - **The stage-labelled public plasma cohort exists.** GSE124600's cancer
-  plasma samples carry `crc grade: Stage_I`, `Stage_II` and `Stage_III`
-  and the healthy plasma samples carry the matching label -- 142 cancer
-  plasma and 93 healthy plasma samples. That is the first public
-  cohort with the stage labels `ULTRA_EARLY_READINESS.md` §1.3 says the
-  open-data cohort lacks. It is a *methylation* cohort, so it cannot be
-  scored with this repository's fragmentomics model; it would need a
-  methylation feature extractor and its own model, which is a project
-  rather than a week of work.
+  plasma samples carry `crc grade: Stage_I`, `Stage_II`, `Stage_III` and
+  `Stage_IV` -- **142 cancer plasma** samples are labelled, and the
+  remaining **132 plasma** samples are the controls, which carry no stage
+  label, for 274 plasma samples in total. That is the first public cohort
+  with the stage labels `ULTRA_EARLY_READINESS.md` §1.3 says the open-data
+  cohort lacks. It is a *methylation* cohort, so it cannot be scored with
+  this repository's fragmentomics model; it would need a methylation feature
+  extractor and its own model, which is a project rather than a week of
+  work.
+- **The methylation matrices are complete, and verified rather than
+  assumed.** Downloading the three deposited files (14,341,039 +
+  1,897,647 + 7,333,412 bytes, each a valid gzip) and counting their
+  columns gives **205,250 CpG loci** in every matrix, **274 plasma sample
+  columns** in total -- 268 in `sumP_..._dup1.5_...` and 6 in
+  `sumP_..._nodup1.5_...`, which is exactly the 274 plasma samples GEO
+  records -- and 66 tissue columns (33 colorectal cancer tissue + 33
+  adjacent mucosa). The per-sample stage labels and the per-sample
+  methylation values therefore live in the same series, which is what makes
+  this cohort usable for the stage-stratified analysis §1.3 asks for. The
+  measurements, the file hashes and the provenance are in
+  `results/geo_gse124600_cohort.json`.
+  *(Re-checking this needs one caveat: macOS `zcat` cannot read a `.gz`
+  file -- it fails with `can't stat`, which looks exactly like a truncated
+  download. `gzip -dc` reads the file, and every byte count above matches
+  the FTP `Content-Length` exactly. An earlier note in this repository
+  called that 1.9 MB file truncated; it was not.)*
 - **No fragment-length matrix for a cfDNA cancer cohort exists in
   GEO.** The one recent fragment study deposits coverage tracks (and
   uses serum, not plasma). The raw reads are in SRA, but downloading

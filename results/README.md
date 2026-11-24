@@ -84,6 +84,7 @@ bash RUN_ALL.sh
 | `cross_study_finallydb_shuffled_control.json` | Shuffled-label null control |
 | `cross_study_loso.json` | Leave-one-study-out transfer |
 | `external_validation_finaledb.json` | Held-out external validation on publications 1 / 7 / 9 |
+| `geo_gse124600_cohort.json` | The GEO survey's GSE124600 record, **measured** from the deposited files: 142 cancer + 132 control = 274 plasma samples with `crc grade: Stage_I` / `Stage_II` / `Stage_III` / `Stage_IV`, and the methylation matrices' coverage |
 | `per_cancer_sens_at_spec.json` | Per-cancer-type AUC, sens@spec and PPV |
 | `fusion_ablation_isotonic.json` | Cross-repo fusion ablation (10 seeds) |
 | `decision_curve.json` | Decision-curve operating points |
@@ -102,5 +103,5 @@ scripts.
 
 ---
 
-*Last updated: 2026-11-16 (v2.3.0). Every figure above is quoted from
+*Last updated: 2026-11-24 (v2.3.0). Every figure above is quoted from
 the artifact named beside it.*
