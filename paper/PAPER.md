@@ -26,7 +26,7 @@
 
 **Results.** We present DeepCatch, an open-source panel-based MRD detection pipeline benchmarked against real tumor mutations. Using 20 real TCGA-LUAD patients (5,738 somatic mutations with real read counts, GDC open access) as ground truth and a context-aware sequencing error model (CpG sites ~10×, homopolymers ~5× error), we simulate plasma cfDNA at five tumor fractions (10% to 0.1%) and evaluate three per-sample scoring methods at fixed specificity (95%, 99%) with no threshold optimization on test data. At 0.1% ctDNA (ultra-early regime), panel-level log-likelihood-ratio (LLR) aggregation achieves **AUC 0.921** (Sens@95% = 0.770, Sens@99% = 0.460), with paired cancer-vs-control win rate 1.000 across all seeds. The CAPP-Seq-standard Fisher-method panel score achieves AUC 0.834, and a strand-concordance-weighted variant achieves AUC 0.831. An assay parameter sweep (error rate × depth) shows that duplex-UMI consensus sequencing (error ≤ 1e-4) or depth ≥ 50,000× each independently achieve Sens@95% = 1.000 at 0.1% ctDNA, defining actionable production specifications. Fragmentomics features were cross-validated against independent real cfDNA data (FLARE/GSE317007, ONT sequencing, 12 HNSCC samples), reproducing the published pan-cancer CG-depletion / AT-enrichment signature. A complementary tumor-naive fragmentomics channel (627 cross-study FinaleDB samples from Jiang 2015 + Cristiano 2019) naively averaged with a mutation channel calibrated to AUC 0.902 reaches **AUC 0.9884** (paired over 10 seeds: +0.0144 over the tumor-naive channel alone, t=54.50, positive on every seed). The mutation channel in that pairing is a calibrated synthetic proxy rather than the real panel LLR, so this is a complementarity result, not a performance claim.
 
-**Conclusions.** DeepCatch provides a reproducible, honest benchmark for ultra-sensitive MRD detection using open-access data. All code (1024 tests green), all data, and all results are freely available. The assay sweep yields concrete production specifications: duplex-UMI error suppression and ~50,000× depth are sufficient for AUC 1.000 at 0.1% ctDNA. Clinical validation on real plasma cfDNA sequencing data remains the essential next step.
+**Conclusions.** DeepCatch provides a reproducible, honest benchmark for ultra-sensitive MRD detection using open-access data. All code (1041 tests green), all data, and all results are freely available. The assay sweep yields concrete production specifications: duplex-UMI error suppression and ~50,000× depth are sufficient for AUC 1.000 at 0.1% ctDNA. Clinical validation on real plasma cfDNA sequencing data remains the essential next step.
 
 ---
 
@@ -46,7 +46,7 @@ Here we present **DeepCatch**, an open-source panel-based MRD detection pipeline
 2. **Three per-sample scoring methods** — panel LLR sum (the sufficient statistic under independent Poisson observation), Fisher-method combination (-log10 p-value per locus, the CAPP-Seq standard), and strand-concordance-weighted scoring — evaluated at fixed specificity with no threshold optimization.
 3. **An assay-design sweep** (background error rate × sequencing depth) that translates benchmark performance into concrete production specifications for duplex-UMI error suppression and depth.
 
-All code (MIT license, 1024 tests), all data (TCGA GDC open access; GEO GSE317007), and all results are openly available.
+All code (MIT license, 1041 tests), all data (TCGA GDC open access; GEO GSE317007), and all results are openly available.
 
 ---
 
@@ -106,7 +106,7 @@ To verify that DeepCatch's fragmentomics feature extraction generalizes to indep
 
 ### 2.8 Implementation and reproducibility
 
-DeepCatch is implemented in Python (numpy, scipy, scikit-learn, torch, torch_geometric) and released under the MIT license. The full test suite (1024 tests covering fragmentomics, preprocessing, clinical, multimodal fusion, foundation model, tissue deconvolution, priming, and methylation modules) passes on Python 3.11-3.14. The complete benchmark is reproduced by:
+DeepCatch is implemented in Python (numpy, scipy, scikit-learn, torch, torch_geometric) and released under the MIT license. The full test suite (1041 tests covering fragmentomics, preprocessing, clinical, multimodal fusion, foundation model, tissue deconvolution, priming, and methylation modules) passes on Python 3.11-3.14. The complete benchmark is reproduced by:
 
 ```
 python real_tcga_validation.py --n-patients 20 --seeds 5 --cancer-types LUAD
@@ -212,7 +212,7 @@ DeepCatch provides the first open, reproducible benchmark for panel-based ultra-
 
 - Repository: github.com/rollroyces/deepcatch
 - Reproduce benchmark: `python real_tcga_validation.py --n-patients 20 --seeds 5 --cancer-types LUAD`
-- Test suite: `pytest src test -q` (1024 collected)
+- Test suite: `pytest src test -q` (1041 collected)
 
 ---
 

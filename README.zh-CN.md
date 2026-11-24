@@ -14,7 +14,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-![Tests](https://img.shields.io/badge/Tests-1024%20collected-blue)()
+![Tests](https://img.shields.io/badge/Tests-1041%20collected-blue)()
 [![Real-data CI](https://img.shields.io/badge/Real_data_CI-see%20results%2F-lightgrey)](results/)
 [![Model Card](https://img.shields.io/badge/Model_Card-MODEL.md-blue)](MODEL.md)
 [![Docs](https://img.shields.io/badge/Docs-rollroyces.github.io-blue)](https://rollroyces.github.io/deepcatch/)
@@ -328,6 +328,57 @@ bash paper/REPRODUCE.sh --quick   # 3 seeds, scratch output, the repo is untouch
 
 ---
 
+## CANCER-SEEK 超灵敏路径（v2.4.0+）
+
+> **只是参考移植，不是基准。** 下面这些模块是从现已归档的
+> `rollroyces/cancer-screening`、`rollroyces/deepcatch-methylation` 和
+> `rollroyces/cfDNA-Fragmentomics` 并入本仓库的。它们**没有任何真实队列验证**——
+> 它们产出的每一个数字都是合成夹具的模拟输出。它们被放在可选 extra 后面，
+> 所以默认安装和头条基准都不受影响。
+
+```bash
+pip install -e ".[ultra]"     # xgboost + shap
+pip install -e ".[ultra-rl]"  # 另外还有 stable-baselines3 + gymnasium
+```
+
+| 模块 | 作用 |
+|---|---|
+| `src/ultrasensitive/umi.py` | 基于 UMI 的纠错：家族形成、Hamming 聚类、双链一致性。目标是 10⁻⁸ 的有效错误率 |
+| `src/ultrasensitive/variant_calling.py` | 低 VAF 变异检测：二项/泊松背景过滤 + 链平衡 + 配对白细胞 CHIP 过滤 |
+| `src/ultrasensitive/cnv_analyzer.py` | CNV 检测：GC 校正、circular binary segmentation、由 CNV 幅度估计肿瘤分数 |
+| `src/ultrasensitive/methylation.py` | β 值甲基化处理、DMR 检测、来源组织打分 |
+| `src/ultrasensitive/xgboost_classifier.py` | 带逐样本 SHAP 归因的 XGBoost 分诊基线（需要 `[ultra]`） |
+| `src/ultrasensitive/methylation_encoder.py` | Transformer β 值编码器——只有架构；真实数据验证是 `METHYLATION_PROJECT.md` 的 Phase 4 |
+| `src/ultrasensitive/fusion_net.py` | 4 模态（基因组+甲基化+蛋白+临床）FusionNet，带交叉注意力门控 |
+| `src/ultrasensitive/vae_anomaly.py` | β-VAE 无监督异常检测，用于发现训练集中不存在的亚型 |
+| `src/ultrasensitive/spike_in_simulator.py` | spike-in LOD 模拟器——即 `deepcatch-lod` CLI |
+| `src/screening_policy/rl_agent.py` | 在 10,000 名患者模拟队列上训练的 SAC 类 RL 代理（QALY 奖励） |
+| `src/methylation/cfrna_coupling.py` | `mrnavax-rare` 的读侧配套：把持久性预测提升为 CDM 特征 schema |
+| `src/methylation/methylation_reader.py` | 来源组织特征提取 + 持久性输入归一化 |
+
+### LOD 模拟器实际报告了什么
+
+```bash
+deepcatch-lod --vaf-range 1e-2,1e-3,1e-4,1e-5 --n-samples 20 --sequencing-depth 100000
+```
+
+在 50,000 个基因组当量（约 10 mL 血浆）下，**0.001% VAF 等于整个基因组里
+0.5 个突变分子**。100,000× 深度在目标位点只给出**1 条**突变读段——低于
+3 条支持读段的判定阈值——所以模拟器在那个 VAF 上报告 0% 检出率，并指出
+达到 80% 检验效能大约需要 **430,000×**。因此 LOD 是一个**设计目标，不是
+已验证的结果**，也还没有做过任何真实的加标湿实验。
+
+> 原始 `cancer-screening` 仓库里的模拟器在任何 VAF 上都检不出东西
+> （它从一个只含 0.0016 个分子的 100 bp 窗口里抽突变读段，却用全基因组
+> 口径计算效能并报告 power 1.0），而依赖它的「0.001% VAF 已确认」这一
+> 说法本身就是错的。两处都在本次并入时修正，回归测试见
+> `test/test_ultrasensitive.py`。
+
+设计依据见 [`docs/CANCER_SEEK_ARCHITECTURE.md`](docs/CANCER_SEEK_ARCHITECTURE.md)，
+并入路线图见 [`docs/ROADMAP_CANCER_SEEK.md`](docs/ROADMAP_CANCER_SEEK.md)。
+
+---
+
 ## 生物医学评审修复（已通过；完整历史见 git log）
 
 v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_review_fixes.py` 中的 **37 项回归测试**保证它们不再退化。
@@ -366,8 +417,11 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 | `src/synthetic_data/` | MultiModalDataGenerator、TissueAtlas | — |
 | `src/variant_calling/` | 贝叶斯 + 对比深度学习（合成） | `docs/CADD_FLARE_VALIDATION.md` |
 | `src/preprocessing/` | CHIP filter | — |
+| **`src/ultrasensitive/`** | CANCER-SEEK 超灵敏模块：UMI 一致性、低 VAF 变异检测、CBS 拷贝数、β 值甲基化、XGBoost+SHAP、β-VAE 异常检测、4 模态 FusionNet、spike-in LOD 模拟器 | `docs/CANCER_SEEK_ARCHITECTURE.md` |
+| **`src/screening_policy/`** | SAC 类强化学习代理 + 10,000 名患者模拟队列，用于自适应筛查节奏 | 模块 docstring |
+| **`src/methylation/`** | cfRNA 持久性耦合 + 甲基化芯片读取器（`mrnavax-rare` 的读侧配套） | `docs/ultrasensitive/PHASE0_PLAN.md` |
 
-**突变知情通道**见 `docs/CADD_WEIGHTED_LLR.md`、`docs/CADD_PER_SUBGROUP_LLR.md`、`docs/CADD_GDC_VALIDATION.md`、`docs/CADD_ALPHAMISSENSE_COMBINED.md`、`docs/ALPHAMISSENSE_REAL_LLR.md`。**肿瘤盲 + 融合**见 `docs/FUSION_ISOTONIC.md` 和 `docs/CROSS_STUDY_BENCHMARK.md`。**架构提案**（甲基化 β 值 + Apple MPS）见 `docs/V3_DESIGN.md`。
+**突变知情通道**见 `docs/CADD_WEIGHTED_LLR.md`、`docs/CADD_PER_SUBGROUP_LLR.md`、`docs/CADD_GDC_VALIDATION.md`、`docs/CADD_ALPHAMISSENSE_COMBINED.md`、`docs/ALPHAMISSENSE_REAL_LLR.md`。**肿瘤盲 + 融合**见 `docs/FUSION_ISOTONIC.md` 和 `docs/CROSS_STUDY_BENCHMARK.md`。**架构提案**（甲基化 β 值 + Apple MPS）见 `docs/V3_DESIGN.md`。**CANCER-SEEK 超灵敏路径**见 `docs/CANCER_SEEK_ARCHITECTURE.md` 和 `docs/ROADMAP_CANCER_SEEK.md`。
 
 ---
 
@@ -378,7 +432,7 @@ v2.2.0 之后的生物医学评审关闭了 9 类问题；`test/test_biomedical_
 env -u PYTHONPATH ./.venv/bin/python -m pytest \
     test/ src/foundation/test_integration.py \
     -m "not slow" --tb=line -q
-# → 807 passed, 19 skipped, 13 deselected (slow real-data smoke)
+# → 824 passed, 19 skipped, 13 deselected (slow real-data smoke)
 #   没有 torch 时（即只装 runtime + dev），深度学习模块会被跳过：
 #   685 passed, 54 skipped, 2 deselected。
 
@@ -405,7 +459,7 @@ env -u PYTHONPATH ./.venv/bin/python scripts/foundation_real_smoke.py \
 | `test/test_public_tree_has_no_personal_contact.py` | 3 | ✅ 全部通过 |
 | `src/foundation/test_integration.py` | 43 | ✅ 全部通过 |
 | 完整 `src/` 发现 | 收集 228 | ✅ 跑 217，11 个按 slow 排除 |
-| **合并快速路径门禁** | **收集 839** | **807 通过 + 19 跳过 + 13 排除** |
+| **合并快速路径门禁** | **收集 856** | **824 通过 + 19 跳过 + 13 排除** |
 
 那 13 个被排除的测试是慢速的真实数据基础模型冒烟和按研究 harmonization 检查；它们在专门的 GitHub Actions 工作流（`foundation-real-smoke`、`validate.yml`）里用真实数据集运行。
 
@@ -455,7 +509,7 @@ deepcatch/
 │   ├── py/                       # Python validation modules (11)
 │   ├── tcga/                     # TCGA data loaders + validators
 │   └── *.py                      # Bioinformatics-grade modules
-├── test/                         # 66 test files (796 fast-path tests)
+├── test/                         # 68 test files (813 fast-path tests)
 ├── results/                      # Cached JSON + 4 figures + ablation artifacts
 ├── paper/                        # LaTeX manuscript + REPRODUCE.sh
 ├── docs/                         # 30+ docs + 4 figures + 3 demo WebM/MP4/GIF (real browser_exec recordings) + terminal asciicasts
