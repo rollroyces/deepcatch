@@ -87,6 +87,7 @@ bash RUN_ALL.sh
 | `external_cohort_zenodo_ccrcc.json` | A **second external family**: ccRCC plasma from Zenodo 10.5281/zenodo.21269430 (AUC 0.9444, exact permutation p = 0.0043; all six patients are pT3a, and the absolute threshold does not travel) |
 | `zenodo_cfdna_survey.json` | The Zenodo-side public-data survey: the queries, their hit counts and the candidate records that were read |
 | `geo_gse124600_cohort.json` | The GEO survey's GSE124600 record, **measured** from the deposited files: 142 cancer + 132 control = 274 plasma samples with `crc grade: Stage_I` / `Stage_II` / `Stage_III` / `Stage_IV`, and the methylation matrices' coverage |
+| `methylation_cohort_geo_gse124600.json` | What the GSE124600 methylation matrix **contains**: a methylated-CpG call matrix, the only class signal being the called-CpG count (AUC 0.7688), and the negative answer on the stage breakdown (the count does not rise with stage, rho 0.0961) |
 | `per_cancer_sens_at_spec.json` | Per-cancer-type AUC, sens@spec and PPV |
 | `fusion_ablation_isotonic.json` | Cross-repo fusion ablation (10 seeds) |
 | `decision_curve.json` | Decision-curve operating points |

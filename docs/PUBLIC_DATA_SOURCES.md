@@ -156,6 +156,40 @@ Two findings worth keeping:
   which is why the held-out cohort in §1 comes from FinaleDB, whose
   fragment files are served directly.
 
+### 4.1 What the GSE124600 methylation matrix actually contains
+
+The survey above established that GSE124600 carries stage-labelled plasma
+samples and per-sample methylation matrices; it did not open the matrices.
+`scripts/geo_gse124600_methylation_cohort.py` opens them (205,250 loci x
+274 plasma samples, plus a sample metadata table read from the GEO sample
+records), and the answer is in
+`results/methylation_cohort_geo_gse124600.json`:
+
+- **The matrix is a methylated-CpG CALL matrix with normalised counts,
+  not a fractional methylome.** 91.1% of the cells are exactly 0 and the
+  maximum is 6,949.25, so a zero means "this CpG was not called
+  methylated in this sample", not "this CpG is 0% methylated".
+- **The per-locus summaries are anti-correlated with cancer** (AUC 0.27
+  to 0.41 over the shared-locus means, the mean of the non-zero values
+  and the total signal) -- the signal is spread over more loci, which is
+  what a normalised count matrix does.
+- **The only class signal is the number of CpGs called methylated per
+  sample**: 15,637 (median) in the healthy controls against 20,130 in
+  the cancer plasma, **AUC 0.7688** (permutation p < 0.0001). That is a
+  burden/coverage measure, and it is what this repository's own
+  methylation channel found on FinaleMe, where the decode emits hard 0/1
+  state assignments and the "methylation" the channel consumed was the
+  fraction of covered loci called methylated. An independent, larger,
+  stage-labelled deposit reproduces the null.
+- **And the stage breakdown is a negative answer.** The called-CpG count
+  does *not* rise with stage (Spearman rho = **0.0961**, p = 0.26 over
+  the 142 cancer samples; the per-stage AUCs against the healthy
+  controls are 0.7130 / 0.8223 / 0.7188 / 0.8288 for Stage_I / II / III /
+  IV, which are noisy at these arm sizes). So the one public cohort with
+  per-sample stage labels **does not** deliver a stage-stratified
+  early-detection result, and `ULTRA_EARLY_READINESS.md` §1.3's readiness
+  gap is closed with a measurement rather than a plan.
+
 ## 5. EGA (surveyed, blocked by a DAC)
 
 | Study | Dataset | Samples | Access |

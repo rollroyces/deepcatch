@@ -46,6 +46,13 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 _ARTIFACT = "results/geo_gse124600_cohort.json"
 
+# The same cohort, measured: what the deposited methylation matrix
+# contains, and what can be read from it.
+_METHYLATION_ARTIFACT = "results/methylation_cohort_geo_gse124600.json"
+_METHYLATION_COVERAGE_AUC = 0.7688
+_METHYLATION_STAGE_RHO = 0.0961
+_METHYLATION_ZERO_FRACTION = 0.911
+
 # The cohort as GEO records it. These are pins, not documentation: if the
 # artifact's numbers change, the pins change deliberately and in the same
 # commit, rather than a wrong number creeping in with a file rename.
@@ -218,4 +225,113 @@ def test_every_document_that_mentions_the_accession_states_the_recorded_cohort()
             if wrong in text:
                 problems.append(
                     f"{rel} states {wrong!r}, which is not the cohort size")
+    assert not problems, "\n  ".join(problems)
+
+
+# ─────────────────────────────────────────────────────────────────────
+# What the deposited methylation matrix actually contains.
+#
+# The survey established that GSE124600 carries stage-labelled plasma
+# samples and per-sample methylation matrices. It did not open the
+# matrices. Opening them answers the readiness document's question
+# ("a methylation cohort would need a methylation feature extractor and
+# its own model") with a measurement instead of a plan:
+#
+#   * the matrix is a methylated-CpG CALL matrix with normalised counts
+#     (91% of the cells are 0, the maximum is 6,949.25 -- so a cell is
+#     "this CpG was not called methylated in this sample", not "0%
+#     methylated");
+#   * the per-locus summaries are ANTI-correlated with cancer
+#     (AUC 0.27-0.41) and the only class signal is the number of CpGs
+#     called methylated per sample (AUC 0.7688) -- a burden/coverage
+#     signal, which is what this repository's own methylation channel
+#     found on FinaleMe;
+#   * the called-CpG count does NOT rise with stage (Spearman rho
+#     0.0961, p = 0.26 over the 142 cancer samples), so the
+#     stage-labelled cohort does not deliver a stage-stratified result.
+#
+# The last point is the one the readiness document was waiting for, and
+# it is a negative answer. It has to stay attached to the numbers.
+# ─────────────────────────────────────────────────────────────────────
+
+
+def _methylation_artifact() -> dict:
+    path = _REPO_ROOT / _METHYLATION_ARTIFACT
+    if not path.is_file():
+        pytest.skip(f"{_METHYLATION_ARTIFACT} is not present")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def test_the_methylation_cohort_artifact_is_internally_consistent():
+    """The measured matrix must agree with the survey's cohort."""
+    artifact = _methylation_artifact()
+    cohort = artifact["cohort"]
+    expected_cancer = EXPECTED_PLASMA_SAMPLES - EXPECTED_CONTROLS
+    assert cohort["n_cancer"] == expected_cancer
+    assert cohort["n_healthy"] == EXPECTED_CONTROLS
+    assert cohort["n_samples"] == EXPECTED_PLASMA_SAMPLES
+    assert sum(cohort["stage_distribution"].values()) == expected_cancer
+    assert set(cohort["stage_distribution"]) == set(REQUIRED_STAGE_LABELS)
+
+    semantics = artifact["matrix_semantics"]
+    zero_fraction = semantics["fraction_of_cells_exactly_zero"]
+    assert zero_fraction == pytest.approx(_METHYLATION_ZERO_FRACTION, abs=1e-3)
+    # A fractional methylome cannot exceed 1; a count can exceed 6,000.
+    # That is what tells the two apart, and it is why the per-locus
+    # summaries of this matrix are anti-correlated with cancer.
+    assert semantics["max_value"] > 100, (
+        "the maximum value is no longer above 100; if the matrix now holds "
+        "fractions, the reading of the whole artifact changes and this "
+        "test's pins have to be revisited")
+
+    for block in artifact["summaries"].values():
+        for name, value in block.items():
+            if isinstance(value, dict) and "auc" in value:
+                assert 0.0 <= value["auc"] <= 1.0
+                assert 0.0 < value["permutation_p"] <= 1.0
+
+    per_stage = artifact["per_stage_called_loci"]
+    assert sum(block["n"] for block in per_stage.values()) == expected_cancer
+    for stage, block in per_stage.items():
+        assert block["n"] == artifact["cohort"]["stage_distribution"][stage]
+        assert 0.0 <= block["auc_vs_healthy"] <= 1.0
+
+
+def test_the_methylation_findings_are_pinned():
+    """The numbers that answer the readiness gap cannot drift silently."""
+    artifact = _methylation_artifact()
+    coverage_auc = None
+    for block in artifact["summaries"].values():
+        if "called_loci_count" in block:
+            coverage_auc = block["called_loci_count"]["auc"]
+    assert coverage_auc == _METHYLATION_COVERAGE_AUC, (
+        f"the called-locus AUC changed to {coverage_auc}. If the cohort or "
+        "the analysis changed, update the pins here and in the documents "
+        "at the same time.")
+    rho = artifact["stage_monotonicity"]["spearman_rho_stage_vs_called_loci"]
+    assert rho == _METHYLATION_STAGE_RHO, (
+        f"the stage monotonicity changed to {rho}; the readiness document's "
+        "answer to the stage gap moves with it")
+    assert artifact["stage_monotonicity"]["p"] > 0.05, (
+        "the called-CpG count now rises with stage; the negative answer "
+        "about the stage gap no longer holds and the documents must say so")
+
+
+def test_every_document_quoting_the_methylation_finding_names_its_artifact():
+    """A finding that answers the readiness gap has to be checkable."""
+    needle = str(_METHYLATION_COVERAGE_AUC)
+    documents = _documents_mentioning("GSE124600")
+    problems: list[str] = []
+    for path in documents:
+        text = path.read_text(encoding="utf-8")
+        if needle not in text:
+            continue
+        rel = path.relative_to(_REPO_ROOT)
+        if Path(_METHYLATION_ARTIFACT).name not in text:
+            problems.append(f"{rel} does not name {_METHYLATION_ARTIFACT}")
+        if str(_METHYLATION_STAGE_RHO) not in text:
+            problems.append(
+                f"{rel} does not state the stage monotonicity "
+                f"({_METHYLATION_STAGE_RHO}) -- the negative answer that "
+                "travels with the finding")
     assert not problems, "\n  ".join(problems)

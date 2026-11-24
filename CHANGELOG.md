@@ -212,6 +212,36 @@ cohort size.
   (`#chrom start end name mapq strand`), which `read_fragments` could
   not parse, so it now skips a leading `#` line. The FinaleDB files do
   not have one, so the training cohort's features are unchanged.
+- **The stage-labelled cohort's methylation matrix was opened, and the
+  answer is measured rather than planned.** `ULTRA_EARLY_READINESS.md`
+  §1.3 called the stage breakdown the one readiness gap and said the
+  public cohort with stage labels (GSE124600) "would need a methylation
+  feature extractor and its own model". The matrices were downloaded and
+  opened instead (`scripts/geo_gse124600_methylation_cohort.py`,
+  artifact `results/methylation_cohort_geo_gse124600.json`):
+  * the matrix is a methylated-CpG **CALL** matrix with normalised
+    counts -- 91.1% of the 205,250 x 274 cells are exactly 0 and the
+    maximum is 6,949.25, so a zero means "not called methylated in this
+    sample", not "0% methylated";
+  * the per-locus summaries are **anti-correlated** with cancer (AUC
+    0.27-0.41); the only class signal is the number of CpGs called
+    methylated per sample (15,637 in the healthy controls against 20,130
+    in the cancer plasma, AUC 0.7688, permutation p < 0.0001) -- a
+    burden/coverage measure, the same shape as this repository's own
+    FinaleMe null, now reproduced on an independent and larger deposit
+    that carries stage labels;
+  * the stage breakdown is a **negative** answer: the called-CpG count
+    does not rise with stage (Spearman rho 0.0961, p = 0.26 over the
+    142 cancer samples; the per-stage AUCs against the controls are
+    0.7130 / 0.8223 / 0.7188 / 0.8288). The one public cohort with
+    per-sample stage labels does not deliver a Stage I result either, so
+    the readiness gap is closed with a measurement rather than a plan --
+    and it stays open.
+
+  The checks live in `test/test_geo_gse124600_cohort_is_consistent.py`,
+  next to the cohort they belong to, and they pin the finding, the stage
+  answer, and the rule that a document quoting the finding has to carry
+  the negative answer with it.
 
 ### Fixed
 
