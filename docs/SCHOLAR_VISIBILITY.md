@@ -95,9 +95,29 @@ hand afterwards.
 ## 4. The affiliation, which is the one thing still undecided
 
 Two strings have to agree: the affiliation the preprint declares and
-the one the Scholar profile carries. The repository currently says
-**"Independent Researcher"** in the manuscripts and in `CITATION.cff`,
-and the Zenodo record archived that same string.
+the one the Scholar profile carries. Here is what each surface carries
+today, exactly:
+
+| Surface | The affiliation it declares |
+|---|---|
+| `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` |
+| `CITATION.cff` (and the Zenodo record, which archived the same value) | `Independent Researcher (no institutional affiliation; verified email domain umich.edu)` |
+| `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` |
+| `paper.md` (the JOSS paper's author field) | `Independent Researcher` |
+| the bioRxiv / arXiv form values in `paper/BIORXIV_SUBMISSION.md` | `Independent Researcher` |
+| the docs-site bylines (`docs/README.md`, `docs/site/index.html`) | `Independent Researcher, Hong Kong` |
+
+The citation metadata's parenthetical is a qualifier *about* the
+declaration, not a different declaration, so the declared affiliation is
+one string — `Independent Researcher` — everywhere it is declared. The
+bylines add a locality because a byline is contact information; a
+declared affiliation is the field an index matches on. That is now
+enforced rather than asserted:
+`test/test_author_affiliation_is_consistent.py` compares the manuscript,
+`CITATION.cff`, the generated abstract and the JOSS paper, and reads the
+submission sheet's two form rows and compares them with the manuscript.
+It ignores a trailing parenthetical and nothing else — a locality added
+to one surface only is the drift it exists to catch.
 
 bioRxiv's submission guide asks for an affiliation so that there is
 an entity to contact about research misconduct, and it does not
@@ -105,7 +125,7 @@ consider a job title to be one. The ORCID record still shows one
 public employment (University of Michigan, no start or end date), so
 "who is the author, and under which affiliation" is a real question
 rather than a formatting one — and it is the author's to answer. See
-§7 of `paper/BIORXIV_SUBMISSION.md` for the three options and what
+§7 of `paper/BIORXIV_SUBMISSION.md` for the options and what
 each one costs.
 
 ## 5. What is *not* needed

@@ -40,6 +40,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+import pytest
+
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # The sections JOSS asks a submission to carry, in the order it lists them.
@@ -274,3 +276,204 @@ def test_the_marker_vocabulary_notices_an_employer():
     assert _markers("Independent Researcher") == set()
     # "centering" is not "center": the marker must not fire on a substring.
     assert _markers("\\centering") == set()
+
+
+# ─────────────────────────────────────────────────────────────────────
+# The affiliation STRING, not only whether an employer is named.
+#
+# The check above asks "does one surface name an employer and the others
+# not". It does not ask whether the surfaces declare the same
+# affiliation, and they did not: the manuscript's author block says
+# "Independent Researcher", `CITATION.cff` says "Independent Researcher
+# (no institutional affiliation; verified email domain umich.edu)", the
+# generated abstract says "Independent Researcher", and the submission
+# sheet's form values said "Independent Researcher, Hong Kong" -- a
+# locality that appears nowhere in the paper the form uploads.
+#
+# That matters because the form's Author field and the PDF's author block
+# are read side by side: a reviewer sees two different affiliations for
+# the same author, and `docs/SCHOLAR_VISIBILITY.md` §1 says Google
+# Scholar matches a paper to a profile by the affiliation string. A
+# substring difference is enough to keep the work off the profile.
+#
+# The comparison ignores a trailing parenthetical, because the citation
+# metadata qualifies its value that way ("Independent Researcher (no
+# institutional affiliation; ...)") and that qualifier is metadata about
+# the declaration rather than a different declaration. It does NOT
+# ignore a comma-suffix: "Independent Researcher, Hong Kong" is a
+# different string from "Independent Researcher", and a locality on one
+# surface only is exactly the drift this is meant to catch.
+#
+# The surfaces compared are the ones that DECLARE an affiliation as a
+# field of their own: the manuscript's author block (so the title page of
+# the uploaded PDF), the citation metadata (which is what Zenodo
+# archives), the generated abstract that goes into the form, the JOSS
+# paper's author field, the model card, and the submission sheet's two
+# form rows. Deliberately out of scope: the roster line in `TEAM.md` and
+# the docs-site bylines. Those are prose about the author rather than a
+# declaration -- a byline is contact information, and it may carry a
+# locality that the declared affiliation does not.
+# ─────────────────────────────────────────────────────────────────────
+
+_SUBMISSION_SHEET = "paper/BIORXIV_SUBMISSION.md"
+
+
+def _core(declaration: str) -> str:
+    """A declaration without its trailing parenthetical qualifier."""
+    text = re.sub(r"\s*\([^()]*\)\s*$", "", declaration.strip())
+    text = re.sub(r"\\[a-zA-Z]+", " ", text)
+    text = text.replace("\\", " ").replace("{", " ").replace("}", " ")
+    return re.sub(r"\s+", " ", text).strip().lower()
+
+
+def _latex_affiliation() -> str:
+    """The affiliation line of the LaTeX manuscript's author block."""
+    lines = [line.strip() for line in _latex_author_block().splitlines()]
+    kept = [
+        line for line in lines
+        if line
+        and "orcid.org" not in line
+        and "url{" not in line
+        and "ORCID" not in line
+    ]
+    return " ".join(kept[1:])
+
+
+def _citation_affiliation() -> str:
+    """The `affiliation:` value of the citation metadata."""
+    match = re.search(r'^\s*affiliation:\s*"?([^"\n]+)"?', _citation_author_block(),
+                      re.M)
+    return match.group(1).strip() if match else ""
+
+
+def _abstract_affiliation() -> str:
+    """The affiliation on the generated abstract's author line."""
+    text = (_REPO_ROOT / "docs" / "PREPRINT_ABSTRACT.md").read_text(
+        encoding="utf-8")
+    match = re.search(r"\*\*Authors:\*\*\s*(.+)", text)
+    if not match:
+        return ""
+    line = match.group(1)
+    if "—" in line:
+        line = line.split("—", 1)[1]
+    line = re.split(r"\(ORCID", line)[0]
+    return line.strip().rstrip("·").strip()
+
+
+def _joss_affiliation() -> str:
+    """The affiliation in the JOSS paper's author field."""
+    match = re.search(r"name:\s*(.+)", _front_matter(_joss_manuscript()))
+    if not match:
+        return ""
+    return match.group(1).split("(")[-1].strip().rstrip(")").strip()
+
+
+def _model_card_affiliation() -> str:
+    """The affiliation on the model card's author line."""
+    text = (_REPO_ROOT / "MODEL.md").read_text(encoding="utf-8")
+    match = re.search(r"\*\*Authors\*\*\s*\|\s*(.+)", text)
+    if not match:
+        return ""
+    line = match.group(1)
+    if "(" in line and ")" in line:
+        line = line.split("(", 1)[1].rsplit(")", 1)[0]
+    # The ORCID rides in the same parenthetical; it has its own check.
+    return line.split(",")[0].strip()
+
+
+def _submission_sheet_affiliations() -> list[tuple[str, str]]:
+    """The affiliation the submission sheet tells you to paste.
+
+    Only the form's own field rows count. The sheet also shows the
+    affiliation inside code blocks (the proposed edits for the two
+    endings in §7), and those are illustrations of the decision, not
+    declarations of it.
+
+    The two rows are read differently on purpose: the Author row carries
+    the name with the affiliation in parentheses, while the Author
+    affiliation row IS the affiliation, optionally with a trailing
+    qualifier in parentheses.
+    """
+    path = _REPO_ROOT / _SUBMISSION_SHEET
+    if not path.is_file():
+        return []
+    text = path.read_text(encoding="utf-8")
+    found: list[tuple[str, str]] = []
+    for label in ("Author", "Author affiliation"):
+        match = re.search(r"\| " + label + r" \| (.+?) \|", text)
+        if not match:
+            continue
+        value = match.group(1).strip()
+        if label == "Author" and "(" in value and ")" in value:
+            value = value.split("(", 1)[1].rsplit(")", 1)[0]
+        found.append((label, value.strip()))
+    return found
+
+
+def test_the_declared_affiliation_is_the_same_string_everywhere():
+    """Every surface that declares the affiliation must declare one string."""
+    reference = _core(_latex_affiliation())
+    assert reference, (
+        "no affiliation could be read from paper/paper.tex's author block")
+
+    declarations = {
+        "paper/paper.tex": _latex_affiliation(),
+        "CITATION.cff": _citation_affiliation(),
+        "docs/PREPRINT_ABSTRACT.md": _abstract_affiliation(),
+        "paper.md": _joss_affiliation(),
+        "MODEL.md": _model_card_affiliation(),
+    }
+    for name, value in declarations.items():
+        assert value, f"{name} declares no affiliation to compare"
+
+    found = {name: _core(value) for name, value in declarations.items()}
+    distinct = set(found.values())
+    assert len(distinct) == 1, (
+        "the surfaces declare different affiliations:\n"
+        + "\n".join(f"  {name}: {value!r}" for name, value in found.items())
+        + "\nThe manuscript's author block, the citation metadata, the "
+          "abstract and the JOSS paper are read together -- and the "
+          "preprint form's affiliation has to be the same string as the "
+          "paper it uploads. `paper/BIORXIV_SUBMISSION.md` §7 records the "
+          "one affiliation decision that is still open; when it is settled, "
+          "change every surface on the same day."
+    )
+
+
+def test_the_submission_sheet_declares_the_manuscripts_affiliation():
+    """The form's value must not add what the paper does not declare.
+
+    The sheet is gitignored, so it is absent from a fresh clone and from
+    CI; the check says so instead of failing there.
+    """
+    sheet = _submission_sheet_affiliations()
+    if not sheet:
+        pytest.skip(f"{_SUBMISSION_SHEET} is not present")
+    reference = _core(_latex_affiliation())
+    problems = [
+        f"{_SUBMISSION_SHEET}'s '{label}' row declares {value!r}, the "
+        f"manuscript declares {reference!r}"
+        for label, value in sheet if _core(value) != reference
+    ]
+    assert not problems, (
+        "the submission sheet's form values disagree with the manuscript's "
+        "author block:\n  " + "\n  ".join(problems)
+        + "\nThe PDF that goes up and the form that describes it are read "
+          "side by side, and Google Scholar matches a paper to a profile "
+          "by the affiliation string."
+    )
+
+
+def test_the_core_reader_tolerates_a_qualifier_but_not_a_locality():
+    """The comparison must not hide a locality on one surface only."""
+    assert _core("Independent Researcher") == "independent researcher"
+    assert _core(
+        "Independent Researcher (no institutional affiliation; verified "
+        "email domain umich.edu)") == "independent researcher"
+    assert _core("\\small Independent Researcher") == "independent researcher"
+    # A locality is a different string, and must not be swallowed.
+    assert _core("Independent Researcher, Hong Kong") != "independent researcher"
+    # Nor may a different affiliation hide behind a parenthetical.
+    assert _core("University of Michigan (Independent Researcher)") != (
+        "independent researcher")
+

@@ -284,6 +284,19 @@ def test_the_results_md_test_status_row_matches_the_measured_counts():
             f"RESULTS.md's test-status row does not state {label} as "
             f"{real}: {stated.strip()}")
 
+    # The same document states the standalone directory's count a second
+    # time, in prose ("`pytest test/` collects **N** (the standalone test
+    # files)"). The row check above cannot see that sentence, and it was
+    # left at an older count for exactly that reason -- so the count a
+    # reader takes from the paragraph was a generation behind the row
+    # above it.
+    prose = re.search(r"`pytest test/`\s*collects\s*\*\*(\d+)\*\*", results)
+    assert prose, "RESULTS.md no longer states the standalone count in prose"
+    real_standalone = _collect_counts("test/")[0]
+    assert int(prose.group(1)) == real_standalone, (
+        f"RESULTS.md says `pytest test/` collects {prose.group(1)}; it "
+        f"collects {real_standalone}")
+
     jobs = _workflow_job_count()
     assert f"{jobs} jobs" in stated, (
         f"RESULTS.md's test-status row does not state the CI job count "

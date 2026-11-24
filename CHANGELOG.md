@@ -149,6 +149,28 @@ cohort size.
   arithmetic, pins the cohort size and the stage distribution, and finds
   the documents by scanning the tree for the accession, so a document that
   quotes GSE124600 without the artifact's numbers fails.
+- **The affiliation is now checked as a string, not only as "is an
+  employer named".** The author guard compared the name string and the
+  ORCID across six surfaces, and asked whether one of them named an
+  employer -- but it never compared the affiliation itself, and the
+  surfaces did not agree: the manuscript's author block said
+  `Independent Researcher`, `CITATION.cff` said "Independent Researcher
+  (no institutional affiliation; verified email domain umich.edu)", the
+  generated abstract said `Independent Researcher`, and the submission
+  sheet's form values said "Independent Researcher, Hong Kong" -- a
+  locality that appears nowhere in the PDF the form uploads. That matters
+  because the form's Author field and the paper's title page are read
+  side by side, and `docs/SCHOLAR_VISIBILITY.md` §1 says Google Scholar
+  matches a paper to a profile by the affiliation string. The guard now
+  compares the declared affiliation across the manuscript, the citation
+  metadata, the generated abstract, the JOSS paper and the submission
+  sheet's two form rows. It ignores a trailing parenthetical -- the
+  citation metadata qualifies its value that way, and that qualifier is
+  metadata about the declaration rather than a different declaration --
+  and nothing else, so a locality added to one surface only is caught.
+  The three new checks move the suite from 1024 to 1027 tests, so every
+  document that states the count moves with them and the submission PDF
+  and the arXiv bundle are rebuilt.
 
 ### Fixed
 
@@ -192,6 +214,32 @@ cohort size.
   with `can't stat`, which looks exactly like a truncated transfer.
   `gzip -dc` reads the file, and its byte count matches the FTP
   `Content-Length` exactly.)*
+- **The submission sheet's form values and the Scholar document described
+  an affiliation the paper does not carry.** The bioRxiv and arXiv sheets
+  told the author to paste "Yu Ching Lam (Independent Researcher, Hong
+  Kong)" into the Author field while the uploaded manuscript declares
+  `Independent Researcher` -- so the record and the PDF it describes would
+  have carried two different affiliations for the same author. And
+  `docs/SCHOLAR_VISIBILITY.md` §4 said the repository says
+  "Independent Researcher" "in the manuscripts and in `CITATION.cff`, and
+  the Zenodo record archived that same string", which was wrong about the
+  citation metadata and about the Zenodo record: both carry the longer
+  qualified string. That document's whole purpose is to make every
+  surface an index reads say the same affiliation, so describing the
+  strings wrongly was the worst kind of error for it to contain. The
+  form values now carry the manuscript's string, §4 now lists what each
+  surface declares -- including the docs bylines' locality, which is
+  contact information rather than a declared affiliation -- and the
+  locality stays where it belongs.
+- **The count guard had a blind spot, and a stale count was sitting in
+  it.** `RESULTS.md` states the standalone test directory's size twice:
+  in the Section 8 status row, and in the paragraph under it ("`pytest
+  test/` collects **N** (the standalone test files)"). The guard checked
+  the row, so the sentence below it stayed at 790 while the row above it
+  said 796 -- a reader who took the number from the paragraph got a
+  count nine tests behind the one in the table above. The guard now
+  checks both places, and the sentence says 799 with the date it was
+  measured.
 - **The docs site stopped deploying because the Pages action looked for
   the artifact before the artifact list had caught up.** The deploy step
   finds the artifact by NAME through the artifact list API, and that
