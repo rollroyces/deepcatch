@@ -52,7 +52,9 @@ def test_umi_corrector_hamming_distance():
     c = UMICorrector()
     assert c.hamming_distance("ACGT", "ACGT") == 0
     assert c.hamming_distance("ACGT", "ACGA") == 1
-    assert c.hamming_distance("ACGT", "TCGA") == 4
+    # Position-by-position comparison: A/T differ, C/C and G/G match, T/A differ.
+    assert c.hamming_distance("ACGT", "TCGA") == 2
+    assert c.hamming_distance("ACGT", "TGCA") == 4
 
 
 @pytest.mark.skipif(not HAS_NUMPY, reason="requires numpy")
@@ -111,6 +113,87 @@ def test_run_lod_validation_smoke():
     assert len(df) == 1
     assert "target_vaf" in df.columns
     assert "lod_achieved" in df.columns
+
+
+@pytest.mark.skipif(not HAS_NUMPY, reason="requires numpy")
+def test_spike_in_simulator_detection_is_depth_driven():
+    """Detection must be governed by sequencing depth, not by replicate count.
+
+    Regression guard. The ported simulator used to draw mutant reads from the
+    molecules physically present in a 100 bp window -- 50,000 genome
+    equivalents put 0.0016 molecules in such a window -- so the Poisson mean
+    was ~1e-8 and it detected nothing at any VAF, while the power analysis
+    (computed genome-wide) reported power 1.0. The two columns contradicted
+    each other and the "0.001% VAF confirmed" claim had no support.
+
+    The corrected model samples ``depth`` reads at a target site, so the
+    expected mutant count is ``depth * VAF`` and power rises with depth.
+    """
+    from src.ultrasensitive.spike_in_simulator import SpikeInConfig, SpikeInSimulator
+
+    def power_at(depth: int, vaf: float = 1e-3) -> float:
+        cfg = SpikeInConfig(
+            tumor_fraction=vaf,
+            genome_equivalents=50_000,
+            n_samples=5,
+            sequencing_depth=depth,
+        )
+        return SpikeInSimulator(cfg).power_analysis()["single_sample_power"]
+
+    # 1,000x is far too shallow for 0.1% VAF: 1 expected mutant read.
+    assert power_at(1_000) < 0.2
+    # 100,000x gives 100 expected mutant reads -- comfortable.
+    assert power_at(100_000) > 0.9
+    # Power is monotonically non-decreasing in depth.
+    assert power_at(10_000) <= power_at(100_000) <= power_at(1_000_000)
+
+
+@pytest.mark.skipif(not HAS_NUMPY, reason="requires numpy")
+def test_spike_in_simulator_0_001pct_is_not_confirmed_at_100k_depth():
+    """0.001% VAF is NOT reachable at 100,000x -- the honest result.
+
+    At 50,000 genome equivalents, 0.001% VAF is 0.5 mutant molecules in the
+    whole genome, and 100,000x yields 1 mutant read at a site -- below the
+    3-supporting-read threshold. The simulator must report that, rather than
+    claiming the LOD is confirmed.
+    """
+    from src.ultrasensitive.spike_in_simulator import SpikeInConfig, SpikeInSimulator
+
+    cfg = SpikeInConfig(
+        tumor_fraction=1e-5,
+        genome_equivalents=50_000,
+        n_samples=10,
+        sequencing_depth=100_000,
+    )
+    sim = SpikeInSimulator(cfg)
+    counts = sim.compute_molecule_counts()
+    power = sim.power_analysis()
+
+    # 0.5 mutant molecules genome-wide -- the number that makes 0.001% hard.
+    assert abs(counts["expected_mutant_molecules_genome_wide"] - 0.5) < 1e-9
+    # One mutant read per site at this depth, and one read is not a call.
+    assert abs(counts["expected_mutant_reads"] - 1.0) < 1e-9
+    assert power["single_sample_power"] < 0.5
+    # The depth that would actually clear the threshold is reported, and it
+    # is far above 100,000x.
+    assert power["depth_for_80pct_power"] > 100_000
+
+
+@pytest.mark.skipif(not HAS_NUMPY, reason="requires numpy")
+def test_run_lod_validation_detection_rate_agrees_with_power():
+    """The observed detection rate and the modelled power must not diverge.
+
+    The old model reported ``detection_rate_mean = 0.0`` next to
+    ``single_sample_power = 1.0``. At a depth where the model says the
+    mutation is comfortably detectable, the simulated detector has to find
+    it.
+    """
+    from src.ultrasensitive.spike_in_simulator import run_lod_validation
+
+    df = run_lod_validation([1e-2], n_samples=10, sequencing_depth=100_000)
+    row = df.iloc[0]
+    assert row["single_sample_power"] > 0.9
+    assert row["detection_rate_mean"] > 0.9
 
 
 @pytest.mark.skipif(not HAS_NUMPY, reason="requires numpy")
