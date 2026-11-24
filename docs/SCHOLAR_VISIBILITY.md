@@ -62,6 +62,21 @@ bioRxiv needs an institutional affiliation (see §4); arXiv does not,
 and the source archive is already built and checked
 (`python3 scripts/make_arxiv_bundle.py --verify`).
 
+**The bioRxiv account comes before the ORCID, not after.** ORCID sign-in
+only works once an account exists and the iD is associated with it from
+the account's Personal Info area: until then the callback answers "No
+account is associated with orcid, please login and associate orcid via
+the edit personal information page", and the returned URL carries
+`orcidcode=0003`. The ORCID side can therefore succeed while the
+bioRxiv side still refuses the author — which is what an ORCID
+authorization alone looks like. The reason is in the record: the ORCID
+exposes **no email address** (ORCID keeps email addresses private by
+default, and this one does), so "Create an account with ORCiD" has no
+address to register with. The working order is: email → "Check for
+Account" → create or sign in → associate the iD → submit. The
+affiliation the account carries is the one the preprint must declare,
+so that field and §4 are the same decision.
+
 ### 3.2 Add the works to the ORCID record
 
 The record has **zero works** at the moment, so the Zenodo DOI is

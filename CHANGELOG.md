@@ -263,6 +263,20 @@ cohort size.
 
 ### Fixed
 
+- **The bioRxiv upload was blocked on an account, not on the ORCID.** The
+  ORCID authorization *did* succeed -- the callback returned to
+  `submit.biorxiv.org/?orcidcode=0003&orcidid=0009-0008-9113-769X` -- and
+  the page then refused the author: *"No account is associated with
+  orcid, please login and associate orcid via the edit personal
+  information page."* The ORCID side can succeed while the bioRxiv side
+  still refuses, because the iD has to be associated with an existing
+  bioRxiv account from that account's Personal Info area. The working
+  order is email -> "Check for Account" -> create or sign in ->
+  associate the iD -> submit, and the registration form's first field is
+  the one thing only the author can type. `docs/JOURNAL_SUBMISSION.md`
+  and `docs/SCHOLAR_VISIBILITY.md` section 3.1 now carry that sequence,
+  so the next attempt starts from the email field instead of from the
+  ORCID button.
 - **The affiliation decision was documented twice, and the two documents
   lettered the same two options in OPPOSITE order.**
   `docs/JOURNAL_SUBMISSION.md` called "(a)" the stale ORCID entry and
