@@ -132,6 +132,25 @@ def test_the_survey_records_its_queries_and_the_candidates_it_read():
                 f"{candidate['doi']} has no publication date")
             assert isinstance(candidate.get("n_files"), int), (
                 f"{candidate['doi']} has no file count")
+            # A deposit that carries a per-sample cohort table must have
+            # been read: the labels live in the table, not in the record's
+            # description, and a survey that stops at the description
+            # reports a labelled cohort as unlabelled.
+            table = candidate.get("cohort_table")
+            if candidate.get("cohort_table_files"):
+                assert table is not None, (
+                    f"{candidate['doi']} declares a cohort table "
+                    f"({', '.join(candidate['cohort_table_files'])}) but the "
+                    "survey did not read it")
+            if table is not None:
+                assert table.get("columns"), (
+                    f"{candidate['doi']}'s cohort table has no columns")
+                assert table.get("rows"), (
+                    f"{candidate['doi']}'s cohort table has no rows")
+                for row in table["rows"]:
+                    assert "sample" in row, (
+                        f"{candidate['doi']}'s cohort table has a row without "
+                        "a sample column")
 
 
 def test_the_ccrcc_record_is_one_of_the_candidates():

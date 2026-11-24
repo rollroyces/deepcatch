@@ -242,6 +242,24 @@ cohort size.
   next to the cohort they belong to, and they pin the finding, the stage
   answer, and the rule that a document quoting the finding has to carry
   the negative answer with it.
+- **The Zenodo survey now reads the deposits' cohort tables, not just
+  their descriptions.** A survey that stops at the record's description
+  reports a labelled cohort as unlabelled. SAUNA's deposit
+  (10.5281/zenodo.15097509) carries a `metadata.tsv` with each sample's
+  group, coverage and **tumour fraction**: 9 samples (7 CRC, 2 benign)
+  at 15-33x coverage, one patient sampled three times with the tumour
+  fraction rising 0.2903 -> 0.3271 -> 0.4029. That is the closest
+  public thing to this repository's early-detection question -- a
+  fragmentomics cohort with a GRADED cancer label at the training
+  cohort's depth, and a longitudinal series in public data. It is not
+  extracted here (13.1 GB, about 300 M fragments per sample) and no
+  number from it is quoted yet; it is recorded with its labels, depths
+  and tumour fractions in `results/zenodo_cfdna_survey.json` and
+  described in `docs/PUBLIC_DATA_SOURCES.md` §6.2. The survey artifact
+  now records which deposits are EXPECTED to carry a cohort table, and
+  the guard fails when one is declared and not read -- the earlier note
+  in the survey that said the labels were not in the record was wrong,
+  and the guard is what makes that kind of claim checkable.
 
 ### Fixed
 

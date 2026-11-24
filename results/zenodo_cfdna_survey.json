@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-24T04:45:37.822510+00:00",
+  "generated_at": "2026-11-24T05:32:42.796020+00:00",
   "surveyed": "2026-11-24",
   "method": {
     "api": "https://zenodo.org/api/records",
@@ -10,7 +10,7 @@
     "queries": [
       {
         "query": "cell-free DNA fragmentomics",
-        "dataset_hits": 28016,
+        "dataset_hits": 28017,
         "returned": 25
       },
       {
@@ -50,7 +50,7 @@
       }
     ]
   },
-  "records_seen_in_the_first_pages": 142,
+  "records_seen_in_the_first_pages": 143,
   "candidates": [
     {
       "doi": "10.5281/zenodo.21269430",
@@ -78,6 +78,220 @@
       ],
       "related_identifiers": [],
       "html": null
+    },
+    {
+      "doi": "10.5281/zenodo.15097509",
+      "title": "SAUNA paper - cfDNA Fragment dataset",
+      "publication_date": "2025-03-30",
+      "creators": [
+        "Bal\u00e1zs, Zsolt"
+      ],
+      "description": "SAUNA - Simulated Annealing for Unique Nucleosome Arrangements The dataset contains the data used in the publication of the SAUNA tool. 9 medium coverage (14-30x) cfDNA-sequencing files were mapped to the hg38 build of the human genome using bwa mem. Mapped sequence (Bam) files were converted into paired-end bed files using the `bedtools -pe` command. Consequently, the fragment information was extracted using the following commands. gunzip -c $file | awk 'BEGIN {OFS=\"\\t\"} $1 == $4 &amp;&amp; ($6 - $2) &lt;= 2000' | cut --output-delimiter=$'\\t' -f1,2,6,8,9 | sort -k1,1V -k2,2n -k3,3n | bgzip &gt; \"${file%.sortByName.bed.gz}_hg38.frag.tsv.bgz\" The resulting data files do not contain sequence information but can be converted back into bam files using Fragmentstein (https://github.com/uzh-dqbm-cmi/fragmentstein/, https://academic.oup.com/bioinformatics/article/40/1/btae017/7550024) and can be used for most analyses relevant in cfDNA-sequencing, with the exception of calling point mutations.",
+      "keywords": [],
+      "n_files": 10,
+      "total_bytes": 13142837183,
+      "files": [
+        {
+          "key": "SeCT-20_hg38.frag.tsv.bgz",
+          "size": 1113163576
+        },
+        {
+          "key": "SeCT-22_hg38.frag.tsv.bgz",
+          "size": 1594415308
+        },
+        {
+          "key": "SeCT-26_t2_hg38.frag.tsv.bgz",
+          "size": 1553575617
+        },
+        {
+          "key": "SeCT-61_hg38.frag.tsv.bgz",
+          "size": 1515425280
+        },
+        {
+          "key": "SeCT-26_t1_hg38.frag.tsv.bgz",
+          "size": 1607812689
+        },
+        {
+          "key": "SeCT-26_t3_hg38.frag.tsv.bgz",
+          "size": 1651328775
+        },
+        {
+          "key": "SeCT-58_hg38.frag.tsv.bgz",
+          "size": 882257781
+        },
+        {
+          "key": "SeCT-82_hg38.frag.tsv.bgz",
+          "size": 1506282712
+        },
+        {
+          "key": "metadata.tsv",
+          "size": 907
+        },
+        {
+          "key": "SeCT-47_hg38.frag.tsv.bgz",
+          "size": 1718574538
+        }
+      ],
+      "related_identifiers": [],
+      "html": null,
+      "cohort_table_files": [
+        "metadata.tsv"
+      ],
+      "cohort_table": {
+        "file": "metadata.tsv",
+        "columns": [
+          "sample",
+          "group",
+          "patient",
+          "coverage",
+          "tf",
+          "all_read",
+          "X",
+          "Y",
+          "mito",
+          "F1LCDx",
+          "mitrat",
+          "sex",
+          "conc (ng/ul)"
+        ],
+        "rows": [
+          {
+            "sample": "SeCT-20",
+            "group": "CRC",
+            "patient": "SeCT20",
+            "coverage": "20.3065",
+            "tf": "0.01735",
+            "all_read": "385816265",
+            "X": "10066554",
+            "Y": "1261664",
+            "mito": "7918",
+            "F1LCDx": "0",
+            "mitrat": "0.000020523",
+            "sex": "M",
+            "conc (ng/ul)": "0.69"
+          },
+          {
+            "sample": "SeCT-22",
+            "group": "CRC",
+            "patient": "SeCT22",
+            "coverage": "30.1709",
+            "tf": "0.007067",
+            "all_read": "569937833",
+            "X": "27485901",
+            "Y": "177700",
+            "mito": "5679",
+            "F1LCDx": "0.005",
+            "mitrat": "0.000009964",
+            "sex": "F",
+            "conc (ng/ul)": "3.56"
+          },
+          {
+            "sample": "SeCT-26_t1",
+            "group": "CRC",
+            "patient": "SeCT26",
+            "coverage": "29.532",
+            "tf": "0.2903",
+            "all_read": "567361959",
+            "X": "20571946",
+            "Y": "1486922",
+            "mito": "10201",
+            "F1LCDx": "0.32",
+            "mitrat": "0.000017980",
+            "sex": "F",
+            "conc (ng/ul)": "7"
+          },
+          {
+            "sample": "SeCT-26_t2",
+            "group": "CRC",
+            "patient": "SeCT26",
+            "coverage": "28.4972",
+            "tf": "0.3271",
+            "all_read": "547318851",
+            "X": "21524869",
+            "Y": "1360300",
+            "mito": "21108",
+            "F1LCDx": "0.42",
+            "mitrat": "0.000038566",
+            "sex": "F",
+            "conc (ng/ul)": "99.3"
+          },
+          {
+            "sample": "SeCT-26_t3",
+            "group": "CRC",
+            "patient": "SeCT26",
+            "coverage": "30.9483",
+            "tf": "0.4029",
+            "all_read": "589885042",
+            "X": "22874931",
+            "Y": "1567817",
+            "mito": "21098",
+            "F1LCDx": "0.65",
+            "mitrat": "0.000035766",
+            "sex": "F",
+            "conc (ng/ul)": "54.3"
+          },
+          {
+            "sample": "SeCT-47",
+            "group": "CRC",
+            "patient": "SeCT47",
+            "coverage": "32.598",
+            "tf": "0.004879",
+            "all_read": "616657097",
+            "X": "30158063",
+            "Y": "239464",
+            "mito": "6566",
+            "F1LCDx": "NA",
+            "mitrat": "0.000010648",
+            "sex": "F",
+            "conc (ng/ul)": "2.51"
+          },
+          {
+            "sample": "SeCT-58",
+            "group": "Benign",
+            "patient": "SeCT58",
+            "coverage": "15.6808",
+            "tf": "0.006191",
+            "all_read": "297657861",
+            "X": "7546464",
+            "Y": "914067",
+            "mito": "9976",
+            "F1LCDx": "0",
+            "mitrat": "0.000033515",
+            "sex": "M",
+            "conc (ng/ul)": "0.51"
+          },
+          {
+            "sample": "SeCT-61",
+            "group": "CRC",
+            "patient": "SeCT61",
+            "coverage": "28.3788",
+            "tf": "0.0249",
+            "all_read": "536481133",
+            "X": "26789673",
+            "Y": "182557",
+            "mito": "10627",
+            "F1LCDx": "NA",
+            "mitrat": "0.000019809",
+            "sex": "F",
+            "conc (ng/ul)": "0.48"
+          },
+          {
+            "sample": "SeCT-82",
+            "group": "Benign",
+            "patient": "SeCT82",
+            "coverage": "28.2784",
+            "tf": "0.00724",
+            "all_read": "537211482",
+            "X": "13563191",
+            "Y": "1491098",
+            "mito": "4920",
+            "F1LCDx": "0",
+            "mitrat": "0.000009158",
+            "sex": "M",
+            "conc (ng/ul)": "0.44"
+          }
+        ]
+      }
     },
     {
       "doi": "10.5281/zenodo.17253504",
@@ -238,62 +452,6 @@
       "html": null
     },
     {
-      "doi": "10.5281/zenodo.15097509",
-      "title": "SAUNA paper - cfDNA Fragment dataset",
-      "publication_date": "2025-03-30",
-      "creators": [
-        "Bal\u00e1zs, Zsolt"
-      ],
-      "description": "SAUNA - Simulated Annealing for Unique Nucleosome Arrangements The dataset contains the data used in the publication of the SAUNA tool. 9 medium coverage (14-30x) cfDNA-sequencing files were mapped to the hg38 build of the human genome using bwa mem. Mapped sequence (Bam) files were converted into paired-end bed files using the `bedtools -pe` command. Consequently, the fragment information was extracted using the following commands. gunzip -c $file | awk 'BEGIN {OFS=\"\\t\"} $1 == $4 &amp;&amp; ($6 - $2) &lt;= 2000' | cut --output-delimiter=$'\\t' -f1,2,6,8,9 | sort -k1,1V -k2,2n -k3,3n | bgzip &gt; \"${file%.sortByName.bed.gz}_hg38.frag.tsv.bgz\" The resulting data files do not contain sequence information but can be converted back into bam files using Fragmentstein (https://github.com/uzh-dqbm-cmi/fragmentstein/, https://academic.oup.com/bioinformatics/article/40/1/btae017/7550024) and can be used for most analyses relevant in cfDNA-sequencing, with the exception of calling point mutations.",
-      "keywords": [],
-      "n_files": 10,
-      "total_bytes": 13142837183,
-      "files": [
-        {
-          "key": "SeCT-20_hg38.frag.tsv.bgz",
-          "size": 1113163576
-        },
-        {
-          "key": "SeCT-22_hg38.frag.tsv.bgz",
-          "size": 1594415308
-        },
-        {
-          "key": "SeCT-26_t2_hg38.frag.tsv.bgz",
-          "size": 1553575617
-        },
-        {
-          "key": "SeCT-61_hg38.frag.tsv.bgz",
-          "size": 1515425280
-        },
-        {
-          "key": "SeCT-26_t1_hg38.frag.tsv.bgz",
-          "size": 1607812689
-        },
-        {
-          "key": "SeCT-26_t3_hg38.frag.tsv.bgz",
-          "size": 1651328775
-        },
-        {
-          "key": "SeCT-58_hg38.frag.tsv.bgz",
-          "size": 882257781
-        },
-        {
-          "key": "SeCT-82_hg38.frag.tsv.bgz",
-          "size": 1506282712
-        },
-        {
-          "key": "metadata.tsv",
-          "size": 907
-        },
-        {
-          "key": "SeCT-47_hg38.frag.tsv.bgz",
-          "size": 1718574538
-        }
-      ],
-      "related_identifiers": [],
-      "html": null
-    },
-    {
       "doi": "10.5281/zenodo.23196827",
       "title": "Chromatin landscapes and cell-free DNA fragmentation in colorectal cancer development",
       "publication_date": "2026-11-17",
@@ -394,7 +552,8 @@
   ],
   "conclusion": {
     "fragment_files_usable_directly": [
-      "10.5281/zenodo.21269430 -- per-sample hg38 fragment BED files, 12 samples (6 ccRCC, 6 healthy), with a sample metadata table carrying pT stage"
+      "10.5281/zenodo.21269430 -- per-sample hg38 fragment BED files, 12 samples (6 ccRCC, 6 healthy), with a sample metadata table carrying pT stage",
+      "10.5281/zenodo.15097509 -- per-sample hg38 fragment files, 9 samples at 15-33x coverage, with a cohort table giving each sample's group, coverage and tumour fraction: 7 CRC (tumour fractions 0.005-0.40) and 2 benign, one patient sampled at three timepoints (tumour fraction 0.29, 0.33, 0.40) -- a public MRD-style cohort with a graded cancer label"
     ],
     "processed_end_motif_tables": [
       "10.5281/zenodo.17253504 -- per-sample 2/3/4-mer end-motif frequency tables for healthy, breast, metastatic colorectal and NSCLC cohorts"

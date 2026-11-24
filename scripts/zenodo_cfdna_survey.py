@@ -52,13 +52,21 @@ QUERIES = [
 # artifact types this repository can actually score.
 CANDIDATE_DOIS = [
     "10.5281/zenodo.21269430",   # per-sample fragment BED files, ccRCC + healthy
+    "10.5281/zenodo.15097509",   # SAUNA: per-sample fragment files + a cohort table
     "10.5281/zenodo.17253504",   # per-sample 2/3/4-mer end-motif frequency tables
     "10.5281/zenodo.23195882",   # LEAF-1 pretraining corpus manifest (fragments on HF)
-    "10.5281/zenodo.15097509",   # SAUNA paper cfDNA fragment dataset
     "10.5281/zenodo.23196827",   # chromatin landscapes + cfDNA fragmentation in CRC
     "10.5281/zenodo.15738112",   # genome-wide end-motif variations, immunotherapy
     "10.5281/zenodo.15109495",   # cfDNA fragmentomics, second malignant neoplasm risk
 ]
+
+# Records whose cohort table is a separate file in the deposit. The table
+# is where the per-sample labels live, so a survey that reads only the
+# record's description misses them -- the SAUNA deposit carries a
+# metadata.tsv with each sample's group, coverage and tumour fraction.
+COHORT_TABLE_FILES = {
+    "10.5281/zenodo.15097509": "metadata.tsv",
+}
 
 _USER_AGENT = ("DeepCatch-survey/2.3 (research; "
                "https://github.com/rollroyces/deepcatch)")
@@ -88,6 +96,32 @@ def _keywords(meta: dict) -> list[str]:
 
 def _strip_html(text: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text or "")).strip()
+
+
+def _cohort_table(doi: str, file_name: str) -> dict:
+    """A deposit's per-sample cohort table, read from the deposit itself.
+
+    The record's description says what the study is; the table says what
+    each sample is. A survey that reads only the description reports a
+    cohort as unlabelled when the labels are in the deposit's own
+    metadata file.
+    """
+    record_id = doi.rsplit(".", 1)[-1]
+    url = f"https://zenodo.org/records/{record_id}/files/{file_name}?download=1"
+    request = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+    with urllib.request.urlopen(request, timeout=60) as response:
+        text = response.read().decode("utf-8", errors="replace")
+    lines = [line for line in text.splitlines() if line.strip()]
+    if not lines:
+        return {"file": file_name, "rows": []}
+    header = lines[0].split("\t")
+    rows = []
+    for line in lines[1:]:
+        parts = line.split("\t")
+        if len(parts) != len(header):
+            continue
+        rows.append(dict(zip(header, parts)))
+    return {"file": file_name, "columns": header, "rows": rows}
 
 
 def main() -> int:
@@ -145,6 +179,17 @@ def main() -> int:
                 for r in (meta.get("related_identifiers") or [])],
             "html": record.get("links", {}).get("html"),
         })
+        table_file = COHORT_TABLE_FILES.get(doi)
+        if table_file:
+            # The expected file name is recorded even when the fetch
+            # fails, so a missing cohort table is visible in the artifact
+            # rather than looking like a deposit that has none.
+            candidates[-1]["cohort_table_files"] = [table_file]
+            try:
+                table = _cohort_table(doi, table_file)
+            except Exception as error:  # noqa: BLE001
+                table = {"file": table_file, "error": str(error)}
+            candidates[-1]["cohort_table"] = table
 
     payload = {
         "schema_version": "1.0",
@@ -166,7 +211,14 @@ def main() -> int:
             "fragment_files_usable_directly": [
                 "10.5281/zenodo.21269430 -- per-sample hg38 fragment BED files, "
                 "12 samples (6 ccRCC, 6 healthy), with a sample metadata table "
-                "carrying pT stage"],
+                "carrying pT stage",
+                "10.5281/zenodo.15097509 -- per-sample hg38 fragment "
+                "files, 9 samples at 15-33x coverage, with a cohort table "
+                "giving each sample's group, coverage and tumour "
+                "fraction: 7 CRC (tumour fractions 0.005-0.40) and 2 "
+                "benign, one patient sampled at three timepoints "
+                "(tumour fraction 0.29, 0.33, 0.40) -- a public "
+                "MRD-style cohort with a graded cancer label"],
             "processed_end_motif_tables": [
                 "10.5281/zenodo.17253504 -- per-sample 2/3/4-mer end-motif "
                 "frequency tables for healthy, breast, metastatic colorectal "

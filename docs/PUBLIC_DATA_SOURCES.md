@@ -218,7 +218,7 @@ the first pages; the candidates below were read by hand.
 | Record | What it holds | Usable here? |
 |---|---|---|
 | **[10.5281/zenodo.21269430](https://doi.org/10.5281/zenodo.21269430)** | 12 plasma samples (6 clear-cell renal cell carcinoma, 6 healthy controls) as **per-sample hg38 fragment BED files** + a sample metadata table with pT stage; 105,849,322 bytes | **yes — extracted and scored, see §6.1** |
-| [10.5281/zenodo.15097509](https://doi.org/10.5281/zenodo.15097509) | the SAUNA paper's cfDNA fragments as per-sample `*.hg38.frag.tsv.bgz` files (10 files, 13.1 GB) | the same artifact type, so the same extractor would read it; not extracted here (the labels are not in the record) |
+| [10.5281/zenodo.15097509](https://doi.org/10.5281/zenodo.15097509) | the SAUNA paper's cfDNA fragments as per-sample `*.hg38.frag.tsv.bgz` files (9 samples, 15-33x coverage, 13.1 GB) plus a `metadata.tsv` | the same artifact type **and a richer label**: per-sample group, coverage and tumour fraction -- see §6.2 |
 | [10.5281/zenodo.17253504](https://doi.org/10.5281/zenodo.17253504) | per-sample 2/3/4-mer **end-motif frequency tables** (21 files, 2.3 MB) for healthy, breast, metastatic colorectal and NSCLC cohorts | processed features, but motif frequencies only — not the five-channel profile this repository scores |
 | [10.5281/zenodo.23195882](https://doi.org/10.5281/zenodo.23195882) | the LEAF-1 pretraining corpus: 211 GB of cfDNA fragments hosted on Hugging Face; this record holds the manifest and checksums | a manifest, not the data — and its fragments come from FinaleDB and the classic plasma studies this repository already has |
 | [10.5281/zenodo.23196827](https://doi.org/10.5281/zenodo.23196827) | chromatin landscapes and cfDNA fragmentation in colorectal cancer development (6.7 GB) | the fragments are bundled with chromatin data, not released per sample |
@@ -298,6 +298,57 @@ fragment files are standard BED files and carry a header line
 could not parse; `read_fragments` now skips a leading `#` line, which
 the FinaleDB files do not have. Without that, the cohort is not
 readable by the repository's own extractor.
+
+### 6.2 A public MRD-style cohort with a graded cancer label: SAUNA
+
+The second fragment deposit is the one that comes closest to the
+readiness document's question. Zenodo 15097509 ("SAUNA -- Simulated
+Annealing for Unique Nucleosome Arrangements") publishes 9
+medium-coverage (15-33x) cfDNA files as per-sample hg38 fragment files,
+and -- this is the part the record's description does not tell you -- a
+`metadata.tsv` with a per-sample cohort table:
+
+| sample | group | patient | coverage | tumour fraction |
+|---|---|---|---|---|
+| SeCT-20 | CRC | SeCT20 | 20.3x | 0.01735 |
+| SeCT-22 | CRC | SeCT22 | 30.2x | 0.007067 |
+| SeCT-26_t1 | CRC | SeCT26 | 29.5x | 0.2903 |
+| SeCT-26_t2 | CRC | SeCT26 | 28.5x | 0.3271 |
+| SeCT-26_t3 | CRC | SeCT26 | 30.9x | 0.4029 |
+| SeCT-47 | CRC | SeCT47 | 32.6x | 0.004879 |
+| SeCT-58 | Benign | SeCT58 | 15.7x | 0.006191 |
+| SeCT-61 | CRC | SeCT61 | 28.4x | 0.0249 |
+| SeCT-82 | Benign | SeCT82 | 28.3x | 0.00724 |
+
+(The table is read from the deposit by `scripts/zenodo_cfdna_survey.py`
+and recorded in `results/zenodo_cfdna_survey.json`. An earlier note in
+this survey said the labels were not in the record; that was wrong --
+the labels are in the deposit's own metadata file, and a survey that
+reads only the record's description reports a cohort as unlabelled when
+it is not.)
+
+Why this cohort is the closest public thing to the repository's
+early-detection claim:
+
+- **It is labelled with a graded cancer signal**, not a stage: every
+  sample carries its own ctDNA tumour fraction. Five of the seven CRC
+  samples sit between 0.5% and 2.5% tumour fraction -- the regime where
+  a classifier is supposed to work, and where this repository's
+  tumour-naive channel has never been tested on real post-resection
+  plasma.
+- **One patient is sampled three times**, with the tumour fraction
+  rising 0.2903 -> 0.3271 -> 0.4029 -- a longitudinal series in public
+  data, which is the shape a monitoring claim needs.
+- **The depth matches the training cohort's** (15-33x, against the
+  training cohort's about 30 M fragments per sample), so this cohort does
+  not carry the depth confound the ccRCC cohort does.
+
+What is not done here: the deposit is 13.1 GB and its nine samples hold
+about 300 M fragments each, so extracting the repository's five channels
+from them is a matter of hours, and the binary contrast (7 CRC vs 2
+benign) is thin. It is recorded as the cohort that can close the
+early-detection question in public data, with the labels, the depths and
+the tumour fractions to do it with. No number from it is quoted yet.
 
 ## 7. What this means for the paper
 
