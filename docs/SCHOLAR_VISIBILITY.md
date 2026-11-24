@@ -96,16 +96,41 @@ hand afterwards.
 
 Two strings have to agree: the affiliation the preprint declares and
 the one the Scholar profile carries. Here is what each surface carries
-today, exactly:
+today, exactly.
 
-| Surface | The affiliation it declares |
+**Surfaces that DECLARE the affiliation** — the ones an index reads, and
+the ones a reviewer compares against each other:
+
+| Surface | The affiliation it declares | Guarded? |
+|---|---|---|
+| `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` | yes, exactly |
+| `CITATION.cff` (and the Zenodo record, which archived the same value) | `Independent Researcher (no institutional affiliation; verified email domain umich.edu)` | yes, exactly |
+| `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` | yes, exactly |
+| `paper.md` (the JOSS paper's author field) | `Independent Researcher` | yes, exactly |
+| `MODEL.md` (the model card's author row) | `Independent Researcher` | yes, exactly |
+| `paper/METHODS_PAPER.md` (the long-form methods manuscript) | `Independent researcher` (a parenthetical on the author's footnote line) | yes, since 2026-11-24 |
+| `paper/PAPER.md` (the earlier panel-only revision) | `Independent researcher` | yes, since 2026-11-24 |
+| the bioRxiv / arXiv form values in `paper/BIORXIV_SUBMISSION.md` | `Independent Researcher` | yes, exactly (two rows) |
+| the docs-site bylines (`docs/README.md`, `docs/site/index.html`) | `Independent Researcher, Hong Kong` | no — a byline may add a locality |
+
+The two markdown manuscripts put the affiliation in prose, so their check
+is that the declared string *appears* in the author block, not that the
+prose parses to it exactly.
+
+**Surfaces that describe the author's SITUATION** rather than declare an
+affiliation on a record. The guard does not compare these, but they must
+not contradict the declaration either — a reviewer who reads the paper's
+title page and then the landing page must not find two different
+institutions:
+
+| Surface | What it says today |
 |---|---|
-| `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` |
-| `CITATION.cff` (and the Zenodo record, which archived the same value) | `Independent Researcher (no institutional affiliation; verified email domain umich.edu)` |
-| `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` |
-| `paper.md` (the JOSS paper's author field) | `Independent Researcher` |
-| the bioRxiv / arXiv form values in `paper/BIORXIV_SUBMISSION.md` | `Independent Researcher` |
-| the docs-site bylines (`docs/README.md`, `docs/site/index.html`) | `Independent Researcher, Hong Kong` |
+| `TEAM.md` §1.1 | "Lead — Yu Ching Lam (Independent Researcher, no affiliation)", and, under what the author does not have, "the umich.edu verified email on the ORCID profile is from a previous .edu address, not active enrollment" |
+| `.github/SPONSORS.md` | "No institution. No lab. No academic email." and "I don't have an institutional affiliation, an academic email, or lab access" |
+| `docs/site/index.html` | "an independent researcher in Hong Kong. No institution. No lab. No academic email." |
+| `docs/PATH_TO_IMPACT.md` | "Affiliation: \"Independent Researcher\"" |
+| `METHYLATION_PROJECT.md` | "**No institutional affiliation** (per user, 2026-09-10)" |
+| `docs/JOURNAL_SUBMISSION.md` | the gate row that records the decision itself |
 
 The citation metadata's parenthetical is a qualifier *about* the
 declaration, not a different declaration, so the declared affiliation is
@@ -114,8 +139,10 @@ bylines add a locality because a byline is contact information; a
 declared affiliation is the field an index matches on. That is now
 enforced rather than asserted:
 `test/test_author_affiliation_is_consistent.py` compares the manuscript,
-`CITATION.cff`, the generated abstract and the JOSS paper, and reads the
-submission sheet's two form rows and compares them with the manuscript.
+`CITATION.cff`, the generated abstract, the JOSS paper and the model card,
+requires the declared string to appear in the two markdown manuscripts'
+author blocks, and reads the submission sheet's two form rows and
+compares them with the manuscript.
 It ignores a trailing parenthetical and nothing else — a locality added
 to one surface only is the drift it exists to catch.
 

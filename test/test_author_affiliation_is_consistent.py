@@ -439,6 +439,27 @@ def test_the_declared_affiliation_is_the_same_string_everywhere():
           "change every surface on the same day."
     )
 
+    # The two markdown manuscripts declare the affiliation in prose: a
+    # parenthetical on the project line, or a phrase before the project
+    # name. The declared string is searched for rather than parsed out of
+    # the prose -- a manuscript that names a different employer, or a
+    # truncated one, does not contain it.
+    #
+    # These two were unguarded until 2026-11-24: they are read by the
+    # same reviewers as the PDF and the citation metadata, and the
+    # affiliation decision moves them too, so a partial edit could have
+    # left one of them naming a different institution than the paper.
+    for path in ("paper/METHODS_PAPER.md", "paper/PAPER.md"):
+        block = _markdown_author_block(path)
+        assert block.strip(), f"{path} has no author block to check"
+        assert reference.lower() in block.lower(), (
+            f"{path} does not declare the affiliation the manuscript "
+            f"declares:\n  manuscript: {reference!r}\n  {path}: "
+            f"{block.strip()!r}\nThese two manuscripts are read side by "
+            "side with the PDF and the citation metadata, and the "
+            "affiliation they carry has to be the same one."
+        )
+
 
 def test_the_submission_sheet_declares_the_manuscripts_affiliation():
     """The form's value must not add what the paper does not declare.

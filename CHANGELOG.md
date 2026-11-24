@@ -263,6 +263,36 @@ cohort size.
 
 ### Fixed
 
+- **The affiliation decision was documented twice, and the two documents
+  lettered the same two options in OPPOSITE order.**
+  `docs/JOURNAL_SUBMISSION.md` called "(a)" the stale ORCID entry and
+  "(b)" the current one; §7 of the local submission checklist called
+  "(a)" the current employment and "(b)" the stale one. A reader who had
+  read one and then consulted the other would have applied the wrong
+  ending -- and the wrong ending is the difference between declaring an
+  institution and not declaring it. Both now use the same letters, each
+  option names the exact string it ends with ("University of Michigan,
+  Ann Arbor, Michigan, USA" or "Independent Researcher"), and neither is
+  presented as a default: which of the two is true is the author's fact,
+  not the repository's. The evidence behind the decision was re-checked
+  against the ORCID public API on 2026-11-24 -- one open-ended
+  University of Michigan employment, no start date, no end date, and zero
+  works -- unchanged since 2026-11-17.
+- **Two of the surfaces that declare the affiliation were not guarded.**
+  `test/test_author_affiliation_is_consistent.py` compared the manuscript,
+  `CITATION.cff`, the generated abstract, the JOSS paper, the model card
+  and the submission sheet's two form rows -- but `paper/METHODS_PAPER.md`
+  and `paper/PAPER.md` declare the affiliation in prose on their author's
+  footnote line and were not compared at all. The affiliation decision
+  moves them, so a partial edit could have left one of them naming a
+  different institution than the paper it accompanies. The guard now
+  requires the declared string to appear in both author blocks (the prose
+  is searched rather than parsed: a manuscript that names another
+  employer, or a truncated one, does not contain it), and both cases are
+  negative-tested. `docs/SCHOLAR_VISIBILITY.md` §4 now lists every
+  surface that declares the affiliation and every surface that describes
+  the author's situation, marking the ones the guard compares, so the
+  change is a checklist rather than a search.
 - **The GEO survey was too broad, and it had missed the category the
   goal asked about.** `docs/PUBLIC_DATA_SOURCES.md` §4 listed four
   accessions and concluded that GEO hosts "bigWig coverage tracks or
