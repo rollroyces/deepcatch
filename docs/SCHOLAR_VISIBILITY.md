@@ -68,12 +68,17 @@ The record has **zero works** at the moment, so the Zenodo DOI is
 invisible to anything that discovers through ORCID — including Google
 Scholar's "publications from ORCID" panel.
 
-ORCID's own method for this is **Works → +Add → Search & Link**, with
-**DataCite** as the source (DataCite is the registry that issued the
-Zenodo DOI, and ORCID's DataCite integration covers software and
-datasets). Search for the DOI, confirm the record, and grant the
-source permission. Do the same for the preprint DOI once it exists.
-Two works, two clicks each.
+ORCID's own method for this is **Works → +Add → Search & Link**, and
+the source differs per work, because the two DOIs come from different
+registries:
+
+| Work | Source to pick in Search & Link | Why |
+|---|---|---|
+| the release (Zenodo) | **DataCite** | DataCite issued the DOI, and ORCID's DataCite integration covers software and datasets |
+| the preprint (bioRxiv) | **Crossref** | bioRxiv mints Crossref DOIs (prefix 10.1101) |
+
+Search for the DOI, confirm the record, and grant the source
+permission. Two works, two clicks each.
 
 ### 3.3 Claim the Google Scholar profile
 

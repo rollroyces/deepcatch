@@ -95,23 +95,48 @@ the fragmentation features.
 | Contents | `FinaleMe-main.zip` 43 MB (source), the WGBS prior bigwig 324 MB, the CG-motif bedgraph 155 MB, the CpG index 130 MB, pretrained HMM models, and the reference panels (`meth_wgbs.tar` 1.1 GB, `ref_panel_wgbs.tar` 5.1 GB, `HD_45/46.WGS.b37.tsv.gz` 1.5–1.7 GB) |
 | Caveat | the released pretrained HMM models are binary-incompatible with the released source (see `docs/METHYLATION_PIPELINE.md`) |
 
-## 4. GEO (surveyed, not usable for this pipeline)
+## 4. GEO (surveyed again, 2026-11-24 -- and the first survey was too broad)
 
-GEO hosts cfDNA studies, but the deposited artifacts are usually
-**bigWig coverage tracks or 5hmC/ATAC peaks**, not per-sample fragment
-files:
+The earlier survey of this section listed four accessions and concluded
+that GEO hosts "bigWig coverage tracks or 5hmC/ATAC peaks, not per-sample
+fragment files". Re-run over **99 cfDNA-related GEO series**
+(`"cell-free DNA"` plus `fragment*` / `fragmentomic*` / `"DNA methylation"`,
+`db=gds`, filtered to series), the conclusion is true for fragments and
+**false for methylation**: GEO does host per-sample **methylation
+matrices**, and for plasma cfDNA cohorts it hosts them **with per-sample
+stage labels**.
 
-| Accession | Study | Deposited artifact | Usable? |
-|---|---|---|---|
-| GSE231296 | plasma 5hmC in EGFR-mutant NSCLC | per-sample bigWig + narrowPeak | coverage-only, no fragments |
-| GSE282357 | cfDNA chromatin in breast cancer (abemaciclib) | per-sample bigWig (hg19) | coverage-only |
-| GSE290667 | cfDNA 5hmC for peritoneal metastasis | bigWig + TSV | coverage-only |
-| GSE246110 | cfDNA 5hmC in gastric cancer | processed TSVs (gene-level rpms) | gene-level, not fragments |
+| Accession | Study | Deposited artifact | Labels | Usable here? |
+|---|---|---|---|---|
+| **GSE124600** | blood-based colorectal cancer detection (Kang et al.) | per-sample **methylation matrices** (`sumP_..._umepm.txt.gz`) | plasma, CRC patient / healthy, and **crc grade: Stage_I / Stage_II / Stage_III** on the cancer plasma | a *methylation* cohort with stage labels -- not the fragmentomics channel this repository scores |
+| GSE97932 | cell-free DNA methylation markers, lung cancer | one combined processed matrix (485k CpGs) | cancer / normal | same caveat |
+| GSE97923 | the same study, colorectal | one combined processed matrix | cancer / normal | same caveat |
+| GSE118690 | genome-scale methylation, tissue-of-origin of plasma cfDNA | per-sample + combined matrices | tissue-of-origin labels | same caveat |
+| GSE328856 | G-quadruplex-forming cfDNA fragment, HCC (2026) | per-sample **bigWig** + raw reads | serum, HCC / healthy | coverage-only, and **serum**, not plasma |
+| GSE231296 | plasma 5hmC in EGFR-mutant NSCLC | per-sample bigWig + narrowPeak | — | coverage-only, no fragments |
+| GSE282357 | cfDNA chromatin in breast cancer (abemaciclib) | per-sample bigWig (hg19) | — | coverage-only |
+| GSE290667 | cfDNA 5hmC for peritoneal metastasis | bigWig + TSV | — | coverage-only |
+| GSE246110 | cfDNA 5hmC in gastric cancer | processed TSVs (gene-level rpms) | — | gene-level, not fragments |
 
-The raw reads are in SRA, but downloading and re-aligning a cohort to
-recover fragments is a different project (and the repositories' own
-"bigWig" products are already the aligned summary). For a
-fragment-level method this is the wrong artifact.
+Two findings worth keeping:
+
+- **The stage-labelled public plasma cohort exists.** GSE124600's cancer
+  plasma samples carry `crc grade: Stage_I`, `Stage_II` and `Stage_III`
+  and the healthy plasma samples carry the matching label -- 142 cancer
+  plasma and 93 healthy plasma samples. That is the first public
+  cohort with the stage labels `ULTRA_EARLY_READINESS.md` §1.3 says the
+  open-data cohort lacks. It is a *methylation* cohort, so it cannot be
+  scored with this repository's fragmentomics model; it would need a
+  methylation feature extractor and its own model, which is a project
+  rather than a week of work.
+- **No fragment-length matrix for a cfDNA cancer cohort exists in
+  GEO.** The one recent fragment study deposits coverage tracks (and
+  uses serum, not plasma). The raw reads are in SRA, but downloading
+  and re-aligning a cohort to recover fragments is a different project
+  (and the repositories' own "bigWig" products are already the aligned
+  summary). For a fragment-level method this is the wrong artifact --
+  which is why the held-out cohort in §1 comes from FinaleDB, whose
+  fragment files are served directly.
 
 ## 5. EGA (surveyed, blocked by a DAC)
 

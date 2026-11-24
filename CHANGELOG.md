@@ -138,6 +138,24 @@ cohort size.
 
 ### Fixed
 
+- **The GEO survey was too broad, and it had missed the category the
+  goal asked about.** `docs/PUBLIC_DATA_SOURCES.md` §4 listed four
+  accessions and concluded that GEO hosts "bigWig coverage tracks or
+  5hmC/ATAC peaks, not per-sample fragment files". Re-run over **99
+  cfDNA-related GEO series** (2026-11-24), that is true for fragments
+  and false for methylation: GEO hosts per-sample **methylation
+  matrices**, and for plasma cfDNA cohorts it hosts them **with
+  per-sample stage labels**. GSE124600 (blood-based colorectal cancer
+  detection) carries 142 cancer and 93 healthy plasma samples with
+  `crc grade: Stage_I`, `Stage_II` and `Stage_III`, plus per-sample
+  methylation matrices -- the first public cohort carrying the stage
+  labels the readiness document says the open-data cohort lacks. It is
+  a *methylation* cohort, so it cannot be scored with this repository's
+  fragmentomics model; it would need a methylation feature extractor
+  and its own model. GEO still holds no fragment-length matrix for a
+  cfDNA cancer cohort (the one recent fragment study deposits coverage
+  tracks and uses serum), which is why the held-out cohort comes from
+  FinaleDB, whose fragment files are served directly.
 - **The docs site stopped deploying because the Pages action looked for
   the artifact before the artifact list had caught up.** The deploy step
   finds the artifact by NAME through the artifact list API, and that
