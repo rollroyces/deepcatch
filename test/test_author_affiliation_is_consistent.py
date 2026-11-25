@@ -23,6 +23,14 @@ Two things are checked:
   `CITATION.cff` -- declare the same affiliation, and the ORCID that
   identifies the author is the same in all of them.
 
+And a third, which belongs to the same question -- what the repository's
+manuscripts say about the work: every manuscript that is offered for
+submission declares its AI assistance, names the tools, and says that the
+author reviewed what they produced. arXiv's moderation policy asks for the
+use of generative AI to be reported *in the work itself*, so a disclosure
+that lives in a file beside the manuscript does not satisfy it, and one
+that names no tool cannot be checked.
+
 What this test checks, and what it deliberately does not
 -------------------------------------------------------
 It does not decide whether an institutional affiliation is correct. It
@@ -72,6 +80,21 @@ _JOSS_SECTIONS = (
 # disclosure as a research-integrity matter rather than a formatting
 # one. A heading with a sentence under it does not satisfy either.
 _AI_PROVIDERS = ("OpenAI", "Anthropic", "Google", "MiniMax")
+
+# The manuscripts that carry an author block and are offered for
+# submission. arXiv's moderation policy asks for the use of generative
+# AI to be reported *in the work itself*, and the disclosure has to be
+# in the manuscript that is uploaded -- not in a file beside it.
+#
+# Three of these carried the disclosure and `paper/PAPER.md` did not,
+# and nothing checked any of them: an edit could have dropped it from
+# the manuscript being uploaded and the submission would have gone out
+# without it.
+_AI_DISCLOSURE_SURFACES = (
+    "paper/paper.tex",
+    "paper/METHODS_PAPER.md",
+    "paper/PAPER.md",
+)
 
 # Words that mark an employer in an author block. A file that gains one
 # of these must gain it in the other two as well.
@@ -123,8 +146,20 @@ def _markers(text: str) -> set[str]:
     return {marker for marker in _INSTITUTION_MARKERS if marker in lowered}
 
 
-def test_the_joss_manuscript_keeps_the_sections_joss_asks_for():
-    """The JOSS package must stay submittable."""
+def _paragraphs(text: str) -> list[str]:
+    """The paragraphs of a text, whatever markup it is written in."""
+    return [block.strip() for block in re.split(r"\n\s*\n", text) if block.strip()]
+
+
+def _ai_disclosure(text: str) -> str:
+    """The paragraphs that disclose the AI assistance."""
+    return "\n".join(
+        block for block in _paragraphs(text)
+        if "generative ai" in block.lower())
+
+
+def test_the_manuscripts_declare_the_sections_and_the_assistance_their_venues_ask_for():
+    """What each manuscript must say about itself, it must still say."""
     text = _joss_manuscript()
     headings = {
         match.group(1).strip()
@@ -163,6 +198,32 @@ def test_the_joss_manuscript_keeps_the_sections_joss_asks_for():
         "reviewed and validated the AI-assisted output, which JOSS's "
         "policy requires."
     )
+
+    # The other three manuscripts have no such section to check, so the
+    # disclosure has to be somewhere in the manuscript itself -- and it
+    # has to say the two things a disclosure is: which tools were used,
+    # and that the author checked what they produced. arXiv's moderation
+    # policy asks for the use of text-to-text generative AI to be
+    # reported in the work itself, and the work is this file.
+    for path in _AI_DISCLOSURE_SURFACES:
+        body = _ai_disclosure(
+            (_REPO_ROOT / path).read_text(encoding="utf-8"))
+        assert body, (
+            f"{path} does not disclose its AI assistance. arXiv's "
+            "moderation policy asks for the use of generative AI to be "
+            "reported in the work itself, and the work is the file that "
+            "is uploaded."
+        )
+        assert any(provider in body for provider in _AI_PROVIDERS), (
+            f"{path} discloses AI assistance without naming any of "
+            + ", ".join(_AI_PROVIDERS)
+            + ". A disclosure that names no tool cannot be checked."
+        )
+        assert "reviewed" in body.lower(), (
+            f"{path} does not confirm that the author reviewed and edited "
+            "the AI-assisted output, which is the part of the disclosure "
+            "that makes it a disclosure rather than a mention."
+        )
 
 
 def _section_body(text: str, heading: str) -> str:

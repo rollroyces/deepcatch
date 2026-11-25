@@ -214,6 +214,24 @@ DeepCatch provides the first open, reproducible benchmark for panel-based ultra-
 - Reproduce benchmark: `python real_tcga_validation.py --n-patients 20 --seeds 5 --cancer-types LUAD`
 - Test suite: `pytest src test -q` (1040 collected)
 
+## Acknowledgements
+
+The author thanks the public data providers whose archives make replication
+possible: the FinaleDB and FinaleMe teams (Zenodo 10.5281/zenodo.14013719 and
+10.5281/zenodo.6914806), the Genomic Data Commons for TCGA open-access somatic
+mutations, and the GEO depositors of GSE317007 and GSE185307.
+
+Generative AI tools (OpenAI, Anthropic, Google and MiniMax models, used
+through their coding assistants) assisted with this work: they wrote and
+reviewed parts of the analysis code, ran the analysis scripts, performed the
+multi-persona audits recorded in `AUDIT_2_FINDINGS.md`, and drafted and edited
+parts of this manuscript. They did not generate, alter or interpret any primary
+data, figure or statistical result — every number reported here is produced by
+the committed code from the artifact committed in this repository, and every
+correction the audits produced is verified by a test that fails when the defect
+is reintroduced. The author reviewed and edited all content and takes full
+responsibility for it.
+
 ---
 
 ## References
