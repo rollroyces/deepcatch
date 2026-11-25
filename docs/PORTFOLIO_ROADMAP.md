@@ -2,7 +2,9 @@
 
 **Date:** 2026-09-17 (refresh — 22:30 batch)
 **Author:** Yu Ching Lam (via Hermes Agent)
-**Status:** Current as of commits `d92a691` (deepcatch), `1e500c3` (cfdna-fragmentomics-pipeline), `addfcab` (deepcatch-methylation).
+**Status:** A **2026-09-17 snapshot**, refreshed 2026-11-25 for the state
+rows below. The V3 design and the phase tables are the September plan;
+the commits, test counts and headlines are current as of 2026-11-25.
 
 This is the **single source-of-truth roadmap** for the 3-repo open-source cfDNA
 early-detection portfolio. It supersedes the older `NEXT_STEPS.md` and
@@ -18,9 +20,9 @@ pretrained-model breakthrough.
 
 | Repo | Local path | Latest commit | Tests | CI | Headline result |
 |---|---|---|---|---|---|
-| **deepcatch** | `.` | `d92a691` | 51/51 | ✅ green | Panel LLR AUC **0.921** @ 0.1% ctDNA (20 TCGA-LUAD patients); CADD Top-K=20 per-subgroup lift **+24 to +50pp** on 7/8 LUAD subgroups validated on **150-patient GDC cohort** |
-| **cfdna-fragmentomics-pipeline** | `../cfdna-fragmentomics-pipeline` | `1e500c3` | 117/117 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
-| **deepcatch-methylation** | `.-methylation` | `addfcab` | 15/15 | ✅ green | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 |
+| **deepcatch** | `.` | `014cd95` | **1040** | ✅ green | Tumor-naive fragmentomics cross-study **0.9684 ± 0.0027** on 627 public plasma samples; held-out external validation **0.9444** on a publication it never trained on, plus a second (ccRCC) and a third (PHTS screening) external cohort; the panel LLR 0.921 @ 0.1% ctDNA (simulated plasma reads) |
+| **cfdna-fragmentomics-pipeline** | `../cfdna-fragmentomics-pipeline` | `eb1529e` | 126 | ✅ green | Cross-study AUC **0.978** (frag), **0.992** (fusion) on 627 samples; comprehensive Sens@Spec + PPV@Prev table |
+| **deepcatch-methylation** | `.-methylation` | `addfcab` | 15/15 | ⚠️ not in this workspace | FinaleMe pretrained HMM **breakthrough** (BH01 chr22, 489K CpGs); FinaleMe vs TCGA-LIHC HM450 zero-shot ρ=0.81 — row carried from 2026-09-17; the repository is not present here, so it is unverified |
 
 ### 1.2 What we have shipped (Phase 0–1, complete)
 
@@ -107,8 +109,8 @@ pretrained-model breakthrough.
 |---|---|---|
 | Phase A — pre-registration freeze (channel set, hyperparameters, metric set) | 1 hour | ✅ done (in V3_DESIGN.md §4.2) |
 | Phase B — implementation (Layer 1 channels, Layer 2 OvR elastic-net, Layer 3 fusion/decision) | 6-8 hours compute + 1-2 hours review | **IN PROGRESS** (design revision in progress — primary lever is now **CADD Top-K=20 per-subgroup panel selection**, validated +24 to +50pp on 150-patient GDC cohort; per-cancer top-K remains secondary) |
-| Phase C — validation (per-cancer AUC, sens@spec, PPV@prev) | 1-2 hours compute | TODO |
-| Phase D — documentation + paper update | 1-2 hours | TODO |
+| Phase C — validation (per-cancer AUC, sens@spec, PPV@prev) | 1-2 hours compute | TODO — the pre-V3 validation artifacts exist (`results/per_cancer_sens_at_spec.json`, `results/decision_curve.json`, the pipeline's Sens@Spec + PPV@Prev table); what is missing is the same validation for a V3 model, because the V3 Layer 1-3 model itself did not ship in this form |
+| Phase D — documentation + paper update | 1-2 hours | TODO — the methylation channel's part of V3 shipped and is documented in the paper as a **measured null** (`results/methylation_cohort_channel.json`); the Layer 1-3 model's documentation has no artifact to document |
 
 **Revised V3 targets (2026-09-17):**
 - **Pooled Sens@99%**: 0.85 → **0.80** (revised downward — 0.85 had only ~30–40% hit probability in the original honest note; 0.80 reflects a more defensible bar given observed gains).

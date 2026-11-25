@@ -51,6 +51,20 @@ an input to its cohort. So the methylation channel's numbers are
 reproducible given the decoded files, and the decoded files are not
 versioned; the probe artifact records which of them exist right now.
 
+The decode itself is not the hard part and it has been done: the paper
+reports FinaleMe run end-to-end on 31 FinaleDB samples (publication 7
+blood plasma, 18 colorectal cancer and 13 liver-transplant controls)
+from **public fragment files** — fragments turned into a
+coordinate-sorted BAM by `scripts/finaleme_bam_from_frag.py`, per-CpG
+feature matrices extracted for chr22, a WGBS prior attached, one HMM
+trained on the cohort, and every sample decoded with it. What that run
+did not cover is the **training** cohort's fragments, which is what a
+full methylation-plus-fragmentomics fusion on all 627 samples would
+need: a fetch of publications 6 + 8 (the fetcher already does this for
+publications 1 / 7 / 9) and then a decode per sample at ~5-10 minutes
+each. That is the size of the remaining job, and it is a size, not a
+mystery.
+
 Running the decode is: `scripts/finaleme_pipeline.py features --input
 <sample.bam> --output-dir ~/.hermes/.local/finaleme/output`, with the
 BAM built from fragments by `scripts/finaleme_bam_from_frag.py`. The
