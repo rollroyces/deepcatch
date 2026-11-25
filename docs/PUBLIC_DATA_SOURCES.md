@@ -408,11 +408,11 @@ step and a scoring run over 99 samples. Nothing in this repository has
 scored it yet: the only artefact that mentions this deposit is the
 survey itself.
 
-**And the survey missed the label table.** `results/zenodo_cfdna_survey.json`
-records this deposit with `cohort_table: false`, because the detector
-looks for a table shaped like a cohort table and `phtscfx_meta.csv` is a
-sample table with clinical columns instead — so the richest label table
-in the survey was recorded as a deposit without one.
+**The survey missed this label table until 2026-11-25.** Its reader only
+split on tabs, and the deposit's table is a CSV — so the richest label
+table in the survey was recorded as a deposit without one. The reader now
+sniffs the delimiter and the map knows this deposit; the survey artifact
+carries the table with all 99 rows and its clinical columns.
 
 ## 7. What this means for the paper
 

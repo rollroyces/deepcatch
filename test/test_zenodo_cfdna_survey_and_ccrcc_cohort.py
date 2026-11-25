@@ -48,6 +48,9 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 _SURVEY_ARTIFACT = "results/zenodo_cfdna_survey.json"
 _COHORT_ARTIFACT = "results/external_cohort_zenodo_ccrcc.json"
 
+# The column names a deposit may use for its per-sample id.
+_SAMPLE_COLUMNS = ("sample", "sample_id", "id")
+
 _CCRCC_DOI = "10.5281/zenodo.21269430"
 
 # The cohort, pinned. A re-run that moves any of these has to be a
@@ -148,9 +151,16 @@ def test_the_survey_records_its_queries_and_the_candidates_it_read():
                 assert table.get("rows"), (
                     f"{candidate['doi']}'s cohort table has no rows")
                 for row in table["rows"]:
-                    assert "sample" in row, (
+                    # A per-sample table identifies its samples in a column
+                    # whose name is not standardised across deposits:
+                    # SAUNA calls it "sample", the Cleveland Clinic PHTS
+                    # cohort calls it "id" (its values are sample ids of
+                    # the form CCF00016-01-001). What matters is that a
+                    # row can be tied to a sample.
+                    assert any(name in row for name in _SAMPLE_COLUMNS), (
                         f"{candidate['doi']}'s cohort table has a row without "
-                        "a sample column")
+                        "a sample column (none of "
+                        f"{', '.join(_SAMPLE_COLUMNS)})")
 
 
 def test_the_ccrcc_record_is_one_of_the_candidates():

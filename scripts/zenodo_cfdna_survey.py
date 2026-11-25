@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import os
 import re
@@ -66,6 +67,11 @@ CANDIDATE_DOIS = [
 # metadata.tsv with each sample's group, coverage and tumour fraction.
 COHORT_TABLE_FILES = {
     "10.5281/zenodo.15097509": "metadata.tsv",
+    # The Cleveland Clinic PHTS screening cohort: a per-sample table
+    # with clinical columns (cancer, second malignant neoplasm,
+    # pre- vs post-malignant, stage). It is a CSV, not a TSV, which is
+    # why the reader below has to sniff the delimiter.
+    "10.5281/zenodo.15109495": "phtscfx_meta.csv",
 }
 
 _USER_AGENT = ("DeepCatch-survey/2.3 (research; "
@@ -114,10 +120,14 @@ def _cohort_table(doi: str, file_name: str) -> dict:
     lines = [line for line in text.splitlines() if line.strip()]
     if not lines:
         return {"file": file_name, "rows": []}
-    header = lines[0].split("\t")
+    # The tables are not all the same format: SAUNA ships a TSV, the
+    # Cleveland Clinic PHTS cohort a CSV whose clinical fields contain
+    # commas and therefore need the csv reader's quoting, not a split.
+    delimiter = "\t" if "\t" in lines[0] else ","
+    reader = csv.reader(lines, delimiter=delimiter)
+    header = next(reader)
     rows = []
-    for line in lines[1:]:
-        parts = line.split("\t")
+    for parts in reader:
         if len(parts) != len(header):
             continue
         rows.append(dict(zip(header, parts)))
