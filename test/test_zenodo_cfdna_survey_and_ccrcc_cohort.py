@@ -256,6 +256,7 @@ def test_every_document_that_mentions_the_cohort_states_its_limits():
 
 def test_the_extractor_reads_a_bed_file_with_a_header():
     """The deposited files are BED files, and BED files have a header."""
+    import gzip
     import sys
 
     sys.path.insert(0, str(_REPO_ROOT / "src"))
@@ -272,7 +273,6 @@ def test_the_extractor_reads_a_bed_file_with_a_header():
     with_header = _REPO_ROOT / "results" / "_tmp_header_test.frag.bed.gz"
     without_header = _REPO_ROOT / "results" / "_tmp_noheader_test.frag.bed.gz"
     try:
-        import gzip
         with gzip.open(with_header, "wt") as handle:
             handle.write("\n".join(rows) + "\n")
         with gzip.open(without_header, "wt") as handle:
@@ -286,6 +286,53 @@ def test_the_extractor_reads_a_bed_file_with_a_header():
             "same fragments")
     finally:
         for path in (with_header, without_header):
+            if path.exists():
+                path.unlink()
+
+    # The Cleveland Clinic PHTS deposit ships BEDPE, not fragment BED:
+    # one row per read PAIR, with the two mates' coordinates in separate
+    # columns. The extractor's first three columns are the FIRST mate's
+    # coordinates, so the extractor reads a BEDPE as a set of fragments
+    # that are one read long. It does not fail -- it is quietly wrong.
+    # The preparation script is what converts one into the other, and
+    # this is the check that the conversion is the right one.
+    sys.path.insert(0, str(_REPO_ROOT / "scripts"))
+    from prepare_zenodo_phts_cohort import convert_member
+
+    bedpe_rows = [
+        "chr1\t1000\t1120\tchr1\t1100\t1180\tread1\t60\t+\t-\t180",
+        "chr1\t5000\t5146\tchr1\t5000\t5099\tread2\t60\t-\t+\t146",
+        "chr2\t2000\t2146\tchr2\t2100\t2200\tread3\t60\t+\t-\t200",
+    ]
+    raw = _REPO_ROOT / "results" / "_tmp_bedpe_test.frag.bed.gz"
+    converted = _REPO_ROOT / "results" / "_tmp_bedpe_converted.frag.bed.gz"
+    try:
+        with gzip.open(raw, "wt") as handle:
+            handle.write("\n".join(bedpe_rows) + "\n")
+        stats: dict = {}
+        with gzip.open(raw, "rt") as handle:
+            convert_member(handle, str(converted), stats)
+        assert stats["rows"] == 3, "a converted pair was dropped"
+        assert stats["rows_dropped"] == 0
+
+        _codes, start, end, _mapq = ff.read_fragments(str(converted))
+        converted_lengths = sorted(int(e - s) for s, e in zip(start, end))
+        assert converted_lengths == [146, 180, 200], (
+            "the converted file does not carry the fragments' outer "
+            f"coordinates (got {converted_lengths})")
+
+        # The same file read without the conversion gives the first
+        # mate's length instead of the fragment's -- which is the whole
+        # reason the conversion exists.
+        _codes, start, end, _mapq = ff.read_fragments(str(raw))
+        raw_lengths = sorted(int(e - s) for s, e in zip(start, end))
+        assert raw_lengths == [120, 146, 146], (
+            "the unconverted BEDPE no longer reads as the first mate's "
+            f"coordinates (got {raw_lengths}); the check that follows it "
+            "would no longer mean anything")
+        assert raw_lengths != converted_lengths
+    finally:
+        for path in (raw, converted):
             if path.exists():
                 path.unlink()
 
