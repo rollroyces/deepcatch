@@ -61,14 +61,15 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 - [x] PDF compiles cleanly under tectonic and pdfTeX
 - [x] All three figures embedded and rendered from the committed artifacts
 - [x] All `\cite{}` keys in `paper.tex` resolve against the manuscript's own inline bibliography
-- [x] Abstract within bioRxiv's character limit
-- [x] Submission metadata in `BIORXIV_SUBMISSION.md`
+- [x] Abstract within both limits: 2,940 characters for bioRxiv's 3,000, and a 1,915-character abridged text for arXiv's 1,920-character metadata field (`docs/ARXIV_ABSTRACT.md`, generated from the manuscript)
+- [x] Submission metadata in `BIORXIV_SUBMISSION.md` §3a (the arXiv form)
 - [x] ORCID registered (`0009-0008-9113-769X`) and present in `CITATION.cff` — and in all four author blocks (`test/test_author_affiliation_is_consistent.py`)
-- [ ] **Upload `biorxiv_submission_v2.3.0.pdf`** — everything is ready (the file is current, 9 pages, the disclosure is in it); the last step is the ORCID sign-in on submit.biorxiv.org, which only the author can do
-- [ ] **Insert the AI-use disclosure** into `paper.tex` and `METHODS_PAPER.md`
-      (Block A + Block B in `BIORXIV_SUBMISSION.md` §7) -- bioRxiv, arXiv and
-      PLOS all expect it, and the tool list is the one line only the author
-      can sign off
+- [ ] **Upload the source archive to arXiv** — arXiv takes TeX source, not a PDF: the `deepcatch-arxiv-source` artifact of the latest "Compile Paper PDF" run (it holds `deepcatch_v2_3_0.tar.gz`, one `.tex` plus the three flattened figures, and it compiles standalone to the same 9 pages as the committed PDF). Everything is ready; the last steps are the account (username, password, captcha, then the email verification), the "Link my arXiv account with ORCID" click on arXiv's account page, and the "Submit Article" click — arXiv asks the author to submit, so those are only the author's to make
+- [x] **AI-use disclosure inserted** into `paper.tex` § Acknowledgements and
+      `METHODS_PAPER.md` §6 (Block B in `BIORXIV_SUBMISSION.md` §7) -- it names
+      the providers and the author's confirmation of review, and
+      `test/test_author_affiliation_is_consistent.py` fails if any of the four
+      manuscripts loses it
 - [ ] **Add the corresponding-author email** to the submission form (kept out of the repo on purpose)
 - [x] **Zenodo's GitHub integration enabled and `v2.3.0` tagged** — the release is archived as **10.5281/zenodo.24453044** (see `ZENODO_SETUP.md`)
 
