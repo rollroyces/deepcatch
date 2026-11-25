@@ -95,6 +95,7 @@ bash RUN_ALL.sh
 | `decision_curve.json` | Decision-curve operating points |
 | `methylation_cohort_channel.json` | Methylation channel measured on real public fragments (a null) |
 | `methylation_channel_diagnosis.json` | The depth/coverage diagnostics the null rests on |
+| `cross_platform_readiness_probe.json` | The **measured** cross-platform readiness: which of FinaleMe's components are on this machine and which are not, so the state in `docs/CROSS_PLATFORM_READINESS.md` is a number rather than prose |
 | `harmonization_check.json` | Harmonisation and true-confound controls |
 | `real_tcga_validation.json` | Mutation-informed panel validation |
 | `cadd_*.json` | CADD scoring and per-subgroup panel results |

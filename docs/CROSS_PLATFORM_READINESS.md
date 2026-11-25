@@ -1,7 +1,10 @@
 # Cross-Platform Readiness (FinaleDB fragmentomics + FinaleMe methylation)
 
-Status: scaffolded. Not yet runnable on real data — see
-`docs/CROSS_PLATFORM_FINALEME.md` for the prerequisite recipe.
+Status: scaffolded. The tool suite is installed and the probe passes;
+what is missing is the decode input and its output, so the pipeline
+still cannot print a cross-platform AUC. See
+`docs/CROSS_PLATFORM_FINALEME.md` for the prerequisite recipe and
+`results/cross_platform_readiness_probe.json` for the measured state.
 
 ## What the cross-platform pipeline is
 
@@ -22,14 +25,36 @@ one of `both`, `methylation_only`, `fragmentomics_only`, or `no_data`.
 
 ## Current state (FINALEME)
 
+Measured by `scripts/_cross_platform_readiness_probe.py`, committed as
+`results/cross_platform_readiness_probe.json`. The table this document
+carried until 2026-11-25 said the JAR, the models and the reference
+files were MISSING; they are not — they were installed on 2026-11-16 and
+the table predated them. What is actually missing is the decoded
+output, and the reason is the input, not the tool.
+
 | Component                                       | Status (this machine)         | Why |
 |------------------------------------------------|-------------------------------|-----|
 | Java 21 runtime                                | present                       | `java -version` exits 0     |
-| FinaleMe JAR (hybrid v0.61 + v0.58.1)           | **MISSING**                   | Recipe requires building from source; not yet done |
-| Pretrained HMM models (Zenodo 14013719)         | **MISSING**                   | ~150 kB on Zenodo; not downloaded |
-| Reference files (~1.4 GB: hg19.2bit + prior bw + CpG motif + mappability + chrom sizes) | **MISSING** | Multi-GB download not in budget |
-| FinaleMe output directory                       | **MISSING**                   | Requires JAR + models + references |
-| FinaleDB features cache                          | **PRESENT**                    | 627 samples × 5 channels in `../cfdna-fragmentomics-pipeline/data/features/` |
+| FinaleMe JAR (hybrid v0.58.1)                   | **present** (12.4 MB)        | `~/.hermes/.local/finaleme/FinaleMe-0.58.1-jar-with-dependencies.jar` |
+| Pretrained HMM models                           | **present**                   | `~/.hermes/.local/finaleme/models` — FinaleMe's example cancer/healthy WGS HMMs; the per-chromosome model from the chr22 test run is alongside them |
+| Reference files (~1.4 GB: hg19.2bit + prior bw + CpG motif + mappability + chrom sizes) | **present** | all five resolve in `~/.hermes/.local/finaleme/refs/hg19/` |
+| FinaleMe output directory                       | **MISSING**                   | the directory exists but holds no decoded output; only a chr22 test run's `BH01.chr22.deep.decoded.txt.gz` was ever produced |
+| FinaleDB features cache                          | **PRESENT**                    | 630 samples × 5 channels in `../cfdna-fragmentomics-pipeline/data/features/` |
+
+**The one thing that is actually missing is the decode input.** The
+training cohort's raw fragment files are not on this machine
+(`../cfdna-fragmentomics-pipeline/data/raw/` is empty), and the decoded
+per-CpG β-values that `results/methylation_cohort_channel.json` was
+measured on (31 samples) are not either — they were an input to that
+measurement, produced by an earlier run, exactly as the SAUNA tarball is
+an input to its cohort. So the methylation channel's numbers are
+reproducible given the decoded files, and the decoded files are not
+versioned; the probe artifact records which of them exist right now.
+
+Running the decode is: `scripts/finaleme_pipeline.py features --input
+<sample.bam> --output-dir ~/.hermes/.local/finaleme/output`, with the
+BAM built from fragments by `scripts/finaleme_bam_from_frag.py`. The
+probe's "Next steps" prints the same command.
 
 `data_source = fragmentomics_only` today. Cross-platform AUC is
 **NOT** printed — the validator emits `cross_platform_auc: null`
@@ -66,6 +91,11 @@ cancer-vs-healthy.
   That's a ~3-hour one-time setup documented in
   `docs/CROSS_PLATFORM_FINALEME.md §Prerequisites`. The pipeline
   is honest about being scaffolded.
+  **Superseded 2026-11-25:** the JAR, the models and the reference
+  files ARE installed on this machine (see the measured table above);
+  what is missing is the decoded output, because the training cohort's
+  raw fragments are not here. The probe is the source of truth and it
+  is committed as `results/cross_platform_readiness_probe.json`.
 - **Did not** modify the methodology demo's
   `results/cross_platform_methylation_fusion.json` (DISJOINT
   cohorts, synthesized scores — see its `honest_caveats`).
@@ -75,12 +105,19 @@ cancer-vs-healthy.
 Operator checklist:
 
 1. Run `_cross_platform_readiness_probe.py` — verifies the current
-   `data_source` verdict.
-2. Install FinaleMe prerequisites per
-   `docs/CROSS_PLATFORM_FINALEME.md §Prerequisites` (~3 hours one-time).
-3. Run `finaleme_pipeline.py decode` to produce per-sample
-   `*.decoded.bed.gz` files. ~32 sec per sample for chr22; full
-   genome ~5-10 minutes per sample.
+   `data_source` verdict. ✅ done: it passes, and its output is
+   committed as `results/cross_platform_readiness_probe.json`.
+2. ~~Install FinaleMe prerequisites per
+   `docs/CROSS_PLATFORM_FINALEME.md §Prerequisites`~~ — ✅ done on
+   this machine (2026-11-16): the JAR, the models and the reference
+   files are all present.
+3. **Fetch the decode input**, which is the step that is actually open:
+   the training cohort's raw fragment files are not on this machine
+   (`../cfdna-fragmentomics-pipeline/data/raw/` is empty), and the
+   decoded per-sample `*.decoded.bed.gz` / `BetaValues.tsv` files have
+   to come from them. `scripts/finaleme_bam_from_frag.py` turns a
+   fragment file into the BAM the decoder takes. ~32 sec per sample
+   for chr22; full genome ~5-10 minutes per sample.
 4. Run `cross_platform_finaledb_validate.py` — emits
    `results/cross_platform_readiness.json` with `cross_platform_auc`
    (and ALL three fusion strategies, not just the headline).

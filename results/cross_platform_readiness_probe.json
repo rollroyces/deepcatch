@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-25T11:59:52.109960+00:00",
+  "finaleme_home": "/Users/hermes/.hermes/.local/finaleme",
+  "finaleme_output_dir": "/Users/hermes/.hermes/.local/finaleme/output",
+  "features_dir": "/Users/hermes/cfdna-fragmentomics-pipeline/data/features",
+  "checklist": [
+    {
+      "component": "Java runtime",
+      "present": true,
+      "detail": "openjdk version \"21.0.8\" 2025-07-15 LTS"
+    },
+    {
+      "component": "FinaleMe JAR",
+      "present": true,
+      "detail": "/Users/hermes/.hermes/.local/finaleme/FinaleMe-0.58.1-jar-with-dependencies.jar (12.4 MB)"
+    },
+    {
+      "component": "Pretrained HMM models",
+      "present": true,
+      "detail": "/Users/hermes/.hermes/.local/finaleme/models"
+    },
+    {
+      "component": "Reference files",
+      "present": true,
+      "detail": "all 5 reference files present"
+    },
+    {
+      "component": "FinaleMe output",
+      "present": false,
+      "detail": "/Users/hermes/.hermes/.local/finaleme/output exists but contains no FinaleMe output (BetaValues.tsv / *.decoded.bed.gz / *.cpg_features.hg19.bed.gz)."
+    },
+    {
+      "component": "FinaleDB features",
+      "present": true,
+      "detail": "630 samples \u00d7 5 channels (3564 total .npy files) in /Users/hermes/cfdna-fragmentomics-pipeline/data/features"
+    }
+  ],
+  "data_source": "fragmentomics_only",
+  "verdict": "data_source = fragmentomics_only. Cross-platform AUC will NOT be printed (missing: FinaleMe output). The decoded per-CpG beta-values come from running scripts/finaleme_pipeline.py decode on a fragment or BAM input."
+}

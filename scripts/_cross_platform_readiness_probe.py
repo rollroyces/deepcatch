@@ -32,6 +32,7 @@ from _paths import FEATURES_DIR, FINALEME_HOME  # noqa: E402
 
 
 import argparse
+import json
 import os
 import shutil
 import subprocess
@@ -218,6 +219,12 @@ def main() -> int:
         "--features-dir", type=Path, default=DEFAULT_FINALEDB_FEATURES_DIR,
         help="Path to the FinaleDB features cache (.npy files).",
     )
+    ap.add_argument(
+        "--json-out", type=Path, default=None,
+        help="Also write the checklist as JSON here, so the readiness "
+             "state in the documents is traceable to a committed artifact "
+             "instead of to prose.",
+    )
     args = ap.parse_args()
 
     now = datetime.now(timezone.utc).isoformat()
@@ -262,11 +269,12 @@ def main() -> int:
         )
     elif finaledb_ok:
         data_source = "fragmentomics_only"
+        missing = [label for label, ok, _ in rows if not ok]
         verdict = _yellow(
-            "data_source = fragmentomics_only. Cross-platform AUC will NOT be printed "
-            "(methylation channel missing — install FinaleMe JAR + pretrained models "
-            "+ reference files; run scripts/finaleme_pipeline.py decode to produce "
-            "per-CpG β-values)."
+            "data_source = fragmentomics_only. Cross-platform AUC will NOT be "
+            f"printed (missing: {', '.join(missing)}). The decoded per-CpG "
+            "beta-values come from running scripts/finaleme_pipeline.py decode "
+            "on a fragment or BAM input."
         )
     else:
         data_source = "no_data"
@@ -297,8 +305,37 @@ def main() -> int:
                 "  • Download reference files (~1.4 GB) — "
                 "see cfdna-fragmentomics skill §Reference files."
             )
+        if not _check_finaleme_output(args.finaleme_output_dir)[0]:
+            print(
+                "  • Produce the decoded output: scripts/finaleme_pipeline.py "
+                "features --input <sample.bam> --output-dir "
+                f"{args.finaleme_output_dir} . The decode input is a BAM (or "
+                "a fragment file turned into one by "
+                "scripts/finaleme_bam_from_frag.py); the training cohort's "
+                "raw fragments are not on this machine."
+            )
 
     # Always exit 0 — probe never fails
+    if args.json_out is not None:
+        payload = {
+            "schema_version": "1.0",
+            "generated_at": now,
+            "finaleme_home": str(FINALEME_HOME),
+            "finaleme_output_dir": str(args.finaleme_output_dir),
+            "features_dir": str(args.features_dir),
+            "checklist": [
+                {"component": label, "present": bool(ok), "detail": detail}
+                for label, ok, detail in rows
+            ],
+            "data_source": data_source,
+            "verdict": verdict,
+        }
+        args.json_out.parent.mkdir(parents=True, exist_ok=True)
+        with open(args.json_out, "w", encoding="utf-8") as handle:
+            json.dump(payload, handle, indent=2)
+            handle.write("\n")
+        print(f"wrote {args.json_out}")
+
     return 0
 
 
