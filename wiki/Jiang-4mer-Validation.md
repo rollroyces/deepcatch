@@ -42,9 +42,9 @@ The primary analysis compares 34 HCC patients against 38 healthy controls using 
 
 | Metric | Value | Method |
 |--------|-------|--------|
-| **Nested CV AUC** | **0.986** | 5 outer × 3 inner folds, feature selection within each outer fold |
-| **CV AUC (optimal k=5)** | **0.996** | Standard 5‑fold CV, top‑5 motifs by p‑value |
-| **CV AUC (k=50)** | **0.985** | Standard 5‑fold CV, top‑50 motifs |
+| **CV AUC (k=50)** | **0.985** | Standard 5‑fold CV, top‑50 motifs — the committed run (`results/prof_jiang_4mer_analysis/part2_cet_results.txt`) |
+| **Nested CV AUC** | 0.986 | 5 outer × 3 inner folds, feature selection within each outer fold — **not committed here**: the run's input and output are not in this repository |
+| **CV AUC (optimal k=5)** | 0.996 | Standard 5‑fold CV, top‑5 motifs — same run, likewise not committed |
 | **Sensitivity @ 95% specificity** | **94.1%** | Threshold calibrated on training folds |
 | **Bonferroni‑significant motifs** | **108 / 256** (42.2%) | p < 0.05/256 |
 | **FDR‑significant motifs** | **164 / 256** (64.1%) | Benjamini‑Hochberg, α = 0.05 |
@@ -150,7 +150,7 @@ This command reproduces the headline HCC vs Control result exactly. The `--seed 
 
 ### Verification
 
-After running, check `results/jiang_reanalysis/summary_report.md` — the nested CV AUC should match **0.986** (within floating‑point tolerance).
+After running, check `results/jiang_reanalysis/summary_report.md` — the nested CV AUC should match **0.986** (within floating‑point tolerance). **This run cannot be reproduced from a clone**: neither its input (`results/prof_jiang_4mer_analysis/deepcatch_data.xlsx`) nor its output (`results/jiang_reanalysis/`) is committed in this repository. The figure the tree does support is the committed 5‑fold stratified result in `results/prof_jiang_4mer_analysis/part2_cet_results.txt` — **0.985** at 94.1% sensitivity on the same 34 vs 38 samples.
 
 ### Run All Pairwise Comparisons
 
