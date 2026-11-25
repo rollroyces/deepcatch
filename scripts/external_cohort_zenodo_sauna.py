@@ -241,6 +241,13 @@ def main() -> int:
     top_patient = max(draws_per_patient, key=lambda p: draws_per_patient[p])
     series = sorted([s for s in order if meta[s].get("patient") == top_patient],
                     key=lambda s: float(meta[s]["tf"]))
+    def _median_length(sample: str):
+        path = os.path.join(args.features_out, f"{sample}.fsd.json")
+        if not os.path.exists(path):
+            return None
+        with open(path) as handle:
+            return json.load(handle).get("median_length")
+
     longitudinal = {
         "patient": meta[series[0]]["patient"] if series else None,
         "n_draws": len(series),
@@ -253,7 +260,8 @@ def main() -> int:
                 "model_score": round(float(score[index[s]]), 6),
                 "short_long_ratio": round(
                     float(extracted[s]["genome_short_long_ratio"]), 5),
-                "fsd_median_length": extracted[s].get("fsd_fragment_count"),
+                "fsd_median_length": _median_length(s),
+                "fragments": extracted[s]["fsd_fragment_count"],
             }
             for s in series
         ],
