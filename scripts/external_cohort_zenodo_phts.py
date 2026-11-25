@@ -303,6 +303,19 @@ def main() -> int:
     Xte, yte, stte = _load5_from(args.features_out, labels, studies)
     if len(Xte) != len(order):
         raise RuntimeError(f"row alignment failed: {len(Xte)} vs {len(order)}")
+    # A truncated fragment file leaves most 100 kb bins empty, the
+    # loader divides the counts by a zero median, and scikit-learn
+    # reports it as a puzzling "Input X contains NaN". The preparation
+    # script checks every file's size first; this says what the real
+    # cause is when something slipped through.
+    if not np.isfinite(Xte).all():
+        bad = int((~np.isfinite(Xte)).sum())
+        raise SystemExit(
+            f"the loaded features hold {bad} non-finite values. The most "
+            "likely cause is a truncated fragment file, which leaves most "
+            "100 kb bins empty and makes the loader divide by a zero "
+            "median. Re-run scripts/prepare_zenodo_phts_cohort.py before "
+            "scoring.")
 
     Xtr_z = _zscore_by_group(Xtr, sttr)
     Xte_z = _zscore_by_group(Xte, stte)
