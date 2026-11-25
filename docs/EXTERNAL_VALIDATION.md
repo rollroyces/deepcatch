@@ -2,7 +2,7 @@
 
 > Train: FinaleDB 6 + 8 (the cross-study cohort). Test: publications 1, 7, 9 -- never trained on. Public data, no IRB required.
 
-- Generated: `2026-11-17T01:52:52.594356+00:00`
+- Generated: `2026-11-25T12:55:28.567738+00:00`
 
 - Train n=627 (cancer 363) | External n=322 (cancer 300, non-cancer 22)
 
@@ -54,26 +54,34 @@
 | Testicular cancer | - | skipped (n=2) |
 | Uterine cancer | - | skipped (n=2) |
 
+## Is the separation the sequencing depth?
+
+
+| Publication | AUC (depth alone) | AUC (model) | AUC (model, depth removed) |
+|---|---:|---:|---:|
+| 1 | 0.5271 | 0.708 | 0.6718 |
+| 7 | 0.5342 | 0.9444 | 0.7436 |
+| 9 | - | - | case-only publication: an AUC against depth is not computable, and neither is the depth-removed reading |
+
+Does sequencing depth separate the classes on its own, and does the model's separation survive it? The score is regressed on the depth and what is left is scored again.
+
+
 ## What stage is this cohort at?
+
 
 **Late stage, where the public records say so.** FinaleDB's sample
 record carries no stage field, so the stage had to be read from the
-records that describe each publication
-(`results/external_cohort_stage_annotation.json`, read 2026-11-23):
+records that describe each publication (`results/external_cohort_stage_annotation.json`, read 2026-11-23):
+
 
 | Publication | Stage | Where the statement comes from |
 |---|---|---|
-| 1 — Snyder 2016 | **Stage IV** for all 52 cancer samples | the GEO record's own extract protocol for GSE71378: "Human peripheral blood plasma for 52 individuals with clinical diagnosis of Stage IV cancer" |
-| 7 — Sun 2019 | not resolved here | the per-sample annotation is in the paper's supplementary tables (PMC6396422), which are served behind a proof-of-work and reCAPTCHA gate; a collaborator with journal access can finish this row |
-| 9 — Adalsteinsson 2017 | **metastatic tumors** | the paper's own title and abstract (Nat Commun 8:1324); the sample identifiers agree (`MBC_1330_1` and 138 siblings) |
+| 1 — Snyder 2016 | **Stage IV (all cancer samples in the cohort)** | GEO GSE71378, Sample_extract_protocol_ch1 |
+| 7 — Sun 2019 | not resolved here | the paper's supplementary tables (Supplemental Table S1, PMC6396422) and the EGA submission of the same cohort |
+| 9 — Adalsteinsson 2017 | **metastatic tumors (the cohort the paper describes)** | the paper's title and abstract (PubMed 29109393) |
 
-So the external AUCs below measure **late-stage discrimination** --
-cancer plasma against non-cancer plasma -- and they are a cross-study
-transfer result, not an early-detection result. No case in the held-out
-cohort is placed at Stage I by the records that were read. The
-breakdown machinery is ready (`build_stage_breakdown_table` in
-`src/per_cancer_sens_at_spec.py`); what is missing is a cohort that
-carries early-stage labels.
+The external AUCs (0.9444 on publication 7, 0.708 on publication 1, 0.7385 pooled over the publications carrying both classes) measure LATE-STAGE discrimination between cancer plasma and non-cancer plasma. They are a cross-study transfer result and NOT an early-detection result, and they must not be read as one: the held-out cohort contains no case that the public records place at Stage I.
+
 
 ## Honest framing
 

@@ -12,7 +12,7 @@ committed ones.
 | Result | Figure | Artifact |
 |---|---|---|
 | Tumor-naive fragmentomics, cross-study (real public FinaleDB plasma, 627 samples) | **0.9684 ± 0.0027** | `cross_study_finallydb_gc_corrected.json` |
-| **Held-out external validation** (publications never trained on) | **0.9444** [0.8731, 1.0] on publication 7 (WGS, n=31); **0.708** [0.5148, 0.9012] on publication 1 (WGS, n=52); **0.7385** pooled over the publications carrying both classes; publication 9 is case-only and reported as sensitivity 0.6569 at the training threshold | `external_validation_finaledb.json` |
+| **Held-out external validation** (publications never trained on) | **0.9444** [0.8731, 1.0] on publication 7 (WGS, n=31); **0.708** [0.5148, 0.9012] on publication 1 (WGS, n=52); **0.7385** pooled over the publications carrying both classes; publication 9 is case-only and reported as sensitivity 0.6569 at the training threshold. Depth alone separates neither publication above chance (0.5342 / 0.5271), so the transfer is not a library-depth artefact | `external_validation_finaledb.json` |
 | Leave-one-study-out transfer | 0.6805 (Jiang→Cristiano) / 0.9361 (Cristiano→Jiang) against in-domain 0.9789 / 0.969 | `cross_study_loso.json` |
 | Cross-repo fusion (10 seeds) | naive average **0.9884 ± 0.0010**; LR fusion 0.9884 ± 0.0009; isotonic 0.9849 ± 0.0014 | `fusion_ablation_isotonic.json` |
 | Per-cancer-type AUC | LUAD 0.9825 · OV 0.9930 · CRC 0.9754 · BRCA 0.9738 · HCC 0.7221 — the spread is real, and that is the interesting part | `per_cancer_sens_at_spec.json` |

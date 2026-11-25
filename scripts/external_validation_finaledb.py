@@ -368,6 +368,49 @@ def main() -> int:
         ss = np.concatenate([score[idx], score[healthy]])
         per_dis[dis] = {"n": int(idx.sum()), **_auc_ci(yy, ss)}
 
+    # ---- depth control ---------------------------------------------------
+    # Sequencing depth is the confound the methylation channel's null was
+    # made of, and the ccRCC cohort turned out to carry it (depth alone
+    # separates its two arms at AUC 0.8333). So the external cohorts get
+    # checked against it too: does depth alone separate the classes
+    # here, and does the model's separation survive it?
+    sample_order = sorted(s["sample"] for s in samples)
+    counts_by_sample = {
+        s["sample"]: s.get("fsd_fragment_count")
+        for s in (manifest.get("samples") or [])
+    }
+    depth_control = {}
+    for pub in sorted(set(stte.tolist())):
+        m = stte == pub
+        block: dict = {"n": int(m.sum())}
+        if len(set(yte[m].tolist())) < 2:
+            block["note"] = ("case-only publication: an AUC against depth is "
+                             "not computable, and neither is the depth-removed "
+                             "reading")
+            depth_control[pub] = block
+            continue
+        depths = np.array([counts_by_sample.get(s) or np.nan
+                            for s in np.array(sample_order)[m]], dtype=float)
+        if np.isnan(depths).any():
+            block["note"] = "the fragment counts are missing for some samples"
+            depth_control[pub] = block
+            continue
+        block["median_fragment_count_cancer"] = int(
+            np.median(depths[yte[m] == 1]))
+        block["median_fragment_count_non_cancer"] = int(
+            np.median(depths[yte[m] == 0]))
+        block["auc_depth_alone"] = _auc_ci(yte[m], depths)["auc"]
+        block["auc_model"] = per_pub[pub]["auc"]
+        design = np.vstack([depths, np.ones_like(depths)]).T
+        beta, *_ = np.linalg.lstsq(design, score[m], rcond=None)
+        residual = score[m] - design @ beta
+        block["auc_model_with_depth_removed"] = _auc_ci(yte[m], residual)["auc"]
+        depth_control[pub] = block
+    depth_control["note"] = (
+        "Does sequencing depth separate the classes on its own, and does "
+        "the model's separation survive it? The score is regressed on "
+        "the depth and what is left is scored again.")
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -407,6 +450,7 @@ def main() -> int:
         "pooled_external_auc": pooled,
         "pooled_external_auc_matched_publications_only": pooled_matched,
         "harmonization_sensitivity": harmonization_sensitivity,
+        "depth_control": depth_control,
         "training_derived_threshold": {
             "specificity_target": thr_spec,
             "threshold": round(train_threshold, 6),
@@ -423,9 +467,11 @@ def main() -> int:
             "external validation on public data, not a clinical validation: "
             "the non-cancer arm is small and comes from different "
             "publications than the cancer arm in places, so the pooled AUC "
-            "mixes a study shift with a cohort-composition shift. Read the "
-            "per-publication and per-disease rows before quoting the pooled "
-            "number."),
+            "mixes a study shift with a cohort-composition shift. The cancer "
+            "arm is advanced-stage where the public records characterise it "
+            "(see the section above), so these numbers say nothing about "
+            "early detection. Read the per-publication and per-disease rows "
+            "before quoting the pooled number."),
     }
 
     os.makedirs(os.path.dirname(args.out_json) or ".", exist_ok=True)
@@ -487,6 +533,50 @@ def main() -> int:
         else:
             md.append(f"| {dis} | {row['n']} | {row['auc']} "
                       f"[{row['ci_lo']}, {row['ci_hi']}] |")
+    # ---- the depth control ----------------------------------------------
+    md += ["\n## Is the separation the sequencing depth?\n"]
+    md += ["\n| Publication | AUC (depth alone) | AUC (model) | AUC (model, depth removed) |",
+           "|---|---:|---:|---:|"]
+    for pub in sorted(k for k in depth_control if k != "note"):
+        block = depth_control[pub]
+        if block.get("auc_depth_alone") is None:
+            md.append(f"| {pub} | - | - | {block.get('note', 'not computable')} |")
+        else:
+            md.append(f"| {pub} | {block['auc_depth_alone']} | "
+                      f"{block['auc_model']} | "
+                      f"{block['auc_model_with_depth_removed']} |")
+    md += ["\n" + depth_control["note"] + "\n"]
+
+    # ---- the stage of the held-out cohort ------------------------------
+    # The stage annotation lives in its own artifact, read from public
+    # records on the date that artifact records. It is rendered here so
+    # the document stays reproducible: this section was hand-written
+    # once, and a hand-written section inside a generated document is one
+    # the next run silently deletes.
+    stage_path = os.path.join(_REPO_ROOT, "results",
+                              "external_cohort_stage_annotation.json")
+    if os.path.exists(stage_path):
+        with open(stage_path) as handle:
+            stage = json.load(handle)
+        labels = {"1": "1 — Snyder 2016", "7": "7 — Sun 2019",
+                  "9": "9 — Adalsteinsson 2017"}
+        retrieved = stage["per_publication"]["1"]["retrieved"]
+        md += ["\n## What stage is this cohort at?\n"]
+        md += ["\n**Late stage, where the public records say so.** FinaleDB's "
+               "sample\nrecord carries no stage field, so the stage had to be "
+               "read from the\nrecords that describe each publication "
+               "(`results/external_cohort_stage_annotation.json`, read "
+               f"{retrieved}):\n"]
+        md += ["\n| Publication | Stage | Where the statement comes from |",
+               "|---|---|---|"]
+        for pub in sorted(stage["per_publication"]):
+            entry = stage["per_publication"][pub]
+            cell = ("not resolved here"
+                    if entry["stage_status"] == "unresolved"
+                    else f"**{entry['stage_label']}**")
+            md.append(f"| {labels.get(pub, pub)} | {cell} | "
+                      f"{entry['source']} |")
+        md += ["\n" + stage["implication"] + "\n"]
     md += ["\n## Honest framing\n", payload["honest_framing"] + "\n"]
     os.makedirs(os.path.dirname(args.out_md) or ".", exist_ok=True)
     with open(args.out_md, "w") as f:

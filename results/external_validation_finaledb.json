@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-17T01:52:52.594356+00:00",
+  "generated_at": "2026-11-25T12:55:28.567738+00:00",
   "design": {
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019) -- n=627",
     "test": "FinaleDB publications 1 ([1, 7, 9]), 7 ([1, 7, 9]), 9 ([1, 7, 9]) -- blood plasma only, never trained on",
@@ -116,6 +116,29 @@
         "n_neg": 22
       }
     }
+  },
+  "depth_control": {
+    "1": {
+      "n": 52,
+      "median_fragment_count_cancer": 46074166,
+      "median_fragment_count_non_cancer": 35921201,
+      "auc_depth_alone": 0.5271,
+      "auc_model": 0.708,
+      "auc_model_with_depth_removed": 0.6718
+    },
+    "7": {
+      "n": 31,
+      "median_fragment_count_cancer": 23549050,
+      "median_fragment_count_non_cancer": 22262238,
+      "auc_depth_alone": 0.5342,
+      "auc_model": 0.9444,
+      "auc_model_with_depth_removed": 0.7436
+    },
+    "9": {
+      "n": 239,
+      "note": "case-only publication: an AUC against depth is not computable, and neither is the depth-removed reading"
+    },
+    "note": "Does sequencing depth separate the classes on its own, and does the model's separation survive it? The score is regressed on the depth and what is left is scored again."
   },
   "training_derived_threshold": {
     "specificity_target": 0.99,
@@ -254,5 +277,5 @@
       "reason": "n=2"
     }
   },
-  "honest_framing": "The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. Read the per-publication and per-disease rows before quoting the pooled number."
+  "honest_framing": "The test publication was never used for training, feature extraction statistics, or hyper-parameter selection. This is an external validation on public data, not a clinical validation: the non-cancer arm is small and comes from different publications than the cancer arm in places, so the pooled AUC mixes a study shift with a cohort-composition shift. The cancer arm is advanced-stage where the public records characterise it (see the section above), so these numbers say nothing about early detection. Read the per-publication and per-disease rows before quoting the pooled number."
 }

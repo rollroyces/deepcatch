@@ -37,7 +37,14 @@ kinds and reports `partial`.
   7 is whole-genome and transfers (0.9444); publication 1 is also
   whole-genome and transfers less well (0.708, thirteen tumour types
   against nine controls); publication 9 is whole-exome and transfers
-  only partly (breast 0.6938, prostate 0.7127).
+  only partly (breast 0.6938, prostate 0.7127). **Depth is not what
+  makes those numbers**: sequencing depth on its own separates neither
+  publication's classes above chance (AUC 0.5342 on publication 7, 0.5271
+  on publication 1), so the transfer is not a library-depth artefact.
+  Part of the score is depth-correlated all the same, and partialling the
+  depth out lowers publication 7's AUC from 0.9444 to 0.7436 and
+  publication 1's from 0.708 to 0.6718 (`depth_control` in
+  `results/external_validation_finaledb.json`).
 - *Assay*: publication 9 is whole-exome, everything else is
   whole-genome, so the assay shift is measurable rather than assumed.
 
