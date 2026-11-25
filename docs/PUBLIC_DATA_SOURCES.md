@@ -401,6 +401,15 @@ plasma from a screening population rather than on simulated ctDNA:
   small, so this would be a measurement to report honestly rather than a
   claim to make.
 
+**The label table, derived and in the shape the extractor reads.** The
+depositor's `phtscfx_meta.csv` is a clinical table, not a cohort table,
+so it is converted into the tab-separated form the cohort extractor
+takes (`sample_id` as the key, `label` 1/0 from `cancer`, and the clinical
+columns kept as published) and written next to the cohort's features
+under `data/external_cohort/` — the same place the ccRCC cohort's
+features live, which is local rather than versioned (the `data/` tree is
+ignored; the results are what the repository commits).
+
 **Not yet run, and what it would cost.** The download is 7.6 GB and the
 per-sample fragment files are in one tarball rather than the
 per-sample files the extractor reads, so the cohort needs an unpacking
