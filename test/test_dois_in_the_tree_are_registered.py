@@ -75,6 +75,17 @@ def test_every_doi_in_the_tree_is_registered():
     """No DOI in the tracked tree may point at a record that does not exist."""
     assert _CHECKER.is_file(), "scripts/check_dois.py is missing"
 
+    # Two prefixes belong to DataCite, not Crossref: Zenodo's, where this
+    # repository's releases are archived, and arXiv's, which assigns its
+    # own DOIs to the preprints it posts. An identifier checked against
+    # the wrong registry reports as unregistered when it is registered,
+    # so the routing is checked here rather than discovered the first
+    # time a real arXiv DOI enters the tree.
+    checker = _load_checker()
+    assert checker._registry_for("10.48550/arXiv.2202.01037") == "datacite"
+    assert checker._registry_for("10.5281/zenodo.24453044") == "datacite"
+    assert checker._registry_for("10.1038/s41586-019-1272-6") == "crossref"
+
     proc = subprocess.run(
         [sys.executable, str(_CHECKER), "--quiet", "--delay", "0.3"],
         cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=900,

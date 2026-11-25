@@ -91,9 +91,22 @@ registries:
 |---|---|---|
 | the release (Zenodo) | **DataCite** | DataCite issued the DOI, and ORCID's DataCite integration covers software and datasets |
 | the preprint (bioRxiv) | **Crossref** | bioRxiv mints Crossref DOIs (prefix 10.1101) |
+| the preprint (arXiv, if that route is used instead) | **DataCite** | arXiv assigns its own DOIs (`10.48550/arXiv.NNNNNN`) and "the associated article metadata is submitted to DataCite", not Crossref — so the source to pick depends on which server posted the preprint, and the arXiv case is DataCite |
 
 Search for the DOI, confirm the record, and grant the source
 permission. Two works, two clicks each.
+
+There is a second route, and for the preprint it may be the cheaper one.
+ORCID's **Add DOI** ("Works → Add work → Add DOI") accepts a DOI, a
+PubMed ID or an arXiv ID, fills the record in from the registry and lets
+the author review the imported data before saving it — and it needs **no
+trusted-party grant**, so nothing is delegated to a registry. And if the
+ORCID iD is supplied *at submission*, the publisher passes it to the
+registry, so the work arrives by itself: "all your publications with a
+DOI will automatically be added to ORCID as they are published (as long
+as you have submitted your ORCID to the publisher during the submission
+process)". The submission forms in §3.1 and §3.2 both carry the iD, so
+the preprint may not need a manual step at all.
 
 ### 3.3 Claim the Google Scholar profile
 

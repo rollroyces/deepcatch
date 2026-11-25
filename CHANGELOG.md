@@ -289,6 +289,36 @@ cohort size.
   committed `paper/biorxiv_submission_v2.3.0.pdf` and use the current
   title in the form. `docs/JOURNAL_SUBMISSION.md` now says so next to
   the file it names.
+- **The arXiv fallback was documented as if arXiv had no rules of its
+  own.** arXiv is the only venue that asks for no institutional
+  affiliation, so after the bioRxiv rejection it is the route that does
+  not depend on the affiliation being settled -- but it has three
+  requirements that would have stopped the submission, and none of them
+  was written down. Its metadata rules say "abstracts longer than 1920
+  characters will not be accepted" and the manuscript's abstract is
+  2,940, which bioRxiv accepts and arXiv will not; the submission guide
+  says "Authors are expected to self-submit" and that a third-party
+  submission "without prior authorization will be removed", so on arXiv
+  the author presses "Submit Article"; and the same guide warns that a
+  new submitter "may be required to find endorsements", which is a real
+  risk for a first submission. The authors-field policy adds the sharpest
+  one: a claimed affiliation "should be current in the conventional
+  sense" and misrepresentation is "possible grounds for immediate and
+  permanent suspension" -- so choosing arXiv defers the affiliation
+  question rather than removing it. `docs/JOURNAL_SUBMISSION.md` gains
+  an arXiv section that states each requirement in arXiv's own words,
+  and `docs/SCHOLAR_VISIBILITY.md` section 3.2 records that an arXiv
+  preprint's DOI is deposited to **DataCite** (the `10.48550` prefix), not
+  Crossref, so the registry to pick when the work is added to the ORCID
+  record depends on which server posted it. The DOI checker learned the
+  same thing: it sent every identifier to Crossref except a Zenodo one,
+  so a real arXiv DOI -- which arXiv deposits to DataCite -- would have
+  been reported as unregistered the first time one entered the tree.
+  `docs/SCHOLAR_VISIBILITY.md` §3.2 also records the cheaper route for
+  the works list: ORCID's **Add DOI** fills the record in from the
+  registry, needs no trusted-party grant, and if the ORCID iD is given
+  at submission the publisher passes it on and the work arrives by
+  itself.
 - **The JOSS paper was in the format JOSS stopped accepting.** JOSS
   changed its submission format in late 2025, and its own review bot now
   checks the paper file for a *State of the field*, a *Software design*, a

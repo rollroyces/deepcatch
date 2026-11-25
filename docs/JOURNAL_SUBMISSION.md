@@ -76,6 +76,27 @@ independent researcher can produce.
 | **Corresponding-author email** | ⬜ author action — deliberately not in the repo |
 | **Discoverability (ORCID, Google Scholar)** | ✅ the metadata is consistent and guarded; the three account-side steps are in [`docs/SCHOLAR_VISIBILITY.md`](SCHOLAR_VISIBILITY.md) (post the preprint, add the two works to the ORCID record, claim one Scholar profile) |
 
+### arXiv — the affiliation-free route, and what it actually costs
+
+arXiv is the only venue that does not ask for an institutional
+affiliation, so after the 2026-11-25 bioRxiv rejection it is the route
+that does not depend on the affiliation question being settled. Its
+requirements are quoted from arXiv's own submission documentation
+(https://info.arxiv.org/help/submit/index.html,
+https://info.arxiv.org/help/prep.html, checked 2026-11-25).
+
+| Requirement | State |
+|---|---|
+| **Account** | ⬜ author action — arXiv's registration asks for email, username, password and a **captcha** (the captcha is the author's to solve). The panel's registration page has the email pre-filled |
+| **Endorsement** | ⚠️ **possible.** "We only accept submissions from registered authors. If you are a new user or are submitting to a new category, you may be required to find endorsements." A first-time submitter may be asked for an endorsement; a moderator can auto-endorse a submission that is plainly in a category's scope |
+| **Abstract length** | ⚠️ **the current abstract will be rejected.** "Keep it short — abstracts longer than **1920 characters** will not be accepted; abridge your abstract if necessary." The manuscript's abstract is **2,940 characters** (fine for bioRxiv's 3,000-character limit, too long for arXiv). Shortening it is a decision, not a formality: the same text has to satisfy both limits, so the manuscript's abstract is what would be abridged |
+| **Self-submission** | ⬜ **the author must press "Submit Article".** "Authors are expected to self-submit. Submissions by a third party are only accepted under limited conditions... Prior authorization is required for such submissions. If you are not the author of this work you must contact arXiv administrators for permission. Submissions without prior authorization will be removed." So on arXiv the author submits; what an assistant can do is prepare every field and the source archive |
+| **Affiliation must be current** | ⚠️ **the same question, with a harsher consequence.** arXiv's authors-field policy: "It is a violation of our policies to misrepresent your identity or organizational affiliation. Claimed affiliation should be current in the conventional sense: e.g., physical presence, funding, e-mail address, etc. Misrepresentation of identity or affiliation, for any reason, is possible grounds for immediate and permanent suspension." Declaring "Independent Researcher" is therefore safe only while it is true — the affiliation question is not avoided by choosing arXiv, only deferred |
+| **Files** | ✅ the source archive `dist/deepcatch_v2_3_0.tar.gz` (flattened TeX plus the three figures), built and verified standalone by `python3 scripts/make_arxiv_bundle.py --verify` and uploaded by the paper workflow as the `deepcatch-arxiv-source` artifact — arXiv takes TeX source, not a PDF |
+| **DOI** | ✅ automatic: "Articles submitted to arXiv are automatically assigned DOIs that correspond to their arXiv ID, and the associated article metadata is submitted to **DataCite**." So an arXiv preprint's DOI is a **DataCite** DOI (`10.48550/arXiv.NNNNNN`), not a Crossref one — which changes the registry to pick when the work is added to the ORCID record (see `docs/SCHOLAR_VISIBILITY.md` §3.2) |
+| **Timeline** | ℹ️ moderation's quality-assurance checks "can take between one to four days"; submissions are announced Sunday through Thursday |
+| **Generative AI** | ✅ handled: "Generative AI language tools should not be listed as an author" — the disclosure paragraph already in both manuscripts covers it |
+
 ### JOSS — one structural gap
 
 | Requirement | State |

@@ -13,8 +13,9 @@ Two registries, because two kinds of DOI are in use here:
 * Crossref indexes the journal literature (`api.crossref.org/works/<doi>`).
   A 404 from it means the identifier is not registered there.
 * DataCite indexes Zenodo, which is where this repository's own releases are
-  archived (`api.datacite.org/dois/<doi>`). A Zenodo DOI is *not* in
-  Crossref, so checking it there would report a false failure.
+  archived, and arXiv, which assigns its own DOIs to the preprints it posts
+  (`api.datacite.org/dois/<doi>`). Neither a Zenodo nor an arXiv DOI is *in*
+  Crossref, so checking one there would report a false failure.
 
 Usage
 -----
@@ -84,7 +85,25 @@ _INTENTIONALLY_UNRESOLVED = {
     "10.1101/2023.10.13.23296542": (
         "the Finaletoolkit identifier, which does not resolve; the "
         "bibliography file says so where it would have been"),
+    "10.48550/arXiv.NNNNNN": (
+        "the shape of an arXiv-assigned DOI, written where the submission "
+        "documents explain which registry issues it; the preprint itself "
+        "does not exist yet"),
 }
+
+
+def _registry_for(doi: str) -> str:
+    """The registry that issued a DOI: "datacite" or "crossref".
+
+    Two prefixes are DataCite's, and both matter here. Zenodo archives
+    this repository's releases (`10.5281/`) and arXiv assigns its own
+    DOIs to the preprints it posts (`10.48550/`, deposited to DataCite
+    rather than Crossref). A Zenodo or arXiv identifier checked against
+    Crossref reports a false failure, because Crossref never held it.
+    """
+    if doi.startswith("10.5281/") or doi.startswith("10.48550/"):
+        return "datacite"
+    return "crossref"
 
 
 def _tracked_text_files() -> list[Path]:
@@ -150,8 +169,7 @@ def _fetch(url: str) -> dict:
 
 def _is_registered(doi: str) -> tuple[bool | None, str]:
     """(registered, note). None means the registry could not be reached."""
-    zenodo = doi.startswith("10.5281/")
-    if zenodo:
+    if _registry_for(doi) == "datacite":
         url = "https://api.datacite.org/dois/" + urllib.parse.quote(doi, safe="")
         try:
             data = _fetch(url)
