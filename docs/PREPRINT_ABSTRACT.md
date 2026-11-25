@@ -6,7 +6,7 @@
 
 # An Open-Source Benchmark for Panel-Based Ultra-Sensitive Detection of Circulating Tumor DNA from Real Tumor Mutations
 
-**Authors:** Yu Ching Lam — The Chinese University of Hong Kong (ORCID 0009-0008-9113-769X)
+**Authors:** Yu Ching Lam — Independent Researcher (ORCID 0009-0008-9113-769X)
 
 **Repository:** https://github.com/rollroyces/deepcatch (v2.3.0)
 

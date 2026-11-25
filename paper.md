@@ -7,7 +7,7 @@ tags:
   - fragmentomics
   - cancer-detection
 authors:
-  - name: Yu Ching Lam (The Chinese University of Hong Kong)
+  - name: Yu Ching Lam (Independent Researcher)
     orcid: 0009-0008-9113-769X
     affiliation: 1
 affiliations:

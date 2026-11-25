@@ -1,7 +1,7 @@
 # DeepCatch Methylation Project — Scope & Plan
 
 **Status:** Active planning (started 2026-09-10)
-**Author:** Yu Ching Lam (The Chinese University of Hong Kong)
+**Author:** Yu Ching Lam (Independent Researcher)
 **ORCID:** [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
 **Scope:** CpG methylation-based cfDNA cancer detection as a complementary channel to the existing fragmentomics pipeline.
 

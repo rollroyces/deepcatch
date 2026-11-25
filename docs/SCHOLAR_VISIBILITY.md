@@ -140,15 +140,15 @@ the ones a reviewer compares against each other:
 
 | Surface | The affiliation it declares | Guarded? |
 |---|---|---|
-| `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `The Chinese University of Hong Kong` | yes, exactly |
-| `CITATION.cff` (and the Zenodo record, which archived the **earlier** value) | `The Chinese University of Hong Kong` — the Zenodo v2.3.0 record still carries the previous string, `Independent Researcher (no institutional affiliation; verified email domain umich.edu)`, beside the ORCID iD `0009-0008-9113-769X`; that version is immutable, so the change reaches the archive as a new release with a new DOI | yes, exactly |
-| `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `The Chinese University of Hong Kong` | yes, exactly |
-| `paper.md` (the JOSS paper's author field) | `The Chinese University of Hong Kong` | yes, exactly |
-| `MODEL.md` (the model card's author row) | `The Chinese University of Hong Kong` | yes, exactly |
-| `paper/METHODS_PAPER.md` (the long-form methods manuscript) | `The Chinese University of Hong Kong` (a parenthetical on the author's footnote line) | yes, since 2026-11-24 |
-| `paper/PAPER.md` (the earlier panel-only revision) | `The Chinese University of Hong Kong` | yes, since 2026-11-24 |
-| the bioRxiv / arXiv form values in `paper/BIORXIV_SUBMISSION.md` | `The Chinese University of Hong Kong` | yes, exactly (two rows) |
-| the docs-site bylines (`docs/README.md`, `docs/site/index.html`) | `The Chinese University of Hong Kong` | no — a byline may add a locality |
+| `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` | yes, exactly |
+| `CITATION.cff` (and the Zenodo record, which archived the same declaration) | `Independent Researcher` — and the Zenodo v2.3.0 record carries that same string with a qualifier, `Independent Researcher (no institutional affiliation; verified email domain umich.edu)`, read back from the published record on 2026-11-25; that version is immutable, so a later change of declaration reaches the archive as a new release with a new DOI | yes, exactly |
+| `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` | yes, exactly |
+| `paper.md` (the JOSS paper's author field) | `Independent Researcher` | yes, exactly |
+| `MODEL.md` (the model card's author row) | `Independent Researcher` | yes, exactly |
+| `paper/METHODS_PAPER.md` (the long-form methods manuscript) | `Independent Researcher` (a parenthetical on the author's footnote line) | yes, since 2026-11-24 |
+| `paper/PAPER.md` (the earlier panel-only revision) | `Independent Researcher` | yes, since 2026-11-24 |
+| the bioRxiv / arXiv form values in `paper/BIORXIV_SUBMISSION.md` | `Independent Researcher` | yes, exactly (two rows) |
+| the docs-site bylines (`docs/README.md`, `docs/site/index.html`) | `Independent Researcher` | no — a byline may add a locality |
 
 The two markdown manuscripts put the affiliation in prose, so their check
 is that the declared string *appears* in the author block, not that the
@@ -163,11 +163,11 @@ institutions:
 | Surface | What it says today |
 |---|---|
 | the public GitHub profile (`rollroyces`) | "ML & bioinformatics engineer — production AI for mRNA design and cfDNA cancer detection. M.S. ADS @ Michigan · bioinformatics @ CUHK · HKT, remote-OK" (read 2026-11-25) — **the one public surface that names an institution in the present tense, and it is not Michigan.** CUHK is where this project's *collaborating* laboratory is (`wiki/Jiang-4mer-Validation.md`: Professor Jiang's laboratory, the source of the 129 real plasma samples), so "bioinformatics @ CUHK" reads as an employment to anyone who does not know that; the Michigan half is the M.S. ADS programme, which the ORCID record carries as an open-dated employment. **No guard compares this** — a GitHub profile is not a tracked file, and it is a public statement of the author's situation |
-| `TEAM.md` §1.1 | "Lead — Yu Ching Lam (The Chinese University of Hong Kong)", and "Location: Hong Kong SAR, The Chinese University of Hong Kong" |
-| `.github/SPONSORS.md` | "Independent, reproducible, open-source cancer detection. Built in Hong Kong. No paywall. No lock-in." and "I'm a genomics and bioinformatics student at the Chinese University of Hong Kong. I don't have a lab of my own or a clinical cohort of my own" |
-| `docs/site/index.html` | "a genomics and bioinformatics student at The Chinese University of Hong Kong. No lab of my own." |
-| `docs/PATH_TO_IMPACT.md` | "Affiliation: \"The Chinese University of Hong Kong\"" |
-| `METHYLATION_PROJECT.md` | "**Author:** Yu Ching Lam (The Chinese University of Hong Kong)" — its earlier "no institutional affiliation" line was the author's own statement of 2026-09-10 and has been corrected |
+| `TEAM.md` §1.1 | "Lead — Yu Ching Lam (Independent Researcher)", and "Location: Hong Kong SAR, Independent Researcher" |
+| `.github/SPONSORS.md` | "Independent, reproducible, open-source cancer detection. Built in Hong Kong. No paywall. No lock-in." and "I'm an independent researcher in Hong Kong. I don't have a lab of my own or a clinical cohort of my own, and DeepCatch runs entirely on open data." |
+| `docs/site/index.html` | "a genomics and bioinformatics student at Independent Researcher. No lab of my own." |
+| `docs/PATH_TO_IMPACT.md` | "Affiliation: \"Independent Researcher\"" |
+| `METHYLATION_PROJECT.md` | "**Author:** Yu Ching Lam (Independent Researcher)" — its earlier "no institutional affiliation" line was the author's own statement of 2026-09-10 and has been corrected |
 | `docs/JOURNAL_SUBMISSION.md` | the gate row that records the decision itself |
 
 The citation metadata's parenthetical is a qualifier *about* the
@@ -184,16 +184,9 @@ compares them with the manuscript.
 It ignores a trailing parenthetical and nothing else — a locality added
 to one surface only is the drift it exists to catch.
 
-bioRxiv's submission guide asks for an affiliation so that there is an entity to contact about research misconduct, and it does not consider a job title to be one. `The Chinese University of Hong Kong` is that entity, and it is current — so the rejection of 2026-11-25 (which was made against a manuscript declaring no institution at all) no longer applies to this manuscript. The arXiv route remains the fallback for any reason to need one, and it asks for the same string: arXiv's registration takes an *organization* ("If you are unaffiliated you may enter 'Independent' as your organization", which is no longer needed) and an *email affiliated with the organization*, so the account should carry the university and a CUHK address.
+bioRxiv's submission guide asks for an affiliation so that there is an entity to contact about research misconduct, and it does not consider a job title to be one. **`Independent Researcher` is therefore not an entity bioRxiv can accept**, so the preprint goes to arXiv, whose registration asks for the same thing and offers "Independent" by name: *"If you are unaffiliated you may enter 'Independent' as your organization."* The preprint's own declaration is `Independent Researcher` on every surface, so the form's organization and the uploaded PDF's author block agree — and arXiv's currency rule ("physical presence, funding, e-mail address") is why the account's email should be a personal address rather than an institutional one.
 
-See
-an entity to contact about research misconduct, and it does not
-consider a job title to be one. The ORCID record still shows one
-public employment (University of Michigan, no start or end date), so
-"who is the author, and under which affiliation" is a real question
-rather than a formatting one — and it is the author's to answer. See
-§7 of `paper/BIORXIV_SUBMISSION.md` for the options and what
-each one costs.
+The ORCID record is the one surface that still says something else: it shows one public employment (University of Michigan, no start or end date), which is the M.S. he has finished and which needs an end date, with the CUHK study belonging in the record's educations section. See §7 of `paper/BIORXIV_SUBMISSION.md` for what is left to do.
 
 **Three public surfaces have to be reconciled, and a fourth is already
 fixed.** The ORCID record carries an open-dated University of Michigan

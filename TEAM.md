@@ -15,12 +15,12 @@ collaborative team as the right people appear.
 
 ## 1. Current team (as of 2026-08-28)
 
-### 1.1 Lead — Yu Ching Lam (The Chinese University of Hong Kong)
+### 1.1 Lead — Yu Ching Lam (Independent Researcher)
 
 **Role**: project founder, sole author, sole maintainer, sole
 contributor of every commit across both repos as of 2026-08-28.
 
-**Location**: Hong Kong SAR, The Chinese University of Hong Kong.
+**Location**: Hong Kong SAR (location only, **not** an institutional affiliation).
 
 **What Yu Ching Lam does**:
 - Writes all code (Python, shell, LaTeX)

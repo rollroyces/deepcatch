@@ -31,7 +31,7 @@ partner that makes someone else's assay clinically valid.
 ```
 1. Register at orcid.org (free, 5 min)
 2. Register at biorxiv.org with ORCID (free, 5 min)
-3. Affiliation: "The Chinese University of Hong Kong"
+3. Affiliation: "Independent Researcher"
 4. Submit abstract from docs/PREPRINT_ABSTRACT.md
 5. Link to github.com/rollroyces/deepcatch in the preprint
 ```

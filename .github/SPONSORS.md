@@ -84,7 +84,7 @@ If you sponsor and decide DeepCatch isn't useful, email me within 30 days for a 
 
 ## Why I built this
 
-I'm a genomics and bioinformatics student at the Chinese University of Hong Kong. I don't have a lab of my own or a clinical cohort of my own, and DeepCatch runs entirely on open data. I built it because the problem is important and the open data is good enough.
+I'm an independent researcher in Hong Kong. I don't have a lab of my own or a clinical cohort of my own, and DeepCatch runs entirely on open data. I built it because the problem is important and the open data is good enough.
 
 The tradeoff: I can publish on bioRxiv (with ORCID + "Independent Researcher" affiliation), I can build on GitHub, I can use only public datasets. I can't access paywalled supplements, run wet-lab validations, or hire postdocs.
 

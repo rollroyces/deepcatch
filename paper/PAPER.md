@@ -12,7 +12,7 @@
 
 **Authors:** Yu Ching Lam¹
 
-¹ The Chinese University of Hong Kong, DeepCatch Project — github.com/rollroyces/deepcatch · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
+¹ Independent Researcher, DeepCatch Project — github.com/rollroyces/deepcatch · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
 
 **Corresponding author:** Yu Ching Lam (via GitHub issues on the project repository)
 
