@@ -59,6 +59,9 @@ QUOTED_NUMBERS = [
       "paper/README.md", "paper/REPRODUCE.md", "MODEL.md", "README.md",
       "README.zh-CN.md", "RESULTS.md", "REVIEWERS.md", "CITATION.cff",
       "docs/ARXIV_ABSTRACT.md", "docs/EXTERNAL_VALIDATION.md",
+      # The ccRCC section now quotes the held-out publication's DeLong
+      # lower bound, to say which interval belongs to which cohort.
+      "docs/PUBLIC_DATA_SOURCES.md",
       "docs/PREPRINT_ABSTRACT.md", "docs/site/index.html", "results/README.md"]),
     ("external_validation_finaledb.json",
      ("pooled_external_auc_matched_publications_only", "auc"),

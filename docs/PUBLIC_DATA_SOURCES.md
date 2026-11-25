@@ -292,6 +292,19 @@ cohort, is a decision about the manuscript's headline and is the
 author's — the artifact and this section exist so the choice can be
 made on the numbers.
 
+**One thing to watch if it goes into the text.** This cohort's AUC
+renders as `0.9444`, and so do two other figures in this repository: the
+held-out FinaleDB publication 7's AUC (`0.9444`, CI [0.8731, 1.0000],
+n=31) and the methylation channel's leave-one-cohort-out AUC
+(`0.9444`). Three different measurements, one rendering — the interval
+and the cohort size are what tell them apart. The repository's figure
+guard cannot separate them either: a rendering shared by more than one
+pinned figure is skipped, because a document that writes "0.9444"
+cannot be resolved to one of them by its digits. So if this cohort
+enters the manuscript, the number has to arrive with its cohort
+attached ("0.9444 on the ccRCC cohort, n=6 vs 6") and never as a bare
+0.9444 standing next to the other one.
+
 **One change to the repository's code came out of it.** The deposited
 fragment files are standard BED files and carry a header line
 (`#chrom start end name mapq strand`), which the fragment reader
