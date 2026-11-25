@@ -105,11 +105,14 @@ with the depositor's own stage column and diagnosis dates, and it has been
 scored with the same protocol as the ccRCC cohort
 (`results/external_cohort_zenodo_phts.json`). The tumour-naive model does
 **not** separate cancer from no cancer there: AUC **0.4506**, CI95
-[0.3343, 0.5669], sampled permutation p = 0.80, and the stage breakdown is
-flat — the pre-diagnosis arm (n=9) at chance (AUC 0.5, CI [0.3052,
-0.6948]), stage 0 (n=5) 0.556, stages 0-1 (n=27) 0.4119, stages 2-3 (n=12)
-0.575, all staged (n=39) 0.4621, and no stage monotonicity (Spearman rho
-0.172, p 0.297).
+[0.3343, 0.5669], sampled permutation p = 0.80, and the null survives the
+harmonisation choice — three variants that let the cohort normalise itself
+give 0.4506 / 0.4563 / 0.4563, and the control that normalises it by the
+*training* cohort's statistics gives 0.5388 [0.4232, 0.6544], still
+including 0.5. The stage breakdown is flat — the pre-diagnosis arm (n=9)
+at chance (AUC 0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556, stages 0-1
+(n=27) 0.4119, stages 2-3 (n=12) 0.575, all staged (n=39) 0.4621, and no
+stage monotonicity (Spearman rho 0.172, p 0.297).
 
 Two things have to travel with that number. The first is that this is
 **not a lead-time cohort**: the depositor's `date_diff` column puts every

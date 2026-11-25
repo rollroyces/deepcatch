@@ -84,6 +84,7 @@ EXPECTED_PHTS_CI_HI = 0.5669
 EXPECTED_PHTS_PERMUTATION_P = 0.8025
 EXPECTED_PHTS_PRE_AUC = 0.5
 EXPECTED_PHTS_SHORT_LONG_AUC = 0.6455
+EXPECTED_PHTS_ABSOLUTE_AUC = 0.5388
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -328,6 +329,17 @@ def test_the_cohort_numbers_are_pinned():
         "the direction of the depositor's published effect has flipped")
     assert phts["published_direction_check"]["direction_reproduced"] is True
     assert phts_cohort["doi"] == _PHTS_DOI
+    # The control that normalises the held-out cohort by the TRAINING
+    # cohort's statistics, so its absolute position in feature space is
+    # preserved. If the null is an artefact of the harmonisation, this is
+    # where it would show.
+    absolute = phts["harmonization_sensitivity"][
+        "train_global_test_train_statistics"]
+    assert absolute["auc"] == EXPECTED_PHTS_ABSOLUTE_AUC
+    assert absolute["ci_lo"] <= 0.5 <= absolute["ci_hi"], (
+        "the absolute-harmonisation control no longer includes 0.5 -- the "
+        "null has moved and the mechanism attributed to it has to be "
+        "re-measured")
 
 
 def test_every_document_that_mentions_the_cohort_states_its_limits():

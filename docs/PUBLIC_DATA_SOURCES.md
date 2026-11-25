@@ -460,9 +460,12 @@ tumour-naive model — trained on FinaleDB 6+8, never fitted on this
 cohort — does **not** separate cancer from no cancer here: AUC
 **0.4506**, CI95 [0.3343, 0.5669], sampled label-permutation p = 0.80
 (an exact enumeration is not possible at n=99; the test is sampled and
-seeded, and the artifact says so). All three harmonisations agree
-(0.4506 / 0.4563 / 0.4563), so the null is not an artefact of the
-harmonisation choice. The stage breakdown is flat: the pre-diagnosis arm
+seeded, and the artifact says so). The null survives the harmonisation
+choice: three variants that let the cohort normalise itself give
+0.4506 / 0.4563 / 0.4563, and the control that normalises it by the
+**training** cohort's statistics instead — so its absolute position in
+feature space is preserved — gives 0.5388 [0.4232, 0.6544], still
+including 0.5. The stage breakdown is flat: the pre-diagnosis arm
 (n=9) is at chance (AUC 0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556,
 stages 0-1 (n=27) 0.4119, stages 2-3 (n=12) 0.575, all staged (n=39)
 0.4621, and the stage gradient is not monotone (Spearman rho 0.172,

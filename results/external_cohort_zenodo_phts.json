@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-25T10:47:53.551376+00:00",
+  "generated_at": "2026-11-25T10:57:05.713827+00:00",
   "design": {
     "question": "Does the tumour-naive fragmentomics model, trained on FinaleDB publications 6+8, separate the plasma of a hereditary-cancer screening cohort with a malignant neoplasm from the plasma of the same cohort without one, in a cohort it has never seen?",
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019), n=627",
@@ -1088,7 +1088,15 @@
       "ci_hi": 0.5669,
       "n_pos": 49,
       "n_neg": 50
-    }
+    },
+    "train_global_test_train_statistics": {
+      "auc": 0.5388,
+      "ci_lo": 0.4232,
+      "ci_hi": 0.6544,
+      "n_pos": 49,
+      "n_neg": 50
+    },
+    "note": "The first three let the held-out cohort normalise itself, which is what pushes its scores into the model's saturated region. The fourth normalises it by the TRAINING cohort's statistics, so its absolute position in feature space is preserved: it is the control that says whether the null is an artefact of the harmonisation choice."
   },
   "limits": [
     "The 'pre-diagnosis' arm is not a lead-time arm. The depositor's own date_diff column puts every one of those draws between 1 and 7 days before the diagnosis, so the tumour was already present. A separation there is not an early-detection result, and this cohort cannot answer a lead-time question.",

@@ -618,18 +618,36 @@ def main() -> int:
         "fsd_short_fraction_100_150 and fsd_short_long_ratio are the same "
         "reading of the 100-150 and 150-220 bp windows.")
 
-    # The other two harmonisations, for the sensitivity block.
+    # The other harmonisations, for the sensitivity block. The fourth one
+    # is the control that matters here: every other variant lets the
+    # held-out cohort normalise itself, which is what pushes its scores
+    # into the model's saturated region. This one normalises the
+    # held-out cohort by the TRAINING cohort's statistics, so the
+    # cohort's absolute position in feature space is preserved.
+    def _zscore_by(X: np.ndarray, reference: np.ndarray) -> np.ndarray:
+        return (X - reference.mean(axis=0)) / np.maximum(
+            reference.std(axis=0), 1e-12)
+
     harmonization_sensitivity = {}
     for tag, tr_z, te_z in (
         ("train_global_test_global", _zscore(Xtr), _zscore(Xte)),
         ("train_global_test_per_publication", _zscore(Xtr), _zscore_by_group(Xte, stte)),
         ("train_per_study_test_per_publication",
          _zscore_by_group(Xtr, sttr), _zscore_by_group(Xte, stte)),
+        ("train_global_test_train_statistics",
+         _zscore(Xtr), _zscore_by(Xte, Xtr)),
     ):
         pca_s = PCA(n_components=n_components, random_state=0).fit(tr_z)
         lr_s = LogisticRegression(max_iter=2000).fit(pca_s.transform(tr_z), ytr)
         sc_s = lr_s.predict_proba(pca_s.transform(te_z))[:, 1]
         harmonization_sensitivity[tag] = _auc_ci(yte, sc_s)
+    harmonization_sensitivity["note"] = (
+        "The first three let the held-out cohort normalise itself, which "
+        "is what pushes its scores into the model's saturated region. The "
+        "fourth normalises it by the TRAINING cohort's statistics, so its "
+        "absolute position in feature space is preserved: it is the "
+        "control that says whether the null is an artefact of the "
+        "harmonisation choice.")
 
     # The preparation report: the genome build and the conversion, so
     # the artifact carries them rather than leaving them in a log.

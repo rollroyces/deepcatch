@@ -287,8 +287,11 @@ cohort size.
     is 7 days and the tumour was already there. An arm called
     "pre-diagnosis" is not an early-detection arm.
   * the tumour-naive model does **not** separate the classes: AUC
-    **0.4506** [0.3343, 0.5669], sampled permutation p = 0.80, and all
-    three harmonisations agree (0.4506 / 0.4563 / 0.4563). The stage
+    **0.4506** [0.3343, 0.5669], sampled permutation p = 0.80, and the
+    null survives the harmonisation choice -- three variants that let the
+    cohort normalise itself give 0.4506 / 0.4563 / 0.4563, and the
+    control that normalises it by the **training** cohort's statistics
+    gives 0.5388 [0.4232, 0.6544], still including 0.5. The stage
     breakdown is flat -- the pre-diagnosis arm (n=9) at chance, stage 0
     0.556, stages 0-1 0.4119, stages 2-3 0.575, all staged 0.4621, no
     stage monotonicity (rho 0.172, p 0.297). This is the first
