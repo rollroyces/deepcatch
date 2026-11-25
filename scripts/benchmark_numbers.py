@@ -10,6 +10,21 @@ number inside it, and the documents that must contain it.
 ``test/test_paper_numbers_match_artifacts.py`` imports that list and
 fails the build when an artifact is regenerated and the prose is not
 updated, so the two never disagree about what is quotable.
+
+What this list does not cover, established by an audit on 2026-11-25 that
+checked every four-decimal figure in the tracked documents against the
+numbers the committed artifacts hold: the figures it does not pin are the
+companion repositories' and an external deposit's, or derived values (a
+difference between two runs, a DeLong bound) -- traceable, but not from
+this tree. Two blind spots are worth naming. Some figures live in binary
+artifacts (``results/alphamissense_real_index_full.pkl`` and
+``results/alphamissense_index_cohort.pkl`` hold the AlphaMissense figures
+``docs/ALPHAMISSENSE_REAL_LLR.md`` quotes), which no diff shows and no
+check here reads. And a figure that no artifact holds at all is not
+caught by anything in this file: the audit found two such figures on the
+project's wiki -- a nested-CV AUC and an optimal-k AUC whose run's input
+and output were never committed -- and they are now labelled as such on
+the page rather than presented as reproducible.
 """
 from __future__ import annotations
 
