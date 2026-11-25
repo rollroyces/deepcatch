@@ -46,11 +46,13 @@ import os
 import subprocess
 from datetime import datetime, timezone
 
-# The nucleosome ladder, as in the PHTS preparation script: the
-# mono-nucleosome peak has to be the mode, and the di-nucleosome
-# shoulder has to be visible.
-_MODE_RANGE = (150.0, 200.0)
+# The nucleosome ladder. These libraries are not size-selected the way
+# the FinaleDB ones are, so the check is that BOTH peaks are present --
+# the mono-nucleosome one (about 166 bp) and the di-nucleosome one
+# (about 332 bp) -- not that the mono-nucleosome one is the global mode.
+_MONO_WINDOW = (150, 200)
 _DI_WINDOW = (320, 345)
+_MONO_MIN_FRACTION = 0.02
 _DI_MIN_FRACTION = 0.008
 
 SAUNA_DOI = "10.5281/zenodo.15097509"
@@ -76,14 +78,25 @@ def _survey_sizes(survey_path: str) -> dict:
 
 
 def _check_file(path: str) -> dict:
-    """Read the head of one file and report what is in it."""
+    """Read the head of one file and report what is in it.
+
+    The check reads the file as JSON, so nothing depends on the order of
+    the printed fields.
+    """
     script = (
         "import sys\n"
+        "import gzip\n"
+        "import json\n"
+        "import itertools\n"
         "n=0; inv=0; neg=0; short=0; long=0; total=0.0; di=0\n"
         "cols={}\n"
         "mode={}\n"
-        "import itertools\n"
-        "with open(sys.argv[1], 'rt', errors='replace') as handle:\n"
+        # The deposit's files are bgzip-compressed, so they have to be
+        # decompressed before they can be read as text. Reading them as
+        # plain text does not fail -- it reads the compressed bytes and
+        # finds nothing that looks like a fragment, which is how the
+        # first version of this check passed a file it never looked at.
+        "with gzip.open(sys.argv[1], 'rt', errors='replace') as handle:\n"
         "    for line in itertools.islice(handle, %d):\n"
         "        parts = line.rstrip('\\n').split('\\t')\n"
         "        cols[len(parts)] = cols.get(len(parts), 0) + 1\n"
@@ -109,37 +122,29 @@ def _check_file(path: str) -> dict:
         "        bucket = (length // 5) * 5\n"
         "        mode[bucket] = mode.get(bucket, 0) + 1\n"
         "best = max(mode, key=mode.get) if mode else None\n"
-        "print(n, inv, neg, short, long, di, total, best, mode.get(best, 0) if best is not None else 0, sorted(cols.items())[:5])\n"
-        % (_HEAD_ROWS, _DI_WINDOW[0], _DI_WINDOW[1])
+        "mono = max((v for k, v in mode.items() if %d <= k <= %d), default=0)\n"
+        "print(json.dumps({\n"
+        "    'rows_sampled': n, 'inverted_intervals': inv, 'negative_lengths': neg,\n"
+        "    'short_fraction_100_150': short / n if n else None,\n"
+        "    'long_fraction_150_220': long / n if n else None,\n"
+        "    'di_nucleosome_fraction': di / n if n else None,\n"
+        "    'mono_peak_fraction': mono / n if n else None,\n"
+        "    'mean_fragment_length': total / n if n else None,\n"
+        "    'mode_fragment_length': best,\n"
+        "    'mode_fraction': (mode.get(best, 0) / n) if (best is not None and n) else None,\n"
+        "    'column_counts': {str(k): v for k, v in sorted(cols.items())[:5]},\n"
+        "}))\n"
+        % (_HEAD_ROWS, _DI_WINDOW[0], _DI_WINDOW[1],
+           _MONO_WINDOW[0], _MONO_WINDOW[1])
     )
     result = subprocess.run(
         ["python3", "-c", script, path],
         capture_output=True, text=True, check=False)
     if result.returncode != 0:
         raise SystemExit(f"could not read {path}: {result.stderr.strip()}")
-    fields = result.stdout.split()
-    n = int(fields[0])
-    inv = int(fields[1])
-    neg = int(fields[2])
-    short = int(fields[3])
-    long = int(fields[4])
-    di = int(fields[5])
-    total = float(fields[6])
-    mode = int(fields[7])
-    mode_count = int(fields[8])
-    columns = json.loads(fields[9].replace("'", '"'))
-    return {
-        "rows_sampled": n,
-        "inverted_intervals": inv,
-        "negative_lengths": neg,
-        "short_fraction_100_150": round(short / n, 6) if n else None,
-        "long_fraction_150_220": round(long / n, 6) if n else None,
-        "di_nucleosome_fraction": round(di / n, 6) if n else None,
-        "mean_fragment_length": round(total / n, 2) if n else None,
-        "mode_fragment_length": mode,
-        "mode_fraction": round(mode_count / n, 6) if n else None,
-        "column_counts": {str(k): v for k, v in columns},
-    }
+    stats = json.loads(result.stdout)
+    stats["rows_sampled"] = int(stats["rows_sampled"])
+    return stats
 
 
 def _count_rows(path: str) -> int:
@@ -185,9 +190,10 @@ def main() -> int:
         if args.count_rows:
             stats["rows_total"] = _count_rows(path)
         samples[name] = stats
-        print(f"      {name}: {stats['rows_sampled']:,} rows sampled, mode "
-              f"{stats['mode_fragment_length']} bp, di-nucleosome "
-              f"{stats['di_nucleosome_fraction']:.3%}, inverted "
+        print(f"      {name}: {stats['rows_sampled']:,} rows sampled, "
+              f"mono-peak {stats['mono_peak_fraction']:.3%}, "
+              f"di-nucleosome {stats['di_nucleosome_fraction']:.3%}, mode "
+              f"{stats['mode_fragment_length']} bp, inverted "
               f"{stats['inverted_intervals']}", flush=True)
 
     for name, stats in samples.items():
@@ -197,11 +203,18 @@ def main() -> int:
             problems.append(
                 f"{name} has {stats['inverted_intervals']} inverted "
                 "intervals; the extractor would drop those fragments")
-        mode = stats["mode_fragment_length"]
-        if not (_MODE_RANGE[0] <= mode <= _MODE_RANGE[1]):
+        # The nucleosome ladder has to be there: the mono-nucleosome
+        # peak (about 166 bp) and the di-nucleosome one (about 332 bp).
+        # These libraries are NOT size-selected the way the FinaleDB ones
+        # are -- in four of the nine the di-nucleosome peak is the global
+        # mode -- so the check is that both peaks are present, not that
+        # the mono-nucleosome one dominates.
+        mono = stats["mono_peak_fraction"]
+        if mono is None or mono < _MONO_MIN_FRACTION:
             problems.append(
-                f"{name}'s fragment lengths do not peak on the nucleosome "
-                f"peak (mode {mode} bp)")
+                f"{name}'s fragment lengths have no mono-nucleosome peak "
+                f"(best 5 bp bin in {_MONO_WINDOW} carries "
+                f"{mono})")
         if stats["di_nucleosome_fraction"] < _DI_MIN_FRACTION:
             problems.append(
                 f"{name}'s fragment lengths have no di-nucleosome shoulder")
@@ -236,9 +249,16 @@ def main() -> int:
         },
         "checks": {
             "rows_sampled_per_file": _HEAD_ROWS,
-            "mode_range": list(_MODE_RANGE),
+            "mono_peak_window": list(_MONO_WINDOW),
+            "mono_peak_min_fraction": _MONO_MIN_FRACTION,
             "di_nucleosome_window": list(_DI_WINDOW),
             "di_nucleosome_min_fraction": _DI_MIN_FRACTION,
+            "note": ("The nucleosome ladder has to be present: the "
+                     "mono-nucleosome peak (about 166 bp) and the "
+                     "di-nucleosome one (about 332 bp). These libraries "
+                     "are not size-selected the way the FinaleDB ones "
+                     "are, so in four of the nine the di-nucleosome peak "
+                     "is the global mode."),
         },
         "samples": samples,
     }
