@@ -96,6 +96,15 @@ registries:
 Search for the DOI, confirm the record, and grant the source
 permission. Two works, two clicks each.
 
+**One of the two works can be added today.** The Zenodo record does not
+wait for the preprint: v2.3.0 is archived and citable as
+`10.5281/zenodo.24453044`, the DOI resolves, and the ORCID record
+carries zero works — so the software is invisible to anything that
+discovers through ORCID, including Scholar's "publications from ORCID"
+panel. Adding it is the cheapest step on this page: one DOI, one "Add
+DOI", no trusted-party grant. The preprint's DOI is added the same way
+once the server has minted it.
+
 There is a second route, and for the preprint it may be the cheaper one.
 ORCID's **Add DOI** ("Works → Add work → Add DOI") accepts a DOI, a
 PubMed ID or an arXiv ID, fills the record in from the registry and lets

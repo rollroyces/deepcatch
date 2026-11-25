@@ -23,11 +23,29 @@ The LaTeX -> text conversion uses a CLOSED vocabulary. A construct that is
 not in the table raises, rather than being dropped: an abstract that
 silently loses a symbol is worse than one that fails the build.
 
+Two documents are generated, because two preprint servers take two
+different texts. bioRxiv takes the manuscript's abstract as it is
+(2,940 characters, under its 3,000-character limit). arXiv takes a
+metadata field, and arXiv's own help says of that field: "Keep it
+short -- abstracts longer than 1920 characters will not be accepted; and
+abridge your abstract if necessary"
+(https://info.arxiv.org/help/prep.html, "Title and Abstract Fields").
+The limit is on the FIELD -- the abstract page, the announcement and
+the RSS feed -- and not on the paper: arXiv does not truncate the
+manuscript. So the manuscript keeps its full abstract, and the form
+field gets an abridged one.
+
+The abridged text is written here rather than derived, because an
+abridgement is an editorial judgement. What is NOT left to judgement is
+that it must not invent a number: every figure it states has to appear
+in the manuscript's abstract, and the build refuses if one does not.
+
 Usage
 -----
-    python3 scripts/generate_preprint_abstract.py            # write the doc
-    python3 scripts/generate_preprint_abstract.py --print     # abstract only
-    python3 scripts/generate_preprint_abstract.py --check     # CI mode
+    python3 scripts/generate_preprint_abstract.py                      # write the doc
+    python3 scripts/generate_preprint_abstract.py --print               # abstract only
+    python3 scripts/generate_preprint_abstract.py --check               # CI mode
+    python3 scripts/generate_preprint_abstract.py --variant arxiv       # arXiv's field
 
 `--check` exits 1 when the committed document is not what the generator
 produces, without writing anything.
@@ -43,9 +61,38 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX = os.path.join(ROOT, "paper", "paper.tex")
 CITATION = os.path.join(ROOT, "CITATION.cff")
 OUT = os.path.join(ROOT, "docs", "PREPRINT_ABSTRACT.md")
+ARXIV_OUT = os.path.join(ROOT, "docs", "ARXIV_ABSTRACT.md")
 
 # bioRxiv rejects an abstract over this many characters.
 BIORXIV_LIMIT = 3000
+
+# arXiv rejects a metadata abstract over this many characters. The limit
+# is on the form field, not on the paper: arXiv's metadata help puts it
+# under "Title and Abstract Fields", the text used on the abstract page,
+# in the announcement and in the RSS feed. The manuscript keeps its own
+# abstract.
+ARXIV_LIMIT = 1920
+
+# The abstract for arXiv's metadata field: the manuscript's own abstract
+# with the secondary numbers dropped, because the field is 1,080
+# characters shorter than the manuscript's text.
+#
+# It is written rather than derived -- an abridgement is an editorial
+# judgement -- but every number in it is checked against the manuscript
+# below, so it cannot state a figure the paper does not. The positives
+# and the negatives are both kept: the held-out transfer with its
+# interval, the caveat that the pooled figure is not a generalisation
+# claim, the cost of holding a study out of training, and the note that
+# the fused channel's mutation arm is a synthetic proxy. The keywords
+# go to the form's Comments field instead, because arXiv's metadata has
+# no keyword field of its own.
+ARXIV_ABSTRACT = """\
+Background. Molecular residual disease (MRD) detection from cell-free DNA (cfDNA) requires tracking a patient's tumor mutations in plasma at circulating tumor DNA (ctDNA) fractions as low as 0.1%. Commercial assays such as Signatera and CAPP-Seq demonstrate this clinically, but their validation data are not open.
+
+Results. We present DeepCatch, an open-source panel-based MRD detection pipeline benchmarked against real tumor mutations. Using 20 real TCGA-LUAD patients (5,738 somatic mutations with real read counts, GDC open access) as ground truth and a context-aware error model, we simulate plasma cfDNA at five tumor fractions (10%-0.1%) and score three methods at fixed specificity, without test-set threshold optimisation. At 0.1% ctDNA, panel-level log-likelihood-ratio aggregation achieves AUC 0.921 (Sens@95% = 0.770), and an assay sweep shows duplex-UMI consensus (error <= 10^-4) or depth >= 50,000x each reach Sens@95% = 1.000. A tumor-naive fragmentomics channel (627 cross-study FinaleDB samples) averaged with a mutation channel reaches AUC 0.9884, but its mutation channel is a synthetic proxy: a complementarity result, not a performance claim. On never-trained publications, transfer reaches AUC 0.9444 (95% CI 0.8731-1.0000) on one held-out whole-genome study and 0.708 on a second, pooling to 0.7385; transfer is real but not uniform, an exome-targeted study only partly transfers, and holding a study out of training costs most of the pooled single-type AUC (0.6805). The pooled figure is a within-cohort separation number, not a generalisation claim.
+
+Conclusions. DeepCatch provides a reproducible, honest benchmark for ultra-sensitive MRD detection on open-access data and turns the assay sweep into production specifications: duplex-UMI error suppression and ~50,000x depth suffice for AUC 1.000 at 0.1% ctDNA. Clinical validation on real plasma cfDNA remains the essential next step."""
+
 
 # The math symbols the abstract may use. Anything else raises.
 MATH_SYMBOLS = {
@@ -249,6 +296,123 @@ def citation_field(cff: str, key: str) -> str:
     return match.group(1).strip()
 
 
+# The superscript digits the renderer produces from the manuscript's
+# LaTeX. They are folded to ASCII before the two texts are compared,
+# because the manuscript writes "10^{-4}" as "10⁻⁴" and the form field
+# writes "10^-4", and a comparison that cannot see that they are the
+# same number would report a missing one.
+_SUPERSCRIPT_DIGITS = {
+    "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+    "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9",
+    "⁻": "-",
+}
+
+
+def numeric_tokens(text: str) -> set[str]:
+    """The numbers a text states, in a form two texts can be compared in.
+
+    Thousands separators are dropped and the superscripts are folded to
+    ASCII, so "5,738" and "5738" are one number, and "10⁻⁴" and "10^-4"
+    are the same pair.
+    """
+    for unicode_digit, ascii_digit in _SUPERSCRIPT_DIGITS.items():
+        text = text.replace(unicode_digit, ascii_digit)
+    text = text.replace("^", "")
+    return {
+        match.group(0).replace(",", "")
+        for match in re.finditer(r"\d+(?:,\d{3})*(?:\.\d+)?", text)
+    }
+
+
+def arxiv_field_text() -> str:
+    """The abstract as arXiv's metadata field wants it.
+
+    arXiv's own metadata help: "Carriage returns will be stripped unless
+    they are followed by leading white spaces. So if you want a new
+    paragraph or a table of contents, be sure to indent the lines after
+    the carriage return." A blank line is not an indented line, so the
+    paragraph breaks would be stripped -- and the parts of the abstract
+    would be welded together ("...are not open.Results. We present...").
+    The parts are therefore separated by a newline and two spaces, which
+    is the pattern arXiv documents for exactly this purpose.
+    """
+    paragraphs = [p.strip() for p in ARXIV_ABSTRACT.strip().split("\n\n")
+                  if p.strip()]
+    return "\n  ".join(paragraphs)
+
+
+def check_arxiv_abstract(tex: str) -> str:
+    """The abridged abstract, after checking it against the manuscript.
+
+    Two things can go wrong, and a word count catches neither of them.
+    The text can be too long for the field, or it can state a number the
+    manuscript does not -- and an abridgement that invents a figure is
+    worse than one that is too long, because the field is what a reader
+    sees first and the paper is what they check it against.
+    """
+    abstract = arxiv_field_text()
+    length = len(abstract)
+    if length > ARXIV_LIMIT:
+        raise ValueError(
+            f"the abridged abstract is {length} characters; arXiv's metadata "
+            f"field rejects anything over {ARXIV_LIMIT}")
+    missing = numeric_tokens(abstract) - numeric_tokens(latex_abstract(tex))
+    if missing:
+        raise ValueError(
+            "the abridged abstract states "
+            + ", ".join(sorted(missing))
+            + ", which the manuscript's abstract does not contain")
+    return abstract
+
+
+def build_arxiv_document() -> str:
+    """The document holding the text for arXiv's metadata field."""
+    tex = open(TEX, encoding="utf-8").read()
+    cff = open(CITATION, encoding="utf-8").read()
+
+    title = latex_title(tex)
+    name, affiliation, orcid = latex_author(tex)
+    abstract = check_arxiv_abstract(tex)
+    length = len(abstract)
+    version = citation_field(cff, "version")
+    repo = citation_field(cff, "repository-code")
+
+    author_line = f"**Authors:** {name} — {affiliation}"
+    if orcid:
+        author_line += f" (ORCID {orcid})"
+
+    return (
+        "<!-- GENERATED FILE - do not hand-edit.\n"
+        "     Source: paper/paper.tex (the manuscript the PDF is compiled from).\n"
+        "     Regenerate: python3 scripts/generate_preprint_abstract.py "
+        "--variant arxiv\n"
+        "     Guarded by: test/test_generated_docs_match_their_generators.py\n"
+        "     -->\n"
+        "\n"
+        f"# {title}\n"
+        "\n"
+        f"{author_line}\n"
+        "\n"
+        f"**Repository:** {repo} (v{version})\n"
+        "\n"
+        "## Abstract for arXiv's metadata field\n"
+        "\n"
+        "Paste this into the form's Abstract field, exactly as it stands:\n"
+        "the two spaces after each line break are what keep the paragraph\n"
+        "breaks from being stripped by arXiv's own text processing.\n"
+        "\n"
+        "```\n"
+        f"{abstract}\n"
+        "```\n"
+        "\n"
+        f"<!-- {length} characters against arXiv's {ARXIV_LIMIT}-character "
+        "limit on the metadata field.\n"
+        "     The paper keeps the manuscript's own abstract: arXiv's limit is "
+        "on the form field,\n"
+        "     not on the manuscript. -->\n"
+    )
+
+
 def build_document() -> str:
     tex = open(TEX, encoding="utf-8").read()
     cff = open(CITATION, encoding="utf-8").read()
@@ -308,7 +472,12 @@ def build_document() -> str:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("--out", default=OUT,
+    parser.add_argument("--variant", choices=("biorxiv", "arxiv"),
+                        default="biorxiv",
+                        help="which server's field the abstract is written "
+                             "for: bioRxiv takes the manuscript's abstract, "
+                             "arXiv's metadata field is shorter")
+    parser.add_argument("--out", default=None,
                         help="where to write the document")
     parser.add_argument("--print", dest="print_only", action="store_true",
                         help="print the abstract alone (paste-ready) and exit")
@@ -316,22 +485,30 @@ def main() -> int:
                         help="exit 1 if the committed document is stale")
     args = parser.parse_args()
 
+    if args.out is None:
+        args.out = ARXIV_OUT if args.variant == "arxiv" else OUT
+    command = ("scripts/generate_preprint_abstract.py"
+               + (" --variant arxiv" if args.variant == "arxiv" else ""))
+
     if args.print_only:
         tex = open(TEX, encoding="utf-8").read()
-        print(latex_abstract(tex))
+        if args.variant == "arxiv":
+            print(check_arxiv_abstract(tex))
+        else:
+            print(latex_abstract(tex))
         return 0
 
-    document = build_document()
+    document = (build_arxiv_document() if args.variant == "arxiv"
+                else build_document())
 
     if args.check:
         if not os.path.isfile(args.out):
-            print(f"{args.out} does not exist; run "
-                  f"scripts/generate_preprint_abstract.py")
+            print(f"{args.out} does not exist; run {command}")
             return 1
         current = open(args.out, encoding="utf-8").read()
         if current != document:
             print(f"{args.out} has drifted from paper/paper.tex; regenerate it "
-                  f"with scripts/generate_preprint_abstract.py")
+                  f"with {command}")
             return 1
         print(f"{args.out} matches paper/paper.tex")
         return 0

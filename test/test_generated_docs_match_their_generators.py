@@ -62,6 +62,21 @@ OFFLINE_GENERATORS = [
         "artifact": None,
         "out_flag": "--out",
     },
+    {
+        # The text for arXiv's metadata field. The same manuscript, the
+        # other server: arXiv's field is 1,080 characters shorter than
+        # bioRxiv's, and its own help says "abstracts longer than 1920
+        # characters will not be accepted". The abridgement is written,
+        # but it is checked against the manuscript -- the generator
+        # refuses to build it if it states a number the paper does not --
+        # so it cannot drift into a second, different paper.
+        "name": "arxiv_abstract",
+        "script": "scripts/generate_preprint_abstract.py",
+        "doc": "docs/ARXIV_ABSTRACT.md",
+        "artifact": None,
+        "out_flag": "--out",
+        "args": ["--variant", "arxiv"],
+    },
 ]
 
 # The generators that also produce a JSON artifact. A generator that only
