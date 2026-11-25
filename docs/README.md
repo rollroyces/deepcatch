@@ -20,7 +20,7 @@ This directory holds the canonical docs for the DeepCatch project:
 - **[paper/biorxiv_submission_v2.3.0.pdf →](../paper/biorxiv_submission_v2.3.0.pdf)** — pre-compiled PDF (the submission artefact; rebuilt from `paper/paper.tex` after the v2.3.0 results landed)
 - **[PAPER.md →](../paper/PAPER.md)** — the earlier panel-only manuscript, kept for reference (superseded by `paper/paper.tex`; it predates the external-validation, leave-one-study-out and methylation-channel results)
 - **[PREPRINT_ABSTRACT.md](PREPRINT_ABSTRACT.md)** — the paste-ready abstract for the bioRxiv form, generated from `paper/paper.tex`
-- **[ARXIV_ABSTRACT.md](ARXIV_ABSTRACT.md)** — the paste-ready abstract for arXiv's metadata field (1,913 characters, against arXiv's 1,920), generated from the same manuscript; the paper itself keeps its full abstract
+- **[ARXIV_ABSTRACT.md](ARXIV_ABSTRACT.md)** — the paste-ready abstract for arXiv's metadata field (1,915 characters, against arXiv's 1,920), generated from the same manuscript; the paper itself keeps its full abstract
 - **[PATH_TO_IMPACT.md](PATH_TO_IMPACT.md)** — companion-piece narrative
 
 ## Design + planning

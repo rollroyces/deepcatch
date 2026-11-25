@@ -19,6 +19,7 @@ that it refuses rather than guesses.
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
@@ -78,6 +79,45 @@ def test_the_document_states_the_length_it_measured():
         f"({length} characters)")
     # And the abstract it carries is the abstract that was measured.
     assert _gen.latex_abstract(_tex()) in document
+
+    # The arXiv field's length is also quoted in prose, in documents that
+    # are NOT generated -- and prose is not regenerated, so the number
+    # drifts away from the file the paste-ready text lives in. It already
+    # did: the field's text grew by two characters when its paragraph
+    # breaks were indented the way arXiv's own text processing needs, and
+    # three documents kept quoting the old length while the paste-ready
+    # file measured the new one. Every character count a document states
+    # must therefore be one the generator measures, or one of the two
+    # limits it holds.
+    tex = _tex()
+    allowed = {
+        _gen.abstract_length(tex),              # the manuscript's abstract
+        len(_gen.check_arxiv_abstract(tex)),    # arXiv's metadata field
+        _gen.ARXIV_LIMIT,
+        _gen.BIORXIV_LIMIT,
+    }
+    offenders: list[str] = []
+    for path in sorted(_REPO_ROOT.rglob("*.md")):
+        if not path.is_file() or ".git" in path.parts:
+            continue
+        text = path.read_text(encoding="utf-8")
+        # A document that states one of these lengths is one that talks
+        # about a preprint server's field. The one document with a
+        # different character count (a data-access form's field limit)
+        # does not mention a server at all.
+        if "arXiv" not in text and "bioRxiv" not in text:
+            continue
+        for value in re.findall(r"\b(\d{1,3}(?:,\d{3})|\d{4})\s+characters\b",
+                                 text):
+            if int(value.replace(",", "")) not in allowed:
+                offenders.append(
+                    f"{path.relative_to(_REPO_ROOT)} states {value} characters")
+    assert not offenders, (
+        "a document quotes a character count that the generator does not "
+        "measure:\n  " + "\n  ".join(offenders)
+        + "\nThe paste-ready text is generated and its length is measured, "
+          "not written by hand: re-run the generator and quote the number "
+          "it prints.")
 
 
 def test_the_title_and_the_citation_file_agree():
