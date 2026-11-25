@@ -88,6 +88,11 @@ _BUILD_LEFTOVERS = {
     ".aux", ".log", ".out", ".toc", ".synctex.gz", ".ds_store", ".bbl.tmp",
 }
 
+# The characters arXiv accepts in a file name, and nothing else: its
+# submission documentation lists "a-z A-Z 0-9 _ + - . ," and warns that
+# names are case sensitive on its system.
+_ARXIV_FILENAME = re.compile(r"[A-Za-z0-9_+\-.,]+")
+
 
 def _members() -> dict[str, bytes]:
     """The bundle's members, name -> content."""
@@ -197,8 +202,25 @@ def test_every_figure_the_manuscript_includes_is_in_the_bundle():
     )
 
 
-def test_the_bundle_carries_no_build_leftovers():
-    """arXiv asks for the sources, not the compiler's scratch files."""
+def test_the_bundle_carries_nothing_arxiv_would_refuse():
+    """What the bundle may contain: the sources and the figures, and only.
+
+    Two rules, both from arXiv's own submission documentation, and both
+    enforced at upload with a message about a file rather than about the
+    paper.
+
+    The first is that the compiler's scratch files do not travel with a
+    submission: "arXiv asks for the sources and the figures, not the
+    compiler's intermediate files."
+
+    The second is the file name: "arXiv will accept only the following
+    characters in file names: a-z A-Z 0-9 _ + - . ,", and "File names and
+    extensions are case sensitive on our system". A name with a space, a
+    parenthesis or a non-ASCII character in it is refused. The bundle's
+    names are flat by construction -- the builder rewrites the figure
+    paths into a single directory -- so this is a property of the builder,
+    and this check is what keeps it one.
+    """
     members = _members()
     leftovers = [
         name for name in members
@@ -209,6 +231,17 @@ def test_the_bundle_carries_no_build_leftovers():
         + ", ".join(sorted(leftovers))
         + ". arXiv asks for the sources and the figures, not the "
           "compiler's intermediate files."
+    )
+
+    offenders = [
+        name for name in members
+        if not _ARXIV_FILENAME.fullmatch(name)
+    ]
+    assert not offenders, (
+        "the arXiv bundle holds file names arXiv would reject: "
+        + ", ".join(sorted(offenders))
+        + ". arXiv accepts only the characters a-z A-Z 0-9 _ + - . , in a "
+          "file name."
     )
 
 
