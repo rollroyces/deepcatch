@@ -106,15 +106,18 @@ bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</cod
     <section id="validation">
         <div class="container">
             <h2>Honest validation</h2>
-            <p>Every result on this page is <strong>5-seed mean ± std</strong> with bootstrap 95% CI. No single-seed AUC is reported anywhere in the repo.</p>
+            <p>The cross-study and fusion rows are <strong>5-seed mean &plusmn; std</strong>; the held-out rows are single fits with <strong>DeLong 95% CI</strong>; the graded-label row is a rank correlation with a sampled permutation p. No single-seed AUC is reported anywhere in the repo.</p>
             <table>
                 <thead>
-                    <tr><th>Cohort</th><th>Samples</th><th>Task</th><th>AUC (mean ± std)</th></tr>
+                    <tr><th>Cohort</th><th>Samples</th><th>Task</th><th>AUC (mean &plusmn; std)</th></tr>
                 </thead>
                 <tbody>
-                    <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.968 ± 0.003</td></tr>
+                    <tr><td>FinaleDB pan-cancer (Jiang 2015 + Cristiano 2019)</td><td>627</td><td>Cancer vs healthy</td><td>0.968 &plusmn; 0.003</td></tr>
                     <tr><td>Held-out publications never trained on (Sun 2019 WGS)</td><td>31</td><td>Cancer vs control</td><td>0.9444 [0.8731&ndash;1.0000]</td></tr>
                     <tr><td>Held-out publication never trained on (Snyder 2016 WGS)</td><td>52</td><td>Cancer vs control</td><td>0.708 [0.5148&ndash;0.9012]</td></tr>
+                    <tr><td>ccRCC plasma, Zenodo 10.5281/zenodo.21269430 (never trained on)</td><td>12</td><td>Cancer vs healthy</td><td>0.9444 [0.8156&ndash;1.0], exact permutation p = 0.0043</td></tr>
+                    <tr><td>SAUNA colorectal plasma with a per-sample tumour fraction (Zenodo 10.5281/zenodo.15097509)</td><td>9</td><td>Score vs tumour fraction</td><td>Spearman rho 0.8154 within the CRC samples (p = 0.0355)</td></tr>
+                    <tr><td>Cleveland Clinic PHTS screening plasma, stage-graded (Zenodo 10.5281/zenodo.15109495)</td><td>99</td><td>Cancer vs no cancer</td><td>0.4506 [0.3343&ndash;0.5669] &mdash; and not even a model fitted inside the cohort separates it (0.5465)</td></tr>
                     <tr><td>Leave-one-study-out (train one publication, test the other)</td><td>627</td><td>Transfer</td><td>0.681 / 0.936</td></tr>
                     <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.9884 ± 0.0010</td></tr>
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
@@ -137,6 +140,7 @@ bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</cod
                 </tbody>
             </table>
             <p><strong>Read the held-out rows as a late-stage transfer result.</strong> Where the public records characterise them, the held-out cohorts are advanced-stage: Snyder 2016 is Stage IV throughout (per its own GEO extract protocol) and Adalsteinsson 2017 is a metastatic cohort. No case in the held-out cohort is placed at Stage I by the records that were read, so these AUCs say nothing about early detection &mdash; see <a href="https://github.com/rollroyces/deepcatch/blob/main/docs/EXTERNAL_VALIDATION.md">EXTERNAL_VALIDATION.md</a>.</p>
+            <p><strong>Three more external cohorts, and what each one settles.</strong> The ccRCC cohort is a second external family &mdash; the ranking transfers (0.9444, exact permutation p = 0.0043) &mdash; and it comes with a disclosed confound: sequencing depth alone separates its two arms at 0.8333, so the number is quoted with that baseline next to it (the model's separation survives it, 0.9722 with the depth removed). SAUNA is the cohort with a <em>graded</em> label: nine colorectal plasma samples, each carrying a per-sample tumour fraction, and the tumour-naive score tracks that fraction (Spearman rho 0.8154 within the seven CRC samples, p = 0.0355; the short/long ratio carries more of it, 0.9643), with the one patient sampled three times rising with it. The Cleveland Clinic PHTS cohort is a hereditary-cancer screening population whose malignant samples are mostly subclinical &mdash; nothing separates there, not even a model fitted and cross-validated inside the cohort (0.5465) &mdash; so that one is a statement about the cohort, not about the model. Every number on this page is in a committed JSON artifact.</p>
             <p>See <a href="https://github.com/rollroyces/deepcatch/blob/main/RESULTS.md">RESULTS.md</a> for full per-cohort breakdown, ablations, and known limitations.</p>
         </div>
     </section>
