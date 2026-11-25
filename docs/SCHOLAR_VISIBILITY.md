@@ -141,7 +141,7 @@ the ones a reviewer compares against each other:
 | Surface | The affiliation it declares | Guarded? |
 |---|---|---|
 | `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` | yes, exactly |
-| `CITATION.cff` (and the Zenodo record, which archived the same value) | `Independent Researcher (no institutional affiliation; verified email domain umich.edu)` | yes, exactly |
+| `CITATION.cff` (and the Zenodo record, which archived the same value) | `Independent Researcher (no institutional affiliation; verified email domain umich.edu)` — read back from the **published** record on 2026-11-25: the Zenodo v2.3.0 metadata carries exactly that string as the creator's affiliation, beside the ORCID iD `0009-0008-9113-769X` | yes, exactly |
 | `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` | yes, exactly |
 | `paper.md` (the JOSS paper's author field) | `Independent Researcher` | yes, exactly |
 | `MODEL.md` (the model card's author row) | `Independent Researcher` | yes, exactly |
@@ -162,6 +162,7 @@ institutions:
 
 | Surface | What it says today |
 |---|---|
+| the public GitHub profile (`rollroyces`) | "ML & bioinformatics engineer — production AI for mRNA design and cfDNA cancer detection. M.S. ADS @ Michigan · bioinformatics @ CUHK · HKT, remote-OK" (read 2026-11-25) — **the one public surface that names an institution in the present tense, and it is not Michigan.** CUHK is where this project's *collaborating* laboratory is (`wiki/Jiang-4mer-Validation.md`: Professor Jiang's laboratory, the source of the 129 real plasma samples), so "bioinformatics @ CUHK" reads as an employment to anyone who does not know that; the Michigan half is the M.S. ADS programme, which the ORCID record carries as an open-dated employment. **No guard compares this** — a GitHub profile is not a tracked file, and it is a public statement of the author's situation |
 | `TEAM.md` §1.1 | "Lead — Yu Ching Lam (Independent Researcher, no affiliation)", and, under what the author does not have, "the umich.edu verified email on the ORCID profile is from a previous .edu address, not active enrollment" |
 | `.github/SPONSORS.md` | "No institution. No lab. No academic email." and "I don't have an institutional affiliation, an academic email, or lab access" |
 | `docs/site/index.html` | "an independent researcher in Hong Kong. No institution. No lab. No academic email." |
@@ -191,6 +192,24 @@ public employment (University of Michigan, no start or end date), so
 rather than a formatting one — and it is the author's to answer. See
 §7 of `paper/BIORXIV_SUBMISSION.md` for the options and what
 each one costs.
+
+**Three public surfaces have to be reconciled, and a fourth is already
+fixed.** The ORCID record carries an open-dated University of Michigan
+employment; the public GitHub profile reads "M.S. ADS @ Michigan ·
+bioinformatics @ CUHK" in the present tense, where CUHK is the
+*collaborating* laboratory rather than an employer; and the papers
+declare no institution. Only the author can reconcile those three — no
+guard can infer it from a document, and a reviewer who compares the
+paper's title page with the ORCID record has to find them agreeing.
+
+The fourth is already fixed, and it is the archive. The Zenodo v2.3.0
+record is public and immutable, and its creator field carries the
+affiliation string quoted above, so the DOI's landing page states the
+declaration as well as the paper's title page does. A change of
+affiliation after v2.3.0 therefore does not rewrite that page: it reaches
+the archive as a new release with a new DOI, and the old DOI keeps the
+old string as the historical record — the same rule the repository
+already applies to its changelog and its dated audit reports.
 
 ## 5. What is *not* needed
 
