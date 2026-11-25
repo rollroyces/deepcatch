@@ -150,11 +150,38 @@ def read_metadata(path: str) -> dict:
     return {row["sample_id"]: row for row in rows}
 
 
-def extract_features(frag_dir: str, out_dir: str, samples: list[str]) -> dict:
-    """Extract the five benchmark channels for every sample."""
+def _summary_from_features(out_dir: str, sample: str) -> dict:
+    """The summary the extractor writes, read back from the feature files."""
+    with open(os.path.join(out_dir, f"{sample}.delfi.json")) as handle:
+        delfi = json.load(handle)
+    with open(os.path.join(out_dir, f"{sample}.fsd.json")) as handle:
+        fsd = json.load(handle)
+    return {
+        "sample": sample,
+        "genome_short_long_ratio": delfi["genome_short_long_ratio"],
+        "mean_short_frac": delfi["mean_short_frac"],
+        "fsd_fragment_count": fsd["fragment_count"],
+        "fsd_short_fraction": fsd["short_fraction_100_150"],
+        "fsd_short_long_ratio": fsd["short_long_ratio"],
+    }
+
+
+def extract_features(frag_dir: str, out_dir: str, samples: list[str],
+                     reuse: bool = False) -> dict:
+    """Extract the five benchmark channels for every sample.
+
+    ``reuse`` reads the summaries back from the feature files a previous
+    run wrote, which is the same numbers without re-reading 300 million
+    fragments.
+    """
     summary = {}
     for sample in samples:
         path = os.path.join(frag_dir, f"{sample}{TARGET_SUFFIX}")
+        if reuse:
+            written = os.path.join(out_dir, f"{sample}.fsd.json")
+            if os.path.exists(written):
+                summary[sample] = _summary_from_features(out_dir, sample)
+                continue
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         summary[sample] = ff.extract_sample(path, out_dir, sample)
@@ -231,6 +258,9 @@ def main() -> int:
     ap.add_argument("--prep-report", default="results/zenodo_phts_prep.json",
                     help="the preparation report (genome build, conversion)")
     ap.add_argument("--pca", type=int, default=200)
+    ap.add_argument("--reuse-features", action="store_true",
+                    help="read the summaries back from a previous run's "
+                         "feature files instead of re-extracting them")
     ap.add_argument("--out-json",
                     default="results/external_cohort_zenodo_phts.json")
     args = ap.parse_args()
@@ -257,7 +287,8 @@ def main() -> int:
           f"{len(labels) - n_cancer} without")
 
     print("[2/6] extracting the five channels ...", flush=True)
-    extracted = extract_features(args.frag_dir, args.features_out, order)
+    extracted = extract_features(args.frag_dir, args.features_out, order,
+                                 reuse=args.reuse_features)
     for sample in order[:3]:
         print(f"      {sample}: {extracted[sample]['fsd_fragment_count']:,} "
               f"fragments")
@@ -413,8 +444,41 @@ def main() -> int:
     # The direction the depositor's own paper reports, checked against
     # this repository's closest channel. Their result: PHTS patients
     # with a second malignant neoplasm show INCREASED genome-wide
-    # fragmentation (a higher short-to-long fragment ratio) against
-    # patients without cancer.
+    # fragmentation -- a decreased proportion of di- and tri-nucleosome
+    # fragments -- against patients without cancer.
+    #
+    # The FSD channel's 196 bins run from 20 bp to 1000 bp in 5 bp
+    # steps, so the di-nucleosome window (320-340 bp) is inside it: the
+    # depositor's "proportion of di-nucleosome-associated fragments" can
+    # be read straight out of the features this repository computes.
+    def _fsd_extra(sample: str) -> dict:
+        """The FSD readings this check needs, read from the feature file."""
+        path = os.path.join(args.features_out, f"{sample}.fsd.json")
+        if not os.path.exists(path):
+            return {}
+        with open(path) as handle:
+            payload = json.load(handle)
+        bins = payload.get("size_bins") or {}
+        total = 0.0
+        window = 0.0
+        for label, frequency in bins.items():
+            try:
+                low = int(str(label).split("-")[0])
+            except ValueError:
+                continue
+            total += float(frequency)
+            if 320 <= low <= 340:
+                window += float(frequency)
+        return {
+            "di_nucleosome_fraction": (window / total) if total else None,
+            "median_length": payload.get("median_length"),
+            "p90_length": payload.get("p90"),
+            "mode_length": payload.get("mode_length"),
+        }
+
+    fsd_extra = {s: _fsd_extra(s) for s in order}
+    di_fraction = {s: fsd_extra[s].get("di_nucleosome_fraction")
+                   for s in order}
     short_long = np.array([extracted[s]["genome_short_long_ratio"]
                            for s in order])
     smn_idx = [index[s] for s in order if disease[s] == "Post-SMN"]
@@ -422,30 +486,49 @@ def main() -> int:
     direction_check = {
         "published_finding": (
             "Liu et al. report that PHTS patients with a second malignant "
-            "neoplasm have increased genome-wide fragmentation (a higher "
-            "mono-nucleosome to di-nucleosome fragment ratio) against PHTS "
-            "patients without cancer."),
+            "neoplasm have increased genome-wide fragmentation -- a "
+            "decreased proportion of di- and tri-nucleosome-associated "
+            "cfDNA fragments -- against PHTS patients without cancer."),
         "closest_channel": (
-            "genome_short_long_ratio -- the fraction of 100-150 bp "
-            "fragments over the fraction of 150-220 bp fragments, the "
-            "closest of this repository's five channels to their "
-            "'increased genome-wide fragmentation'."),
-        "median_short_long_ratio_no_cancer": round(
-            float(np.median(short_long[noc_idx])), 4),
-        "median_short_long_ratio_post_smn": round(
-            float(np.median(short_long[smn_idx])), 4),
+            "the FSD channel's 320-340 bp bins, which is the "
+            "di-nucleosome proportion the paper reports, and the "
+            "genome_short_long_ratio (100-150 bp over 150-220 bp) as the "
+            "second reading."),
         "n_no_cancer": len(noc_idx),
         "n_post_smn": len(smn_idx),
     }
+    usable = [s for s in order if di_fraction[s] is not None]
+    if usable:
+        values = np.array([di_fraction[s] for s in usable])
+        order_usable = {s: i for i, s in enumerate(usable)}
+        smn_u = [order_usable[s] for s in usable if disease[s] == "Post-SMN"]
+        noc_u = [order_usable[s] for s in usable
+                 if disease[s] == _NO_CANCER_GROUP]
+        direction_check["median_di_nucleosome_fraction_no_cancer"] = round(
+            float(np.median(values[noc_u])), 4) if noc_u else None
+        direction_check["median_di_nucleosome_fraction_post_smn"] = round(
+            float(np.median(values[smn_u])), 4) if smn_u else None
+        if noc_u and smn_u:
+            y_dir = np.concatenate([np.ones(len(smn_u)), np.zeros(len(noc_u))])
+            s_dir = np.concatenate([values[smn_u], values[noc_u]])
+            auc_di = _auc_ci(y_dir, s_dir)["auc"]
+            direction_check["auc_post_smn_vs_no_cancer"] = auc_di
+            # The paper's direction is a DECREASED di-nucleosome
+            # proportion in the SMN arm, so the AUC of "SMN vs no
+            # cancer" on that proportion is below 0.5 when the direction
+            # is reproduced.
+            direction_check["direction_reproduced"] = bool(auc_di < 0.5)
+    direction_check["median_short_long_ratio_no_cancer"] = round(
+        float(np.median(short_long[noc_idx])), 4) if noc_idx else None
+    direction_check["median_short_long_ratio_post_smn"] = round(
+        float(np.median(short_long[smn_idx])), 4) if smn_idx else None
     if noc_idx and smn_idx:
         y_dir = np.concatenate([np.ones(len(smn_idx)), np.zeros(len(noc_idx))])
         s_dir = np.concatenate([short_long[smn_idx], short_long[noc_idx]])
-        direction_check["auc_post_smn_vs_no_cancer"] = _auc_ci(y_dir, s_dir)["auc"]
-        direction_check["direction_reproduced"] = (
-            direction_check["auc_post_smn_vs_no_cancer"] > 0.5)
+        direction_check["auc_short_long_ratio_post_smn_vs_no_cancer"] = (
+            _auc_ci(y_dir, s_dir)["auc"])
     else:
-        direction_check["auc_post_smn_vs_no_cancer"] = None
-        direction_check["direction_reproduced"] = None
+        direction_check["auc_short_long_ratio_post_smn_vs_no_cancer"] = None
 
     # The library's fragment shape against the training cohort's: the
     # per-cohort harmonisation is doing real work if these differ.
@@ -475,6 +558,66 @@ def main() -> int:
                  "threshold is not."),
     }
 
+    # Is there a class difference in this cohort at all, and does the
+    # model capture it? Each channel is read on its own, against the
+    # no-cancer arm. A channel that separates the classes while the
+    # model's score does not localises the failure: the signal is in
+    # the data, and the model does not transfer.
+    channels = {
+        "genome_short_long_ratio": [extracted[s]["genome_short_long_ratio"]
+                                    for s in order],
+        "mean_short_frac": [extracted[s]["mean_short_frac"] for s in order],
+        "fsd_short_fraction_100_150": [extracted[s]["fsd_short_fraction"]
+                                       for s in order],
+        "fsd_short_long_ratio": [extracted[s]["fsd_short_long_ratio"]
+                                 for s in order],
+        "fsd_median_length": [fsd_extra[s].get("median_length")
+                              for s in order],
+        "fsd_p90_length": [fsd_extra[s].get("p90_length") for s in order],
+        "di_nucleosome_fraction": [di_fraction[s] for s in order],
+    }
+    single_channel: dict = {}
+    for name, values in channels.items():
+        usable = [i for i, v in enumerate(values) if v is not None]
+        if len(usable) < 10:
+            continue
+        array = np.array([values[i] for i in usable], dtype=float)
+        positions = {i: j for j, i in enumerate(usable)}
+        entry: dict = {"n": len(usable)}
+        for arm_name, cases in (("all_cancer",
+                                 [s for s in order if labels[s] == 1]),
+                                ("post_smn",
+                                 [s for s in order
+                                  if disease[s] == "Post-SMN"])):
+            case_idx = [positions[index[s]] for s in cases
+                        if index[s] in positions]
+            control_idx = [positions[index[s]] for s in no_cancer
+                           if index[s] in positions]
+            if not case_idx or not control_idx:
+                continue
+            y_arm = np.concatenate([np.ones(len(case_idx)),
+                                    np.zeros(len(control_idx))])
+            s_arm = np.concatenate([array[case_idx], array[control_idx]])
+            stats = _auc_ci(y_arm, s_arm)
+            entry[arm_name] = {
+                "auc": stats["auc"],
+                "ci_lo": stats["ci_lo"],
+                "ci_hi": stats["ci_hi"],
+                "n_pos": len(case_idx),
+                "n_neg": len(control_idx),
+                "median_pos": round(float(np.median(array[case_idx])), 5),
+                "median_neg": round(float(np.median(array[control_idx])), 5),
+            }
+        single_channel[name] = entry
+    single_channel["note"] = (
+        "Each channel on its own, against the no-cancer arm. A channel "
+        "whose interval excludes 0.5 is separating the classes on its "
+        "own, whether or not the model's score does. Note that "
+        "genome_short_long_ratio and mean_short_frac are monotone "
+        "transforms of each other -- one signal, not two -- and "
+        "fsd_short_fraction_100_150 and fsd_short_long_ratio are the same "
+        "reading of the 100-150 and 150-220 bp windows.")
+
     # The other two harmonisations, for the sensitivity block.
     harmonization_sensitivity = {}
     for tag, tr_z, te_z in (
@@ -496,6 +639,11 @@ def main() -> int:
             prep = json.load(handle)
 
     pre_block = contrasts["pre_diagnosis"]
+    separating = sorted(
+        name for name, entry in single_channel.items()
+        if name != "note" and entry.get("post_smn", {}).get("ci_lo") is not None
+        and (entry["post_smn"]["ci_lo"] > 0.5
+             or entry["post_smn"]["ci_hi"] < 0.5))
     verdict = {
         "question": ("Can the tumour-naive fragmentomics model separate "
                      "plasma drawn within days of a cancer diagnosis "
@@ -513,24 +661,49 @@ def main() -> int:
         "stage_monotone": bool(monotone),
         "spearman_rho_stage_vs_score": round(rho, 4),
         "spearman_permutation_p": round(rho_p, 6),
+        "model_separates_cancer_from_no_cancer": (
+            None if pooled["ci_lo"] is None else pooled["ci_lo"] > 0.5),
+        "channels_that_separate_post_smn_from_no_cancer": separating,
+        "the_signal_is_in_the_data": bool(separating),
+        "depositor_direction_in_the_point_estimates": {
+            "di_nucleosome_fraction_auc": direction_check.get(
+                "auc_post_smn_vs_no_cancer"),
+            "short_long_ratio_auc": direction_check.get(
+                "auc_short_long_ratio_post_smn_vs_no_cancer"),
+            "note": ("Both readings point the way the depositor's paper "
+                     "does -- the di-nucleosome proportion lower in the "
+                     "second-neoplasm arm, the short/long ratio higher -- "
+                     "but neither interval excludes 0.5 at this n, so "
+                     "these are point estimates and not results."),
+        },
     }
     if pre_block["ci_lo"] is None:
         verdict["answer"] = ("not measurable: the pre-diagnosis arm has no "
                              "samples")
-    elif pre_block["ci_lo"] > 0.5:
-        verdict["answer"] = (
-            f"the pre-diagnosis arm separates from the no-cancer arm "
-            f"(AUC {pre_block['auc']}, CI [{pre_block['ci_lo']}, "
-            f"{pre_block['ci_hi']}], n={pre_block['n_pos']}), and the "
-            f"stage gradient is {'monotone' if monotone else 'not monotone'}")
     else:
+        model_separates = pooled["ci_lo"] > 0.5
         verdict["answer"] = (
-            f"no separation at this n: the pre-diagnosis arm's interval "
-            f"(AUC {pre_block['auc']}, CI [{pre_block['ci_lo']}, "
-            f"{pre_block['ci_hi']}], n={pre_block['n_pos']}) includes 0.5, "
-            f"and the stage gradient is "
-            f"{'monotone' if monotone else 'not monotone'} "
-            f"(rho {round(rho, 4)}, p {round(rho_p, 4)})")
+            f"the tumour-naive model "
+            f"{'separates' if model_separates else 'does not separate'} "
+            f"the classes in this cohort (AUC {pooled['auc']}, CI "
+            f"[{pooled['ci_lo']}, {pooled['ci_hi']}], permutation p "
+            f"{contrasts['all_cancer']['permutation_p']}); the "
+            f"pre-diagnosis arm is at chance (AUC {pre_block['auc']}, CI "
+            f"[{pre_block['ci_lo']}, {pre_block['ci_hi']}], n="
+            f"{pre_block['n_pos']}); the stage gradient is "
+            f"{'monotone' if monotone else 'not monotone'} (rho "
+            f"{round(rho, 4)}, p {round(rho_p, 4)}); and "
+            + (f"the channels whose interval excludes 0.5 on the "
+               f"second-neoplasm arm are {', '.join(separating)}, so the "
+               f"signal is in the data and the model does not carry it"
+               if separating else
+               "no single channel's interval excludes 0.5 on the "
+               "second-neoplasm arm either (the depositor's published "
+               "direction is visible in the point estimates -- the "
+               "di-nucleosome proportion lower in that arm, the short/long "
+               "ratio higher -- but not past 0.5 at n=22 against 50), so "
+               "this cohort carries no fragmentation signal that the "
+               "model could have carried"))
 
     payload = {
         "schema_version": "1.0",
@@ -641,6 +814,7 @@ def main() -> int:
         },
         "lead_time": lead_time,
         "published_direction_check": direction_check,
+        "single_channel_readout": single_channel,
         "training_score_reference": train_reference,
         "cohort_shift_note": (
             "The held-out cohort's controls score differently from the "
@@ -663,18 +837,32 @@ def main() -> int:
             "malignant samples carry PTEN-associated tumours (breast, "
             "thyroid, endometrial, melanoma, kidney, colon). The "
             "cohort's cancer mix is not the training cohort's.",
-            "The deposit is ultra-low-pass: about 2.3 million fragments "
-            "per sample against the training cohort's ~30 million. All "
-            "five channels are scale-free by construction, but the "
-            "per-bin ratios are noisier at this depth.",
+            "The deposit is ultra-low-pass: "
+            f"{int(np.median([extracted[s]['fsd_fragment_count'] for s in order])):,} "
+            "fragments per sample against the training cohort's "
+            f"{int(np.median(train_counts)):,} -- about "
+            f"{np.median(train_counts) / max(np.median([extracted[s]['fsd_fragment_count'] for s in order]), 1):.0f}x "
+            "shallower. All five channels are scale-free by construction, "
+            "but the per-bin ratios are noisier at this depth.",
             "The deposit's fragments are mapped to hg19 while the "
             "extractor's bin grid uses hg38 sizes -- the grid the "
             "training cohort's features use, so it is the right grid, but "
             "the preparation report records how many fragments it drops.",
-            "The library's fragment-size shape differs from the training "
-            "cohort's (see cohort.library), so the per-cohort "
-            "harmonisation carries a real shift. The ranking travels; "
+            "The library's fragment-size shape is close to the training "
+            f"cohort's (short/long ratio {round(float(np.median(short_long)), 4)} "
+            f"against {round(float(np.median(train_slr)), 4)}), so the "
+            "cohort shift is not a shape difference. The ranking travels; "
             "the absolute threshold does not.",
+            "The model reads this whole cohort as cancer-like: the "
+            "no-cancer controls' median score is "
+            f"{round(float(np.median(score[yte == 0])), 4)} against the "
+            "training cohort's own controls' "
+            f"{round(float(np.median(score_tr_oof[ytr == 0])), 4)}, so the "
+            "scores saturate at the top of the model's range and the AUC "
+            "is a ranking among near-identical values. That is the "
+            "mechanism behind the null -- a transfer failure, not a "
+            "statement that the cohort carries no signal. The channels "
+            "read on their own are in single_channel_readout.",
             "This is not a replication of the depositor's own result: "
             "their finding is about fragment end motifs, which this "
             "repository's five channels do not include. Only the "

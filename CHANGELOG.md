@@ -260,6 +260,53 @@ cohort size.
   the guard fails when one is declared and not read -- the earlier note
   in the survey that said the labels were not in the record was wrong,
   and the guard is what makes that kind of claim checkable.
+- **A third external cohort, the first stage-graded *fragment* cohort, and
+  a negative result with a measured cause.** The Cleveland Clinic PHTS
+  screening cohort (Zenodo 10.5281/zenodo.15109495; Liu et al., *Cell
+  Reports Medicine* 2024) carries 99 plasma samples with the depositor's
+  own stage column, its pre/post split and its diagnosis dates. It has
+  been unpacked, converted and scored with the same protocol as the ccRCC
+  cohort (`scripts/prepare_zenodo_phts_cohort.py`,
+  `scripts/external_cohort_zenodo_phts.py`; artifacts
+  `results/zenodo_phts_prep.json`, `results/external_cohort_zenodo_phts.json`):
+  * the deposit ships **BEDPE**, not fragment BED. The extractor reads
+    columns 1-3, which in a BEDPE are the first mate's coordinates, so
+    fed as-is it reads a "fragment" one read long (about 146 bp instead
+    of 167 bp) and the fragment-size distribution collapses onto the
+    read-length peak -- silently, with every channel wrong by the same
+    factor. The preparation script converts each member to the fragment
+    form and refuses to report success unless every sample shows the
+    nucleosome ladder. All 99 pass; 302,801,515 fragments.
+  * the deposit is mapped to **hg19** (chr1 runs to 249,239,706; hg38's
+    ends at 248,956,422), while the feature grid is hg38 -- the grid the
+    training cohort's features use, so it is the right one. The report
+    records the cost: 0.433% of the fragments are dropped by it.
+  * the "pre-diagnosis" arm is **not** a lead-time arm. The depositor's
+    `date_diff` column puts every one of those nine draws 1 to 7 days
+    before the diagnosis, so the longest lead time anywhere in the cohort
+    is 7 days and the tumour was already there. An arm called
+    "pre-diagnosis" is not an early-detection arm.
+  * the tumour-naive model does **not** separate the classes: AUC
+    **0.4506** [0.3343, 0.5669], sampled permutation p = 0.80, and all
+    three harmonisations agree (0.4506 / 0.4563 / 0.4563). The stage
+    breakdown is flat -- the pre-diagnosis arm (n=9) at chance, stage 0
+    0.556, stages 0-1 0.4119, stages 2-3 0.575, all staged 0.4621, no
+    stage monotonicity (rho 0.172, p 0.297). This is the first
+    stage-graded fragment cohort the repository has scored, so the stage
+    question now has an answer rather than a plan.
+  * but the effect the depositor reported **is** in the data: read one
+    channel at a time, the second-neoplasm arm separates on its own (the
+    short/long ratio is higher there -- AUC **0.6455** [0.5008, 0.7901],
+    in the direction the depositor's own paper reports -- the fragments
+    are shorter, and the di-nucleosome proportion is lower). The model's
+    score is saturated (this cohort's no-cancer controls score at a
+    median of 0.9997 against the training cohort's own controls' 0.0027),
+    so the null is a **transfer failure, not an absence of signal**.
+
+  The checks live in `test/test_zenodo_cfdna_survey_and_ccrcc_cohort.py`,
+  next to the cohorts they belong to, and they pin the finding, the null,
+  the lead time, and the rule that a document quoting the numbers has to
+  carry the limits with them.
 
 ### Fixed
 

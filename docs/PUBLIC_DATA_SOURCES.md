@@ -382,6 +382,7 @@ never been tested on.
 | `stage` | NA 60 / **0: 5, 1: 22, 2: 10, 3: 2** (39 labelled) |
 | `ca_1st`, `ca_2nd` | the organ of the first and the second primary (Breast 27 / Thyroid 14 / Endometrial 6 / …) |
 | `draw_after_smn` | Yes 23 / No 2 / Unknown 1 / NA 73 |
+| `date_diff` | days between the plasma draw and the diagnosis; **−7 to −1 in the "pre" arms, +1 to +37 in the "post" arms** (NA in the 50 no-cancer samples) |
 
 **Why this is the cohort the stage question has been waiting for.** The
 stage breakdown in §6.1 of the readiness document has no stage-graded
@@ -389,33 +390,104 @@ stage breakdown in §6.1 of the readiness document has no stage-graded
 methylation matrices, and the methylation channel is a coverage signal
 rather than a feature (§3.2 of the readiness document). This deposit
 ships **per-sample fragment data** (`02-bamtobed.tar.gz`, 7.6 GB) and the
-labels to go with it. Two questions it could answer, both on real human
-plasma from a screening population rather than on simulated ctDNA:
+labels to go with it, and it has now been run (`results/external_cohort_zenodo_phts.json`):
 
-- **Stage.** Cancer-vs-healthy AUC within Stage I (n=22), II (n=10), III
-  (n=2) against the 50 no-cancer samples — the fragmentomics channel's
-  first stage-stratified readout on real plasma.
+- **Stage.** Cancer-vs-no-cancer AUC within each stage against the 50
+  no-cancer samples — the fragmentomics channel's first stage-stratified
+  readout on real plasma. **Measured: no separation at any stage** (see
+  below).
 - **Pre-malignant.** Pre-SMN/Pre-PMN (n=9) against the 50 no-cancer
-  samples: plasma drawn *before* a second primary appeared, which is the
-  early-detection question in its sharpest form — and the arms are
-  small, so this would be a measurement to report honestly rather than a
-  claim to make.
+  samples: plasma drawn *before* a second primary appeared. **Measured:
+  at chance** — and the `date_diff` column says why that is not an
+  early-detection question (see below).
 
 **The label table, derived and in the shape the extractor reads.** The
 depositor's `phtscfx_meta.csv` is a clinical table, not a cohort table,
 so it is converted into the tab-separated form the cohort extractor
-takes (`sample_id` as the key, `label` 1/0 from `cancer`, and the clinical
-columns kept as published) and written next to the cohort's features
-under `data/external_cohort/` — the same place the ccRCC cohort's
-features live, which is local rather than versioned (the `data/` tree is
-ignored; the results are what the repository commits).
+takes (`sample_id` as the key, `label` 1/0 from `cancer`, and every
+clinical column kept as published) by
+`scripts/prepare_phts_label_table.py`, and written next to the cohort's
+features under `data/external_cohort/` — the same place the ccRCC
+cohort's features live, which is local rather than versioned (the
+`data/` tree is ignored; the results are what the repository commits).
+Keeping `date_diff` and `draw_after_smn` is what makes the arm labels
+readable: the labels say *which* arm a sample is in, and the dates say
+*when the plasma was drawn relative to the diagnosis*.
 
-**Not yet run, and what it would cost.** The download is 7.6 GB and the
-per-sample fragment files are in one tarball rather than the
-per-sample files the extractor reads, so the cohort needs an unpacking
-step and a scoring run over 99 samples. Nothing in this repository has
-scored it yet: the only artefact that mentions this deposit is the
-survey itself.
+**Scored, and three things the run settled before it produced a number.**
+The cohort is unpacked, converted and scored
+(`scripts/prepare_zenodo_phts_cohort.py` → `results/zenodo_phts_prep.json`;
+`scripts/external_cohort_zenodo_phts.py` →
+`results/external_cohort_zenodo_phts.json`) with the same protocol as the
+ccRCC cohort: train on FinaleDB 6+8, per-study harmonisation on the
+training side and per-publication on the held-out side, PCA(200) +
+LogisticRegression fit on the training cohort only, the held-out cohort
+scored once and never fitted on.
+
+**The deposit ships BEDPE, not fragment BED.** One row per read *pair*,
+with the two mates' coordinates in separate columns; the extractor reads
+columns 1-3, which in a BEDPE are the first mate's coordinates. Fed
+as-is it reads a "fragment" that is one read long (~146 bp instead of
+~167 bp) and the fragment-size distribution collapses onto the
+read-length peak — silently, with every channel wrong by the same
+factor. The preparation script converts each member to the fragment form
+(the pair's outer coordinates) and refuses to report success unless
+every sample shows the nucleosome ladder: the mono-nucleosome peak as
+the mode, and a visible di-nucleosome shoulder. All 99 samples pass;
+302,801,515 fragments in total.
+
+**The deposit is hg19; the grid is hg38.** The fragments run to
+chr1:249,239,706 — past hg38's chr1 end (248,956,422) and inside hg19's
+(249,250,621) — which is what the depositor's own data-availability
+statement says too. The extractor's bin grid is hg38, and it has to be:
+that is the grid the training cohort's features were computed on. The
+preparation report records the cost — the grid drops 1,310,997 of
+302,801,515 fragments (0.433%), those starting past an hg38 chromosome
+end.
+
+**The "pre-diagnosis" arm is a days-around-diagnosis arm, not a
+lead-time arm.** The depositor's `date_diff` column puts every "pre"
+draw **1 to 7 days before** the diagnosis (n=9, median 2 days) and every
+"post" draw 1 to 37 days after it (n=40, median 9). The longest
+lead time anywhere in the cohort is **7 days**. So the tumour was already
+there when the "pre" plasma was drawn: this is a cohort of samples drawn
+*around* a diagnosis, and a separation in that arm would not be an
+early-detection result. The artifact carries the intervals per arm so
+that nobody has to take the arm names on trust.
+
+**The result: the model does not transfer, and the effect does.** The
+tumour-naive model — trained on FinaleDB 6+8, never fitted on this
+cohort — does **not** separate cancer from no cancer here: AUC
+**0.4506**, CI95 [0.3343, 0.5669], sampled label-permutation p = 0.80
+(an exact enumeration is not possible at n=99; the test is sampled and
+seeded, and the artifact says so). All three harmonisations agree
+(0.4506 / 0.4563 / 0.4563), so the null is not an artefact of the
+harmonisation choice. The stage breakdown is flat: the pre-diagnosis arm
+(n=9) is at chance (AUC 0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556,
+stages 0-1 (n=27) 0.4119, stages 2-3 (n=12) 0.575, all staged (n=39)
+0.4621, and the stage gradient is not monotone (Spearman rho 0.172,
+p 0.297). This is the first stage-graded *fragment* cohort this
+repository has scored, so the stage question now has an answer rather
+than a plan: no stage-stratified separation either.
+
+**But the effect the depositor reported is in the data.** Read one
+channel at a time against the same no-cancer arm, the second-neoplasm
+arm separates on its own: the short/long ratio is higher there (0.2135
+against 0.1941; AUC **0.6455**, CI [0.5008, 0.7901] — an interval that
+excludes 0.5), the fragments are shorter (median 171 bp against 174),
+and the di-nucleosome proportion is lower (0.0258 against 0.0280, AUC
+0.3964) — every one of them in the direction Liu et al. report. The
+model's score does not carry that effect into a separation, so the null
+is a **transfer failure, not an absence of signal**, and the mechanism
+is visible: the model reads this whole cohort as cancer-like. Its
+no-cancer controls score at the top of the model's range (median score
+0.9997, against the training cohort's own controls' 0.0027), so the
+per-cohort harmonisation pushes every sample into the saturated region
+and the AUC is a ranking among near-identical values.
+
+That is the result worth publishing: not "the model works on a second
+cohort" — it does not — but "the effect reproduces in the channels, the
+model does not transfer, and here is the measurement of why".
 
 **The survey missed this label table until 2026-11-25.** Its reader only
 split on tabs, and the deposit's table is a CSV — so the richest label
@@ -434,10 +506,17 @@ carries the table with all 99 rows and its clinical columns.
   the assay is comparable (0.9444 on the matched whole-genome
   publication) and blunted when it is not (0.6938 / 0.7127 on the
   whole-exome one).
-- The **stage breakdown** remains the one readiness gap, and it is
-  sharper than it looked: FinaleDB carries no stage labels, and the
-  only stage-annotated public fragment resources are either inside the
-  CRAG re-packaging of publication 6 (no stage column) or behind an EGA
+- The **stage breakdown** has now been measured on two public
+  stage-labelled plasma cohorts instead of being planned, and both
+  answers are negative: GSE124600's methylation matrices (the called-CpG
+  count does not rise with stage, rho 0.0961, p 0.26) and the Cleveland
+  Clinic PHTS fragments (§6.3; AUC 0.4506 pooled, no stage
+  stratification, and the "pre-diagnosis" arm drawn 1 to 7 days before
+  the diagnosis). The gap itself is sharper than it looked, and it is a
+  gap in the *data* rather than in the analysis: FinaleDB carries no
+  stage labels, and the only stage-annotated public fragment resources
+  are either inside the CRAG re-packaging of publication 6 (no stage
+  column) or behind an EGA
   DAC -- and the held-out cohort's own publication 7 is one of them: its
   11 CRC patients and 14 liver-transplant recipients were submitted to the
   EGA under `EGAS00001003117` and `EGAS00001003116`. But the held-out cohort's own publications do describe their
@@ -454,3 +533,11 @@ carries the table with all 99 rows and its clinical columns.
   "Article with id PMC4372002 is not open access one") and PNAS blocks
   automated downloads of `suppl_file` (HTTP 403), so the stage
   annotation is only reachable through a publisher session.
+- **The model does not transfer to a third external family, and the
+  reason is measured.** On the PHTS cohort the tumour-naive model scores
+  every sample at the top of its range -- the cohort's no-cancer
+  controls' median score is 0.9997 against the training cohort's own
+  controls' 0.0027 -- so the AUC is a ranking among near-identical
+  values, while the effect the depositor published is present in the
+  channels. A null that comes with a measured mechanism is worth more
+  than a caveat, and it is the shape a reviewer will ask for.

@@ -47,11 +47,14 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 _SURVEY_ARTIFACT = "results/zenodo_cfdna_survey.json"
 _COHORT_ARTIFACT = "results/external_cohort_zenodo_ccrcc.json"
+_PHTS_ARTIFACT = "results/external_cohort_zenodo_phts.json"
+_PHTS_PREP_ARTIFACT = "results/zenodo_phts_prep.json"
 
 # The column names a deposit may use for its per-sample id.
 _SAMPLE_COLUMNS = ("sample", "sample_id", "id")
 
 _CCRCC_DOI = "10.5281/zenodo.21269430"
+_PHTS_DOI = "10.5281/zenodo.15109495"
 
 # The cohort, pinned. A re-run that moves any of these has to be a
 # deliberate act, not a silent drift.
@@ -65,6 +68,23 @@ EXPECTED_PERMUTATIONS = 924
 EXPECTED_STAGE = "pT3a"
 EXPECTED_SPECIFICITY_AT_TRAIN_THRESHOLD = 0.5
 
+# The Cleveland Clinic PHTS screening cohort, pinned. The arm sizes
+# are the depositor's own split and do not move; the numbers below
+# them are the measured ones.
+EXPECTED_PHTS_N = 99
+EXPECTED_PHTS_N_CANCER = 49
+EXPECTED_PHTS_N_HEALTHY = 50
+EXPECTED_PHTS_PRE_DIAGNOSIS = 9
+EXPECTED_PHTS_POST_DIAGNOSIS = 40
+EXPECTED_PHTS_N_STAGED = 39
+EXPECTED_PHTS_MAX_LEAD_TIME_DAYS = 7
+EXPECTED_PHTS_AUC = 0.4506
+EXPECTED_PHTS_CI_LO = 0.3343
+EXPECTED_PHTS_CI_HI = 0.5669
+EXPECTED_PHTS_PERMUTATION_P = 0.8025
+EXPECTED_PHTS_PRE_AUC = 0.5
+EXPECTED_PHTS_SHORT_LONG_AUC = 0.6455
+
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 # The limits that have to travel with the number. A document that states
@@ -76,6 +96,15 @@ REQUIRED_LIMITS = (
     "pT3a",
     "0.0043",
     "threshold",
+)
+
+# The screening cohort's limits. "pre-diagnosis" reads as an
+# early-detection arm unless the interval is stated next to it, and the
+# arm's size is what makes it a measurement rather than a result.
+REQUIRED_PHTS_LIMITS = (
+    "lead time",
+    "7 days",
+    "n=9",
 )
 
 
@@ -92,6 +121,14 @@ def _survey() -> dict:
 
 def _cohort() -> dict:
     return _load(_COHORT_ARTIFACT)
+
+
+def _phts() -> dict:
+    return _load(_PHTS_ARTIFACT)
+
+
+def _phts_prep() -> dict:
+    return _load(_PHTS_PREP_ARTIFACT)
 
 
 def _documents_mentioning(needle: str) -> list[Path]:
@@ -201,6 +238,33 @@ def test_the_cohort_artifact_is_internally_consistent():
     assert sum(labels.values()) == EXPECTED_N_CANCER
     assert len(labels) == EXPECTED_N_HEALTHY + EXPECTED_N_CANCER
 
+    # The same arithmetic for the screening cohort: 99 samples, 49 with
+    # a malignant neoplasm and 50 without.
+    phts = _phts()
+    phts_cohort = phts["cohort"]
+    phts_result = phts["result"]
+    assert phts_cohort["n"] == EXPECTED_PHTS_N
+    assert phts_cohort["n_cancer"] == EXPECTED_PHTS_N_CANCER
+    assert phts_cohort["n_healthy"] == EXPECTED_PHTS_N_HEALTHY
+    assert phts_result["n_pos"] == EXPECTED_PHTS_N_CANCER
+    assert phts_result["n_neg"] == EXPECTED_PHTS_N_HEALTHY
+    assert phts_result["ci_lo"] <= phts_result["auc"] <= phts_result["ci_hi"], (
+        "the DeLong interval does not contain the point estimate")
+    assert len(phts_cohort["labels"]) == EXPECTED_PHTS_N
+    assert sum(phts_cohort["labels"].values()) == EXPECTED_PHTS_N_CANCER
+    # The arms are the depositor's own split, and they have to add up.
+    arms = phts_cohort["arms"]
+    assert arms["no_cancer"] == EXPECTED_PHTS_N_HEALTHY
+    assert arms["pre_smn"] + arms["pre_pmn"] == EXPECTED_PHTS_PRE_DIAGNOSIS
+    assert arms["post_smn"] + arms["post_pmn"] == EXPECTED_PHTS_POST_DIAGNOSIS
+    assert (arms["no_cancer"] + arms["pre_smn"] + arms["post_smn"]
+            + arms["pre_pmn"] + arms["post_pmn"]) == EXPECTED_PHTS_N
+    # The stage counts are the depositor's: 0: 5, 1: 22, 2: 10, 3: 2.
+    counts = phts_cohort["stage_counts"]
+    assert sum(counts.values()) == EXPECTED_PHTS_N_STAGED
+    assert counts["0"] == 5 and counts["1"] == 22
+    assert counts["2"] == 10 and counts["3"] == 2
+
 
 def test_the_cohort_numbers_are_pinned():
     """The cohort cannot quietly change size, stage or number."""
@@ -228,6 +292,43 @@ def test_the_cohort_numbers_are_pinned():
     assert cohort["n_cancer"] == EXPECTED_N_CANCER
     assert cohort["n_healthy"] == EXPECTED_N_HEALTHY
 
+    # The screening cohort's numbers, pinned the same way. These are the
+    # measured ones, and a re-run that moves them has to be deliberate.
+    phts = _phts()
+    phts_result = phts["result"]
+    phts_cohort = phts["cohort"]
+    assert phts_result["auc"] == EXPECTED_PHTS_AUC, (
+        f"the screening cohort's AUC changed to {phts_result['auc']}. If "
+        "the cohort or the protocol changed, update the pins here and in "
+        "the documents at the same time.")
+    assert phts_result["ci_lo"] == EXPECTED_PHTS_CI_LO
+    assert phts_result["ci_hi"] == EXPECTED_PHTS_CI_HI
+    assert round(phts_result["permutation_p"], 4) == EXPECTED_PHTS_PERMUTATION_P
+    assert phts_result["score_saturation"]["saturated"] is True, (
+        "the cohort's scores are no longer saturated; the mechanism the "
+        "null is attributed to has to be re-measured")
+    # The stage arms, pinned: a null in every one of them.
+    arms = phts["stage_question"]["arms_against_no_cancer"]
+    assert arms["pre_diagnosis"]["auc"] == EXPECTED_PHTS_PRE_AUC
+    assert arms["pre_diagnosis"]["n_pos"] == EXPECTED_PHTS_PRE_DIAGNOSIS
+    for name in ("stage_0", "stage_0_1", "stage_2_3", "all_staged"):
+        block = arms[name]
+        assert block["ci_lo"] <= 0.5 <= block["ci_hi"], (
+            f"the {name} arm's interval no longer includes 0.5 "
+            f"({block['ci_lo']}, {block['ci_hi']}) -- the null has moved")
+    # The channel that DOES separate, and the direction the depositor's
+    # own paper reports: this is what makes the null a transfer failure
+    # rather than an absence of signal, so it is pinned too.
+    channel = phts["single_channel_readout"]["genome_short_long_ratio"]
+    assert channel["post_smn"]["auc"] == EXPECTED_PHTS_SHORT_LONG_AUC
+    assert channel["post_smn"]["ci_lo"] > 0.5, (
+        "the short/long ratio no longer separates the second-neoplasm arm; "
+        "the mechanism the null is attributed to has to be re-measured")
+    assert channel["post_smn"]["median_pos"] > channel["post_smn"]["median_neg"], (
+        "the direction of the depositor's published effect has flipped")
+    assert phts["published_direction_check"]["direction_reproduced"] is True
+    assert phts_cohort["doi"] == _PHTS_DOI
+
 
 def test_every_document_that_mentions_the_cohort_states_its_limits():
     """The number and the caveats travel together.
@@ -251,6 +352,25 @@ def test_every_document_that_mentions_the_cohort_states_its_limits():
                 problems.append(
                     f"{rel} does not state {limit!r} -- one of the limits that "
                     "has to travel with the number")
+    assert not problems, "\n  ".join(problems)
+
+    # The screening cohort has the same obligation, and its limits are
+    # the ones a reader is most likely to skip: that the "pre-diagnosis"
+    # arm was drawn within a week of the diagnosis, and that it holds
+    # nine samples.
+    phts_documents = _documents_mentioning(_PHTS_DOI)
+    assert phts_documents, "nothing mentions the screening cohort"
+    problems = []
+    for path in phts_documents:
+        rel = path.relative_to(_REPO_ROOT)
+        text = path.read_text(encoding="utf-8")
+        if Path(_PHTS_ARTIFACT).name not in text:
+            problems.append(f"{rel} does not name {_PHTS_ARTIFACT}")
+        for limit in REQUIRED_PHTS_LIMITS:
+            if limit not in text:
+                problems.append(
+                    f"{rel} does not state {limit!r} -- one of the limits "
+                    "that has to travel with the number")
     assert not problems, "\n  ".join(problems)
 
 
@@ -351,3 +471,71 @@ def test_the_cohort_artifact_names_its_sources():
         "the artifact records fewer limits than the cohort has")
     for limit in limits:
         assert limit.strip(), "an empty limit string is not a limit"
+
+    # The screening cohort's artifact says the same kind of things,
+    # and it has to carry the depositor's own paper.
+    phts = _phts()
+    phts_cohort = phts["cohort"]
+    assert phts_cohort["record"].startswith("https://zenodo.org/records/")
+    assert phts_cohort["doi"] == _PHTS_DOI
+    phts_design = phts.get("design") or {}
+    for field in ("question", "train", "test", "harmonization", "model",
+                  "threshold", "paper"):
+        assert phts_design.get(field), (
+            f"the screening cohort's design has no {field}")
+    assert "xcrm" in phts_design["paper"], (
+        "the screening cohort's artifact does not name the depositor's paper")
+    phts_limits = phts.get("limits") or []
+    assert len(phts_limits) >= 3, (
+        "the screening cohort's artifact records fewer limits than the "
+        "cohort has")
+    for limit in phts_limits:
+        assert limit.strip(), "an empty limit string is not a limit"
+
+    # The lead time is the fact that decides what the "pre" arms are.
+    # It has to be in the artifact, and the limit that says it has to
+    # be in the limits -- a reader who sees "pre-diagnosis" without it
+    # would read an early-detection claim into it.
+    lead = phts.get("lead_time") or {}
+    assert lead.get("max_lead_time_days") == EXPECTED_PHTS_MAX_LEAD_TIME_DAYS, (
+        "the cohort's longest lead time changed; the limit that travels "
+        "with the numbers has to change with them")
+    assert lead.get("by_arm", {}).get("pre_diagnosis"), (
+        "the artifact does not report the pre-diagnosis arm's intervals")
+    assert any("lead-time" in limit for limit in phts_limits), (
+        "the limits do not say that this is not a lead-time cohort")
+    verdict = (phts.get("stage_question") or {}).get("verdict") or {}
+    assert verdict.get("is_a_lead_time_cohort") is False, (
+        "the verdict claims this is a lead-time cohort; the depositor's "
+        "own date_diff column says otherwise")
+
+    # The preparation report records the conversion and the genome
+    # build, rather than leaving either of them implicit.
+    prep = _phts_prep()
+    conversion = prep.get("conversion") or {}
+    assert "BEDPE" in conversion.get("from", ""), (
+        "the preparation report does not say what the deposit ships")
+    assert conversion.get("target_suffix"), (
+        "the preparation report does not name the files it wrote")
+    build = prep.get("genome_build") or {}
+    assert build.get("verdict") == "hg19", (
+        f"the deposit's genome build reads as {build.get('verdict')!r}; the "
+        "extractor's grid is hg38 and the mismatch has to be accounted for")
+    assert build.get("chromosomes_past_the_hg38_length"), (
+        "the build verdict names no chromosome that runs past hg38's "
+        "length, so it is not evidence of anything")
+    assert build.get("depositor_statement"), (
+        "the build verdict is not cross-checked against the depositor's "
+        "own statement")
+    dropped = build.get("hg38_grid_fraction_dropped")
+    assert dropped is not None and 0.0 <= dropped < 0.05, (
+        "the fraction of fragments the hg38 grid drops is not recorded, or "
+        "it is not the fraction the coordinates imply")
+    samples = prep.get("per_sample") or {}
+    assert samples, "the preparation report records no per-sample check"
+    for sample, stats in samples.items():
+        assert stats["mode_fragment_length"] >= 150, (
+            f"{sample}'s fragment lengths do not peak on the nucleosome "
+            "peak")
+        assert stats["di_nucleosome_fraction"] >= 0.008, (
+            f"{sample}'s fragment lengths have no di-nucleosome shoulder")

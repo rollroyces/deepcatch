@@ -331,6 +331,15 @@ def main() -> int:
                     "-- the same grid the training cohort's features use. "
                     "Fragments starting past an hg38 chromosome end are "
                     "dropped by that grid.",
+            "depositor_statement": (
+                "The depositor's own data-availability statement says the "
+                "deposited fragment files are mapped to hg19: 'De-identified "
+                "fragment files mapped to hg19 and individual summary "
+                "statistics have been deposited at Zenodo.org' -- Liu et "
+                "al., Cell Reports Medicine 2024, "
+                "https://pmc.ncbi.nlm.nih.gov/articles/PMC10897513/ . The "
+                "verdict above is measured from the coordinates themselves, "
+                "so the two agree independently."),
             "hg38_grid_fragments_dropped": total_beyond,
             "hg38_grid_fraction_dropped": (
                 round(total_beyond / total_rows, 6) if total_rows else None),

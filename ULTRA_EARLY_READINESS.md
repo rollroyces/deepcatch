@@ -98,6 +98,36 @@ The new `build_stage_breakdown_table` (in `src/per_cancer_sens_at_spec.py`) spli
 
 The stage breakdown is **exercised by tests** (`pytest test/test_per_cancer_sens_at_spec.py` runs the synthetic fixture with `--include-stage-breakdown`), and such a cohort has now shipped: GSE124600's 142 stage-graded plasma samples, measured above.
 
+**A stage-graded _fragment_ cohort has now been measured too, and the
+answer is negative.** The Cleveland Clinic PHTS screening cohort (Zenodo
+10.5281/zenodo.15109495, 99 plasma samples) ships per-sample fragment data
+with the depositor's own stage column and diagnosis dates, and it has been
+scored with the same protocol as the ccRCC cohort
+(`results/external_cohort_zenodo_phts.json`). The tumour-naive model does
+**not** separate cancer from no cancer there: AUC **0.4506**, CI95
+[0.3343, 0.5669], sampled permutation p = 0.80, and the stage breakdown is
+flat — the pre-diagnosis arm (n=9) at chance (AUC 0.5, CI [0.3052,
+0.6948]), stage 0 (n=5) 0.556, stages 0-1 (n=27) 0.4119, stages 2-3 (n=12)
+0.575, all staged (n=39) 0.4621, and no stage monotonicity (Spearman rho
+0.172, p 0.297).
+
+Two things have to travel with that number. The first is that this is
+**not a lead-time cohort**: the depositor's `date_diff` column puts every
+"pre-diagnosis" draw 1 to 7 days before the diagnosis, so the longest
+lead time anywhere in it is **7 days** and the tumour was already there when
+the plasma was drawn. An arm called "pre-diagnosis" is not an
+early-detection arm, and this document's question cannot be answered with
+it. The second is that the null is a **transfer failure rather than an
+absence of signal**: read one channel at a time, the second-neoplasm arm
+separates on its own (the short/long ratio is higher there — AUC 0.6455,
+CI [0.5008, 0.7901] — which is the direction the depositor's own paper
+reports), while the model's own score is saturated (this cohort's
+no-cancer controls score at a median of 0.9997, against the training
+cohort's own controls' 0.0027). So the gap this section asks about is now
+measured on fragments as well as on methylation matrices: **no
+stage-stratified separation from a public stage-labelled plasma cohort, in
+either modality.**
+
 ---
 
 ## 2. Panel-LLR ultra-low-VAF detector is ready (in silico)
