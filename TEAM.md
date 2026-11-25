@@ -15,12 +15,12 @@ collaborative team as the right people appear.
 
 ## 1. Current team (as of 2026-08-28)
 
-### 1.1 Lead — Yu Ching Lam (Independent Researcher, no affiliation)
+### 1.1 Lead — Yu Ching Lam (The Chinese University of Hong Kong)
 
 **Role**: project founder, sole author, sole maintainer, sole
 contributor of every commit across both repos as of 2026-08-28.
 
-**Location**: Hong Kong SAR (location only, **not** an institutional affiliation).
+**Location**: Hong Kong SAR, The Chinese University of Hong Kong.
 
 **What Yu Ching Lam does**:
 - Writes all code (Python, shell, LaTeX)
@@ -33,9 +33,6 @@ contributor of every commit across both repos as of 2026-08-28.
 **What Yu Ching Lam does NOT have**:
 - Wet-lab access (this is a computational-only project)
 - Clinical collaborators with patient samples
-- An institutional affiliation (no current enrollment anywhere;
-  the umich.edu verified email on the ORCID profile is from a
-  previous .edu address, not active enrollment)
 - Funding or computing cluster (work done on consumer hardware)
 - A co-author for clinical-impact journals
 

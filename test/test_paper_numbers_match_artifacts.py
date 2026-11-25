@@ -432,13 +432,18 @@ def test_citation_metadata_agrees_with_the_manuscript():
 
     # The affiliation the manuscript declares is the one the citation
     # metadata must carry -- a reviewer clicks through from one to the
-    # other.
-    assert "Independent Researcher" in cff, (
-        "CITATION.cff no longer declares the affiliation the manuscript "
-        "declares")
-    assert "Independent Researcher" in tex, (
-        "paper.tex no longer declares an affiliation; CITATION.cff must "
-        "be updated to match")
+    # other. It is READ from the manuscript rather than written out here:
+    # the declared string changed on 2026-11-25, and a literal in a test
+    # is a second place for it to go stale. What this checks is the
+    # agreement between the two surfaces, which is the thing that matters.
+    affiliation = re.search(r'^\s*affiliation:\s*"(.*?)"', cff, re.M)
+    assert affiliation, "CITATION.cff has no affiliation"
+    declared = affiliation.group(1).split("(")[0].strip()
+    assert declared, "CITATION.cff declares an empty affiliation"
+    assert declared.lower() in tex.lower(), (
+        f"CITATION.cff declares the affiliation {declared!r} and the "
+        "manuscript does not declare it; a reviewer clicking through from "
+        "the citation metadata to the paper must find the same string")
 
 
 def test_biorxiv_form_agrees_with_the_manuscript():

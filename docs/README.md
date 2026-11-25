@@ -37,7 +37,7 @@ This directory holds the canonical docs for the DeepCatch project:
 ---
 
 **Author:** Yu Ching Lam · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X) ·
-Independent Researcher, Hong Kong.
+The Chinese University of Hong Kong.
 
 DeepCatch is research-stage software, not for clinical diagnosis. See
 [../MODEL.md](../MODEL.md) for the model card.

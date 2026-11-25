@@ -2,7 +2,7 @@
 
 **Authors:** Yu Ching Lam¹ (sole author — see `AUTHORS`)
 
-¹ DeepCatch Project — github.com/rollroyces/deepcatch (Independent researcher) · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
+¹ DeepCatch Project — github.com/rollroyces/deepcatch (The Chinese University of Hong Kong) · ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
 
 **Venue target:** PLOS Computational Biology or Bioinformatics Advances
 

@@ -1,6 +1,6 @@
 # Sponsor DeepCatch
 
-> **Independent, reproducible, open-source cancer detection.** Built in Hong Kong. No institution. No paywall. No lock-in.
+> **Independent, reproducible, open-source cancer detection.** Built in Hong Kong. No paywall. No lock-in.
 
 If DeepCatch helps your research or pipeline, please consider sponsoring its continued development.
 
@@ -84,7 +84,7 @@ If you sponsor and decide DeepCatch isn't useful, email me within 30 days for a 
 
 ## Why I built this
 
-I'm an independent researcher in Hong Kong. I don't have an institutional affiliation, an academic email, or lab access. I built DeepCatch because the problem is important and the open data is good enough.
+I'm a genomics and bioinformatics student at the Chinese University of Hong Kong. I don't have a lab of my own or a clinical cohort of my own, and DeepCatch runs entirely on open data. I built it because the problem is important and the open data is good enough.
 
 The tradeoff: I can publish on bioRxiv (with ORCID + "Independent Researcher" affiliation), I can build on GitHub, I can use only public datasets. I can't access paywalled supplements, run wet-lab validations, or hire postdocs.
 

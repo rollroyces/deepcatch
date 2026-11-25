@@ -26,7 +26,7 @@ It has not been validated on a held-out clinical cohort. See
 | **Model name** | DeepCatch v2.3.0 |
 | **Version** | 2.3.0 (release tag `v2.3.0`; archived at 10.5281/zenodo.24453044) |
 | **Date** | 2026-09-23 |
-| **Authors** | Yu Ching Lam (Independent Researcher, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
+| **Authors** | Yu Ching Lam (The Chinese University of Hong Kong, ORCID [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)) |
 | **License** | MIT |
 | **Repository** | https://github.com/rollroyces/deepcatch |
 | **Companion pipeline** | [cfdna-fragmentomics-pipeline](https://github.com/rollroyces/cfdna-fragmentomics-pipeline) (the source of the tumor-naive channel) |
