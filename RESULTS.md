@@ -500,6 +500,48 @@ unseeded PCA call sites in that repository were seeded too
 (`scripts/sens_calibration_sweep.py`, `scripts/sens_at_specificity.py`),
 so its sens@spec and calibration figures move for the same reason.
 
+**And its uncommitted PCA optimisation drops the standardisation.** The
+sibling's working tree — not committed, not pushed — rewrites the
+standardisation in `scripts/tissue_of_origin.py` to write the scaled fold
+in place:
+
+```python
+np.copyto(X[tr], sc.transform(X[tr]))
+np.copyto(X[te], sc.transform(X[te]))
+Xtr_s = X[tr]  # alias: in-place scaled buffer
+```
+
+`X[tr]` is a *fancy-index copy*, so `np.copyto` writes into that
+temporary and the write is discarded: `X[tr]` is still the raw fold when
+it is read back, and the PCA is fitted on **unscaled** data. The
+committed code computes `Xtr_s = sc.transform(X[tr])`, which is scaled;
+the corrected in-place form `Xtr_s = X[tr]; Xtr_s -= sc.mean_; Xtr_s /=
+sc.scale_` is *bit-identical* to it — verified with numpy on this
+machine — so the fix reproduces the committed numbers by construction
+while keeping the memory profile the optimisation was after.
+
+Measured on the real feature cache (300 samples, the four DELFI
+channels, 20 columns), the consequence is not cosmetic. The columns'
+scales differ by 1.02 × 10⁴, so after standardising the first principal
+component carries 62.4% of the variance with near-equal weights (0.27
+each); without it the first component carries **93.2%** of the variance
+and its weights are dominated by the large-scale columns (0.61, 0.57,
+0.37 …) — the first axis becomes library depth rather than the tumour
+signal, and the two first components differ by |cos| = 0.31. That is the
+confound `docs/PUBLIC_DATA_SOURCES.md` §6.1 calls "a cohort-level shift
+(a different library preparation), not a cancer signal".
+
+**Scope.** This repository's own published figures are not at risk: they
+are computed by this repository's own seeded scripts, not by the
+sibling's modelling code (the sibling is the feature cache, and the
+cache is unaffected). What the defect would change is the sibling's own
+tissue-of-origin and per-cancer results — the figures the portfolio
+roadmap records for that repository.
+
+**Not applied.** The change sits in the sibling's uncommitted working
+tree alongside his own edits to two other scripts, and that repository's
+working tree is not this project's to modify.
+
 
 ---
 
