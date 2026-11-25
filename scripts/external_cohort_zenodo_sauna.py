@@ -313,6 +313,34 @@ def main() -> int:
         with open(args.prep_report, encoding="utf-8") as handle:
             prep = json.load(handle)
 
+    # The training cohort's own library numbers, so the cohort shift is
+    # visible rather than implied.
+    train_slr, train_counts = [], []
+    for sample in train_order:
+        delfi_path = os.path.join(args.features_dir, f"{sample}.delfi.json")
+        fsd_path = os.path.join(args.features_dir, f"{sample}.fsd.json")
+        if os.path.exists(delfi_path):
+            with open(delfi_path) as handle:
+                train_slr.append(json.load(handle)["genome_short_long_ratio"])
+        if os.path.exists(fsd_path):
+            with open(fsd_path) as handle:
+                train_counts.append(json.load(handle)["fragment_count"])
+    library = {
+        "heldout_median_short_long_ratio": round(float(np.median(
+            channels["genome_short_long_ratio"])), 4),
+        "training_median_short_long_ratio": (
+            round(float(np.median(train_slr)), 4) if train_slr else None),
+        "heldout_median_fragment_count": int(np.median(
+            [extracted[s]["fsd_fragment_count"] for s in order])),
+        "training_median_fragment_count": (
+            int(np.median(train_counts)) if train_counts else None),
+        "note": ("The held-out cohort's library has a different "
+                 "fragment-size shape from the training cohort's, so the "
+                 "per-cohort harmonisation carries a real shift. The "
+                 "ranking is the honest number here; the absolute "
+                 "threshold is not."),
+    }
+
     verdict = {
         "question": ("Does the tumour-naive fragmentomics model track the "
                      "tumour fraction in colorectal plasma, over an "
@@ -374,14 +402,7 @@ def main() -> int:
             "labels": {s: int(is_cancer[i]) for i, s in enumerate(order)},
             "fragment_counts": {s: extracted[s]["fsd_fragment_count"]
                                 for s in order},
-            "library": {
-                "heldout_median_short_long_ratio": round(float(np.median(
-                    channels["genome_short_long_ratio"])), 4),
-                "training_median_short_long_ratio": None,
-                "heldout_median_fragment_count": int(np.median(
-                    [extracted[s]["fsd_fragment_count"] for s in order])),
-                "training_median_fragment_count": None,
-            },
+            "library": library,
             "format": prep.get("format", {}),
         },
         "result": {

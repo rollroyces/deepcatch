@@ -352,16 +352,19 @@ early-detection claim:
 - **One patient is sampled three times**, with the tumour fraction
   rising 0.2903 -> 0.3271 -> 0.4029 -- a longitudinal series in public
   data, which is the shape a monitoring claim needs.
-- **The depth matches the training cohort's** (15-33x, against the
-  training cohort's about 30 M fragments per sample), so this cohort does
-  not carry the depth confound the ccRCC cohort does.
+- **The depth is at least the training cohort's** (15-33x, against the
+  training cohort's 38.8 M fragments per sample, which is about 2x), so
+  this cohort does not carry the depth confound the ccRCC cohort does --
+  it is deeper, not shallower.
 
 What is not done here: the deposit is 13.1 GB and its nine samples hold
-about 300 M fragments each, so extracting the repository's five channels
-from them is a matter of hours, and the binary contrast (7 CRC vs 2
-benign) is thin. It is recorded as the cohort that can close the
-early-detection question in public data, with the labels, the depths and
-the tumour fractions to do it with. No number from it is quoted yet.
+about **148 M fragments each** (296 M reads -- the depositor's own
+`all_read` column, counted from the files themselves rather than
+assumed), so extracting the repository's five channels from them is a
+matter of hours, and the binary contrast (7 CRC vs 2 benign) is thin. It
+is recorded as the cohort that can close the early-detection question in
+public data, with the labels, the depths and the tumour fractions to do
+it with. No number from it is quoted yet.
 
 ### 6.3 A screening cohort with stage labels: the Cleveland Clinic PHTS plasma
 

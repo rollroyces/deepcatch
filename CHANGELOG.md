@@ -250,9 +250,10 @@ cohort size.
   at 15-33x coverage, one patient sampled three times with the tumour
   fraction rising 0.2903 -> 0.3271 -> 0.4029. That is the closest
   public thing to this repository's early-detection question -- a
-  fragmentomics cohort with a GRADED cancer label at the training
-  cohort's depth, and a longitudinal series in public data. It is not
-  extracted here (13.1 GB, about 300 M fragments per sample) and no
+  fragmentomics cohort with a GRADED cancer label at more than the
+  training cohort's depth, and a longitudinal series in public data. It is not
+  extracted here (13.1 GB, about 148 M fragments per sample -- 296 M
+  reads, counted from the files) and no
   number from it is quoted yet; it is recorded with its labels, depths
   and tumour fractions in `results/zenodo_cfdna_survey.json` and
   described in `docs/PUBLIC_DATA_SOURCES.md` §6.2. The survey artifact
