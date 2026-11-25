@@ -121,3 +121,28 @@ To bring a cohort into the benchmark:
 - See `TEAM.md` for the governance model and the roles that are still
   open, and `docs/COLLABORATOR_DATA_INTERFACE.md` for what a clinical
   cohort needs to look like.
+
+## Support and governance
+
+This is a single-maintainer project, so the support expectations are
+stated rather than implied.
+
+- **Where to ask.** GitHub issues on this repository are the support
+  channel. A question about a number, an artifact or a reproduction
+  failure belongs in an issue, because the answer is then visible to the
+  next person with the same question. `TEAM.md` names the roles that are
+  still open and what each would own.
+- **What to expect.** The maintainer answers issues and reviews pull
+  requests. There is no service level and no guarantee of a response
+  time; nothing here is a paid support arrangement, and sponsorship
+  funds compute and data licensing rather than a support SLA.
+- **What is not accepted.** A pull request that changes a published
+  number without regenerating its artifact in the same change, or that
+  makes a claim the artifacts do not support, will not be merged — see
+  "Review and release" above and the drift guards in `test/`.
+- **Governance.** There is no foundation or company behind the project.
+  The licence (MIT), the code of conduct and this file are the whole of
+  the governance. Decisions about releases, versions and what the
+  manuscripts claim are the maintainer's, and are recorded in
+  `CHANGELOG.md` and `TEAM.md` so that they can be audited rather than
+  taken on trust.

@@ -13,7 +13,7 @@ authors:
 affiliations:
   - name: DeepCatch Project
     index: 1
-date: 16 November 2026
+date: 25 November 2026
 bibliography: paper/METHODS_PAPER_CITATIONS.bib
 ---
 
@@ -37,8 +37,12 @@ file that the code in the same repository regenerates, and two regression
 tests enforce that the pipeline is deterministic and that the narrative
 documents cannot drift away from those files.
 
-The measured results are deliberately mixed, and the negative ones are
-reported with the same prominence as the positive ones. A tumor-naive
+The measurements below are what the package produces on its own benchmark:
+they are reported here to show what the software does and how it behaves
+under its controls, and the research findings themselves are discussed in
+the separate methods manuscript. The measured results are deliberately
+mixed, and the negative ones are reported with the same prominence as the
+positive ones. A tumor-naive
 5-channel fragmentomics classifier reaches 0.9684 ± 0.0027 pooled AUC on
 627 open-data samples and 0.9444 [0.8731–1.0000] on a publication that
 contributes no training data — but the same classifier collapses to 0.6805
@@ -66,6 +70,77 @@ can actually work: no IRB, no institutional data-use agreement, no
 proprietary cohort. Every dataset it uses is public and re-fetchable by
 the scripts that ship with it. Its contribution is not a new classifier;
 it is the infrastructure and the honest measurements.
+
+# State of the field
+
+Fragmentomics-based multi-cancer detection now has headline results:
+DELFI reported ≈0.94 AUC for hepatocellular carcinoma against healthy on
+232 plasma samples, and CAPP-Seq established ultrasensitive mutation
+tracking at 0.1% tumour fraction. What these studies publish is not the
+pipeline: the training cohorts, the feature extraction code and the
+pretrained models stay with the authors, so their numbers cannot be
+recomputed or challenged by anyone else. Methylation-based detection
+reaches comparable sensitivity (GRAIL), but on a proprietary cohort.
+
+Two developments made an open benchmark possible. The FinaleDB and
+FinaleMe ecosystem publishes uniformly pre-processed cfDNA whole-genome
+fragments and methylation calls under open DOIs, which is what makes a
+harmonised multi-study cohort assemblable without a data-use agreement.
+And public depositions have accumulated enough labelled cohorts that a
+*held-out* study is assemblable at all: the surveys shipped with this
+package catalogue 99 cfDNA-related GEO series and 142 Zenodo records,
+several of them carrying per-sample labels, depths and tumour
+fractions.
+
+The layer in between is still missing. A published cohort can be
+fetched, but the extractor, the harmonisation, the cross-study protocol
+and the controls around them are re-implemented per paper — and the
+controls themselves, what a reported AUC is measured against, are rarely
+published at all. DeepCatch is an attempt at that layer, and deliberately
+a layer rather than a replacement: its fragmentomics extractor is
+bit-identical to the companion pipeline's, so numbers are comparable
+across the two repositories instead of competing with them.
+
+# Software design
+
+The design principle is that a number cannot exist without an artifact
+behind it. Every headline figure is a committed JSON file, the code in
+the same repository regenerates it, and a regression test compares the
+two; when a document quotes a figure, a guard finds that document and
+requires it to carry the number the artifact holds. The narrative
+therefore cannot drift away from the measurements, and the checks that
+enforce this are part of the package rather than a review step.
+
+The repository is layered so that each layer has one job: `src/` is the
+library (the fragmentomics extractor, preprocessing and harmonisation,
+the variant-calling and panel-scoring modules, the multimodal fusion
+estimator, the methylation channel and its graph neural network, the
+tissue-deconvolution and priming modules); `scripts/` holds runnable
+experiments that refetch their public inputs and write a committed
+artifact; `results/` holds those artifacts; `test/` holds the regression
+suite; `docs/` holds the write-ups that state what each artifact means.
+
+Three choices changed the results and are worth naming. Controls are
+first-class: a shuffled-label null, a true-confound control that pairs
+cancer from one study with healthy from another, leave-one-study-out
+transfer in both directions, and a per-locus baseline for every
+methylation score are computed alongside the headline number, because a
+classifier that survives them is a different claim from one that does
+not. Determinism is structural: the PCA inside every cross-validation
+fold is seeded from the fold-split seed, and an AST-based test fails the
+build if any `PCA(...)` call in the package is fitted without a
+`random_state`. Ecosystem integration is by construction rather than by
+agreement: the extractor is bit-identical to the companion pipeline's,
+so a cohort scored by one is comparable with the same cohort scored by
+the other.
+
+The cost is a package that is CPU-first and dependency-light — NumPy,
+SciPy, scikit-learn, pandas, matplotlib, seaborn, requests, tqdm — and
+that ships no pretrained model. The deep-learning modules are optional
+extras whose tests skip rather than fail when the extras are absent, so
+the core fragmentomics path stays installable without a deep-learning
+stack; CI is split the same way, one job for the core path and one for
+the deep-learning path.
 
 # Features
 
@@ -169,6 +244,40 @@ scripts refetch their public inputs, and the artifacts they produce are
 committed to the repository so that the numbers can be checked without
 running anything.
 
+# Research impact statement
+
+JOSS asks for evidence that the software is used for research, so it is
+stated plainly rather than generously.
+
+**Developer-led use.** The package's own outputs are the evidence base
+of a methods manuscript describing the benchmark, the transfer
+measurement and the methylation null. That preprint is in preparation
+and is not yet citable, so it is not counted as an impact signal here.
+
+**Integration with an existing workflow.** The fragmentomics feature
+cache is shared with the companion pipeline
+(`rollroyces/cfdna-fragmentomics-pipeline`), and the extractor is
+bit-identical to that pipeline's, so the cross-study results here and
+the cohort-level numbers there describe the same features of the same
+samples. That is a working integration rather than a reimplementation.
+
+**Reusable public artifacts.** Every experiment's input is a public
+archive with its own DOI, and every experiment's output is a committed
+artifact with the same provenance, so a third party can check a number
+without running the pipeline. The release of this version is archived at
+10.5281/zenodo.24453044. These are reproducible research materials that
+show what the software is capable of, and they are the part of the
+evidence that does not depend on the preprint.
+
+**What is not claimed.** There is no documented external research use
+yet, and future collaboration is not presented as impact. The repository
+therefore ships a defined pathway for outside use — a local-cohort
+adapter and a written data interface
+(`docs/COLLABORATOR_DATA_INTERFACE.md`) so an external laboratory can
+add its own cohort to the same channels, controls and cross-study
+protocol — but that pathway has not yet been exercised by another group,
+and it is better to say so than to imply otherwise.
+
 # Limitations
 
 The benchmark measures separation on public, pre-processed fragment
@@ -182,6 +291,25 @@ deeper and does carry the signature, but the reachable one is the
 training cohort, so it is a feasibility control rather than a validation.
 Stage labels are absent from the open-data cohort, so no stage-I claim is
 made.
+
+# AI usage disclosure
+
+**Tools used.** Generative AI models from OpenAI, Anthropic, Google and
+MiniMax, used through their coding assistants, assisted with this work.
+
+**Nature and scope of the assistance.** They wrote and reviewed parts of
+the analysis code, ran the analysis scripts, performed the multi-persona
+audits recorded in `AUDIT_2_FINDINGS.md`, and drafted and edited parts of
+this manuscript. They did not generate, alter or interpret any primary
+data, figure or statistical result: every number reported in this
+repository is produced by the committed code from the committed artifact,
+and every correction the audits produced is verified by a test that fails
+when the defect is reintroduced.
+
+**Confirmation of review.** The author reviewed and edited all
+AI-assisted output, made the design decisions — which channels exist,
+which controls run, and what the artifacts are allowed to claim — and
+takes full responsibility for the content of this paper.
 
 # Acknowledgements
 

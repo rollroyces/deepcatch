@@ -263,6 +263,68 @@ cohort size.
 
 ### Fixed
 
+- **The repository's evidence that bioRxiv's affiliation rule "is not
+  enforced in practice" was measuring the wrong thing.** The rule was read
+  off a statistic -- 115 of 5,480 January-2026 preprints are
+  single-authored -- and taken to show that a submission without an
+  institutional affiliation would get through. It does not: a
+  single-authored preprint can perfectly well carry an institutional
+  affiliation (one PhD student is a single author), so the statistic never
+  measured affiliation-less submissions at all. A submission without one
+  was rejected on 2026-11-25 with exactly that reason -- *"bioRxiv
+  requires authors to add an institutional affiliation ... an organization
+  that can provide oversight of research activities"* (manuscript ID
+  BIORXIV/2026/725086; nothing was posted, no DOI was minted, and the
+  record does not appear in bioRxiv's API). The row that recorded the weak
+  evidence now records the rejection instead, and the local submission
+  checklist states the consequence: the affiliation is mandatory for the
+  bioRxiv path, so the open question is no longer *whether* to declare one
+  but *which* organisation, and only if the one declared is true. The
+  arXiv fallback, which asks for no institutional affiliation, is no
+  longer a formality.
+- **The rejected submission was also the wrong manuscript.** Its title was
+  the v2.0-era "DeepCatch: Performance-Weighted Multi-Modal Fusion with
+  Cumulative Evidence Tracking for Pan-Cancer Detection from Cell-Free
+  DNA", not the current title, so the next attempt has to upload the
+  committed `paper/biorxiv_submission_v2.3.0.pdf` and use the current
+  title in the form. `docs/JOURNAL_SUBMISSION.md` now says so next to
+  the file it names.
+- **The JOSS paper was in the format JOSS stopped accepting.** JOSS
+  changed its submission format in late 2025, and its own review bot now
+  checks the paper file for a *State of the field*, a *Software design*, a
+  *Research impact statement* and an *AI usage disclosure* section: a
+  paper in the old format is rejected in pre-review, and this
+  repository's guard was still listing the old eight-section format. The
+  manuscript now carries all twelve sections. The four new ones are
+  written from the repository's own facts -- the open-data landscape and
+  what is still missing from it, the design principle that a number
+  cannot exist without an artifact behind it, the impact stated honestly
+  (developer-led use, the companion-pipeline integration, public
+  artifacts with DOIs on both ends, and no documented external use yet),
+  and the AI disclosure with the three elements JOSS's policy asks for.
+  The guard requires the twelve headings, and it now checks that the
+  disclosure is a real disclosure: it must name a model provider and
+  confirm the human review, because JOSS treats an incomplete disclosure
+  as a research-integrity matter rather than a formatting one. Both
+  failure modes are negative-tested.
+- **The JOSS pre-review gates were never written down.** JOSS screens a
+  submission against four gates before review -- public development
+  history of more than six months, demonstrated research impact,
+  open-source practices for a single-author project, and iterative
+  development over time -- and a paper that fails any one of them is
+  desk-rejected with a note saying what is missing.
+  `docs/JOURNAL_SUBMISSION.md` now records each gate with the evidence
+  for this repository: the repository was created on 2026-04-28, so the
+  six-month threshold was cleared on 2026-10-28, and the commit history
+  spans six months of 2026; the impact gate is marked partly met and
+  names the preprint as the thing that moves it, because a preprint
+  server is explicitly not a previous publication and the bioRxiv
+  preprint can therefore be posted before, during or after the JOSS
+  review; the open-source-practices gate needed a stated support and
+  governance expectation, which `CONTRIBUTING.md` now has. The scope
+  rule that the paper must not focus on new research results is
+  addressed by a sentence in the Summary that says what the measurements
+  are and where the findings themselves are discussed.
 - **The bioRxiv upload was blocked on an account, not on the ORCID.** The
   ORCID authorization *did* succeed -- the callback returned to
   `submit.biorxiv.org/?orcidcode=0003&orcidid=0009-0008-9113-769X` -- and

@@ -45,16 +45,33 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # The sections JOSS asks a submission to carry, in the order it lists them.
+#
+# Four of them are new: JOSS changed its submission format in late 2025,
+# and its own review bot now reports "The paper includes a State of the
+# field section", "a Software design section", "a Research impact
+# statement section" and "an AI usage disclosure section" as the checks
+# it runs on the paper file. A paper in the old format is rejected in
+# pre-review, so the list here is the format, not a style preference.
 _JOSS_SECTIONS = (
     "Summary",
     "Statement of need",
+    "State of the field",
+    "Software design",
     "Features",
     "Quality and reproducibility",
     "Documentation",
     "Code availability",
+    "Research impact statement",
     "Limitations",
+    "AI usage disclosure",
     "Acknowledgements",
 )
+
+# The AI usage disclosure has to name the tools and confirm the human
+# review -- JOSS's policy asks for both, and treats an incomplete
+# disclosure as a research-integrity matter rather than a formatting
+# one. A heading with a sentence under it does not satisfy either.
+_AI_PROVIDERS = ("OpenAI", "Anthropic", "Google", "MiniMax")
 
 # Words that mark an employer in an author block. A file that gains one
 # of these must gain it in the other two as well.
@@ -108,9 +125,10 @@ def _markers(text: str) -> set[str]:
 
 def test_the_joss_manuscript_keeps_the_sections_joss_asks_for():
     """The JOSS package must stay submittable."""
+    text = _joss_manuscript()
     headings = {
         match.group(1).strip()
-        for match in re.finditer(r"^#\s+(.*)$", _joss_manuscript(), re.M)
+        for match in re.finditer(r"^#\s+(.*)$", text, re.M)
     }
     missing = [section for section in _JOSS_SECTIONS if section not in headings]
     assert not missing, (
@@ -120,6 +138,39 @@ def test_the_joss_manuscript_keeps_the_sections_joss_asks_for():
           "JOSS format; that claim is only true while the sections are "
           "there."
     )
+
+    # The AI usage disclosure is the one section whose CONTENT JOSS
+    # checks, not just its presence: the policy asks for the tools used,
+    # the nature and scope of the assistance, and the author's
+    # confirmation of review. A heading with a placeholder under it is
+    # what the policy calls an incomplete disclosure.
+    body = _section_body(text, "AI usage disclosure")
+    assert len(body.split()) >= 40, (
+        "the AI usage disclosure is a placeholder: JOSS asks for the "
+        "tools used, the nature and scope of the assistance, and the "
+        "author's confirmation of review, and treats an incomplete "
+        "disclosure as a research-integrity matter. The section has "
+        f"{len(body.split())} words."
+    )
+    assert any(provider in body for provider in _AI_PROVIDERS), (
+        "the AI usage disclosure does not name any of "
+        + ", ".join(_AI_PROVIDERS)
+        + ". JOSS's AI usage policy asks for the tools and models used, "
+          "and a disclosure that names none of them cannot be checked."
+    )
+    assert "review" in body.lower(), (
+        "the AI usage disclosure does not confirm that the author "
+        "reviewed and validated the AI-assisted output, which JOSS's "
+        "policy requires."
+    )
+
+
+def _section_body(text: str, heading: str) -> str:
+    """The body of a markdown section, up to the next heading."""
+    match = re.search(
+        r"^#\s+" + re.escape(heading) + r"\s*$(.*?)(?=^#\s|\Z)", text,
+        re.M | re.S)
+    return match.group(1).strip() if match else ""
 
 
 def test_the_author_blocks_declare_the_same_affiliation():
