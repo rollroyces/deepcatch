@@ -363,6 +363,57 @@ benign) is thin. It is recorded as the cohort that can close the
 early-detection question in public data, with the labels, the depths and
 the tumour fractions to do it with. No number from it is quoted yet.
 
+### 6.3 A screening cohort with stage labels: the Cleveland Clinic PHTS plasma
+
+Zenodo 15109495 ("Cell-free DNA Fragmentomics and Second Malignant Neoplasm
+Risk in Patients with PTEN Hamartoma Tumor Syndrome"; related articles
+10.1016/j.xcrm.2023.101384 and 10.1016/j.xpro.2024.103357) is the one
+deposit in the survey whose label table the survey did not pick up, and
+picking it up is worth doing: the file `phtscfx_meta.csv` (15 KB) carries
+**99 plasma samples with a hereditary-cancer-screening design**, and the
+labels in it are the ones this repository's fragmentomics channels have
+never been tested on.
+
+| Field | What it holds |
+|---|---|
+| `cancer` | No 50 / Yes 49 |
+| `group2` | No Cancer 50 / SMN 26 / PMN 23 |
+| `group3` | No Cancer 50 / **Pre-SMN 4, Post-SMN 22, Pre-PMN 5, Post-PMN 18** |
+| `stage` | NA 60 / **0: 5, 1: 22, 2: 10, 3: 2** (39 labelled) |
+| `ca_1st`, `ca_2nd` | the organ of the first and the second primary (Breast 27 / Thyroid 14 / Endometrial 6 / …) |
+| `draw_after_smn` | Yes 23 / No 2 / Unknown 1 / NA 73 |
+
+**Why this is the cohort the stage question has been waiting for.** The
+stage breakdown in §6.1 of the readiness document has no stage-graded
+*fragment* cohort to run on: GSE124600 carries stage labels but ships
+methylation matrices, and the methylation channel is a coverage signal
+rather than a feature (§3.2 of the readiness document). This deposit
+ships **per-sample fragment data** (`02-bamtobed.tar.gz`, 7.6 GB) and the
+labels to go with it. Two questions it could answer, both on real human
+plasma from a screening population rather than on simulated ctDNA:
+
+- **Stage.** Cancer-vs-healthy AUC within Stage I (n=22), II (n=10), III
+  (n=2) against the 50 no-cancer samples — the fragmentomics channel's
+  first stage-stratified readout on real plasma.
+- **Pre-malignant.** Pre-SMN/Pre-PMN (n=9) against the 50 no-cancer
+  samples: plasma drawn *before* a second primary appeared, which is the
+  early-detection question in its sharpest form — and the arms are
+  small, so this would be a measurement to report honestly rather than a
+  claim to make.
+
+**Not yet run, and what it would cost.** The download is 7.6 GB and the
+per-sample fragment files are in one tarball rather than the
+per-sample files the extractor reads, so the cohort needs an unpacking
+step and a scoring run over 99 samples. Nothing in this repository has
+scored it yet: the only artefact that mentions this deposit is the
+survey itself.
+
+**And the survey missed the label table.** `results/zenodo_cfdna_survey.json`
+records this deposit with `cohort_table: false`, because the detector
+looks for a table shaped like a cohort table and `phtscfx_meta.csv` is a
+sample table with clinical columns instead — so the richest label table
+in the survey was recorded as a deposit without one.
+
 ## 7. What this means for the paper
 
 - The external validation is on **public, re-fetchable data with a
