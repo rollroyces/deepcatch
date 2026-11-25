@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-24T04:43:45.956661+00:00",
+  "generated_at": "2026-11-25T12:21:46.443215+00:00",
   "design": {
     "question": "Does the tumour-naive fragmentomics model, trained on FinaleDB publications 6+8, separate ccRCC plasma from matched healthy plasma in a cohort it has never seen?",
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019), n=627",
@@ -184,6 +184,17 @@
       "n_pos": 6,
       "n_neg": 6
     }
+  },
+  "depth_control": {
+    "note": "The two arms differ in sequencing depth, and depth alone separates them. This block asks whether the model's separation survives that: the score is regressed on the depth and what is left is scored again.",
+    "median_fragment_count_cancer": 1106290,
+    "median_fragment_count_healthy": 931526,
+    "auc_depth_alone": 0.8333,
+    "auc_model": 0.9444,
+    "auc_model_with_depth_removed": 0.9722,
+    "partial_spearman_score_label_given_depth": 0.6777,
+    "raw_spearman_score_label": 0.7725,
+    "the_separation_is_not_the_depth": true
   },
   "limits": [
     "n=6 vs 6: the point estimate is the finding, the interval is wide.",

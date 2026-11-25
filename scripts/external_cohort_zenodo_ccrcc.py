@@ -130,15 +130,62 @@ def read_metadata(path: str) -> dict:
     return {row["sample_id"]: row for row in rows}
 
 
-def extract_features(frag_dir: str, out_dir: str, samples: list[str]) -> dict:
-    """Extract the five benchmark channels for every sample."""
+def _summary_from_features(out_dir: str, sample: str) -> dict:
+    """The summary the extractor writes, read back from the feature files."""
+    with open(os.path.join(out_dir, f"{sample}.delfi.json")) as handle:
+        delfi = json.load(handle)
+    with open(os.path.join(out_dir, f"{sample}.fsd.json")) as handle:
+        fsd = json.load(handle)
+    return {
+        "sample": sample,
+        "genome_short_long_ratio": delfi["genome_short_long_ratio"],
+        "mean_short_frac": delfi["mean_short_frac"],
+        "fsd_fragment_count": fsd["fragment_count"],
+        "fsd_short_fraction": fsd["short_fraction_100_150"],
+        "fsd_short_long_ratio": fsd["short_long_ratio"],
+    }
+
+
+def extract_features(frag_dir: str, out_dir: str, samples: list[str],
+                     reuse: bool = False) -> dict:
+    """Extract the five benchmark channels for every sample.
+
+    ``reuse`` reads the summaries back from the feature files a previous
+    run wrote, which is the same numbers without re-reading the
+    fragments.
+    """
     summary = {}
     for sample in samples:
         path = os.path.join(frag_dir, f"{sample}.hg38.frag.bed.gz")
+        if reuse:
+            written = os.path.join(out_dir, f"{sample}.fsd.json")
+            if os.path.exists(written):
+                summary[sample] = _summary_from_features(out_dir, sample)
+                continue
         if not os.path.exists(path):
             raise FileNotFoundError(path)
         summary[sample] = ff.extract_sample(path, out_dir, sample)
     return summary
+
+
+def _spearman(x: np.ndarray, y: np.ndarray) -> float:
+    """Spearman rho of two vectors."""
+    from scipy.stats import spearmanr
+    return float(spearmanr(x, y).statistic)
+
+
+def _partial_spearman(x: np.ndarray, y: np.ndarray,
+                       z: np.ndarray) -> float:
+    """Spearman rho of x and y with the linear effect of z removed.
+
+    The rank correlations of each pair with z are partialled out, which
+    is the standard partial-correlation form for ranks.
+    """
+    rxz = _spearman(x, z)
+    ryz = _spearman(y, z)
+    rxy = _spearman(x, y)
+    denominator = np.sqrt(max((1 - ryz ** 2) * (1 - rxz ** 2), 1e-12))
+    return float((rxy - ryz * rxz) / denominator)
 
 
 def main() -> int:
@@ -156,6 +203,9 @@ def main() -> int:
                     default=os.path.join(SIBLING_PIPELINE,
                                          "labels_multiclass.tsv"))
     ap.add_argument("--pca", type=int, default=200)
+    ap.add_argument("--reuse-features", action="store_true",
+                    help="read the summaries back from a previous run's "
+                         "feature files instead of re-extracting them")
     ap.add_argument("--out-json",
                     default="results/external_cohort_zenodo_ccrcc.json")
     args = ap.parse_args()
@@ -175,7 +225,8 @@ def main() -> int:
 
     print("[2/5] extracting the five channels ...", flush=True)
     extracted = extract_features(args.frag_dir, args.features_out,
-                                 sorted(labels))
+                                 sorted(labels),
+                                 reuse=args.reuse_features)
     for sample in sorted(extracted)[:3]:
         print(f"      {sample}: {extracted[sample]['fsd_fragment_count']:,} fragments")
 
@@ -271,6 +322,38 @@ def main() -> int:
         sc_s = lr_s.predict_proba(pca_s.transform(te_z))[:, 1]
         harmonization_sensitivity[tag] = _auc_ci(yte, sc_s)
 
+    # A depth control. The cohort's two arms were sequenced to different
+    # depths -- the cancer samples carry more fragments -- and depth on
+    # its own separates them. So the question the headline AUC has to
+    # answer is whether the model's separation IS the depth or something
+    # else, and the answer is measured here rather than assumed.
+    depth = np.array([extracted[s]["fsd_fragment_count"] for s in order],
+                     dtype=float)
+    depth_control = {
+        "note": ("The two arms differ in sequencing depth, and depth "
+                 "alone separates them. This block asks whether the "
+                 "model's separation survives that: the score is "
+                 "regressed on the depth and what is left is scored "
+                 "again."),
+        "median_fragment_count_cancer": int(np.median(depth[yte == 1])),
+        "median_fragment_count_healthy": int(np.median(depth[yte == 0])),
+        "auc_depth_alone": _auc_ci(yte, depth)["auc"],
+        "auc_model": pooled["auc"],
+    }
+    if np.ptp(depth) > 0:
+        design = np.vstack([depth, np.ones_like(depth)]).T
+        beta, *_ = np.linalg.lstsq(design, score, rcond=None)
+        residual = score - design @ beta
+        depth_control["auc_model_with_depth_removed"] = _auc_ci(
+            yte, residual)["auc"]
+        depth_control["partial_spearman_score_label_given_depth"] = round(
+            float(_partial_spearman(score, yte, depth)), 4)
+        depth_control["raw_spearman_score_label"] = round(
+            float(_spearman(score, yte)), 4)
+        depth_control["the_separation_is_not_the_depth"] = bool(
+            depth_control["auc_model_with_depth_removed"]
+            >= depth_control["auc_depth_alone"])
+
     payload = {
         "schema_version": "1.0",
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -342,6 +425,7 @@ def main() -> int:
         "training_score_reference": train_reference,
         "cohort_shift_note": shift,
         "harmonization_sensitivity": harmonization_sensitivity,
+        "depth_control": depth_control,
         "limits": [
             "n=6 vs 6: the point estimate is the finding, the interval is wide.",
             "All six patients are pT3a (stage III); two have distant metastasis "

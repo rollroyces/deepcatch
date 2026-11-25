@@ -207,6 +207,17 @@ cohort size.
   is not. `test/test_zenodo_cfdna_survey_and_ccrcc_cohort.py` keeps the
   artifacts, the documents and the pins together.
 
+  A fourth limit was measured afterwards and travels with the number:
+  **the cohort's depth is a confound**. The two arms were sequenced to
+  different depths (median 1,106,290 fragments per patient against
+  931,526 per control), and **depth alone separates them at AUC
+  0.8333** -- so the question the headline has to answer is whether the
+  model's separation IS the depth. It is not: regressing the score on
+  the depth and scoring what is left gives **AUC 0.9722** (partial
+  Spearman of score against label given depth 0.6777, against 0.7725
+  uncontrolled). The confound is real, is disclosed, and the separation
+  survives it. The artifact's `depth_control` block holds the numbers.
+
   Reading the deposited fragments needed one change to the repository's
   own code: the files are standard BED files and carry a header line
   (`#chrom start end name mapq strand`), which `read_fragments` could

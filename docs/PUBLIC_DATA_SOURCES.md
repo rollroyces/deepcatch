@@ -255,10 +255,9 @@ only, the held-out cohort scored once). The result is in
 | **AUC** | **0.9444**, DeLong 95% CI [0.8156, 1.0] |
 | Exact permutation p | **0.0043** (all 924 label assignments; the scores never see the held-out labels) |
 | Harmonisation sensitivity | 0.9444 (per study / per publication) and 0.9722 (both global variants) — the ranking does not depend on the choice |
-| Assay depth | median 1,106,290 fragments per patient and 931,526 per control, against about 30 M in the training cohort |
+| Assay depth | median 1,106,290 fragments per patient and 931,526 per control, against about 30 M in the training cohort -- and **depth alone separates the two arms at AUC 0.8333**, which the model's separation survives (0.9722 with the depth removed) |
 
-Four things are true about this number, and only the first is a result:
-
+Five things are true about this number, and only the first is a result:
 1. **The ranking transfers.** A model that never saw this cancer type,
    this laboratory or this data source ranks all six patients above
    four of the six controls, at p = 0.0043 by an exact permutation test.
@@ -283,6 +282,17 @@ Four things are true about this number, and only the first is a result:
    interval is wide, and the specificity grid is not resolvable at this
    n (six controls quantise specificity to multiples of 1/6, so every
    value above 83.3% is the same threshold).
+5. **The depth is a confound of this cohort, and the model's separation
+   survives it.** The two arms were sequenced to different depths
+   (median 1,106,290 fragments per patient against 931,526 per
+   control), and **depth on its own separates them at AUC 0.8333** — a
+   trivial classifier gets most of the way to 0.9444. So the question
+   the headline has to answer is whether the model's separation *is* the
+   depth. It is not: regressing the score on the depth and scoring what
+   is left gives **AUC 0.9722** (partial Spearman of score against label
+   given depth: 0.6777, against 0.7725 uncontrolled). The confound is
+   real and is disclosed; the separation survives it. The measurement is
+   in the artifact's `depth_control` block.
 
 **What it changes.** The pooled external number in the manuscript
 (0.7385 over publications 1 and 7) is a statement about one cohort

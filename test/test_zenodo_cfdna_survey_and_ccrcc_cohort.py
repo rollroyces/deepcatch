@@ -71,6 +71,8 @@ EXPECTED_SPECIFICITY_AT_TRAIN_THRESHOLD = 0.5
 # The Cleveland Clinic PHTS screening cohort, pinned. The arm sizes
 # are the depositor's own split and do not move; the numbers below
 # them are the measured ones.
+EXPECTED_CCRCC_DEPTH_AUC = 0.8333
+EXPECTED_CCRCC_DEPTH_REMOVED_AUC = 0.9722
 EXPECTED_PHTS_N = 99
 EXPECTED_PHTS_N_CANCER = 49
 EXPECTED_PHTS_N_HEALTHY = 50
@@ -98,6 +100,11 @@ REQUIRED_LIMITS = (
     "pT3a",
     "0.0043",
     "threshold",
+    # The depth baseline. This cohort's two arms were sequenced to
+    # different depths and depth alone separates them, so a document
+    # that quotes the AUC without that number reads a stronger claim
+    # than the measurement supports.
+    "0.8333",
 )
 
 # The screening cohort's limits. "pre-diagnosis" reads as an
@@ -330,6 +337,14 @@ def test_the_cohort_numbers_are_pinned():
         assert block["ci_lo"] <= 0.5 <= block["ci_hi"], (
             f"the {name} arm's interval no longer includes 0.5 "
             f"({block['ci_lo']}, {block['ci_hi']}) -- the null has moved")
+    # The depth control: the cohort's arms differ in sequencing depth
+    # and depth alone separates them, so the headline has to be checked
+    # against it -- and it survives.
+    depth = _cohort()["depth_control"]
+    assert depth["auc_depth_alone"] == EXPECTED_CCRCC_DEPTH_AUC
+    assert depth["auc_model"] == EXPECTED_AUC
+    assert depth["auc_model_with_depth_removed"] == EXPECTED_CCRCC_DEPTH_REMOVED_AUC
+    assert depth["the_separation_is_not_the_depth"] is True
     # The channel that DOES separate, and the direction the depositor's
     # own paper reports: this is what makes the null a transfer failure
     # rather than an absence of signal, so it is pinned too.

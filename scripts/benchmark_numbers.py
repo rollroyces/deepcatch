@@ -242,6 +242,10 @@ EXTRA_DOCS_ENTRIES = [
         "docs/CADD_PER_SUBGROUP_LLR.md",
         "docs/ULTRA_EARLY_READINESS_AUTO.md",
         "docs/USER_GUIDE.md",
+        # The portfolio roadmap quotes the current headline in its
+        # repository table, and it is a state document: if the number
+        # moves, the roadmap has to move with it.
+        "docs/PORTFOLIO_ROADMAP.md",
     ]),
     (("cross_study_finallydb_gc_corrected.json", ('per_publication', '6', 'auc_mean')), [
         "MODEL.md",
