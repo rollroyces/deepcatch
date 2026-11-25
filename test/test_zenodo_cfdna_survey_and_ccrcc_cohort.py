@@ -103,15 +103,23 @@ REQUIRED_LIMITS = (
 # The screening cohort's limits. "pre-diagnosis" reads as an
 # early-detection arm unless the interval is stated next to it, and the
 # arm's size is what makes it a measurement rather than a result.
+# Every document that quotes this cohort's numbers has to carry the
+# within-cohort control. Without it, a null read as a statement about
+# the model, and that is the one reading the measurement rules out.
 REQUIRED_PHTS_LIMITS = (
+    "0.5465",
+)
+
+# The pre-diagnosis arm's own limits, required only where a document
+# talks about that arm: a document that never mentions it cannot be
+# misread through it.
+REQUIRED_PRE_ARM_LIMITS = (
     "lead time",
     "7 days",
     "n=9",
-    # The within-cohort control. A document that quotes this cohort's
-    # numbers without it will read the null as a statement about the
-    # model, and that is the one reading the measurement rules out.
-    "0.5465",
 )
+
+_PRE_ARM_MARKERS = ("pre-diagnosis", "Pre-SMN", "Pre-PMN", "pre_diagnosis")
 
 
 def _load(rel: str) -> dict:
@@ -400,6 +408,13 @@ def test_every_document_that_mentions_the_cohort_states_its_limits():
                 problems.append(
                     f"{rel} does not state {limit!r} -- one of the limits "
                     "that has to travel with the number")
+        if any(marker in text for marker in _PRE_ARM_MARKERS):
+            for limit in REQUIRED_PRE_ARM_LIMITS:
+                if limit not in text:
+                    problems.append(
+                        f"{rel} mentions the pre-diagnosis arm but does not "
+                        f"state {limit!r} -- the interval between the draw "
+                        "and the diagnosis is what that arm is")
     assert not problems, "\n  ".join(problems)
 
 

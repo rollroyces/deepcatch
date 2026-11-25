@@ -48,9 +48,14 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 # bold (**10.5281/zenodo.24453044**) or italics is a DOI, not a DOI
 # with asterisks, and the emphasis markers used to survive the scan and
 # be reported as an unregistered identifier.
+# The characters a DOI may not contain. The CJK forms are here because
+# the Chinese README writes a DOI inside full-width parentheses, and the
+# scanner was reading the closing full-width bracket as part of the DOI
+# -- which made a registered DOI report as unregistered.
+_NOT_IN_DOI = r"\s\"'<>,;\\\(\)\]（）［］〈〉【】《》、。，；：？！"
 _DOI = re.compile(
-    r"10\.\d{4,9}/[^\s\"'<>,;\\\(\)\]]+"
-    r"(?:\([^\s\"'<>,;\\\(\)\]]*\)[^\s\"'<>,;\\\(\)\]]*)*")
+    rf"10\.\d{{4,9}}/[^{_NOT_IN_DOI}]+"
+    rf"(?:\([^{_NOT_IN_DOI}]*\)[^{_NOT_IN_DOI}]*)*")
 
 
 def _trim_unbalanced(text: str) -> str:

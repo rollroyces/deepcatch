@@ -80,8 +80,36 @@ mechanism.
 
 ### 2.1 Clinical / wet-lab co-author — **HIGHEST PRIORITY**
 
-> **Update 2026-11-15 — the ask is now narrower and much more concrete.**
-> The external-validation machinery is built and running on public data:
+> **Update 2026-11-25 — the ask changed, and the reason is measured, not
+> assumed.** We have now scored a real hereditary-cancer screening
+> cohort (99 plasma samples, Zenodo 10.5281/zenodo.15109495, staged and
+> with the depositor's own diagnosis dates), and its cancer/control
+> labels carry **no class signal in these channels at all**: a model
+> fitted and cross-validated *inside* that cohort reaches AUC 0.5465,
+> CI95 [0.4319, 0.6612]
+> (`results/external_cohort_zenodo_phts.json`). The depositor's
+> published fragmentation effect is there, but only in the arm with the
+> highest tumour burden (short/long ratio, AUC 0.6455, CI95
+> [0.5008, 0.7901], in the direction their paper reports) and not in the
+> cohort as a whole.
+>
+> So a **low-burden screening cohort is not what this project needs** —
+> it would produce an uninterpretable null, and the null would have to
+> be reported as being about the data. What the signal follows is
+> **tumour burden**, and the sharpest available axis for it is a graded
+> one: ctDNA concentration, tumour fraction per sample, or stage.
+> A cohort that carries that axis answers the question a binary
+> cancer/control label cannot.
+>
+> Every cohort we score now carries the same control — a model fitted
+> inside it — so that a null is readable as "this data has no signal"
+> rather than "our model does not transfer". That control is why the
+> result above is a finding rather than a disappointment, and it is
+> also why we can say precisely what a collaborator's cohort would
+> need to look like.
+>
+> **Update 2026-11-15 — the external-validation machinery is built and
+> running on public data:**
 > `scripts/fetch_external_cohort.py` pulls never-trained FinaleDB
 > publications from the public API + S3 (no IRB, no data-use agreement),
 > `src/fragmentomics/finale_features.py` extracts the 5-channel DELFI
@@ -96,6 +124,10 @@ mechanism.
 with confirmed cancer diagnoses (preferably pan-cancer, but any
 tumor type useful). The data should be:
 - WGS or targeted panel sequencing
+- **A tumour-burden axis per sample if you have one** — ctDNA
+  concentration, tumour fraction, or stage. This is now the first item
+  on the list: it is the axis the signal follows, and a binary
+  cancer/control label without it cannot answer the question.
 - Matched tumor + plasma (for the fusion story to be honest)
 - 30-100 samples (any size is useful; we just need held-out clinical
   data to upgrade from "honest benchmark" to "validated assay")
