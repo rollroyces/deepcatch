@@ -86,7 +86,7 @@ If you sponsor and decide DeepCatch isn't useful, email me within 30 days for a 
 
 I'm an independent researcher in Hong Kong. I don't have a lab of my own or a clinical cohort of my own, and DeepCatch runs entirely on open data. I built it because the problem is important and the open data is good enough.
 
-The tradeoff: I can publish on bioRxiv (with ORCID + "Independent Researcher" affiliation), I can build on GitHub, I can use only public datasets. I can't access paywalled supplements, run wet-lab validations, or hire postdocs.
+The tradeoff: I can publish on arXiv (with ORCID + "Independent Researcher" affiliation -- arXiv's registration takes "Independent" for an unaffiliated author), I can build on GitHub, I can use only public datasets. bioRxiv is the journal-server route, and it wants an institutional affiliation, so the preprint goes to arXiv first. I can't access paywalled supplements, run wet-lab validations, or hire postdocs.
 
 Sponsorship closes that gap. It buys time and compute, not infrastructure I don't have.
 

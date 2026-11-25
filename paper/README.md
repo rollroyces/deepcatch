@@ -3,7 +3,7 @@
 This directory holds the DeepCatch manuscripts and the artefacts needed to
 submit them. **Status as of v2.3.0 (2026-11-16): the preprint is compiled
 and current; it has NOT been uploaded** — the remaining steps need the
-author's bioRxiv account and the Zenodo DOI.
+author's arXiv account and the Zenodo DOI.
 
 ## Which manuscript is which
 
@@ -56,7 +56,7 @@ manuscript embeds are regenerated from the committed artifacts:
 python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 ```
 
-## Submission checklist (bioRxiv)
+## Submission checklist (the preprint)
 
 - [x] PDF compiles cleanly under tectonic and pdfTeX
 - [x] All three figures embedded and rendered from the committed artifacts
@@ -83,7 +83,7 @@ python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 
 The venue decision and its per-venue readiness checklist live in
 [`docs/JOURNAL_SUBMISSION.md`](../docs/JOURNAL_SUBMISSION.md). In short:
-the **preprint first** (bioRxiv, to establish priority), then the
+the **preprint first** (arXiv, to establish priority), then the
 **methods manuscript** to a journal that values software-engineering
 quality — JOSS for the software, PLOS Computational Biology or
 Bioinformatics Advances for the science.

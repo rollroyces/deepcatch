@@ -27,7 +27,7 @@ contributor of every commit across both repos as of 2026-08-28.
 - Designs the experimental methodology
 - Runs the benchmarks
 - Writes the documentation (READMEs, RESULTS, AUDIT_REPORT_2, USAGE)
-- Maintains the bioRxiv submission package
+- Maintains the preprint submission package
 - Manages the GitHub issues, PRs, releases
 
 **What Yu Ching Lam does NOT have**:
@@ -38,7 +38,7 @@ contributor of every commit across both repos as of 2026-08-28.
 
 **Contact**:
 - ORCID: [0009-0008-9113-769X](https://orcid.org/0009-0008-9113-769X)
-- bioRxiv profile: https://orcid.org/0009-0008-9113-769X
+- ORCID profile: https://orcid.org/0009-0008-9113-769X
 - Email: `[your email]` (pending user action before submission)
 - GitHub: `@rollroyces`
 - Location: Hong Kong SAR
@@ -195,7 +195,7 @@ corresponding-author address.
 ### 2.6 Documentation / technical writer — **LOW PRIORITY**
 
 **What we'd want from you**: copy-edit the READMEs, USAGE.md, and
-bioRxiv submission package for grammar, clarity, and tone. The
+preprint submission package for grammar, clarity, and tone. The
 project currently has 3500+ lines of user-facing documentation
 written by one person (Yu Ching Lam); an outside editor would catch
 issues the author is too close to see.
@@ -329,7 +329,7 @@ in the next 6 months:
 
 | Quarter | Goal | Required collaboration |
 |---|---|---|
-| **Q1 (now)** | bioRxiv preprint — `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; the upload needs the author's account, and the Zenodo DOI needs the GitHub integration (see `ZENODO_SETUP.md`) | None — Yu Ching Lam |
+| **Q1 (now)** | arXiv preprint — `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; the upload needs the author's account, and the Zenodo DOI needs the GitHub integration (see `ZENODO_SETUP.md`) | None — Yu Ching Lam |
 | **Q1 (measured)** | **Methylation channel**: FinaleMe runs end-to-end on real public fragments and the channel is a **null** (its AUC equals the library-depth baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0). The blocker is a deep, size-unselected MspI cohort that is not publication 6 | §2.2 methylation expert, to review the mechanism and the null |
 | Q1 | ORCID + Zenodo deposit (manual) | None — Yu Ching Lam |
 | Q2 | Per-cancer-type AUC table | §2.4 software engineer (data prep) |
@@ -402,7 +402,7 @@ artifact no longer holds.
 | Per-cancer-type AUC and sens@spec | ✅ LUAD 0.9825, OV 0.9930, CRC 0.9754, BRCA 0.9738, HCC 0.7221 — **the spread is real, and that is the interesting part** | `results/per_cancer_sens_at_spec.json` |
 | Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
 | Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
-| bioRxiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
+| arXiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
 | 1040 tests collected (`pytest src test -q`) | ✅ 854 core + 186 deep-learning, all green | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |
