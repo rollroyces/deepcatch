@@ -111,31 +111,57 @@ def _bed_header_rows(path: str) -> int:
     return 1 if first.startswith("#") else 0
 
 
-def read_fragments(path: str, mapq_threshold: int = 0):
-    """Read a FinaleDB fragment file into arrays.
+def iter_fragments(path: str, mapq_threshold: int = 0,
+                   chunk_rows: int = 20_000_000):
+    """Yield (codes, start, end) chunk by chunk.
 
-    Returns (chrom_codes, start, end, mapq) where ``chrom_codes`` is the
-    index of the chromosome in ``_CHROMS`` (-1 for contigs outside the
-    canonical set, which are dropped by the callers).
+    The same rows ``read_fragments`` returns, but never more than
+    ``chunk_rows`` of them in memory at once. The FinaleDB files hold
+    about 37 M fragments each and were fine to read whole; the SAUNA
+    deposit's hold up to 290 M, and reading one of those whole -- with
+    the chromosome column as Python strings -- needs more memory than
+    the machine has. Every quantity the extractors compute is a sum
+    over the rows (per-bin counts, a histogram, a median over lengths),
+    so accumulating chunk by chunk gives exactly the same numbers.
 
-    Vectorised with pandas: the training-cohort files hold ~37 M
-    fragments each, and a per-line Python loop takes minutes per sample.
+    The chromosome column is categorised rather than kept as strings:
+    the codes are the same, and the memory is 290 M bytes instead of
+    gigabytes of Python objects.
     """
     skiprows = _bed_header_rows(path)
     header = pd.read_csv(path, sep="\t", header=None, nrows=2,
                          compression="gzip", engine="c", skiprows=skiprows)
     n_fields = header.shape[1]
     usecols = [0, 1, 2, _mapq_index(n_fields)]
-    df = pd.read_csv(path, sep="\t", header=None, usecols=usecols,
-                     compression="gzip", engine="c", skiprows=skiprows,
-                     names=["chrom", "start", "end", "mapq"])
-    chrom = df["chrom"].astype(str).to_numpy()
-    start = df["start"].to_numpy(dtype=np.int64)
-    end = df["end"].to_numpy(dtype=np.int64)
-    mapq = df["mapq"].to_numpy(dtype=np.int64)
-    keep = mapq >= mapq_threshold
-    codes = np.array([_CHROM_CODE.get(c, -1) for c in chrom], dtype=np.int64)
-    return codes[keep], start[keep], end[keep], mapq[keep]
+    for chunk in pd.read_csv(path, sep="\t", header=None, usecols=usecols,
+                             compression="gzip", engine="c", skiprows=skiprows,
+                             names=["chrom", "start", "end", "mapq"],
+                             chunksize=chunk_rows):
+        chrom = chunk["chrom"].astype(str)
+        codes = pd.Categorical(chrom, categories=list(_CHROMS)).codes.astype(
+            np.int64)
+        start = chunk["start"].to_numpy(dtype=np.int64)
+        end = chunk["end"].to_numpy(dtype=np.int64)
+        mapq = chunk["mapq"].to_numpy(dtype=np.int64)
+        keep = mapq >= mapq_threshold
+        yield codes[keep], start[keep], end[keep], mapq[keep]
+
+
+def read_fragments(path: str, mapq_threshold: int = 0):
+    """Read a FinaleDB fragment file into arrays.
+
+    Returns (chrom_codes, start, end, mapq) where ``chrom_codes`` is the
+    index of the chromosome in ``_CHROMS`` (-1 for contigs outside the
+    canonical set, which are dropped by the callers).
+    """
+    chunks = list(iter_fragments(path, mapq_threshold))
+    if not chunks:
+        empty_i = np.zeros(0, dtype=np.int64)
+        return empty_i, empty_i, empty_i, empty_i
+    return (np.concatenate([c[0] for c in chunks]),
+            np.concatenate([c[1] for c in chunks]),
+            np.concatenate([c[2] for c in chunks]),
+            np.concatenate([c[3] for c in chunks]))
 
 
 def extract_delfi(path: str) -> dict:
@@ -146,35 +172,43 @@ def extract_delfi(path: str) -> dict:
     and ``100kb_counts`` -- the same quantities the sibling repo writes
     to ``<sample>.delfi_*.npy``.
     """
-    codes, start, end, _mapq = read_fragments(path)
-    flen = end - start
+    short_100 = np.zeros(_TOTAL_100KB, dtype=np.int64)
+    long_100 = np.zeros(_TOTAL_100KB, dtype=np.int64)
+    short_5 = np.zeros(_TOTAL_5MB, dtype=np.int64)
+    long_5 = np.zeros(_TOTAL_5MB, dtype=np.int64)
+    total_short = 0
+    total_long = 0
 
-    keep = (codes >= 0) & (flen >= MIN_LEN) & (flen <= LONG_MAX)
-    codes = codes[keep]
-    start = start[keep]
-    flen = flen[keep]
+    for codes, start, end, _mapq in iter_fragments(path):
+        flen = end - start
+        keep = (codes >= 0) & (flen >= MIN_LEN) & (flen <= LONG_MAX)
+        if not keep.any():
+            continue
+        codes = codes[keep]
+        start = start[keep]
+        flen = flen[keep]
 
-    is_short = flen <= SHORT_MAX
-    total_short = int(is_short.sum())
-    total_long = int((~is_short).sum())
+        is_short = flen <= SHORT_MAX
+        total_short += int(is_short.sum())
+        total_long += int((~is_short).sum())
 
-    # 100 kb bins
-    bin100 = start // BIN_100KB
-    valid100 = bin100 < _N_BINS_100KB[codes]
-    flat100 = _OFFSET_100KB[codes] + bin100
-    short_100 = np.bincount(flat100[valid100 & is_short],
-                            minlength=_TOTAL_100KB).astype(np.int64)
-    long_100 = np.bincount(flat100[valid100 & ~is_short],
-                           minlength=_TOTAL_100KB).astype(np.int64)
+        # 100 kb bins
+        bin100 = start // BIN_100KB
+        valid100 = bin100 < _N_BINS_100KB[codes]
+        flat100 = _OFFSET_100KB[codes] + bin100
+        short_100 += np.bincount(flat100[valid100 & is_short],
+                                 minlength=_TOTAL_100KB).astype(np.int64)
+        long_100 += np.bincount(flat100[valid100 & ~is_short],
+                                minlength=_TOTAL_100KB).astype(np.int64)
 
-    # 5 Mb bins
-    bin5 = start // BIN_5MB
-    valid5 = bin5 < _N_BINS_5MB[codes]
-    flat5 = _OFFSET_5MB[codes] + bin5
-    short_5 = np.bincount(flat5[valid5 & is_short],
-                           minlength=_TOTAL_5MB).astype(np.int64)
-    long_5 = np.bincount(flat5[valid5 & ~is_short],
-                          minlength=_TOTAL_5MB).astype(np.int64)
+        # 5 Mb bins
+        bin5 = start // BIN_5MB
+        valid5 = bin5 < _N_BINS_5MB[codes]
+        flat5 = _OFFSET_5MB[codes] + bin5
+        short_5 += np.bincount(flat5[valid5 & is_short],
+                                minlength=_TOTAL_5MB).astype(np.int64)
+        long_5 += np.bincount(flat5[valid5 & ~is_short],
+                               minlength=_TOTAL_5MB).astype(np.int64)
 
     ratios_100kb = short_100 / np.maximum(long_100, 1)
     counts_100kb = (short_100 + long_100).astype(np.int64)
@@ -200,19 +234,39 @@ def extract_fsd(path: str, mapq_threshold: int = 0) -> dict:
     Returns the same ``size_bins`` mapping the sibling repo writes to
     ``<sample>.fsd.json`` (normalised frequencies), so the benchmark's
     ``load5`` can read the result unchanged.
+
+    The histogram and the counts accumulate chunk by chunk (they are
+    sums), and the lengths themselves are kept as int32 -- four bytes
+    each, so a 290-million-fragment file needs about a gigabyte rather
+    than the tens of gigabytes the whole-file read needed.
     """
-    _codes, start, end, _mapq = read_fragments(path, mapq_threshold)
-    arr = (end - start)
-    arr = arr[(arr >= FSD_BIN_START) & (arr <= FSD_BIN_END)]
+    edges = np.arange(FSD_BIN_START, FSD_BIN_END + 1, FSD_BIN_STRIDE)
+    hist = np.zeros(len(edges) - 1, dtype=np.int64)
+    lengths: list = []
+    short = 0
+    long_ = 0
+    for _codes, start, end, _mapq in iter_fragments(path, mapq_threshold):
+        arr = end - start
+        arr = arr[(arr >= FSD_BIN_START) & (arr <= FSD_BIN_END)]
+        if arr.size == 0:
+            continue
+        lengths.append(arr.astype(np.int32))
+        chunk_hist, _ = np.histogram(
+            arr, bins=range(FSD_BIN_START, FSD_BIN_END + 1, FSD_BIN_STRIDE))
+        hist += chunk_hist.astype(np.int64)
+        short += int(((arr >= 100) & (arr <= 150)).sum())
+        # The 150 bp class belongs to BOTH windows in this repository's
+        # definition (the long class starts at 150, not above it), and
+        # the committed features were computed that way. Changing it
+        # would move every published number.
+        long_ += int(((arr >= 150) & (arr <= 220)).sum())
+    arr = (np.concatenate(lengths) if lengths
+           else np.zeros(0, dtype=np.int32))
     n = int(arr.size)
     if n == 0:
         raise ValueError("no fragments in input")
-    hist, edges = np.histogram(
-        arr, bins=range(FSD_BIN_START, FSD_BIN_END + 1, FSD_BIN_STRIDE))
     labels = [f"{edges[i]}-{edges[i + 1]}" for i in range(len(edges) - 1)]
     size_bins = {labels[i]: float(hist[i] / n) for i in range(len(hist))}
-    short = int(((arr >= 100) & (arr <= 150)).sum())
-    long_ = int(((arr >= 150) & (arr <= 220)).sum())
     return {
         "fragment_count": n,
         "median_length": float(np.median(arr)),
