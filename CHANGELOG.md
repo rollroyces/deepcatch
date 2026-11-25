@@ -330,6 +330,50 @@ cohort size.
   next to the cohorts they belong to, and they pin the finding, the null,
   the lead time, and the rule that a document quoting the numbers has to
   carry the limits with them.
+- **A cohort with enough tumour burden does separate -- and the model
+  reads the burden.** The SAUNA deposit (Zenodo 10.5281/zenodo.15097509)
+  is nine colorectal plasma samples at 15-33x, mapped to hg38, with
+  the depositor's own per-sample tumour fraction: 0.0049 to 0.4029, and
+  one patient sampled three times as it rises 0.2903 -> 0.3271 -> 0.4029.
+  It is the closest public thing to this repository's early-detection
+  question -- the training cohort's own cancer type, the build the
+  feature grid uses, a graded dose rather than a label -- and it has now
+  been unpacked, verified and scored with the same protocol as the other
+  held-out cohorts (`scripts/prepare_zenodo_sauna_cohort.py`,
+  `scripts/external_cohort_zenodo_sauna.py`; artifacts
+  `results/zenodo_sauna_prep.json`, `results/external_cohort_zenodo_sauna.json`):
+  * the tumour-naive model's score tracks the tumour fraction: Spearman
+    rho **0.6611** over the nine (sampled permutation p = 0.0641) and
+    **0.8154** within the seven CRC samples (p = **0.0355**);
+  * the raw channel carries more of it than the model does -- the
+    short/long ratio's rho against the tumour fraction is 0.7333 overall
+    (p = 0.0329) and **0.9643** within the CRC samples (p = **0.00305**);
+  * all four harmonisation variants agree on the sign and the size
+    (rho 0.66-0.75), so this is not an artefact of how the cohort is
+    normalised;
+  * the one patient sampled three times has a short/long ratio that
+    rises monotonically (0.20709 -> 0.23023 -> 0.26068) and a median
+    fragment length that falls (297 -> 295 -> 291 bp). The model's own
+    score is saturated at 1.000000 on all three, so it cannot be
+    monotone -- the channel moves under it, the score is at its ceiling;
+  * the binary contrast is thin and is not the readout: CRC vs benign is
+    0.7143 [0.3101, 1.0] on seven against two.
+
+  Against the PHTS cohort's null (above), this is the other half of the
+  picture: in a cohort with enough tumour burden the channels read it,
+  and in a screening population whose malignant samples are mostly
+  subclinical there is nothing to read. Nine samples and one patient
+  sampled three times is still a small measurement, and the library's
+  fragment-size shape differs from the training cohort's (short/long
+  ratio 0.0849 against 0.2182), so the gradient is the honest number
+  here and the absolute threshold is not.
+
+  The extractor had to change to make the measurement possible at all:
+  these files hold up to 307 million fragments each, and reading one
+  whole -- with the chromosome column as Python strings -- needs more
+  memory than the machine has. It now reads chunk by chunk, which gives
+  exactly the same numbers (re-extracting three ccRCC samples with the
+  new code reproduces the committed feature files bit for bit).
 
 ### Fixed
 

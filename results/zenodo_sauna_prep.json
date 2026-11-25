@@ -1,0 +1,189 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-25T13:25:56.349902+00:00",
+  "source": {
+    "record": "https://zenodo.org/records/15097509",
+    "doi": "10.5281/zenodo.15097509",
+    "paper": "Balazs, Zsolt -- SAUNA, Simulated Annealing for Unique Nucleosome Arrangements"
+  },
+  "format": {
+    "columns": "chrom, start, end, score, strand (the fragment form the extractor reads)",
+    "compression": "bgzip (gzip-compatible)",
+    "build": "hg38 -- the build the extractor's bin grid uses, so no conversion and no grid loss",
+    "conversion_needed": false,
+    "note": "The depositor built these files with `cut -f1,2,6,8,9` on a BEDPE, so the outer coordinates are start1 and end2; the check above establishes that no row is an inverted interval, which would have made the extractor drop that fragment silently."
+  },
+  "checks": {
+    "rows_sampled_per_file": 20000000,
+    "mono_peak_window": [
+      150,
+      200
+    ],
+    "mono_peak_min_fraction": 0.02,
+    "di_nucleosome_window": [
+      320,
+      345
+    ],
+    "di_nucleosome_min_fraction": 0.008,
+    "note": "The nucleosome ladder has to be present: the mono-nucleosome peak (about 166 bp) and the di-nucleosome one (about 332 bp). These libraries are not size-selected the way the FinaleDB ones are, so in four of the nine the di-nucleosome peak is the global mode."
+  },
+  "samples": {
+    "SeCT-20_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.02088415,
+      "long_fraction_150_220": 0.2504846,
+      "di_nucleosome_fraction": 0.2217878,
+      "mono_peak_fraction": 0.0364455,
+      "mean_fragment_length": 300.33950965,
+      "mode_fragment_length": 330,
+      "mode_fraction": 0.0439569,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1113163576,
+      "kind": "fragments"
+    },
+    "SeCT-22_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.0220203,
+      "long_fraction_150_220": 0.2889047,
+      "di_nucleosome_fraction": 0.2060466,
+      "mono_peak_fraction": 0.0474229,
+      "mean_fragment_length": 291.93125745,
+      "mode_fragment_length": 165,
+      "mode_fraction": 0.0474229,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1594415308,
+      "kind": "fragments"
+    },
+    "SeCT-26_t1_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.05391305,
+      "long_fraction_150_220": 0.2721857,
+      "di_nucleosome_fraction": 0.1450994,
+      "mono_peak_fraction": 0.0498204,
+      "mean_fragment_length": 273.15771155,
+      "mode_fragment_length": 165,
+      "mode_fraction": 0.0498204,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1607812689,
+      "kind": "fragments"
+    },
+    "SeCT-26_t2_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.05522665,
+      "long_fraction_150_220": 0.2475797,
+      "di_nucleosome_fraction": 0.131573,
+      "mono_peak_fraction": 0.04718585,
+      "mean_fragment_length": 272.08428235,
+      "mode_fragment_length": 305,
+      "mode_fraction": 0.0503796,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1553575617,
+      "kind": "fragments"
+    },
+    "SeCT-26_t3_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.0492259,
+      "long_fraction_150_220": 0.18897855,
+      "di_nucleosome_fraction": 0.10700925,
+      "mono_peak_fraction": 0.03570855,
+      "mean_fragment_length": 274.68959195,
+      "mode_fragment_length": 300,
+      "mode_fraction": 0.0563176,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1651328775,
+      "kind": "fragments"
+    },
+    "SeCT-47_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.02557775,
+      "long_fraction_150_220": 0.3118123,
+      "di_nucleosome_fraction": 0.1742022,
+      "mono_peak_fraction": 0.0538968,
+      "mean_fragment_length": 280.5441442,
+      "mode_fragment_length": 165,
+      "mode_fraction": 0.0538968,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1718574538,
+      "kind": "fragments"
+    },
+    "SeCT-58_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.04062455,
+      "long_fraction_150_220": 0.3231681,
+      "di_nucleosome_fraction": 0.1592888,
+      "mono_peak_fraction": 0.0639658,
+      "mean_fragment_length": 275.3410162,
+      "mode_fragment_length": 165,
+      "mode_fraction": 0.0639658,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 882257781,
+      "kind": "fragments"
+    },
+    "SeCT-61_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.0269374,
+      "long_fraction_150_220": 0.3152346,
+      "di_nucleosome_fraction": 0.19419915,
+      "mono_peak_fraction": 0.04673035,
+      "mean_fragment_length": 282.8355103,
+      "mode_fragment_length": 165,
+      "mode_fraction": 0.04673035,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1515425280,
+      "kind": "fragments"
+    },
+    "SeCT-82_hg38.frag.tsv.bgz": {
+      "rows_sampled": 20000000,
+      "inverted_intervals": 0,
+      "negative_lengths": 0,
+      "short_fraction_100_150": 0.0174541,
+      "long_fraction_150_220": 0.24818985,
+      "di_nucleosome_fraction": 0.2342175,
+      "mono_peak_fraction": 0.0325406,
+      "mean_fragment_length": 299.14397535,
+      "mode_fragment_length": 325,
+      "mode_fraction": 0.0473543,
+      "column_counts": {
+        "5": 20000000
+      },
+      "bytes": 1506282712,
+      "kind": "fragments"
+    },
+    "metadata.tsv": {
+      "bytes": 907,
+      "kind": "metadata"
+    }
+  }
+}

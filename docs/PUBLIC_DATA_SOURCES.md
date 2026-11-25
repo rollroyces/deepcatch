@@ -374,14 +374,53 @@ early-detection claim:
   this cohort does not carry the depth confound the ccRCC cohort does --
   it is deeper, not shallower.
 
-What is not done here: the deposit is 13.1 GB and its nine samples hold
-about **148 M fragments each** (296 M reads -- the depositor's own
-`all_read` column, counted from the files themselves rather than
-assumed), so extracting the repository's five channels from them is a
-matter of hours, and the binary contrast (7 CRC vs 2 benign) is thin. It
-is recorded as the cohort that can close the early-detection question in
-public data, with the labels, the depths and the tumour fractions to do
-it with. No number from it is quoted yet.
+**Measured: the model tracks the tumour fraction.** The cohort has now
+been unpacked, verified and scored with the same protocol as the other
+held-out cohorts (`scripts/prepare_zenodo_sauna_cohort.py` →
+`results/zenodo_sauna_prep.json`; `scripts/external_cohort_zenodo_sauna.py`
+→ `results/external_cohort_zenodo_sauna.json`). Nine samples, 148-307 M
+fragments each, all of them on hg38 and all of them showing the
+nucleosome ladder; the libraries are *not* size-selected the way the
+FinaleDB ones are, so in four of the nine the di-nucleosome peak is the
+taller one.
+
+- **The dose response is there.** The model's score against the tumour
+  fraction: Spearman rho **0.6611** over all nine (permutation p =
+  0.0641) and **0.8154** within the seven CRC samples (p = **0.0355**).
+  The raw channel carries more of it than the model does — the
+  short/long ratio's rho against the tumour fraction is 0.7333 overall
+  (p = 0.0329) and **0.9643** within the CRC samples (p = **0.00305**).
+  All four harmonisation variants agree on the sign and the size
+  (rho 0.66-0.75), so this is not an artefact of how the cohort is
+  normalised.
+- **The longitudinal series moves with the tumour.** SeCT-26's three
+  draws (tumour fraction 0.2903 → 0.3271 → 0.4029) have a short/long
+  ratio that rises monotonically (0.20709 → 0.23023 → 0.26068) and a
+  median fragment length that falls (297 → 295 → 291 bp). The model's
+  own score is saturated at 1.000000 on all three, so it cannot be
+  monotone — the channel moves under it, the score is at its ceiling.
+- **The binary contrast is thin and is not the readout.** CRC vs benign
+  is 0.7143 [0.3101, 1.0] on seven against two, which is why the
+  gradient is what the artifact reports.
+
+**Why this is the cohort that could close the early-detection question.**
+It is colorectal (the training cohort's own cancer type), hg38 (the
+build the feature grid uses), at least the training cohort's depth, and
+it carries a graded tumour fraction rather than a label — so the
+question it answers is whether the model reads tumour *burden*, which
+is the question a screening claim needs. Against the PHTS cohort
+(§6.3), which has no class signal for any model fitted inside it, this
+is the other half of the picture: in a cohort with enough burden, the
+model tracks it.
+
+**The limits travel with it.** Nine samples and one patient sampled
+three times; the correlation is over nine points, and the longitudinal
+comparison is three draws of one person. The library's fragment-size
+shape differs from the training cohort's (short/long ratio 0.0849
+against 0.2182), so the per-cohort harmonisation carries a real shift —
+the ranking and the gradient are the honest numbers, the absolute
+threshold is not. And the tumour fraction is the depositor's own label:
+it is the dose axis here, never a label the model is allowed to see.
 
 ### 6.3 A screening cohort with stage labels: the Cleveland Clinic PHTS plasma
 

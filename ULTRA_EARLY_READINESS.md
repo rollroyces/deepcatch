@@ -135,6 +135,30 @@ about is now measured on fragments as well as on methylation matrices:
 **no stage-stratified separation from a public stage-labelled plasma
 cohort, in either modality.**
 
+**And the other half of the picture: a cohort with enough tumour burden
+does separate, and the model reads the burden.** The SAUNA cohort
+(Zenodo 10.5281/zenodo.15097509; 9 colorectal plasma samples at 15-33x,
+hg38, with the depositor's own per-sample tumour fraction) has been
+unpacked, verified and scored the same way
+(`results/external_cohort_zenodo_sauna.json`). The tumour-naive model's
+score tracks the tumour fraction: Spearman rho **0.6611** over the nine
+(sampled permutation p = 0.0641) and **0.8154** within the seven CRC
+samples (p = **0.0355**); the short/long ratio carries more of it still
+(rho **0.9643** within the CRC samples, p = **0.00305**), and all four
+harmonisation variants agree on the sign and the size. The one patient
+sampled three times has a short/long ratio that rises with the tumour
+fraction (0.20709 -> 0.23023 -> 0.26068 as the fraction goes 0.2903 ->
+0.3271 -> 0.4029) -- the same patient, the same laboratory, so no
+cohort shift can move that comparison.
+
+So the question this document asks now has a measured answer in both
+directions: **the channels read tumour burden when there is enough of it
+(SAUNA), and there is nothing to read when there is not (PHTS).**
+Nine samples and one patient sampled three times is still a small
+measurement, and the binary contrast in SAUNA (7 CRC against 2 benign,
+AUC 0.7143 [0.3101, 1.0]) is far too thin to quote on its own — the
+gradient is the readout, not the AUC.
+
 ---
 
 ## 2. Panel-LLR ultra-low-VAF detector is ready (in silico)

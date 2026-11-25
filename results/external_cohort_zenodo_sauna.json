@@ -1,0 +1,255 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-25T13:45:07.607856+00:00",
+  "design": {
+    "question": "Does the tumour-naive fragmentomics model, trained on FinaleDB publications 6+8, track the tumour fraction in a colorectal cohort it has never seen, and does it separate CRC from benign plasma there?",
+    "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019), n=627",
+    "test": "Zenodo 10.5281/zenodo.15097509 -- https://zenodo.org/records/15097509",
+    "harmonization": "per study on the training side, per publication on the held-out side",
+    "pca_components": 200,
+    "model": "LogisticRegression(max_iter=2000) on the training cohort",
+    "primary_readout": "the tumour-fraction gradient, not a cancer/control AUC"
+  },
+  "cohort": {
+    "doi": "10.5281/zenodo.15097509",
+    "record": "https://zenodo.org/records/15097509",
+    "publication_id": "zenodo_15097509",
+    "n": 9,
+    "n_crc": 7,
+    "n_benign": 2,
+    "build": "hg38 -- the build the feature grid uses",
+    "coverage": {
+      "SeCT-20": "20.3065",
+      "SeCT-22": "30.1709",
+      "SeCT-26_t1": "29.532",
+      "SeCT-26_t2": "28.4972",
+      "SeCT-26_t3": "30.9483",
+      "SeCT-47": "32.598",
+      "SeCT-58": "15.6808",
+      "SeCT-61": "28.3788",
+      "SeCT-82": "28.2784"
+    },
+    "tumour_fraction": {
+      "SeCT-20": 0.01735,
+      "SeCT-22": 0.007067,
+      "SeCT-26_t1": 0.2903,
+      "SeCT-26_t2": 0.3271,
+      "SeCT-26_t3": 0.4029,
+      "SeCT-47": 0.004879,
+      "SeCT-58": 0.006191,
+      "SeCT-61": 0.0249,
+      "SeCT-82": 0.00724
+    },
+    "patient": {
+      "SeCT-20": "SeCT20",
+      "SeCT-22": "SeCT22",
+      "SeCT-26_t1": "SeCT26",
+      "SeCT-26_t2": "SeCT26",
+      "SeCT-26_t3": "SeCT26",
+      "SeCT-47": "SeCT47",
+      "SeCT-58": "SeCT58",
+      "SeCT-61": "SeCT61",
+      "SeCT-82": "SeCT82"
+    },
+    "samples": [
+      "SeCT-20",
+      "SeCT-22",
+      "SeCT-26_t1",
+      "SeCT-26_t2",
+      "SeCT-26_t3",
+      "SeCT-47",
+      "SeCT-58",
+      "SeCT-61",
+      "SeCT-82"
+    ],
+    "labels": {
+      "SeCT-20": 1,
+      "SeCT-22": 1,
+      "SeCT-26_t1": 1,
+      "SeCT-26_t2": 1,
+      "SeCT-26_t3": 1,
+      "SeCT-47": 1,
+      "SeCT-58": 0,
+      "SeCT-61": 1,
+      "SeCT-82": 0
+    },
+    "fragment_counts": {
+      "SeCT-20": 191838064,
+      "SeCT-22": 283844588,
+      "SeCT-26_t1": 282023275,
+      "SeCT-26_t2": 272161397,
+      "SeCT-26_t3": 292891893,
+      "SeCT-47": 306998133,
+      "SeCT-58": 148021613,
+      "SeCT-61": 266980895,
+      "SeCT-82": 267101496
+    },
+    "library": {
+      "heldout_median_short_long_ratio": 0.0849,
+      "training_median_short_long_ratio": 0.2182,
+      "heldout_median_fragment_count": 272161397,
+      "training_median_fragment_count": 38774835,
+      "note": "The held-out cohort's library has a different fragment-size shape from the training cohort's, so the per-cohort harmonisation carries a real shift. The ranking is the honest number here; the absolute threshold is not."
+    },
+    "format": {
+      "columns": "chrom, start, end, score, strand (the fragment form the extractor reads)",
+      "compression": "bgzip (gzip-compatible)",
+      "build": "hg38 -- the build the extractor's bin grid uses, so no conversion and no grid loss",
+      "conversion_needed": false,
+      "note": "The depositor built these files with `cut -f1,2,6,8,9` on a BEDPE, so the outer coordinates are start1 and end2; the check above establishes that no row is an inverted interval, which would have made the extractor drop that fragment silently."
+    }
+  },
+  "result": {
+    "crc_vs_benign_auc": 0.7143,
+    "crc_vs_benign_ci": [
+      0.3101,
+      1.0
+    ],
+    "crc_vs_benign_note": "Reported for completeness and close to meaningless on its own: the two benign samples carry a tumour fraction of 0.0062-0.0072 and three CRC samples carry 0.0049-0.4029, so the contrast is between a low tumour fraction and a slightly different low tumour fraction. The gradient and the longitudinal series are what this cohort carries.",
+    "dose_response": {
+      "rho_model_vs_tumour_fraction": 0.6611,
+      "permutation_p": 0.064147,
+      "rho_crc_only": 0.8154,
+      "permutation_p_crc_only": 0.035548,
+      "permutation_method": "sampled permutation, 20000 trials, seed 20261125"
+    },
+    "per_sample_score": {
+      "SeCT-20": 0.0,
+      "SeCT-22": 0.0,
+      "SeCT-26_t1": 1.0,
+      "SeCT-26_t2": 1.0,
+      "SeCT-26_t3": 1.0,
+      "SeCT-47": 0.0,
+      "SeCT-58": 2e-06,
+      "SeCT-61": 0.151382,
+      "SeCT-82": 0.0
+    },
+    "score_saturation": {
+      "heldout_score_min": 0.0,
+      "heldout_score_max": 1.0,
+      "note": "Whether the model's scores sit at the top of its range in this cohort, as they did in the PHTS cohort. See harmonization_sensitivity for the control that does not let the cohort normalise itself."
+    }
+  },
+  "single_channel_readout": {
+    "genome_short_long_ratio": {
+      "rho_vs_tumour_fraction": 0.7333,
+      "permutation_p": 0.032898,
+      "rho_vs_tumour_fraction_crc_only": 0.9643,
+      "permutation_p_crc_only": 0.00305,
+      "median_crc": 0.08488,
+      "median_benign": 0.09756
+    },
+    "mean_short_frac": {
+      "rho_vs_tumour_fraction": 0.7333,
+      "permutation_p": 0.032898,
+      "rho_vs_tumour_fraction_crc_only": 0.9643,
+      "permutation_p_crc_only": 0.00305,
+      "median_crc": 0.07824,
+      "median_benign": 0.08829
+    },
+    "fsd_short_fraction_100_150": {
+      "rho_vs_tumour_fraction": 0.5833,
+      "permutation_p": 0.110494,
+      "rho_vs_tumour_fraction_crc_only": 0.75,
+      "permutation_p_crc_only": 0.065297,
+      "median_crc": 0.02759,
+      "median_benign": 0.02972
+    },
+    "fsd_short_long_ratio": {
+      "rho_vs_tumour_fraction": 0.7333,
+      "permutation_p": 0.032898,
+      "rho_vs_tumour_fraction_crc_only": 0.9643,
+      "permutation_p_crc_only": 0.00305,
+      "median_crc": 0.08476,
+      "median_benign": 0.09723
+    }
+  },
+  "longitudinal_series": {
+    "patient": "SeCT26",
+    "n_draws": 3,
+    "note": "Same patient, same laboratory, rising tumour fraction. A cohort shift cannot move this comparison.",
+    "draws": [
+      {
+        "sample": "SeCT-26_t1",
+        "tumour_fraction": 0.2903,
+        "model_score": 1.0,
+        "short_long_ratio": 0.20709,
+        "fsd_median_length": 297.0,
+        "fragments": 282023275
+      },
+      {
+        "sample": "SeCT-26_t2",
+        "tumour_fraction": 0.3271,
+        "model_score": 1.0,
+        "short_long_ratio": 0.23023,
+        "fsd_median_length": 295.0,
+        "fragments": 272161397
+      },
+      {
+        "sample": "SeCT-26_t3",
+        "tumour_fraction": 0.4029,
+        "model_score": 1.0,
+        "short_long_ratio": 0.26068,
+        "fsd_median_length": 291.0,
+        "fragments": 292891893
+      }
+    ],
+    "model_score_monotone": false,
+    "short_long_ratio_monotone": true
+  },
+  "harmonization_sensitivity": {
+    "train_global_test_global": {
+      "auc": 0.7143,
+      "ci_lo": 0.3101,
+      "ci_hi": 1.0,
+      "n_pos": 7,
+      "n_neg": 2,
+      "rho_vs_tumour_fraction": 0.75
+    },
+    "train_global_test_per_publication": {
+      "auc": 0.7143,
+      "ci_lo": 0.3101,
+      "ci_hi": 1.0,
+      "n_pos": 7,
+      "n_neg": 2,
+      "rho_vs_tumour_fraction": 0.75
+    },
+    "train_per_study_test_per_publication": {
+      "auc": 0.7143,
+      "ci_lo": 0.3101,
+      "ci_hi": 1.0,
+      "n_pos": 7,
+      "n_neg": 2,
+      "rho_vs_tumour_fraction": 0.6611
+    },
+    "train_global_test_train_statistics": {
+      "auc": 0.6429,
+      "ci_lo": 0.2637,
+      "ci_hi": 1.0,
+      "n_pos": 7,
+      "n_neg": 2,
+      "rho_vs_tumour_fraction": 0.728
+    }
+  },
+  "verdict": {
+    "question": "Does the tumour-naive fragmentomics model track the tumour fraction in colorectal plasma, over an eighty-fold range of it, at the training cohort's own depth and genome build?",
+    "rho_vs_tumour_fraction": 0.6611,
+    "permutation_p": 0.064147,
+    "rho_vs_tumour_fraction_crc_only": 0.8154,
+    "permutation_p_crc_only": 0.035548,
+    "tracks_the_tumour_fraction": false,
+    "longitudinal_series_monotone": false,
+    "channels_that_track_it": [
+      "fsd_short_long_ratio",
+      "genome_short_long_ratio",
+      "mean_short_frac"
+    ],
+    "answer": "the score's Spearman rho against the tumour fraction is 0.6611 (permutation p 0.064147), so it does not track it at this n; within the CRC samples alone rho is 0.8154 (p 0.035548); and the longitudinal series is not monotone"
+  },
+  "limits": [
+    "Nine samples. The gradient's Spearman rho over nine points has a wide interval, and the longitudinal series is three draws of one patient. Both are measurements.",
+    "The cancer/control contrast in this cohort is close to meaningless on its own -- the benign samples carry a tumour fraction of the same order as the lowest CRC samples -- so the AUC must not be read as a detection result.",
+    "One patient supplies the longitudinal series, so the comparison cannot be generalised beyond him; what it can do is show whether the score moves with his own tumour burden.",
+    "The tumour fraction is the depositor's, and it is a fraction of the reads assigned to the tumour; it is used here as the dose axis, not as a label the model is allowed to see."
+  ]
+}

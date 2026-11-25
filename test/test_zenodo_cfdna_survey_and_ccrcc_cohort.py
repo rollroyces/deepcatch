@@ -87,6 +87,17 @@ EXPECTED_PHTS_PERMUTATION_P = 0.8025
 EXPECTED_PHTS_PRE_AUC = 0.5
 EXPECTED_PHTS_SHORT_LONG_AUC = 0.6455
 EXPECTED_PHTS_ABSOLUTE_AUC = 0.5388
+
+# The SAUNA cohort, pinned. This is the cohort with a GRADED cancer
+# label, so its numbers are correlations rather than AUCs, and the
+# within-CRC figures are the ones that carry the finding.
+EXPECTED_SAUNA_N = 9
+EXPECTED_SAUNA_N_CRC = 7
+EXPECTED_SAUNA_N_BENIGN = 2
+EXPECTED_SAUNA_RHO_ALL = 0.6611
+EXPECTED_SAUNA_RHO_CRC = 0.8154
+EXPECTED_SAUNA_CHANNEL_RHO_CRC = 0.9643
+_SAUNA_ARTIFACT = "results/external_cohort_zenodo_sauna.json"
 EXPECTED_PHTS_WITHIN_COHORT_AUC = 0.5465
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -127,6 +138,14 @@ REQUIRED_PRE_ARM_LIMITS = (
 )
 
 _PRE_ARM_MARKERS = ("pre-diagnosis", "Pre-SMN", "Pre-PMN", "pre_diagnosis")
+
+# The SAUNA cohort's limits: the two correlations the finding rests on,
+# and the size of the cohort they were measured in.
+REQUIRED_SAUNA_LIMITS = (
+    "0.8154",
+    "0.9643",
+    "nine",
+)
 
 
 def _load(rel: str) -> dict:
@@ -598,3 +617,48 @@ def test_the_cohort_artifact_names_its_sources():
             "peak")
         assert stats["di_nucleosome_fraction"] >= 0.008, (
             f"{sample}'s fragment lengths have no di-nucleosome shoulder")
+
+    # The SAUNA cohort: a graded cancer label, so the finding is a
+    # correlation with the tumour fraction rather than an AUC.
+    sauna = _load(_SAUNA_ARTIFACT)
+    cohort = sauna["cohort"]
+    assert cohort["n"] == EXPECTED_SAUNA_N
+    assert cohort["n_crc"] == EXPECTED_SAUNA_N_CRC
+    assert cohort["n_benign"] == EXPECTED_SAUNA_N_BENIGN
+    dose = sauna["result"]["dose_response"]
+    assert dose["rho_model_vs_tumour_fraction"] == EXPECTED_SAUNA_RHO_ALL
+    assert dose["rho_crc_only"] == EXPECTED_SAUNA_RHO_CRC
+    assert dose["permutation_p_crc_only"] < 0.05, (
+        "the within-CRC dose response is no longer significant; the "
+        "finding this cohort was read for has moved")
+    channel = sauna["single_channel_readout"]["genome_short_long_ratio"]
+    assert channel["rho_vs_tumour_fraction_crc_only"] == (
+        EXPECTED_SAUNA_CHANNEL_RHO_CRC)
+    assert channel["permutation_p_crc_only"] < 0.01
+    # The longitudinal series: the same patient three times, so no
+    # cohort shift can move it.
+    series = sauna["longitudinal_series"]
+    assert series["n_draws"] == 3
+    assert series["short_long_ratio_monotone"] is True, (
+        "the longitudinal series no longer rises with the tumour fraction")
+    fractions = [d["tumour_fraction"] for d in series["draws"]]
+    ratios = [d["short_long_ratio"] for d in series["draws"]]
+    assert fractions == sorted(fractions)
+    assert ratios == sorted(ratios)
+
+    # Every document that quotes this cohort carries the two numbers
+    # the finding rests on.
+    sauna_documents = _documents_mentioning("15097509")
+    assert sauna_documents, "nothing mentions the SAUNA cohort"
+    problems = []
+    for path in sauna_documents:
+        rel = path.relative_to(_REPO_ROOT)
+        text = path.read_text(encoding="utf-8")
+        if Path(_SAUNA_ARTIFACT).name not in text:
+            problems.append(f"{rel} does not name {_SAUNA_ARTIFACT}")
+        for limit in REQUIRED_SAUNA_LIMITS:
+            if limit not in text:
+                problems.append(
+                    f"{rel} does not state {limit!r} -- one of the limits "
+                    "that has to travel with the number")
+    assert not problems, "\n  ".join(problems)
