@@ -298,14 +298,22 @@ cohort size.
     stage monotonicity (rho 0.172, p 0.297). This is the first
     stage-graded fragment cohort the repository has scored, so the stage
     question now has an answer rather than a plan.
-  * but the effect the depositor reported **is** in the data: read one
-    channel at a time, the second-neoplasm arm separates on its own (the
-    short/long ratio is higher there -- AUC **0.6455** [0.5008, 0.7901],
-    in the direction the depositor's own paper reports -- the fragments
-    are shorter, and the di-nucleosome proportion is lower). The model's
-    score is saturated (this cohort's no-cancer controls score at a
-    median of 0.9997 against the training cohort's own controls' 0.0027),
-    so the null is a **transfer failure, not an absence of signal**.
+  * and the null is **not about the transfer**: a model fitted and
+    cross-validated inside the cohort reaches AUC 0.5465, CI [0.4319,
+    0.6612], and read one channel at a time every interval over the whole
+    cancer arm includes 0.5 (0.4367-0.5759). This cohort has no class
+    signal in these channels to find, so it is not a valid external test
+    in either direction -- it shows where the channels stop working
+    (mostly subclinical disease in a screening population), not that the
+    model fails.
+  * the effect the depositor published does show up, in the arm with the
+    highest tumour burden: read one channel at a time, the
+    second-neoplasm arm separates (the short/long ratio is higher there
+    -- AUC **0.6455** [0.5008, 0.7901], in the direction the depositor's
+    own paper reports -- the fragments are shorter, and the
+    di-nucleosome proportion is lower). Over the whole cancer arm the
+    same channel's interval includes 0.5 again (0.5714 [0.4574, 0.6854]):
+    the effect is in the highest-burden arm and not in the cohort.
 
   The checks live in `test/test_zenodo_cfdna_survey_and_ccrcc_cohort.py`,
   next to the cohorts they belong to, and they pin the finding, the null,

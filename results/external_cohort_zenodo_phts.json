@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-11-25T10:57:05.713827+00:00",
+  "generated_at": "2026-11-25T11:37:35.178202+00:00",
   "design": {
     "question": "Does the tumour-naive fragmentomics model, trained on FinaleDB publications 6+8, separate the plasma of a hereditary-cancer screening cohort with a malignant neoplasm from the plasma of the same cohort without one, in a cohort it has never seen?",
     "train": "FinaleDB publications 6 (Jiang 2015) + 8 (Cristiano 2019), n=627",
@@ -838,12 +838,19 @@
         "mean_short_frac"
       ],
       "the_signal_is_in_the_data": true,
+      "within_cohort_auc": 0.5465,
+      "within_cohort_ci": [
+        0.4319,
+        0.6612
+      ],
+      "within_cohort_pre_auc": 0.5267,
+      "a_model_fitted_here_separates": false,
       "depositor_direction_in_the_point_estimates": {
         "di_nucleosome_fraction_auc": 0.3964,
         "short_long_ratio_auc": 0.6455,
         "note": "Both readings point the way the depositor's paper does -- the di-nucleosome proportion lower in the second-neoplasm arm, the short/long ratio higher -- but neither interval excludes 0.5 at this n, so these are point estimates and not results."
       },
-      "answer": "the tumour-naive model does not separate the classes in this cohort (AUC 0.4506, CI [0.3343, 0.5669], permutation p 0.80246); the pre-diagnosis arm is at chance (AUC 0.5, CI [0.3052, 0.6948], n=9); the stage gradient is not monotone (rho 0.172, p 0.2971); and the channels whose interval excludes 0.5 on the second-neoplasm arm are genome_short_long_ratio, mean_short_frac, so the signal is in the data and the model does not carry it"
+      "answer": "the tumour-naive model does not separate the classes in this cohort (AUC 0.4506, CI [0.3343, 0.5669], permutation p 0.80246); the pre-diagnosis arm is at chance (AUC 0.5, CI [0.3052, 0.6948], n=9); the stage gradient is not monotone (rho 0.172, p 0.2971); and the channels whose interval excludes 0.5 on the second-neoplasm arm are genome_short_long_ratio, mean_short_frac, so there is signal in the highest-burden arm, though not across the cohort; and a model fitted INSIDE this cohort reaches AUC 0.5465 (CI [0.4319, 0.6612]), so the cohort does not separate its own classes either and the null is about the data, not about the transfer"
     }
   },
   "lead_time": {
@@ -1032,6 +1039,42 @@
     },
     "note": "Each channel on its own, against the no-cancer arm. A channel whose interval excludes 0.5 is separating the classes on its own, whether or not the model's score does. Note that genome_short_long_ratio and mean_short_frac are monotone transforms of each other -- one signal, not two -- and fsd_short_fraction_100_150 and fsd_short_long_ratio are the same reading of the 100-150 and 150-220 bp windows."
   },
+  "within_cohort_model": {
+    "all_cancer_vs_no_cancer": {
+      "auc": 0.5465,
+      "ci_lo": 0.4319,
+      "ci_hi": 0.6612,
+      "n_pos": 49,
+      "n_neg": 50,
+      "per_seed_aucs": [
+        0.5584,
+        0.5473,
+        0.5147,
+        0.5518,
+        0.5527
+      ],
+      "seed_auc_min": 0.5147,
+      "seed_auc_max": 0.5584,
+      "note": "A model fitted and cross-validated inside this cohort. The interval treats the out-of-fold scores as fixed, so it understates the uncertainty; the per-seed AUCs are the variability measure."
+    },
+    "pre_diagnosis_vs_no_cancer": {
+      "auc": 0.5267,
+      "ci_lo": 0.3192,
+      "ci_hi": 0.7341,
+      "n_pos": 9,
+      "n_neg": 50,
+      "per_seed_aucs": [
+        0.54,
+        0.6067,
+        0.5267,
+        0.4933,
+        0.5111
+      ],
+      "seed_auc_min": 0.4933,
+      "seed_auc_max": 0.6067,
+      "note": "A model fitted and cross-validated inside this cohort. The interval treats the out-of-fold scores as fixed, so it understates the uncertainty; the per-seed AUCs are the variability measure."
+    }
+  },
   "training_score_reference": {
     "oof_score_quantiles_cancer": {
       "p5": 0.2646,
@@ -1105,7 +1148,8 @@
     "The deposit is ultra-low-pass: 3,067,524 fragments per sample against the training cohort's 38,774,835 -- about 13x shallower. All five channels are scale-free by construction, but the per-bin ratios are noisier at this depth.",
     "The deposit's fragments are mapped to hg19 while the extractor's bin grid uses hg38 sizes -- the grid the training cohort's features use, so it is the right grid, but the preparation report records how many fragments it drops.",
     "The library's fragment-size shape is close to the training cohort's (short/long ratio 0.2001 against 0.2182), so the cohort shift is not a shape difference. The ranking travels; the absolute threshold does not.",
-    "The model reads this whole cohort as cancer-like: the no-cancer controls' median score is 0.9997 against the training cohort's own controls' 0.0027, so the scores saturate at the top of the model's range and the AUC is a ranking among near-identical values. That is the mechanism behind the null -- a transfer failure, not a statement that the cohort carries no signal. The channels read on their own are in single_channel_readout.",
+    "The model reads this whole cohort as cancer-like: the no-cancer controls' median score is 0.9997 against the training cohort's own controls' 0.0027, so the scores saturate at the top of the model's range. That is how the transfer fails here.",
+    "But the transfer is not what the null is about. A model fitted and cross-validated INSIDE this cohort reaches AUC 0.5465 (CI [0.4319, 0.6612]), so the cohort does not separate its own classes either. This cohort is not a valid external test of the model: there is no class signal in these channels here to find, which is what a screening population of mostly subclinical disease should look like. The channels do see the highest-burden arm -- the short/long ratio separates the second-neoplasm arm at AUC 0.6455 (CI [0.5008, 0.7901]), in the direction the depositor's own paper reports -- but the cohort as a whole does not separate.",
     "This is not a replication of the depositor's own result: their finding is about fragment end motifs, which this repository's five channels do not include. Only the direction of their genome-wide fragmentation finding is checked, in published_direction_check."
   ]
 }

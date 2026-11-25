@@ -120,16 +120,20 @@ Two things have to travel with that number. The first is that this is
 lead time anywhere in it is **7 days** and the tumour was already there when
 the plasma was drawn. An arm called "pre-diagnosis" is not an
 early-detection arm, and this document's question cannot be answered with
-it. The second is that the null is a **transfer failure rather than an
-absence of signal**: read one channel at a time, the second-neoplasm arm
-separates on its own (the short/long ratio is higher there — AUC 0.6455,
-CI [0.5008, 0.7901] — which is the direction the depositor's own paper
-reports), while the model's own score is saturated (this cohort's
-no-cancer controls score at a median of 0.9997, against the training
-cohort's own controls' 0.0027). So the gap this section asks about is now
-measured on fragments as well as on methylation matrices: **no
-stage-stratified separation from a public stage-labelled plasma cohort, in
-either modality.**
+it. The second is that the null is **not about the transfer**: a model
+fitted and cross-validated inside the cohort reaches AUC 0.5465, CI
+[0.4319, 0.6612], and read one channel at a time every interval over
+the whole cancer arm includes 0.5 (0.4367-0.5759). This cohort has no
+class signal in these channels to find, so it is not a valid external
+test in either direction — it shows where the channels stop working
+(mostly subclinical disease in a screening population), not that the
+model fails. The effect the depositor published does show up in the
+highest-burden arm (the short/long ratio is higher in the
+second-neoplasm arm — AUC 0.6455, CI [0.5008, 0.7901] — the direction
+their paper reports) and not in the cohort. So the gap this section asks
+about is now measured on fragments as well as on methylation matrices:
+**no stage-stratified separation from a public stage-labelled plasma
+cohort, in either modality.**
 
 ---
 

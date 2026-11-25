@@ -52,6 +52,13 @@ can be checked against their paper is the direction of the effect they
 report for genome-wide fragmentation, and that check is in the
 artifact.
 
+And it does not claim that the model fails to transfer here, because a
+model fitted and cross-validated INSIDE this cohort does not separate
+the classes either. This cohort is not a valid external test: it has no
+class signal in these channels to find. That control is the point of
+the within_cohort_model block, and it is what keeps the result from
+being over-read.
+
 The protocol is the same one the ccRCC cohort used
 (``scripts/external_validation_finaledb.py``, imported rather than
 re-implemented), so the numbers are comparable with the other
@@ -241,6 +248,28 @@ def _spearman_permutation_p(x: np.ndarray, y: np.ndarray, trials: int,
     return rho, (hits + 1) / (trials + 1)
 
 
+def _within_block(y: np.ndarray, score: np.ndarray,
+                  seed_aucs: list) -> dict:
+    """A within-cohort cross-validated model: AUC, CI and the seed spread.
+
+    The DeLong interval treats the out-of-fold scores as fixed, which
+    understates the uncertainty of a model that was fitted on these
+    labels: the scores are a function of the labels through the training
+    folds, so a label permutation of the final scores would not be a
+    valid null. The per-seed AUCs are the honest variability measure
+    here, and they are reported next to the interval.
+    """
+    block = _auc_ci(y, score)
+    block["per_seed_aucs"] = [round(float(a), 4) for a in seed_aucs]
+    block["seed_auc_min"] = round(float(min(seed_aucs)), 4)
+    block["seed_auc_max"] = round(float(max(seed_aucs)), 4)
+    block["note"] = ("A model fitted and cross-validated inside this "
+                     "cohort. The interval treats the out-of-fold scores "
+                     "as fixed, so it understates the uncertainty; the "
+                     "per-seed AUCs are the variability measure.")
+    return block
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -265,7 +294,7 @@ def main() -> int:
                     default="results/external_cohort_zenodo_phts.json")
     args = ap.parse_args()
 
-    print("[1/6] reading the deposited sample metadata ...", flush=True)
+    print("[1/7] reading the deposited sample metadata ...", flush=True)
     meta = read_metadata(args.metadata)
     labels, studies, disease, stage, group = {}, {}, {}, {}, {}
     for sample, row in meta.items():
@@ -286,20 +315,20 @@ def main() -> int:
     print(f"      {len(labels)} samples: {n_cancer} with cancer, "
           f"{len(labels) - n_cancer} without")
 
-    print("[2/6] extracting the five channels ...", flush=True)
+    print("[2/7] extracting the five channels ...", flush=True)
     extracted = extract_features(args.frag_dir, args.features_out, order,
                                  reuse=args.reuse_features)
     for sample in order[:3]:
         print(f"      {sample}: {extracted[sample]['fsd_fragment_count']:,} "
               f"fragments")
 
-    print("[3/6] loading the training cohort (FinaleDB 6+8) ...", flush=True)
+    print("[3/7] loading the training cohort (FinaleDB 6+8) ...", flush=True)
     Xtr, ytr, sttr, dtr, train_order = _load_cohort(
         args.features_dir, args.labels_multiclass, TRAIN_PUBLICATIONS)
     print(f"      n={len(ytr)} (cancer {int((ytr == 1).sum())}, "
           f"healthy {int((ytr == 0).sum())}), features={Xtr.shape[1]}")
 
-    print("[4/6] loading the cohort features and scoring ...", flush=True)
+    print("[4/7] loading the cohort features and scoring ...", flush=True)
     Xte, yte, stte = _load5_from(args.features_out, labels, studies)
     if len(Xte) != len(order):
         raise RuntimeError(f"row alignment failed: {len(Xte)} vs {len(order)}")
@@ -359,11 +388,37 @@ def main() -> int:
             float(np.median(score_tr_oof[ytr == 0])), 4),
     }
 
-    print("[5/6] the stage question ...", flush=True)
+    # A model fitted ON this cohort. The transferred model failing and
+    # the cohort having no class signal at all are different findings,
+    # and only one of them is a statement about this repository's model.
+    # A cross-validated model inside the cohort separates the two: if it
+    # cannot separate the classes either, the channels carry no class
+    # signal here and the null is about the data; if it can, the signal
+    # is present and the transfer is what failed.
+    # The depositor's own arms, read off the metadata.
     no_cancer = [s for s in order if disease[s] == _NO_CANCER_GROUP]
     pre = [s for s in order if disease[s] in _PRE_GROUPS]
     post = [s for s in order if disease[s] in _POST_GROUPS]
     staged = [s for s in order if _stage_code(s) is not None]
+
+    print("[5/7] a model fitted inside this cohort ...", flush=True)
+    within: dict = {}
+    _y_oof_c, score_c, seed_aucs_c = pooled_oof(
+        Xte_z, yte, stte, list(range(5)), args.pca, harmonize=True)
+    within["all_cancer_vs_no_cancer"] = _within_block(yte, score_c,
+                                                       seed_aucs_c)
+    pre_idx = [index[s] for s in pre]
+    noc_idx = [index[s] for s in no_cancer]
+    if pre_idx and noc_idx:
+        selected = pre_idx + noc_idx
+        y_sub = np.array([1] * len(pre_idx) + [0] * len(noc_idx))
+        _y_oof_p, score_p, seed_aucs_p = pooled_oof(
+            Xte_z[selected], y_sub, stte[selected], list(range(5)),
+            args.pca, harmonize=True)
+        within["pre_diagnosis_vs_no_cancer"] = _within_block(
+            y_sub, score_p, seed_aucs_p)
+
+    print("[6/7] the stage question ...", flush=True)
 
     # The lead time: the depositor's own ``date_diff`` column -- the days
     # between the plasma draw and the cancer diagnosis, negative when the
@@ -696,6 +751,17 @@ def main() -> int:
             None if pooled["ci_lo"] is None else pooled["ci_lo"] > 0.5),
         "channels_that_separate_post_smn_from_no_cancer": separating,
         "the_signal_is_in_the_data": bool(separating),
+        "within_cohort_auc": within.get("all_cancer_vs_no_cancer", {}).get(
+            "auc"),
+        "within_cohort_ci": [
+            within.get("all_cancer_vs_no_cancer", {}).get("ci_lo"),
+            within.get("all_cancer_vs_no_cancer", {}).get("ci_hi")],
+        "within_cohort_pre_auc": within.get(
+            "pre_diagnosis_vs_no_cancer", {}).get("auc"),
+        "a_model_fitted_here_separates": (
+            None if within.get("all_cancer_vs_no_cancer", {}).get("ci_lo")
+            is None
+            else within["all_cancer_vs_no_cancer"]["ci_lo"] > 0.5),
         "depositor_direction_in_the_point_estimates": {
             "di_nucleosome_fraction_auc": direction_check.get(
                 "auc_post_smn_vs_no_cancer"),
@@ -725,8 +791,9 @@ def main() -> int:
             f"{'monotone' if monotone else 'not monotone'} (rho "
             f"{round(rho, 4)}, p {round(rho_p, 4)}); and "
             + (f"the channels whose interval excludes 0.5 on the "
-               f"second-neoplasm arm are {', '.join(separating)}, so the "
-               f"signal is in the data and the model does not carry it"
+               f"second-neoplasm arm are {', '.join(separating)}, so there "
+               f"is signal in the highest-burden arm, though not across "
+               f"the cohort"
                if separating else
                "no single channel's interval excludes 0.5 on the "
                "second-neoplasm arm either (the depositor's published "
@@ -734,7 +801,20 @@ def main() -> int:
                "di-nucleosome proportion lower in that arm, the short/long "
                "ratio higher -- but not past 0.5 at n=22 against 50), so "
                "this cohort carries no fragmentation signal that the "
-               "model could have carried"))
+               "model could have carried")
+            + (f"; and a model fitted INSIDE this cohort reaches AUC "
+               f"{within['all_cancer_vs_no_cancer']['auc']} (CI "
+               f"[{within['all_cancer_vs_no_cancer']['ci_lo']}, "
+               f"{within['all_cancer_vs_no_cancer']['ci_hi']}]), so the "
+               f"classes are separable here and what failed is the "
+               f"transfer"
+               if verdict["a_model_fitted_here_separates"] else
+               f"; and a model fitted INSIDE this cohort reaches AUC "
+               f"{within.get('all_cancer_vs_no_cancer', {}).get('auc')} "
+               f"(CI [{within.get('all_cancer_vs_no_cancer', {}).get('ci_lo')}, "
+               f"{within.get('all_cancer_vs_no_cancer', {}).get('ci_hi')}]), "
+               f"so the cohort does not separate its own classes either "
+               f"and the null is about the data, not about the transfer"))
 
     payload = {
         "schema_version": "1.0",
@@ -846,6 +926,7 @@ def main() -> int:
         "lead_time": lead_time,
         "published_direction_check": direction_check,
         "single_channel_readout": single_channel,
+        "within_cohort_model": within,
         "training_score_reference": train_reference,
         "cohort_shift_note": (
             "The held-out cohort's controls score differently from the "
@@ -889,11 +970,24 @@ def main() -> int:
             f"{round(float(np.median(score[yte == 0])), 4)} against the "
             "training cohort's own controls' "
             f"{round(float(np.median(score_tr_oof[ytr == 0])), 4)}, so the "
-            "scores saturate at the top of the model's range and the AUC "
-            "is a ranking among near-identical values. That is the "
-            "mechanism behind the null -- a transfer failure, not a "
-            "statement that the cohort carries no signal. The channels "
-            "read on their own are in single_channel_readout.",
+            "scores saturate at the top of the model's range. That is how "
+            "the transfer fails here.",
+            "But the transfer is not what the null is about. A model "
+            "fitted and cross-validated INSIDE this cohort reaches AUC "
+            f"{within.get('all_cancer_vs_no_cancer', {}).get('auc')} "
+            f"(CI [{within.get('all_cancer_vs_no_cancer', {}).get('ci_lo')}, "
+            f"{within.get('all_cancer_vs_no_cancer', {}).get('ci_hi')}]), "
+            "so the cohort does not separate its own classes either. This "
+            "cohort is not a valid external test of the model: there is no "
+            "class signal in these channels here to find, which is what a "
+            "screening population of mostly subclinical disease should "
+            "look like. The channels do see the highest-burden arm -- the "
+            "short/long ratio separates the second-neoplasm arm at AUC "
+            f"{single_channel.get('genome_short_long_ratio', {}).get('post_smn', {}).get('auc')} "
+            f"(CI [{single_channel.get('genome_short_long_ratio', {}).get('post_smn', {}).get('ci_lo')}, "
+            f"{single_channel.get('genome_short_long_ratio', {}).get('post_smn', {}).get('ci_hi')}]), "
+            "in the direction the depositor's own paper reports -- but the "
+            "cohort as a whole does not separate.",
             "This is not a replication of the depositor's own result: "
             "their finding is about fragment end motifs, which this "
             "repository's five channels do not include. Only the "

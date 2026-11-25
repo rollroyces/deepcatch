@@ -85,6 +85,7 @@ EXPECTED_PHTS_PERMUTATION_P = 0.8025
 EXPECTED_PHTS_PRE_AUC = 0.5
 EXPECTED_PHTS_SHORT_LONG_AUC = 0.6455
 EXPECTED_PHTS_ABSOLUTE_AUC = 0.5388
+EXPECTED_PHTS_WITHIN_COHORT_AUC = 0.5465
 
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -106,6 +107,10 @@ REQUIRED_PHTS_LIMITS = (
     "lead time",
     "7 days",
     "n=9",
+    # The within-cohort control. A document that quotes this cohort's
+    # numbers without it will read the null as a statement about the
+    # model, and that is the one reading the measurement rules out.
+    "0.5465",
 )
 
 
@@ -340,6 +345,18 @@ def test_the_cohort_numbers_are_pinned():
         "the absolute-harmonisation control no longer includes 0.5 -- the "
         "null has moved and the mechanism attributed to it has to be "
         "re-measured")
+    # The control that keeps the null from being over-read: a model
+    # fitted and cross-validated INSIDE the cohort cannot separate its
+    # classes either. If it ever does, this cohort becomes a statement
+    # about the transfer and every document that quotes it has to change.
+    within = phts["within_cohort_model"]["all_cancer_vs_no_cancer"]
+    assert within["auc"] == EXPECTED_PHTS_WITHIN_COHORT_AUC
+    assert within["ci_lo"] <= 0.5 <= within["ci_hi"], (
+        "a model fitted inside the cohort now separates its classes; the "
+        "null has moved, and the conclusion about this cohort has to be "
+        "re-measured rather than inherited")
+    verdict = phts["stage_question"]["verdict"]
+    assert verdict["a_model_fitted_here_separates"] is False
 
 
 def test_every_document_that_mentions_the_cohort_states_its_limits():

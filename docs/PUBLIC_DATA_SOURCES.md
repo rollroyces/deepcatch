@@ -458,42 +458,56 @@ there when the "pre" plasma was drawn: this is a cohort of samples drawn
 early-detection result. The artifact carries the intervals per arm so
 that nobody has to take the arm names on trust.
 
-**The result: the model does not transfer, and the effect does.** The
-tumour-naive model — trained on FinaleDB 6+8, never fitted on this
-cohort — does **not** separate cancer from no cancer here: AUC
-**0.4506**, CI95 [0.3343, 0.5669], sampled label-permutation p = 0.80
-(an exact enumeration is not possible at n=99; the test is sampled and
-seeded, and the artifact says so). The null survives the harmonisation
-choice: three variants that let the cohort normalise itself give
-0.4506 / 0.4563 / 0.4563, and the control that normalises it by the
-**training** cohort's statistics instead — so its absolute position in
-feature space is preserved — gives 0.5388 [0.4232, 0.6544], still
-including 0.5. The stage breakdown is flat: the pre-diagnosis arm
-(n=9) is at chance (AUC 0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556,
-stages 0-1 (n=27) 0.4119, stages 2-3 (n=12) 0.575, all staged (n=39)
-0.4621, and the stage gradient is not monotone (Spearman rho 0.172,
-p 0.297). This is the first stage-graded *fragment* cohort this
-repository has scored, so the stage question now has an answer rather
-than a plan: no stage-stratified separation either.
+**The result: no model separates these classes — and that includes a
+model fitted inside the cohort.** The tumour-naive model — trained on
+FinaleDB 6+8, never fitted on this cohort — does **not** separate cancer
+from no cancer here: AUC **0.4506**, CI95 [0.3343, 0.5669], sampled
+label-permutation p = 0.80 (an exact enumeration is not possible at
+n=99; the test is sampled and seeded, and the artifact says so). The
+null survives the harmonisation choice: three variants that let the
+cohort normalise itself give 0.4506 / 0.4563 / 0.4563, and the control
+that normalises it by the **training** cohort's statistics instead — so
+its absolute position in feature space is preserved — gives 0.5388
+[0.4232, 0.6544], still including 0.5.
 
-**But the effect the depositor reported is in the data.** Read one
-channel at a time against the same no-cancer arm, the second-neoplasm
-arm separates on its own: the short/long ratio is higher there (0.2135
-against 0.1941; AUC **0.6455**, CI [0.5008, 0.7901] — an interval that
+The control that matters more is a model fitted **inside** this cohort:
+cross-validated on its own samples, it reaches AUC **0.5465**, CI95
+[0.4319, 0.6612] (per-seed 0.5147 to 0.5584), and on the pre-diagnosis
+arm 0.5267 [0.3192, 0.7341]. Read one channel at a time and the whole
+cancer arm does not separate either — every channel's interval includes
+0.5 (0.4367 to 0.5759). So this cohort has **no class signal in these
+channels to find**: it is not a valid external test of the model, and
+reporting the transferred model's null here as a transfer failure would
+over-claim. What it is, is a demonstration of the limit of these
+channels in a hereditary-cancer screening population, where most of the
+malignant samples carry subclinical disease — which is what the
+depositor's own cohort is.
+
+**Where the effect is, and where it is not.** The depositor's published
+direction does show up, in the arm with the highest tumour burden: the
+short/long ratio is higher in the second-neoplasm arm (0.2135 against
+0.1941; AUC **0.6455**, CI95 [0.5008, 0.7901] — an interval that
 excludes 0.5), the fragments are shorter (median 171 bp against 174),
 and the di-nucleosome proportion is lower (0.0258 against 0.0280, AUC
-0.3964) — every one of them in the direction Liu et al. report. The
-model's score does not carry that effect into a separation, so the null
-is a **transfer failure, not an absence of signal**, and the mechanism
-is visible: the model reads this whole cohort as cancer-like. Its
-no-cancer controls score at the top of the model's range (median score
-0.9997, against the training cohort's own controls' 0.0027), so the
-per-cohort harmonisation pushes every sample into the saturated region
-and the AUC is a ranking among near-identical values.
+0.3964) — every one of them in the direction Liu et al. report. Over
+the whole cancer arm, that same channel's interval includes 0.5 again
+(0.5714 [0.4574, 0.6854]). The effect is in the highest-burden arm and
+not in the cohort.
 
-That is the result worth publishing: not "the model works on a second
-cohort" — it does not — but "the effect reproduces in the channels, the
-model does not transfer, and here is the measurement of why".
+**And the stage question now has an answer rather than a plan.** The
+stage breakdown is flat: the pre-diagnosis arm (n=9) is at chance (AUC
+0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556, stages 0-1 (n=27)
+0.4119, stages 2-3 (n=12) 0.575, all staged (n=39) 0.4621, and the
+stage gradient is not monotone (Spearman rho 0.172, p 0.297). This is
+the first stage-graded *fragment* cohort this repository has scored.
+
+So the honest summary of this cohort is neither "the model works on a
+second cohort" nor "the model fails on a second cohort" — it is "**this
+cohort cannot tell us either way, and it shows where these channels
+stop working**". A screening population whose malignant samples are
+mostly subclinical is exactly where a tumour-naive fragmentomics model
+should be expected to find nothing, and the measurement says so without
+asking the reader to take it on trust.
 
 **The survey missed this label table until 2026-11-25.** Its reader only
 split on tabs, and the deposit's table is a CSV — so the richest label
