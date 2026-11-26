@@ -1,0 +1,186 @@
+sample_id	visit	institute	response	pilot	patient	isolation_date	library_prep_date	plasma_collection_date	response_rate	physician_holdout
+Pilot2_10	Day 0	University of Cincinnati	Responder	2	3	9/16/20	12/14/20		1	0
+Pilot2_11	Adj Wk 1	University of Cincinnati	Responder	2	3	9/16/20	12/14/20		1	0
+Pilot2_12	Screen	University of Cincinnati	Responder	2	4	9/16/20	12/15/20		3	0
+Pilot2_13	Day 0	University of Cincinnati	Responder	2	4	9/16/20	12/14/20		3	0
+Pilot2_14	Screen	Ohio State University	Non-Responder	2	5	9/16/20	12/15/20		0	0
+Pilot2_15	Day 0	Ohio State University	Non-Responder	2	5	9/16/20	12/14/20		0	0
+Pilot2_16	Screen	Ohio State University	Non-Responder	2	6	9/16/20	12/15/20		0	0
+Pilot2_17	Day 0	Ohio State University	Non-Responder	2	6	9/16/20	12/14/20		0	0
+Pilot2_18	Adj Wk 1	Ohio State University	Non-Responder	2	6	9/16/20	12/15/20		0	0
+Pilot2_19	Screen	Ohio State University	Responder	2	7	9/16/20	12/14/20		3	0
+Pilot2_20	Day 0	Ohio State University	Responder	2	7	9/16/20	12/15/20		3	0
+Pilot2_21	Adj Wk 1	Ohio State University	Responder	2	7	9/16/20	12/15/20		3	0
+Pilot2_22	Screen	Medical University of South Carolina	Non-Responder	2	8	9/16/20	12/15/20		0	0
+Pilot2_23	Day 0	Medical University of South Carolina	Non-Responder	2	8	9/16/20	12/14/20		0	0
+Pilot2_24	Adj Wk 1	Medical University of South Carolina	Non-Responder	2	8	9/16/20	12/15/20		0	0
+Pilot2_25	Screen	Medical University of South Carolina	Responder	2	9	9/16/20	12/14/20		3	0
+Pilot2_26	Day 0	Medical University of South Carolina	Responder	2	9	9/16/20	12/15/20		3	0
+Pilot2_27	Adj Wk 1	Medical University of South Carolina	Responder	2	9	9/16/20	12/15/20		3	0
+Pilot2_28	Screen	Medical University of South Carolina	Non-Responder	2	10	9/16/20	12/15/20		0	0
+Pilot2_29	Adj Wk 1	Medical University of South Carolina	Non-Responder	2	10	9/16/20	12/14/20		0	0
+Pilot2_3	Screen	University of Cincinnati	Non-Responder	2	1	9/16/20	12/14/20		0	0
+Pilot2_30	Screen	University of Michigan	Non-Responder	2	11	9/16/20	12/14/20		0	0
+Pilot2_31	Adj Wk 1	University of Michigan	Non-Responder	2	11	9/16/20	12/14/20		0	0
+Pilot2_34	Screen	University of Michigan	Non-Responder	2	12	9/17/20	12/14/20		0	1
+Pilot2_35	Adj Wk 1	University of Michigan	Non-Responder	2	12	9/17/20	12/14/20		0	1
+Pilot2_36	Screen	University of Michigan	Responder	2	13	9/17/20	12/14/20		2	0
+Pilot2_37	Day 0	University of Michigan	Responder	2	13	9/17/20	12/15/20		2	0
+Pilot2_38	Adj Wk 1	University of Michigan	Responder	2	13	9/17/20	12/15/20		2	0
+Pilot2_39	Screen	University of Michigan	Responder	2	14	9/17/20	12/15/20		5	0
+Pilot2_4	Day 0	University of Cincinnati	Non-Responder	2	1	9/16/20	12/15/20		0	0
+Pilot2_40	Day 0	University of Michigan	Responder	2	14	9/17/20	12/14/20		5	0
+Pilot2_41	Adj Wk 1	University of Michigan	Responder	2	14	9/17/20	12/14/20		5	0
+Pilot2_42	Screen	University of Michigan	Responder	2	15	9/17/20	12/14/20		1	1
+Pilot2_43	Day 0	University of Michigan	Responder	2	15	9/17/20	12/14/20		1	1
+Pilot2_44	Adj Wk 1	University of Michigan	Responder	2	15	9/17/20	12/15/20		1	1
+Pilot2_45	Screen	University of Michigan	Responder	2	16	9/17/20	12/15/20		1	1
+Pilot2_46	Adj Wk 1	University of Michigan	Responder	2	16	9/17/20	12/14/20		1	1
+Pilot2_47	Screen	University of Michigan	Non-Responder	2	17	9/17/20	12/14/20		0	0
+Pilot2_48	Day 0	University of Michigan	Non-Responder	2	17	9/17/20	12/14/20		0	0
+Pilot2_49	Screen	University of Louisville	Responder	2	18	9/17/20	12/14/20		1	0
+Pilot2_5	Adj Wk 1	University of Cincinnati	Non-Responder	2	1	9/16/20	12/14/20		0	0
+Pilot2_50	Day 0	University of Louisville	Responder	2	18	9/17/20	12/15/20		1	0
+Pilot2_51	Screen	University of Louisville	Non-Responder	2	19	9/17/20	12/15/20		0	1
+Pilot2_52	Day 0	University of Louisville	Non-Responder	2	19	9/17/20	12/14/20		0	1
+Pilot2_53	Adj Wk 1	University of Louisville	Non-Responder	2	19	9/17/20	12/15/20		0	1
+Pilot2_54	Screen	University of Louisville	Non-Responder	2	20	9/17/20	12/14/20		0	0
+Pilot2_55	Day 0	University of Louisville	Non-Responder	2	20	9/17/20	12/15/20		0	0
+Pilot2_56	Adj Wk 1	University of Louisville	Non-Responder	2	20	9/17/20	12/14/20		0	0
+Pilot2_57	Screen	University of Louisville	Responder	2	21	9/17/20	12/15/20		5	0
+Pilot2_58	Day 0	University of Louisville	Responder	2	21	9/17/20	12/14/20		5	0
+Pilot2_59	Adj Wk 1	University of Louisville	Responder	2	21	9/17/20	12/14/20		5	0
+Pilot2_6	Screen	University of Cincinnati	Responder	2	2	9/16/20	12/15/20		1	0
+Pilot2_60	Screen	University of Louisville	Responder	2	22	9/17/20	12/14/20		1	0
+Pilot2_61	Day 0	University of Louisville	Responder	2	22	9/17/20	12/15/20		1	0
+Pilot2_62	Adj Wk 1	University of Louisville	Responder	2	22	9/17/20	12/15/20		1	0
+Pilot2_63	Screen	MD Anderson	Responder	2	23	9/18/20	12/14/20		1	0
+Pilot2_64	Adj Wk 1	MD Anderson	Responder	2	23	9/18/20	12/14/20		1	0
+Pilot2_65	Screen	MD Anderson	Responder	2	24	9/18/20	12/14/20		1	0
+Pilot2_66	Day 0	MD Anderson	Responder	2	24	9/18/20	12/15/20		1	0
+Pilot2_67	Adj Wk 1	MD Anderson	Responder	2	24	9/18/20	12/14/20		1	0
+Pilot2_68	Screen	MD Anderson	Responder	2	25	9/18/20	12/14/20		9	0
+Pilot2_69	Day 0	MD Anderson	Responder	2	25	9/18/20	12/15/20		9	0
+Pilot2_7	Day 0	University of Cincinnati	Responder	2	2	9/16/20	12/15/20		1	0
+Pilot2_70	Adj Wk 1	MD Anderson	Responder	2	25	9/18/20	12/14/20		9	0
+Pilot2_71	Screen	MD Anderson	Responder	2	26	9/18/20	12/15/20		1	0
+Pilot2_72	Day 0	MD Anderson	Responder	2	26	9/18/20	12/14/20		1	0
+Pilot2_75	Screen	MD Anderson	Responder	2	27	9/18/20	12/15/20		1	0
+Pilot2_76	Day 0	MD Anderson	Responder	2	27	9/18/20	12/15/20		1	0
+Pilot2_77	Adj Wk 1	MD Anderson	Responder	2	27	9/18/20	12/15/20		1	0
+Pilot2_78	Screen	MD Anderson	Responder	2	28	9/18/20	12/14/20		2	0
+Pilot2_79	Day 0	MD Anderson	Responder	2	28	9/18/20	12/15/20		2	0
+Pilot2_8	Adj Wk 1	University of Cincinnati	Responder	2	2	9/16/20	12/15/20		1	0
+Pilot2_80	Screen	MD Anderson	Responder	2	29	9/18/20	12/15/20		2	0
+Pilot2_81	Day 0	MD Anderson	Responder	2	29	9/18/20	12/15/20		2	0
+Pilot2_82	Screen	MD Anderson	Responder	2	30	9/18/20	12/15/20		8	0
+Pilot2_83	Day 0	MD Anderson	Responder	2	30	9/18/20	12/15/20		8	0
+Pilot2_86	Screen	MD Anderson	Non-Responder	2	31	9/18/20	12/15/20		0	0
+Pilot2_87	Day 0	MD Anderson	Non-Responder	2	31	9/18/20	12/15/20		0	0
+Pilot2_88	Adj Wk 1	MD Anderson	Non-Responder	2	31	9/18/20	12/15/20		0	0
+Pilot2_89	Screen	MD Anderson	Non-Responder	2	32	9/18/20	12/14/20		0	0
+Pilot2_9	Screen	University of Cincinnati	Responder	2	3	9/16/20	12/14/20		1	0
+Pilot2_90	Day 0	MD Anderson	Non-Responder	2	32	9/18/20	12/15/20		0	0
+Pilot_196	Screen	University of Cincinnati	Responder	1	33	12/26/19	2/27/20	4/25/16	9	0
+Pilot_197	Day 0	University of Cincinnati	Responder	1	33	12/26/19	3/11/20	5/2/16	9	0
+Pilot_198	Adj Wk 1	University of Cincinnati	Responder	1	33	12/26/19	3/8/20	6/9/16	9	0
+Pilot_199	Screen	University of Cincinnati	Responder	1	34	12/26/19	3/11/20	8/16/16	7	0
+Pilot_200	Day 0	University of Cincinnati	Responder	1	34	12/26/19	2/27/20	8/25/16	7	0
+Pilot_201	Adj Wk 1	University of Cincinnati	Responder	1	34	12/26/19	3/8/20	10/11/16	7	0
+Pilot_202	Screen	University of Cincinnati	Responder	1	35	12/26/19	3/8/20	10/27/16	9	0
+Pilot_203	Day 0	University of Cincinnati	Responder	1	35	12/26/19	3/11/20	11/2/16	9	0
+Pilot_204	Adj Wk 1	University of Cincinnati	Responder	1	35	12/26/19	2/26/20	12/21/16	9	0
+Pilot_205	Screen	University of Cincinnati	Responder	1	36	12/26/19	2/26/20	6/5/17	2	0
+Pilot_206	Day 0	University of Cincinnati	Responder	1	36	12/26/19	3/8/20	6/9/17	2	0
+Pilot_207	Adj Wk 1	University of Cincinnati	Responder	1	36	12/26/19	2/27/20	7/18/17	2	0
+Pilot_208	Screen	University of Cincinnati	Responder	1	37	12/26/19	2/26/20	8/3/17	7	1
+Pilot_209	Day 0	University of Cincinnati	Responder	1	37	12/26/19	3/8/20	8/10/17	7	1
+Pilot_210	Adj Wk 1	University of Cincinnati	Responder	1	37	12/26/19	3/1/20	9/6/17	7	1
+Pilot_211	Screen	University of Cincinnati	Responder	1	38	12/30/19	2/27/20	8/24/17	2	0
+Pilot_212	Day 0	University of Cincinnati	Responder	1	38	12/30/19	2/27/20	8/31/17	2	0
+Pilot_213	Adj Wk 1	University of Cincinnati	Responder	1	38	12/30/19	3/8/20	10/4/17	2	0
+Pilot_214	Screen	University of Cincinnati	Responder	1	39	12/30/19	3/8/20	10/3/17	9	1
+Pilot_215	Day 0	University of Cincinnati	Responder	1	39	12/30/19	2/28/20	10/13/17	9	1
+Pilot_216	Adj Wk 1	University of Cincinnati	Responder	1	39	12/30/19	3/1/20	11/13/17	9	1
+Pilot_217	Screen	University of Cincinnati	Responder	1	40	12/30/19	2/26/20	12/15/17	10	0
+Pilot_218	Day 0	University of Cincinnati	Responder	1	40	12/30/19	2/28/20	1/5/18	10	0
+Pilot_219	Screen	University of Cincinnati	Responder	1	41	12/30/19	2/26/20	12/14/17	4	0
+Pilot_220	Day 0	University of Cincinnati	Responder	1	41	12/30/19	2/27/20	1/12/18	4	0
+Pilot_221	Adj Wk 1	University of Cincinnati	Responder	1	41	12/30/19	3/11/20	2/27/18	4	0
+Pilot_222	Screen	University of Cincinnati	Responder	1	42	12/30/19	2/28/20	1/26/18	4	0
+Pilot_223	Day 0	University of Cincinnati	Responder	1	42	12/30/19	2/28/20	2/2/18	4	0
+Pilot_224	Adj Wk 1	University of Cincinnati	Responder	1	42	12/30/19	2/26/20	3/20/18	4	0
+Pilot_225	Screen	University of Cincinnati	Responder	1	43	12/30/19	3/11/20	3/28/18	2	1
+Pilot_226	Day 0	University of Cincinnati	Responder	1	43	12/30/19	3/8/20	4/27/18	2	1
+Pilot_227	Adj Wk 1	University of Cincinnati	Responder	1	43	12/30/19	3/1/20	6/12/18	2	1
+Pilot_228	Screen	University of Cincinnati	Responder	1	44	12/31/19	2/28/20	11/21/18	2	0
+Pilot_229	Day 0	University of Cincinnati	Responder	1	44	12/31/19	3/8/20	12/6/18	2	0
+Pilot_230	Adj Wk 1	University of Cincinnati	Responder	1	44	12/31/19	2/26/20	1/23/19	2	0
+Pilot_231	Screen	Ohio State University	Responder	1	45	12/31/19	2/27/20	10/11/17	9	1
+Pilot_232	Day 0	Ohio State University	Responder	1	45	12/31/19	3/11/20	10/18/17	9	1
+Pilot_233	Adj Wk 1	Ohio State University	Responder	1	45	12/31/19	3/8/20	11/21/17	9	1
+Pilot_234	Screen	University of Cincinnati	Non-Responder	1	46	12/31/19	2/28/20	2/9/16	0	0
+Pilot_235	Day 0	University of Cincinnati	Non-Responder	1	46	12/31/19	3/1/20	2/19/16	0	0
+Pilot_236	Adj Wk 1	University of Cincinnati	Non-Responder	1	46	12/31/19	2/28/20	3/29/16	0	0
+Pilot_237	Screen	University of Cincinnati	Non-Responder	1	47	12/31/19	2/28/20	12/20/16	0	0
+Pilot_238	Day 0	University of Cincinnati	Non-Responder	1	47	12/31/19	3/11/20	1/6/17	0	0
+Pilot_239	Adj Wk 1	University of Cincinnati	Non-Responder	1	47	12/31/19	3/8/20	2/21/17	0	0
+Pilot_240	Screen	University of Cincinnati	Non-Responder	1	48	12/31/19	3/11/20	9/6/17	0	0
+Pilot_241	Day 0	University of Cincinnati	Non-Responder	1	48	12/31/19	2/26/20	9/15/17	0	0
+Pilot_242	Adj Wk 1	University of Cincinnati	Non-Responder	1	48	12/31/19	2/26/20	11/1/17	0	0
+Pilot_243	Screen	University of Cincinnati	Non-Responder	1	49	1/2/20	2/27/20	12/14/17	0	0
+Pilot_244	Day 0	University of Cincinnati	Non-Responder	1	49	1/2/20	2/28/20	1/5/18	0	0
+Pilot_245	Adj Wk 1	University of Cincinnati	Non-Responder	1	49	1/2/20	2/28/20	3/7/18	0	0
+Pilot_246	Screen	University of Cincinnati	Non-Responder	1	50	1/2/20	3/1/20	12/21/17	0	0
+Pilot_247	Day 0	University of Cincinnati	Non-Responder	1	50	1/2/20	2/26/20	1/30/18	0	0
+Pilot_248	Adj Wk 1	University of Cincinnati	Non-Responder	1	50	1/2/20	2/28/20	3/20/18	0	0
+Pilot_249	Screen	University of Cincinnati	Non-Responder	1	51	1/2/20	2/27/20	2/19/18	0	0
+Pilot_250	Day 0	University of Cincinnati	Non-Responder	1	51	1/2/20	3/11/20	3/7/18	0	0
+Pilot_251	Adj Wk 1	University of Cincinnati	Non-Responder	1	51	1/2/20	2/27/20	4/11/18	0	0
+Pilot_252	Screen	University of Cincinnati	Non-Responder	1	52	1/2/20	2/26/20	3/14/18	0	1
+Pilot_253	Day 0	University of Cincinnati	Non-Responder	1	52	1/2/20	3/1/20	3/23/18	0	1
+Pilot_254	Adj Wk 1	University of Cincinnati	Non-Responder	1	52	1/2/20	2/26/20	5/7/18	0	1
+Pilot_255	Screen	University of Cincinnati	Non-Responder	1	53	1/2/20	2/28/20	3/22/18	0	0
+Pilot_256	Day 0	University of Cincinnati	Non-Responder	1	53	1/2/20	2/26/20	3/30/18	0	0
+Pilot_257	Adj Wk 1	University of Cincinnati	Non-Responder	1	53	1/2/20	3/8/20	5/3/18	0	0
+Pilot_258	Screen	University of Cincinnati	Non-Responder	1	54	1/2/20	2/27/20	8/8/18	0	0
+Pilot_259	Day 0	University of Cincinnati	Non-Responder	1	54	1/2/20	3/1/20	8/14/18	0	0
+Pilot_260	Screen	University of Cincinnati	Non-Responder	1	55	1/2/20	3/8/20	10/26/18	0	0
+Pilot_261	Day 0	University of Cincinnati	Non-Responder	1	55	1/2/20	2/27/20	11/5/18	0	0
+Pilot_262	Adj Wk 1	University of Cincinnati	Non-Responder	1	55	1/2/20	2/26/20	12/18/18	0	0
+Pilot_263	Screen	University of Cincinnati	Non-Responder	1	56	1/2/20	3/11/20	5/21/19	0	0
+Pilot_264	Day 0	University of Cincinnati	Non-Responder	1	56	1/2/20	3/11/20	5/24/19	0	0
+Pilot_265	Adj Wk 1	University of Cincinnati	Non-Responder	1	56	1/2/20	3/8/20	7/11/19	0	0
+Pilot_266	Screen	University of Cincinnati	Non-Responder	1	57	1/3/20	3/11/20	5/22/19	0	0
+Pilot_267	Day 0	University of Cincinnati	Non-Responder	1	57	1/3/20	2/27/20	6/4/19	0	0
+Pilot_268	Adj Wk 1	University of Cincinnati	Non-Responder	1	57	1/3/20	3/8/20	7/3/19	0	0
+Pilot_269	Screen	Ohio State University	Non-Responder	1	58	1/3/20	2/27/20	9/13/17	0	0
+Pilot_270	Day 0	Ohio State University	Non-Responder	1	58	1/3/20	3/8/20	9/20/17	0	0
+Pilot_271	Adj Wk 1	Ohio State University	Non-Responder	1	58	1/3/20	2/26/20	10/31/17	0	0
+Pilot_272	Screen	Ohio State University	Non-Responder	1	59	1/3/20	3/11/20	12/8/17	0	0
+Pilot_273	Day 0	Ohio State University	Non-Responder	1	59	1/3/20	2/28/20	12/15/17	0	0
+Pilot_274	Adj Wk 1	Ohio State University	Non-Responder	1	59	1/3/20	3/8/20	1/17/18	0	0
+Pilot_275	Screen	University of Michigan	Non-Responder	1	60	1/3/20	3/8/20	7/11/17	0	0
+Pilot_276	Day 0	University of Michigan	Non-Responder	1	60	1/3/20	2/27/20	7/19/17	0	0
+Pilot_277	Adj Wk 1	University of Michigan	Non-Responder	1	60	1/3/20	3/8/20	8/21/17	0	0
+Pilot_278	Screen	University of Michigan	Responder	1	61	1/3/20	3/8/20	1/31/18	2	0
+Pilot_279	Day 0	University of Michigan	Responder	1	61	1/3/20	2/26/20	2/21/18	2	0
+Pilot_280	Screen	University of Michigan	Non-Responder	1	62	1/3/20	2/26/20	2/8/18	0	0
+Pilot_281	Day 0	University of Michigan	Non-Responder	1	62	1/3/20	2/27/20	2/21/18	0	0
+Pilot_282	Adj Wk 1	University of Michigan	Non-Responder	1	62	1/3/20	2/28/20	4/3/18	0	0
+Pilot_283	Screen	University of Michigan	Responder	1	63	1/3/20	3/1/20	3/1/18	1	0
+Pilot_284	Day 0	University of Michigan	Responder	1	63	1/3/20	3/8/20	3/13/18	1	0
+Pilot_285	Adj Wk 1	University of Michigan	Responder	1	63	1/3/20	2/27/20	5/2/18	1	0
+Pilot_286	Screen	University of Louisville	Responder	1	64	1/3/20	3/8/20	9/19/18	6	0
+Pilot_287	Day 0	University of Louisville	Responder	1	64	1/3/20	3/1/20	9/25/18	6	0
+Pilot_288	Adj Wk 1	University of Louisville	Responder	1	64	1/3/20	2/27/20	11/8/18	6	0
+Pilot_289	Screen	University of Louisville	Responder	1	65	1/15/20	2/27/20	10/2/18	2	0
+Pilot_290	Day 0	University of Louisville	Responder	1	65	1/15/20	2/28/20	10/9/18	2	0
+Pilot_291	Adj Wk 1	University of Louisville	Responder	1	65	1/15/20	3/1/20	11/1/18	2	0
+Pilot_292	Screen	University of Cincinnati	Responder	1	66	12/31/19	2/27/20	12/6/18	5	1
+Pilot_293	Day 0	University of Cincinnati	Responder	1	66	12/31/19	2/26/20	1/4/19	5	1
+Pilot_294	Screen	University of Cincinnati	Responder	1	67	12/31/19	2/26/20	3/8/19	2	0
+Pilot_295	Day 0	University of Cincinnati	Responder	1	67	12/31/19	3/8/20	3/19/19	2	0
+Pilot_296	Adj Wk 1	University of Cincinnati	Responder	1	67	12/31/19	2/27/20	5/1/19	2	0
+Pilot_297	Screen	University of Cincinnati	Responder	1	68	12/31/19	3/8/20	4/23/19	2	0
+Pilot_298	Day 0	University of Cincinnati	Responder	1	68	12/31/19	3/1/20	5/3/19	2	0
