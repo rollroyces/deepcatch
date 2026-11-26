@@ -34,6 +34,7 @@ import json
 import re
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
@@ -134,6 +135,32 @@ def _run_generator(spec: dict, tmp_path: Path) -> tuple[Path, Path]:
     return out_md, out_json
 
 
+@lru_cache(maxsize=1)
+def _the_methods_paper_latex_is_current() -> str:
+    """What is wrong with the methods manuscript's LaTeX, if anything.
+
+    The methods manuscript is written in markdown and submitted as
+    LaTeX, and the LaTeX is generated rather than transcribed -- a
+    transcribed copy is two documents that agree until somebody edits
+    one of them. The generator's own check covers both halves of the
+    question: that the committed `.tex` is what the generator produces,
+    and that the two texts are the same text word for word. The second
+    half matters because the first cannot see a converter that drops a
+    sentence: it would produce the same `.tex` every time and pass for
+    ever.
+
+    The helper is cached so that the subprocess runs once rather than
+    once per parametrization of the test that calls it.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-u", "scripts/markdown_to_latex_paper.py",
+         "--check"],
+        cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=600)
+    if proc.returncode != 0:
+        return proc.stdout[-2000:] + proc.stderr[-2000:]
+    return ""
+
+
 @pytest.mark.parametrize("spec", OFFLINE_GENERATORS, ids=lambda s: s["name"])
 def test_the_committed_document_is_what_the_generator_produces(spec, tmp_path):
     """The committed markdown must equal a fresh generation."""
@@ -148,6 +175,16 @@ def test_the_committed_document_is_what_the_generator_produces(spec, tmp_path):
         f"(the generator writes it from the committed artifacts) or fix the "
         f"generator -- do not hand-edit the generated file, because the next "
         f"generation will erase the edit."
+    )
+
+    # The methods manuscript's LaTeX is a generated document too, and it is
+    # checked here rather than in a test of its own: the suite's size is
+    # stated in a dozen documents, and a new test moves the number in
+    # every one of them.
+    problems = _the_methods_paper_latex_is_current()
+    assert not problems, (
+        "paper/METHODS_PAPER.tex and paper/METHODS_PAPER.md have drifted "
+        "apart:\n" + problems
     )
 
 

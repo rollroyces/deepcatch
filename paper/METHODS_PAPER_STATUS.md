@@ -62,7 +62,7 @@
 - ~~**Figure 1** — the multi-modal encoder architecture diagram.~~ ✅ **done 2026-11-26**: `docs/figures/fig5_encoder_architecture.html` (+ `.png`) — the six modality slots, the projection, the `[CLS]` token and the four-layer transformer, the two pre-training phases, the checkpoint, and the 0.7 / 0.3 blend. Every constant on it is read out of `src/foundation/config.py`, `src/foundation/model.py` and `scripts/pretrain_production_finaledb.py`; the manuscript's §2.2 references it.
 - ~~**Figure 2** — the validation protocol schematic (5-seed × 5-fold GroupKFold + shuffled-label control).~~ ✅ **done 2026-11-26**: `docs/figures/fig6_validation_protocol.html` (+ `.png`) — the split, the out-of-fold scores, the reported metrics, and the three controls (true-confound, shuffled-label, bit-identical sanity); the manuscript's §2.4 references it.
 - ~~**Table 1** — the six-modality schema with concrete per-modality dim and example feature.~~ ✅ **done 2026-11-26**: the table is in §2.1 with the dims from `MODALITY_DIMS` (`src/foundation/config.py`), and it is now a numbered table with a caption.
-- **LaTeX port** (`paper/METHODS_PAPER.tex`) for the venue submission (Bioinformatics Advances requires LaTeX; PLOS Comp Bio accepts either).
+- ~~**LaTeX port** (`paper/METHODS_PAPER.tex`) for the venue submission (Bioinformatics Advances requires LaTeX; PLOS Comp Bio accepts either).~~ ✅ **done 2026-11-26**: `paper/METHODS_PAPER.tex` is **generated** from `paper/METHODS_PAPER.md` by `scripts/markdown_to_latex_paper.py` — not transcribed, so the two cannot drift apart. The generator carries every sentence, table, list, reference and figure across (all six figures are embedded, with the manuscript's own figure numbers), compiles to 25 pages under pdfTeX and tectonic, and CI compiles it in the "Compile Paper PDF" workflow. `--check` compares the committed `.tex` with a fresh generation **and** compares the two documents' texts word for word, so a converter that drops a sentence or changes a number is caught.
 
 ## What's intentionally NOT in this draft
 
@@ -120,10 +120,10 @@ The paper-text reproduction is now the single-command driver
 
 - [ ] Confirm co-authors (or finalize single-author manuscript).
 - [ ] Decide final venue between PLOS Computational Biology and Bioinformatics Advances.
-- [ ] Add Figure 1 (encoder architecture).
-- [ ] Add Figure 2 (validation-protocol schematic).
-- [ ] Add Table 1 (six-modality schema).
-- [ ] Run the LaTeX port (`paper/METHODS_PAPER.tex`) once Figure 1/2 + Table 1 land.
+- [x] Add Figure 1 (encoder architecture).
+- [x] Add Figure 2 (validation-protocol schematic).
+- [x] Add Table 1 (six-modality schema).
+- [x] Run the LaTeX port (`paper/METHODS_PAPER.tex`) — generated from the markdown, 25 pages, compiles in CI.
 - [ ] Cross-link `paper/REPRODUCE.sh` from `RUN_ALL.sh` so a single top-level
       driver regenerates everything.
 

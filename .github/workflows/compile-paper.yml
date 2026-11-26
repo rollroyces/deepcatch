@@ -7,6 +7,9 @@ on:
       - 'paper/supplementary.tex'
       - 'paper/references_final.bib'
       - 'paper/paper.tex'
+      - 'paper/METHODS_PAPER.md'
+      - 'paper/METHODS_PAPER.tex'
+      - 'scripts/markdown_to_latex_paper.py'
       - 'paper/*.pdf'
       # the manuscript embeds these, so a figure change must re-trigger it
       - 'docs/figures/**'
@@ -75,6 +78,20 @@ jobs:
             pdflatex -interaction=nonstopmode deepcatch_final.tex || true
             ls -lh deepcatch_final.pdf || true
           fi
+          # The methods manuscript is compiled here, and its failure is
+          # reported after the PDFs are uploaded rather than here: a
+          # LaTeX error in a second manuscript must not take the
+          # submission PDF down with it -- the same reason the deprecated
+          # draft only warns. Unlike the deprecated draft, though, a
+          # failure here IS a failure: this manuscript is a live
+          # candidate and its PDF belongs in the artefact.
+          if [ -f METHODS_PAPER.tex ]; then
+            echo "── METHODS_PAPER.tex (the methods manuscript) ──"
+            pdflatex -interaction=nonstopmode METHODS_PAPER.tex \
+              || echo "METHODS_PAPER_FAILED=1" >> "$GITHUB_ENV"
+            pdflatex -interaction=nonstopmode METHODS_PAPER.tex || true
+            ls -lh METHODS_PAPER.pdf || true
+          fi
 
       - name: Upload PDF
         uses: actions/upload-artifact@v4
@@ -83,6 +100,17 @@ jobs:
           path: paper/*.pdf
           retention-days: 90
           if-no-files-found: error
+
+      # The methods manuscript's failure is reported here, after its
+      # PDF has been uploaded with the rest. The submission artefact is
+      # already safe by this point, so the job can fail without taking
+      # it down.
+      - name: Fail if the methods manuscript did not compile
+        run: |
+          if [ "${METHODS_PAPER_FAILED:-0}" = "1" ]; then
+            echo "::error::the methods manuscript did not compile; the submission PDF above is unaffected"
+            exit 1
+          fi
 
       # The arXiv source bundle is the fallback venue's artefact, and the
       # submission PDF is uploaded before this runs on purpose: a broken

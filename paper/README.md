@@ -12,6 +12,7 @@ author's arXiv account and the Zenodo DOI.
 | `paper.tex` | **Primary manuscript** (preprint). Panel-based MRD detection, the tumor-naive fragmentomics channel, the held-out external validation, the leave-one-study-out transfer measurement and the methylation null. | ✓ compiles; `biorxiv_submission_v2.3.0.pdf` is the submission artefact |
 | `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (9 pages, 3 figures) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
 | `METHODS_PAPER.md` | The long-form methods manuscript (the PLOS Computational Biology / Bioinformatics Advances article; JOSS gets the root `paper.md`). Same evidence, more detail, per-cancer tables and a reproducibility paragraph. | ✓ numbers regenerated from the seeded benchmark |
+| `METHODS_PAPER.tex` | The methods manuscript as LaTeX — **generated** from `METHODS_PAPER.md` by `scripts/markdown_to_latex_paper.py`, not transcribed. Do not hand-edit it: the next generation erases the edit. | ✓ compiles under pdfTeX and tectonic; CI compiles it and uploads the PDF. **Not yet a PLOS submission file**: it uses the `article` class, and PLOS Comp Bio requires its own template (see `docs/JOURNAL_SUBMISSION.md`) |
 | `BIORXIV_SUBMISSION.md` | Submission-form metadata: what the preprint claims, what it must not claim, and what still needs the author | ✓ (gitignored — it holds personal details) |
 | `METHODS_PAPER_STATUS.md` | Section-by-section status meta-doc for the methods manuscript | ✓ updated with the v2.3.0 numbers |
 | `PAPER.md` | The earlier panel-only manuscript, kept for reference | superseded by `paper.tex` |
@@ -55,6 +56,36 @@ manuscript embeds are regenerated from the committed artifacts:
 ```bash
 python scripts/plot_figures.py    # -> docs/figures/fig1..fig4*.png
 ```
+
+### The methods manuscript's LaTeX
+
+`paper/METHODS_PAPER.tex` is generated from `paper/METHODS_PAPER.md`:
+
+```bash
+python scripts/markdown_to_latex_paper.py            # writes the .tex
+python scripts/markdown_to_latex_paper.py --check    # checks it instead
+```
+
+`--check` does two things: it compares the committed `.tex` with a fresh
+generation, and it compares the two documents' texts word for word. The
+second check is the one that catches a converter bug — a dropped sentence
+or a changed number — which the first cannot see, because a converter
+that loses a sentence produces the same `.tex` every time.
+
+Both checks run in CI, and the LaTeX is compiled there too:
+
+```bash
+cd paper/
+pdflatex METHODS_PAPER.tex && pdflatex METHODS_PAPER.tex
+```
+
+The markdown is the source; the LaTeX is the submission artefact. Edit the
+markdown and regenerate. The compiled PDF is a CI artefact rather than a
+committed file — `paper/*.pdf` is gitignored — so this manuscript's page
+count is not stated in this file: a number about a PDF that the
+repository does not keep is a number that cannot be checked, and the
+submission PDF's page count is checked against the PDF that *is* kept
+(`test/test_submission_description_matches_the_pdf.py`).
 
 ## Submission checklist (the preprint)
 

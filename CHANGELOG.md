@@ -416,8 +416,33 @@ cohort size.
     strands' ends were counted per fragment, which is what the
     repository's extraction does. The ambiguity is stated in the
     artifact, and the inversion is the evidence for it.
+- **The methods manuscript has a LaTeX port, and the port is generated
+  rather than transcribed.** `paper/METHODS_PAPER.md` is what the
+  repository edits and reviews; the venue submission needs LaTeX, and a
+  hand-transcribed copy of a manuscript is two documents that agree until
+  somebody edits one of them. `scripts/markdown_to_latex_paper.py` reads
+  the markdown and writes `paper/METHODS_PAPER.tex`: every sentence,
+  table, list, reference and all six figures come across, with the
+  manuscript's own section and figure numbers -- the generator checks
+  that LaTeX's counters agree with the numbers the markdown wrote out by
+  hand -- and the result compiles to 25 pages under pdfTeX and tectonic.
+  `--check` compares the committed `.tex` with a fresh generation **and**
+  compares the two documents' texts word for word, so a converter that
+  drops a sentence or changes a number is caught; the byte comparison
+  alone cannot see that, because a converter that loses a sentence
+  produces the same `.tex` every time. CI compiles the manuscript and
+  runs both checks. `scripts/markdown_to_latex_paper.py`,
+  `paper/METHODS_PAPER.tex`.
 
 ### Fixed
+
+- **The methods manuscript's abstract quoted the suite's size from three
+  releases ago.** It said 998 regression tests where the suite has 1040
+  -- the number §2.5 states correctly, two paragraphs further on. The
+  count guard did not see it, because the pattern it looks for reads a
+  digit and the word "tests" next to each other, and "998 regression
+  tests" has a word in between. The abstract now states the same number
+  as the other thirteen documents.
 
 - **The repository's evidence that bioRxiv's affiliation rule "is not
   enforced in practice" was measuring the wrong thing.** The rule was read
