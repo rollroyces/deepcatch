@@ -1,0 +1,216 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-26T01:27:59.128274+00:00",
+  "design": {
+    "question": "Does the fragment end-motif profile separate cancer from healthy plasma in an independent cohort, and does the repository's own motif model transfer to it?",
+    "cohort": "Zenodo 10.5281/zenodo.17253504 -- per-sample 4-mer end-motif frequencies, 223 samples",
+    "features": "the 256 motif frequencies, the repository's own motif order",
+    "primary_readout": "the within-cohort cross-validated AUC (is there a signal?), with the published claim's motif fraction and the transferred model next to it"
+  },
+  "cohort": {
+    "doi": "10.5281/zenodo.17253504",
+    "record": "https://zenodo.org/records/17253504",
+    "n": 223,
+    "n_cancer": 136,
+    "n_healthy": 87,
+    "groups": {
+      "BC": 50,
+      "HI25": 50,
+      "HI37": 37,
+      "NSCLC": 56,
+      "mCRC": 30
+    },
+    "assays": {
+      "DSP": 183,
+      "SSP": 40
+    }
+  },
+  "published_claim": {
+    "motifs": [
+      "CAAA",
+      "CAAC",
+      "CAAG",
+      "CAAT",
+      "CACA",
+      "CACC",
+      "CACG",
+      "CACT",
+      "CAGA",
+      "CAGC",
+      "CAGG",
+      "CAGT",
+      "CATA",
+      "CATC",
+      "CATG",
+      "CATT",
+      "CCAA",
+      "CCAC",
+      "CCAG",
+      "CCAT",
+      "CCCA",
+      "CCCC",
+      "CCCG",
+      "CCCT",
+      "CCGA",
+      "CCGC",
+      "CCGG",
+      "CCGT",
+      "CCTA",
+      "CCTC",
+      "CCTG",
+      "CCTT"
+    ],
+    "definition": "the fraction of a sample's 4-mer end-motif counts whose first two bases are CC or CA -- the two families the PHTS paper reports as enriched in the plasma of patients whose cancer was about to be diagnosed",
+    "median_cancer": 0.263739,
+    "median_healthy": 0.24661,
+    "auc": 0.8207,
+    "permutation_p": 5e-05,
+    "direction_matches_the_published_finding": true,
+    "median_by_group": {
+      "BC": 0.264476,
+      "HI25": 0.1586,
+      "HI37": 0.24771,
+      "NSCLC": 0.267787,
+      "mCRC": 0.140691
+    },
+    "control_BC_vs_NSCLC_auc": 0.6336,
+    "control_BC_vs_NSCLC_medians": [
+      0.264476,
+      0.267787
+    ],
+    "control_HI25_vs_HI37_auc": 0.7057,
+    "control_HI25_vs_HI37_medians": [
+      0.1586,
+      0.24771
+    ]
+  },
+  "within_cohort_model": {
+    "pooled": {
+      "auc": 0.9958,
+      "ci_lo": 0.9884,
+      "ci_hi": 1.0,
+      "n_pos": 136,
+      "n_neg": 87
+    },
+    "per_seed_aucs": [
+      0.9965,
+      0.9924,
+      0.9941,
+      0.9969,
+      0.9959
+    ],
+    "BC": {
+      "auc": 0.9975,
+      "per_seed_aucs": [
+        0.9975,
+        0.9982,
+        0.9975,
+        0.9975,
+        0.9977
+      ],
+      "n_cancer": 50,
+      "n_healthy": 87
+    },
+    "NSCLC": {
+      "auc": 1.0,
+      "per_seed_aucs": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "n_cancer": 56,
+      "n_healthy": 87
+    },
+    "mCRC": {
+      "auc": 0.9904,
+      "per_seed_aucs": [
+        0.992,
+        0.9912,
+        0.9916,
+        0.9897,
+        0.9571
+      ],
+      "n_cancer": 30,
+      "n_healthy": 87
+    }
+  },
+  "confound_control": {
+    "HI25_vs_HI37": {
+      "auc": 0.627,
+      "per_seed_aucs": [
+        0.6476,
+        0.6568,
+        0.6684,
+        0.6278,
+        0.6484
+      ],
+      "n_left": 50,
+      "n_right": 37,
+      "shared_label": "healthy",
+      "note": "Two groups that SHARE a label, from different studies. A high AUC here means the features carry study-level structure, and the class AUC cannot be read as a cancer signal."
+    },
+    "BC_vs_NSCLC": {
+      "auc": 0.9996,
+      "per_seed_aucs": [
+        1.0,
+        0.9996,
+        1.0,
+        0.9989,
+        0.9996
+      ],
+      "n_left": 50,
+      "n_right": 56,
+      "shared_label": "cancer",
+      "note": "Two groups that SHARE a label, from different studies. A high AUC here means the features carry study-level structure, and the class AUC cannot be read as a cancer signal."
+    }
+  },
+  "transferred_model": {
+    "training_cohort": {
+      "n": 98,
+      "n_cancer": 50,
+      "n_healthy": 48,
+      "cancer_type": [
+        "HCC_J",
+        "HEALTHY"
+      ],
+      "note": "The training cohort's samples that carry a motif vector are all ONE cancer type, so this is a type-specific model -- which is the repository's own prediction, not a confound in the cohort."
+    },
+    "pooled": {
+      "auc": 0.3413,
+      "ci_lo": 0.2512,
+      "ci_hi": 0.4314,
+      "n_pos": 136,
+      "n_neg": 87
+    },
+    "BC": {
+      "auc": 0.2979,
+      "ci_lo": 0.2031,
+      "ci_hi": 0.3928,
+      "n_pos": 50,
+      "n_neg": 87
+    },
+    "NSCLC": {
+      "auc": 0.275,
+      "ci_lo": 0.1836,
+      "ci_hi": 0.3665,
+      "n_pos": 56,
+      "n_neg": 87
+    },
+    "mCRC": {
+      "auc": 0.5372,
+      "ci_lo": 0.4001,
+      "ci_hi": 0.6742,
+      "n_pos": 30,
+      "n_neg": 87
+    }
+  },
+  "limits": [
+    "The measured confound control decides how this cohort can be read: the same 256 features separate BC from NSCLC -- two cancer groups from different studies -- at AUC 0.9996, and the two healthy studies differ on the CC-/CA-end fraction at AUC 0.7057. The study structure in these libraries is larger than any class effect here, so none of the class AUCs in this artifact can be read as a cancer signal -- and the transferred model's inversion (AUC 0.3413) is what a definition mismatch between the repository's end-motif extraction and this deposit's looks like.",
+    "The deposit says the motifs come from the 5' fragment boundary but does not say whether both strands' ends were counted per fragment, which is what the repository's own extraction does. Every number here carries that ambiguity.",
+    "The healthy arm is a screening or healthy-control population from two studies (HI25, HI37) and the cancer arm is three different tumour types, so a pooled AUC mixes the type shift with any class shift.",
+    "The within-cohort model is cross-validated inside this cohort, so its AUC is a measure of whether the features separate the classes here -- not of transfer.",
+    "The transferred model was trained on one cancer type (hepatocellular carcinoma) because those are the only training-cohort samples with a motif vector, so a per-type breakdown is where its own prediction is tested."
+  ]
+}

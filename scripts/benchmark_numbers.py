@@ -471,6 +471,15 @@ EXCUSED_COPIES = {
             "a dated review record listing the OLD README's 0.982, not "
             "the late-fusion AUC",
     },
+    ("fusion_ablation_isotonic.json", "naive_average"): {
+        "docs/PUBLIC_DATA_SOURCES.md":
+            "the LOWER BOUND of the end-motif cohort's within-cohort AUC "
+            "interval (0.9958 [0.9884, 1.0]), not a quote of the fusion's "
+            "naive-average AUC -- the digits coincide",
+        "CHANGELOG.md":
+            "the same lower bound in the end-motif cohort's entry, not a "
+            "quote of the fusion's naive-average AUC",
+    },
     ("cross_study_finallydb_with_motifs.json",
      ("per_publication", "6", "auc_mean")): {
         "METHYLATION_PROJECT.md":

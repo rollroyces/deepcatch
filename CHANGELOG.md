@@ -374,6 +374,48 @@ cohort size.
   memory than the machine has. It now reads chunk by chunk, which gives
   exactly the same numbers (re-extracting three ccRCC samples with the
   new code reproduces the committed feature files bit for bit).
+- **The end-motif tables are scored, and the confound control is
+  what they show.** Zenodo 10.5281/zenodo.17253504 publishes per-sample
+  4-mer end-motif frequencies for 223 cfDNA samples -- 87 healthy
+  controls from two studies and 136 cancer samples (breast 50, NSCLC 56,
+  metastatic colorectal 30) in two library preparations. It is the only
+  deposit in the survey carrying **the channel the PHTS paper's own
+  finding rests on** -- fragment end motifs -- with cancer/healthy
+  labels and per-sample values, and it is 2.3 MB rather than gigabytes
+  (`scripts/prepare_zenodo_endmotif_cohort.py`,
+  `scripts/external_cohort_zenodo_endmotif.py`; artifacts
+  `results/zenodo_endmotif_prep.json`,
+  `results/external_cohort_zenodo_endmotif.json`).
+  * The tables' motif rows are in the same lexicographic ACGT order as
+    the repository's own motif index, which the preparation script
+    verifies rather than assumes.
+  * The numbers look strong: the published claim's statistic (the
+    fraction of 4-mer end-motif counts beginning CC or CA) is higher in
+    the cancer arm -- median 0.2637 against 0.2466, AUC 0.8207,
+    permutation p = 5e-05 -- and a cross-validated model inside the
+    cohort separates cancer from healthy at AUC 0.9958 [0.9884, 1.0].
+  * And the confound control rules them out as cancer signals. The
+    healthy arm comes from two studies and the cancer arm from three
+    others, so a library-level difference is not separable from a class
+    difference here -- and the control says how large it is: **the same
+    256 features separate BC from NSCLC, two cancer groups from
+    different studies, at AUC 0.9996**, higher than the
+    cancer-versus-healthy separation, and the two healthy studies differ
+    on the CC-/CA-end fraction at AUC 0.7057. The per-group medians say
+    the same thing (HI25 0.1586, mCRC 0.1407, HI37 0.2477, BC 0.2645,
+    NSCLC 0.2678): the three groups that sit high are the ones whose
+    libraries sit high.
+  * So none of the class AUCs in that artifact can be read as a cancer
+    signal. An AUC without that control is not a result, and the
+    artifact says so.
+  * The repository's own motif model, trained on the 98 training-cohort
+    samples that carry a motif vector (48 healthy, 50 hepatocellular
+    carcinoma), lands at **AUC 0.3413** here -- inverted. That is what a
+    mismatch of definitions looks like: the deposit says the motifs
+    come from the 5' fragment boundary but does not say whether both
+    strands' ends were counted per fragment, which is what the
+    repository's extraction does. The ambiguity is stated in the
+    artifact, and the inversion is the evidence for it.
 
 ### Fixed
 

@@ -91,6 +91,17 @@ EXPECTED_PHTS_ABSOLUTE_AUC = 0.5388
 # The SAUNA cohort, pinned. This is the cohort with a GRADED cancer
 # label, so its numbers are correlations rather than AUCs, and the
 # within-CRC figures are the ones that carry the finding.
+# The end-motif cohort, pinned. The number that matters here is the
+# CONFOUND: the same features separate two cancer groups from different
+# studies better than they separate cancer from healthy, so the class
+# AUCs are not class signals.
+EXPECTED_ENDMOTIF_N = 223
+EXPECTED_ENDMOTIF_N_CANCER = 136
+EXPECTED_ENDMOTIF_N_HEALTHY = 87
+EXPECTED_ENDMOTIF_CLAIM_AUC = 0.8207
+EXPECTED_ENDMOTIF_CONF_AUC = 0.9996
+_ENDMOTIF_ARTIFACT = "results/external_cohort_zenodo_endmotif.json"
+
 EXPECTED_SAUNA_N = 9
 EXPECTED_SAUNA_N_CRC = 7
 EXPECTED_SAUNA_N_BENIGN = 2
@@ -141,6 +152,13 @@ _PRE_ARM_MARKERS = ("pre-diagnosis", "Pre-SMN", "Pre-PMN", "pre_diagnosis")
 
 # The SAUNA cohort's limits: the two correlations the finding rests on,
 # and the size of the cohort they were measured in.
+# The end-motif cohort's limits: its class AUC and the control that
+# rules the class reading out. Both, or the AUC reads as a result.
+REQUIRED_ENDMOTIF_LIMITS = (
+    "0.8207",
+    "0.9996",
+)
+
 REQUIRED_SAUNA_LIMITS = (
     "0.8154",
     "0.9643",
@@ -645,6 +663,43 @@ def test_the_cohort_artifact_names_its_sources():
     ratios = [d["short_long_ratio"] for d in series["draws"]]
     assert fractions == sorted(fractions)
     assert ratios == sorted(ratios)
+
+    # The end-motif cohort, and the reason its class AUCs cannot be
+    # read as class signals: the features separate two CANCER groups
+    # from different studies better than they separate cancer from
+    # healthy.
+    endmotif = _load(_ENDMOTIF_ARTIFACT)
+    cohort = endmotif["cohort"]
+    assert cohort["n"] == EXPECTED_ENDMOTIF_N
+    assert cohort["n_cancer"] == EXPECTED_ENDMOTIF_N_CANCER
+    assert cohort["n_healthy"] == EXPECTED_ENDMOTIF_N_HEALTHY
+    control = endmotif["confound_control"]["BC_vs_NSCLC"]
+    assert control["auc"] == EXPECTED_ENDMOTIF_CONF_AUC
+    assert control["shared_label"] == "cancer"
+    assert endmotif["published_claim"]["auc"] == EXPECTED_ENDMOTIF_CLAIM_AUC
+    assert endmotif["published_claim"]["permutation_p"] < 0.05
+    # The structural fact, not just the number: the control is stronger
+    # than the class effect it is a control for.
+    assert control["auc"] > endmotif["within_cohort_model"]["pooled"]["auc"], (
+        "the confound control no longer exceeds the class AUC; the "
+        "conclusion about this cohort has to be re-measured")
+
+    # Every document that quotes this cohort carries the confound
+    # control with it -- a class AUC without it is not a result.
+    endmotif_documents = _documents_mentioning("17253504")
+    assert endmotif_documents, "nothing mentions the end-motif cohort"
+    problems = []
+    for path in endmotif_documents:
+        rel = path.relative_to(_REPO_ROOT)
+        text = path.read_text(encoding="utf-8")
+        if Path(_ENDMOTIF_ARTIFACT).name not in text:
+            problems.append(f"{rel} does not name {_ENDMOTIF_ARTIFACT}")
+        for limit in REQUIRED_ENDMOTIF_LIMITS:
+            if limit not in text:
+                problems.append(
+                    f"{rel} does not state {limit!r} -- the confound "
+                    "control has to travel with the class AUC")
+    assert not problems, "\n  ".join(problems)
 
     # Every document that quotes this cohort carries the two numbers
     # the finding rests on.

@@ -1,0 +1,2069 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-25T14:13:47.634787+00:00",
+  "source": {
+    "record": "https://zenodo.org/records/17253504",
+    "doi": "10.5281/zenodo.17253504",
+    "paper": "Pisareva & Richaud -- cirDNA End-Motif Frequencies (2- and 4-mers) from sWGS; preprint 10.1101/2025.09.17.676909"
+  },
+  "format": {
+    "table": "one sheet per group and assay; 256 motif rows, the samples in two column blocks (counts on the left, fractions on the right) separated by an empty column, with a trailing Mean column",
+    "motif_order": "lexicographic ACGT -- the repository's own _kmer_index order, verified against it here",
+    "features": "<sample>.motifs.npy -- the 256 frequencies in the repository's motif order, the format the repository's own loader reads",
+    "library": "shallow WGS, primary alignments, proper pairs, MAPQ >= 30, GRCh38; motifs at the 5' fragment boundary",
+    "note": "The deposit states that the motifs come from the 5' boundary but does not say whether both strands' ends were counted per fragment, which is what the repository's own motif extraction does. That ambiguity is carried with every number computed from these features."
+  },
+  "groups": {
+    "BC": {
+      "label": "breast_cancer",
+      "assays": [
+        "DSP"
+      ],
+      "n_samples": 50
+    },
+    "HI25": {
+      "label": "healthy",
+      "assays": [
+        "DSP",
+        "SSP"
+      ],
+      "n_samples": 50
+    },
+    "HI37": {
+      "label": "healthy",
+      "assays": [
+        "DSP"
+      ],
+      "n_samples": 37
+    },
+    "NSCLC": {
+      "label": "nsclc",
+      "assays": [
+        "DSP"
+      ],
+      "n_samples": 56
+    },
+    "mCRC": {
+      "label": "mcr_colorectal",
+      "assays": [
+        "DSP",
+        "SSP"
+      ],
+      "n_samples": 30
+    }
+  },
+  "samples": {
+    "n": 223,
+    "n_healthy": 87,
+    "n_cancer": 136
+  },
+  "per_sample": {
+    "EFS0149__HI25__SSP": {
+      "sample": "EFS0149",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS0624__HI25__SSP": {
+      "sample": "EFS0624",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS1061__HI25__SSP": {
+      "sample": "EFS1061",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS1109__HI25__SSP": {
+      "sample": "EFS1109",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS1520__HI25__SSP": {
+      "sample": "EFS1520",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS1539__HI25__SSP": {
+      "sample": "EFS1539",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS1555__HI25__SSP": {
+      "sample": "EFS1555",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS2531__HI25__SSP": {
+      "sample": "EFS2531",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS3841__HI25__SSP": {
+      "sample": "EFS3841",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS4532__HI25__SSP": {
+      "sample": "EFS4532",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS4567__HI25__SSP": {
+      "sample": "EFS4567",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS4969__HI25__SSP": {
+      "sample": "EFS4969",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS5900__HI25__SSP": {
+      "sample": "EFS5900",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS5919__HI25__SSP": {
+      "sample": "EFS5919",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS5927__HI25__SSP": {
+      "sample": "EFS5927",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS5935__HI25__SSP": {
+      "sample": "EFS5935",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS6153__HI25__SSP": {
+      "sample": "EFS6153",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS6161__HI25__SSP": {
+      "sample": "EFS6161",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS6188__HI25__SSP": {
+      "sample": "EFS6188",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS6196__HI25__SSP": {
+      "sample": "EFS6196",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS7469__HI25__SSP": {
+      "sample": "EFS7469",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS7739__HI25__SSP": {
+      "sample": "EFS7739",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS9005__HI25__SSP": {
+      "sample": "EFS9005",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS_262__HI25__SSP": {
+      "sample": "EFS_262",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "EFS_385__HI25__SSP": {
+      "sample": "EFS_385",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI001__HI37__DSP": {
+      "sample": "HI001",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI002__HI37__DSP": {
+      "sample": "HI002",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI003__HI37__DSP": {
+      "sample": "HI003",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI005__HI37__DSP": {
+      "sample": "HI005",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI008__HI37__DSP": {
+      "sample": "HI008",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI011__HI37__DSP": {
+      "sample": "HI011",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI012__HI37__DSP": {
+      "sample": "HI012",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI014__HI37__DSP": {
+      "sample": "HI014",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI015__HI37__DSP": {
+      "sample": "HI015",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI016__HI37__DSP": {
+      "sample": "HI016",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI017__HI25__DSP": {
+      "sample": "HI017",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI017__HI37__DSP": {
+      "sample": "HI017",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI018__HI25__DSP": {
+      "sample": "HI018",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI018__HI37__DSP": {
+      "sample": "HI018",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI019__HI25__DSP": {
+      "sample": "HI019",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI019__HI37__DSP": {
+      "sample": "HI019",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI020__HI25__DSP": {
+      "sample": "HI020",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI020__HI37__DSP": {
+      "sample": "HI020",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI021__HI25__DSP": {
+      "sample": "HI021",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI021__HI37__DSP": {
+      "sample": "HI021",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI022__HI25__DSP": {
+      "sample": "HI022",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI022__HI37__DSP": {
+      "sample": "HI022",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI023__HI37__DSP": {
+      "sample": "HI023",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI024__HI25__DSP": {
+      "sample": "HI024",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI024__HI37__DSP": {
+      "sample": "HI024",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI025__HI25__DSP": {
+      "sample": "HI025",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI025__HI37__DSP": {
+      "sample": "HI025",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI026__HI37__DSP": {
+      "sample": "HI026",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI027__HI25__DSP": {
+      "sample": "HI027",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI027__HI37__DSP": {
+      "sample": "HI027",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI028__HI25__DSP": {
+      "sample": "HI028",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI028__HI37__DSP": {
+      "sample": "HI028",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI029__HI25__DSP": {
+      "sample": "HI029",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI029__HI37__DSP": {
+      "sample": "HI029",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI030__HI25__DSP": {
+      "sample": "HI030",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI030__HI37__DSP": {
+      "sample": "HI030",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI031__HI25__DSP": {
+      "sample": "HI031",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI031__HI37__DSP": {
+      "sample": "HI031",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI032__HI25__DSP": {
+      "sample": "HI032",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI032__HI37__DSP": {
+      "sample": "HI032",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI033__HI25__DSP": {
+      "sample": "HI033",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI033__HI37__DSP": {
+      "sample": "HI033",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI034__HI25__DSP": {
+      "sample": "HI034",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI034__HI37__DSP": {
+      "sample": "HI034",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI035__HI25__DSP": {
+      "sample": "HI035",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI035__HI37__DSP": {
+      "sample": "HI035",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI036__HI25__DSP": {
+      "sample": "HI036",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI036__HI37__DSP": {
+      "sample": "HI036",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI037__HI25__DSP": {
+      "sample": "HI037",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI037__HI37__DSP": {
+      "sample": "HI037",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI038__HI25__DSP": {
+      "sample": "HI038",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI038__HI37__DSP": {
+      "sample": "HI038",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI039__HI25__DSP": {
+      "sample": "HI039",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI039__HI37__DSP": {
+      "sample": "HI039",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI040__HI25__DSP": {
+      "sample": "HI040",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI040__HI37__DSP": {
+      "sample": "HI040",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI041__HI25__DSP": {
+      "sample": "HI041",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI041__HI37__DSP": {
+      "sample": "HI041",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI042__HI25__DSP": {
+      "sample": "HI042",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI042__HI37__DSP": {
+      "sample": "HI042",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI043__HI25__DSP": {
+      "sample": "HI043",
+      "group": "HI25",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "HI043__HI37__DSP": {
+      "sample": "HI043",
+      "group": "HI37",
+      "group_label": "healthy",
+      "group_description": "healthy control",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD01__NSCLC__DSP": {
+      "sample": "LD01",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD02__NSCLC__DSP": {
+      "sample": "LD02",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD03__NSCLC__DSP": {
+      "sample": "LD03",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD05__NSCLC__DSP": {
+      "sample": "LD05",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD06__NSCLC__DSP": {
+      "sample": "LD06",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD07__NSCLC__DSP": {
+      "sample": "LD07",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD08__NSCLC__DSP": {
+      "sample": "LD08",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD09__NSCLC__DSP": {
+      "sample": "LD09",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD12__NSCLC__DSP": {
+      "sample": "LD12",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD13__NSCLC__DSP": {
+      "sample": "LD13",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD15__NSCLC__DSP": {
+      "sample": "LD15",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD16__NSCLC__DSP": {
+      "sample": "LD16",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD17__NSCLC__DSP": {
+      "sample": "LD17",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD21__NSCLC__DSP": {
+      "sample": "LD21",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD22__NSCLC__DSP": {
+      "sample": "LD22",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD23__NSCLC__DSP": {
+      "sample": "LD23",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD24__NSCLC__DSP": {
+      "sample": "LD24",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD28__NSCLC__DSP": {
+      "sample": "LD28",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LD29__NSCLC__DSP": {
+      "sample": "LD29",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX05__NSCLC__DSP": {
+      "sample": "LDX05",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX06__NSCLC__DSP": {
+      "sample": "LDX06",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX13__NSCLC__DSP": {
+      "sample": "LDX13",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX14__NSCLC__DSP": {
+      "sample": "LDX14",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX15__NSCLC__DSP": {
+      "sample": "LDX15",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX16__NSCLC__DSP": {
+      "sample": "LDX16",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX17__NSCLC__DSP": {
+      "sample": "LDX17",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX18__NSCLC__DSP": {
+      "sample": "LDX18",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX19__NSCLC__DSP": {
+      "sample": "LDX19",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX20__NSCLC__DSP": {
+      "sample": "LDX20",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX21__NSCLC__DSP": {
+      "sample": "LDX21",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX22__NSCLC__DSP": {
+      "sample": "LDX22",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX24__NSCLC__DSP": {
+      "sample": "LDX24",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX25__NSCLC__DSP": {
+      "sample": "LDX25",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX26__NSCLC__DSP": {
+      "sample": "LDX26",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX27__NSCLC__DSP": {
+      "sample": "LDX27",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX28__NSCLC__DSP": {
+      "sample": "LDX28",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX29__NSCLC__DSP": {
+      "sample": "LDX29",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX30__NSCLC__DSP": {
+      "sample": "LDX30",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX31__NSCLC__DSP": {
+      "sample": "LDX31",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX32__NSCLC__DSP": {
+      "sample": "LDX32",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX37__NSCLC__DSP": {
+      "sample": "LDX37",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX38__NSCLC__DSP": {
+      "sample": "LDX38",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX40__NSCLC__DSP": {
+      "sample": "LDX40",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX41__NSCLC__DSP": {
+      "sample": "LDX41",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX43__NSCLC__DSP": {
+      "sample": "LDX43",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX44__NSCLC__DSP": {
+      "sample": "LDX44",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX46__NSCLC__DSP": {
+      "sample": "LDX46",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX47__NSCLC__DSP": {
+      "sample": "LDX47",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX50__NSCLC__DSP": {
+      "sample": "LDX50",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX51__NSCLC__DSP": {
+      "sample": "LDX51",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX54__NSCLC__DSP": {
+      "sample": "LDX54",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX55__NSCLC__DSP": {
+      "sample": "LDX55",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX56__NSCLC__DSP": {
+      "sample": "LDX56",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX59__NSCLC__DSP": {
+      "sample": "LDX59",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX60__NSCLC__DSP": {
+      "sample": "LDX60",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "LDX62__NSCLC__DSP": {
+      "sample": "LDX62",
+      "group": "NSCLC",
+      "group_label": "nsclc",
+      "group_description": "non-small-cell lung cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP01__BC__DSP": {
+      "sample": "MP01",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP02__BC__DSP": {
+      "sample": "MP02",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP03__BC__DSP": {
+      "sample": "MP03",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP04__BC__DSP": {
+      "sample": "MP04",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP05__BC__DSP": {
+      "sample": "MP05",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP06__BC__DSP": {
+      "sample": "MP06",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP07__BC__DSP": {
+      "sample": "MP07",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP08__BC__DSP": {
+      "sample": "MP08",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP09__BC__DSP": {
+      "sample": "MP09",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP10__BC__DSP": {
+      "sample": "MP10",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP11__BC__DSP": {
+      "sample": "MP11",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP12__BC__DSP": {
+      "sample": "MP12",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP13__BC__DSP": {
+      "sample": "MP13",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP14__BC__DSP": {
+      "sample": "MP14",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP15__BC__DSP": {
+      "sample": "MP15",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP16__BC__DSP": {
+      "sample": "MP16",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP17__BC__DSP": {
+      "sample": "MP17",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP18__BC__DSP": {
+      "sample": "MP18",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP19__BC__DSP": {
+      "sample": "MP19",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP20__BC__DSP": {
+      "sample": "MP20",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP21__BC__DSP": {
+      "sample": "MP21",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP22__BC__DSP": {
+      "sample": "MP22",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP23__BC__DSP": {
+      "sample": "MP23",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP24__BC__DSP": {
+      "sample": "MP24",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP25__BC__DSP": {
+      "sample": "MP25",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP26__BC__DSP": {
+      "sample": "MP26",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP27__BC__DSP": {
+      "sample": "MP27",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP28__BC__DSP": {
+      "sample": "MP28",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP29__BC__DSP": {
+      "sample": "MP29",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP30__BC__DSP": {
+      "sample": "MP30",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP31__BC__DSP": {
+      "sample": "MP31",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP32__BC__DSP": {
+      "sample": "MP32",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP33__BC__DSP": {
+      "sample": "MP33",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP34__BC__DSP": {
+      "sample": "MP34",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP35__BC__DSP": {
+      "sample": "MP35",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP36__BC__DSP": {
+      "sample": "MP36",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP37__BC__DSP": {
+      "sample": "MP37",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP38__BC__DSP": {
+      "sample": "MP38",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP39__BC__DSP": {
+      "sample": "MP39",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP40__BC__DSP": {
+      "sample": "MP40",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP41__BC__DSP": {
+      "sample": "MP41",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP42__BC__DSP": {
+      "sample": "MP42",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP43__BC__DSP": {
+      "sample": "MP43",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP44__BC__DSP": {
+      "sample": "MP44",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP45__BC__DSP": {
+      "sample": "MP45",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP46__BC__DSP": {
+      "sample": "MP46",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP47__BC__DSP": {
+      "sample": "MP47",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP48__BC__DSP": {
+      "sample": "MP48",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP49__BC__DSP": {
+      "sample": "MP49",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "MP50__BC__DSP": {
+      "sample": "MP50",
+      "group": "BC",
+      "group_label": "breast_cancer",
+      "group_description": "breast cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI01103__mCRC__DSP": {
+      "sample": "PANI01103",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI01106__mCRC__DSP": {
+      "sample": "PANI01106",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI01107__mCRC__DSP": {
+      "sample": "PANI01107",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI02047__mCRC__DSP": {
+      "sample": "PANI02047",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI04007__mCRC__DSP": {
+      "sample": "PANI04007",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI15009__mCRC__DSP": {
+      "sample": "PANI15009",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI15010__mCRC__DSP": {
+      "sample": "PANI15010",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18055__mCRC__DSP": {
+      "sample": "PANI18055",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18060__mCRC__DSP": {
+      "sample": "PANI18060",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18062__mCRC__DSP": {
+      "sample": "PANI18062",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18065__mCRC__DSP": {
+      "sample": "PANI18065",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18067__mCRC__DSP": {
+      "sample": "PANI18067",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI18068__mCRC__DSP": {
+      "sample": "PANI18068",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI29017__mCRC__DSP": {
+      "sample": "PANI29017",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANI29021__mCRC__DSP": {
+      "sample": "PANI29021",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "DSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS01103__mCRC__SSP": {
+      "sample": "PANIS01103",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS01106__mCRC__SSP": {
+      "sample": "PANIS01106",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS01107__mCRC__SSP": {
+      "sample": "PANIS01107",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS02047__mCRC__SSP": {
+      "sample": "PANIS02047",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS04007__mCRC__SSP": {
+      "sample": "PANIS04007",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS15009__mCRC__SSP": {
+      "sample": "PANIS15009",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS15010__mCRC__SSP": {
+      "sample": "PANIS15010",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18055__mCRC__SSP": {
+      "sample": "PANIS18055",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18060__mCRC__SSP": {
+      "sample": "PANIS18060",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18062__mCRC__SSP": {
+      "sample": "PANIS18062",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18065__mCRC__SSP": {
+      "sample": "PANIS18065",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18067__mCRC__SSP": {
+      "sample": "PANIS18067",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS18068__mCRC__SSP": {
+      "sample": "PANIS18068",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS29017__mCRC__SSP": {
+      "sample": "PANIS29017",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    },
+    "PANIS29021__mCRC__SSP": {
+      "sample": "PANIS29021",
+      "group": "mCRC",
+      "group_label": "mcr_colorectal",
+      "group_description": "metastatic colorectal cancer",
+      "assay": "SSP",
+      "n_motifs": 256,
+      "total_count": 1
+    }
+  }
+}
