@@ -624,6 +624,81 @@ ends were counted per fragment, which is what the repository's
 extraction does. The ambiguity is stated in the artifact, and the
 inversion is the evidence for it.
 
+### 6.5 A treatment-response cohort: immunotherapy responders in head and neck cancer
+
+[10.5281/zenodo.15738112](https://doi.org/10.5281/zenodo.15738112) is the
+only public cfDNA deposit the survey found whose endpoint is **clinical in the
+treatment-response sense**: responder versus non-responder, in 68 patients with
+head and neck squamous cell carcinoma who received neoadjuvant and adjuvant
+pembrolizumab (NCT02641093), across six academic centres, sampled at three
+time points (185 longitudinal plasma samples; 184 of them with a deposited
+fragment file). It is the paper's own study — medRxiv
+[10.64898/2026.03.24.26348354](https://doi.org/10.64898/2026.03.24.26348354),
+published as [10.1172/JCI196284](https://doi.org/10.1172/JCI196284) — and the
+deposit is its de-identified, post-processed fragment files, mapped to hg38.
+
+**The labels are not in the deposit.** The Zenodo record carries no
+description and no notes, and the archive holds fragment files only. They are
+in the study's own analysis repository
+([`epifluidlab/headneck`](https://github.com/epifluidlab/headneck),
+`Supplementary_Tables/ST1`, the v11 metadata table): 185 rows of sample ID,
+visit, institute, response, patient number and the two batch dates the study
+corrects for. The derived table is committed at
+`data/external_cohort/immunotherapy_sample_metadata.tsv`, and the label is
+checked against the study's own response grade before anything is scored
+(0 for a non-responder, 1-10 for a responder; the two columns agree on every
+sample).
+
+**What was computed** (`scripts/prepare_zenodo_immunotherapy_cohort.py`): the
+256 4-mer end-motif frequencies in the repository's motif order, the study's
+own **rMDS** (the normalized Shannon entropy of the 5' end 4-mers in 500 kb
+bins, z-scored across the genome within each sample), and the repository's
+DELFI channel. The deposited files are **not** the study's filtered fragment
+set — they carry every length and every MAPQ — so the study's filters
+(50-350 bp, MAPQ ≥ 30, autosome) are applied here and the ENCODE blacklist
+exclusion is not, because the track is not in the deposit. On the samples
+measured, 88% of the deposited fragments survive those filters.
+
+**What the numbers say** (`results/external_cohort_zenodo_immunotherapy.json`):
+
+- The study's own unsupervised statistic does not reproduce: **0 of the
+  5,527 bins** differ between responders and non-responders at FDR < 0.1,
+  before or after the study's batch correction, where the paper reports
+  1,080.
+- The classifier does not separate them either: **AUC 0.3373**
+  [0.2585, 0.4161] on the rMDS bins (below chance), **0.4162**
+  [0.3326, 0.4997] with the study's own correction applied — the
+  isolation date, the library-preparation date and the collection
+  institute modelled out of every bin, with the response kept in the
+  model — and **0.4539** on the 256 motifs.
+- **The control is what decides how that reads.** The same features
+  separate two collection centres that **share** a response label at up
+  to **AUC 0.9813**, and inside a single centre the response separation
+  is nothing (0.06 to 0.40 across the six). The centres' responder
+  fractions run from 0.35 (Ohio State) to 0.79 (MD Anderson), so the
+  cohort's structure carries response information and the features
+  carry the cohort's structure.
+- The depth is not what does the separating: depth alone reaches
+  0.4530, and with the depth regressed out of the model's score the
+  separation is 0.3356.
+
+So the honest reading of this cohort is: **the end-motif channel does
+not separate immunotherapy responders from non-responders on the
+deposited data, and the reason the control gives is that the cohort is
+dominated by its collection centres.** That is a statement about the
+cohort and the deposit, not about the biology — and it is a different
+kind of answer from the other four cohorts' in one respect that
+matters: the study's own metric, on the study's own data, with the
+study's own correction, does not come out.
+
+What this reproduction is not: the study's classifier is a TabPFN on
+SVD components with a patient-level cross-validation repeated a hundred
+times, and this is a regularized logistic regression on the same
+components with a patient-grouped cross-validation; the correction is
+fitted on the whole cohort, as the study fits it; and the study's rMDS
+may count one fragment end per fragment where this one counts both, the
+same ambiguity §6.4 found in the neighbouring deposit.
+
 ## 7. What this means for the paper
 
 - The external validation is on **public, re-fetchable data with a
@@ -670,3 +745,15 @@ inversion is the evidence for it.
   values, while the effect the depositor published is present in the
   channels. A null that comes with a measured mechanism is worth more
   than a caveat, and it is the shape a reviewer will ask for.
+- **A public cohort whose endpoint is a treatment response does not
+  reproduce its own published claim on the deposited data, and the
+  control says why** (§6.5). The immunotherapy cohort's own metric
+  finds 0 of 5,527 bins differential where the paper reports 1,080, and
+  the classifier is at 0.3373 (0.4162 with the study's own batch
+  correction) -- while the same features separate two collection
+  centres that share a response label at 0.9813, and the centres'
+  responder fractions run from 0.35 to 0.79. The cohort's structure is
+  the centre; the response is not separable inside one. This is the
+  first public cohort in this repository whose endpoint is clinical in
+  the treatment-response sense, and the first one where the published
+  claim itself does not come out of the deposit.

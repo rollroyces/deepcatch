@@ -72,7 +72,7 @@ import numpy as np
 from sklearn.decomposition import TruncatedSVD
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
 from sklearn.preprocessing import StandardScaler
 
 SEEDS = 5
@@ -167,6 +167,128 @@ def _permutation_p(y: np.ndarray, score: np.ndarray,
     return (hits + 1) / (trials + 1)
 
 
+def _batch_corrected(rmds: np.ndarray, isolation: np.ndarray,
+                      prep: np.ndarray, institute: np.ndarray,
+                      response: np.ndarray) -> np.ndarray:
+    """The study's own batch correction, applied bin by bin.
+
+    The study models each bin's rMDS as a function of the cfDNA
+    isolation date, the WGS library-preparation date and the collection
+    institute, with the treatment response kept in the model as a
+    biological covariate that the correction must not remove. The
+    corrected value is therefore the intercept, the response's own
+    coefficient and the residual -- the technical terms are taken out
+    and the response term is left in.
+
+    The design uses sum contrasts for the institute, as the study does,
+    so the institutes are not separated one against another but against
+    their mean.
+    """
+    institutes = sorted(set(institute.tolist()))
+    dummies = np.zeros((len(institute), max(len(institutes) - 1, 0)))
+    for index, name in enumerate(institutes[:-1]):
+        dummies[:, index] = (institute == name).astype(float)
+    design = np.column_stack([
+        np.ones(len(response)), isolation, prep, dummies, response])
+
+    corrected = np.zeros_like(rmds)
+    for column in range(rmds.shape[1]):
+        y = rmds[:, column]
+        beta, *_ = np.linalg.lstsq(design, y, rcond=None)
+        residual = y - design @ beta
+        # intercept + the response's own coefficient + what the model
+        # did not explain
+        corrected[:, column] = (beta[0] + beta[-1] * response + residual)
+    return corrected
+
+
+def _label_is_consistent(metadata: dict, order: list[str]) -> bool:
+    """Does the response label agree with the study's own response grade?
+
+    The metadata carries both: a categorised response rate (0 for a
+    non-responder, 1-10 for a responder) and the binary label. A
+    cohort whose label contradicted its own grade would be measuring
+    something else, so the two are checked against each other rather
+    than assumed to agree.
+    """
+    for sample in order:
+        row = metadata[sample]
+        try:
+            rate = int(row.get("response_rate", ""))
+        except ValueError:
+            continue
+        is_responder = row.get("response") == "Responder"
+        if (rate >= 1) != is_responder:
+            return False
+    return True
+
+
+def _bin_differential(X: np.ndarray, y: np.ndarray) -> dict:
+    """How many bins separate the two classes, and in which direction.
+
+    This is the study's own unsupervised reading (its Figure 3A): a
+    two-group test per bin, with the p-values corrected for multiple
+    testing over the genome.
+    """
+    from scipy import stats
+
+    pvalues = np.ones(X.shape[1])
+    differences = np.zeros(X.shape[1])
+    for column in range(X.shape[1]):
+        responders = X[y == 1, column]
+        non = X[y == 0, column]
+        responders = responders[np.isfinite(responders)]
+        non = non[np.isfinite(non)]
+        if len(responders) < 3 or len(non) < 3:
+            continue
+        _, p = stats.ttest_ind(responders, non, equal_var=False)
+        pvalues[column] = p if np.isfinite(p) else 1.0
+        differences[column] = responders.mean() - non.mean()
+    order_p = np.argsort(pvalues)
+    ranked = pvalues[order_p] * len(pvalues) / (np.arange(len(pvalues)) + 1)
+    fdr = np.minimum.accumulate(ranked[::-1])[::-1]
+    adjusted = np.ones_like(fdr)
+    adjusted[order_p] = np.minimum(fdr, 1.0)
+    significant = adjusted < 0.1
+    return {
+        "bins_tested": int(X.shape[1]),
+        "bins_fdr_below_0.1": int(significant.sum()),
+        "fraction_significant": round(float(significant.mean()), 4),
+        "higher_in_responders": int((significant & (differences > 0)).sum()),
+        "lower_in_responders": int((significant & (differences < 0)).sum()),
+        "median_abs_difference": round(float(np.median(np.abs(differences))),
+                                       4),
+    }
+
+
+def _days_since_earliest(values: list[str]) -> np.ndarray:
+    """A date column as days since the earliest date in it."""
+    import datetime as dt
+
+    parsed = []
+    for value in values:
+        text = (value or "").strip()
+        if not text:
+            parsed.append(None)
+            continue
+        for fmt in ("%m/%d/%y", "%m/%d/%Y", "%Y-%m-%d"):
+            try:
+                parsed.append(dt.datetime.strptime(text, fmt).date())
+                break
+            except ValueError:
+                continue
+        else:
+            parsed.append(None)
+    known = [d for d in parsed if d is not None]
+    if not known:
+        return np.zeros(len(values))
+    first = min(known)
+    out = np.zeros(len(values))
+    for index, day in enumerate(parsed):
+        out[index] = (day - first).days if day is not None else 0.0
+    return out
+
+
 def _pairwise_control(X: np.ndarray, y: np.ndarray, groups: np.ndarray,
                       patients: np.ndarray, left: str, right: str,
                       label: str) -> dict:
@@ -208,6 +330,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--features-dir", required=True)
     parser.add_argument("--metadata", required=True)
+    parser.add_argument("--prep-report",
+                        help="the preparation report, for the depth control")
     parser.add_argument("--out-json", required=True)
     args = parser.parse_args(argv)
 
@@ -216,20 +340,22 @@ def main(argv: list[str] | None = None) -> int:
 
     print("[1/6] reading the cohort ...", flush=True)
     order, y, groups, patients, visits, institutes, batches = [], [], [], [], [], [], []
-    rmds_rows: list[np.ndarray] = []
+    rmds_by_sample: dict[str, dict[str, float]] = {}
     motif_rows: list[np.ndarray] = []
     for sample in sorted(metadata):
         row = metadata[sample]
         rmds_path = features_dir / f"{sample}.rmds.npy"
+        bins_path = features_dir / f"{sample}.rmds_bins.npy"
         motif_path = features_dir / f"{sample}.motifs.npy"
         if not rmds_path.exists() or not motif_path.exists():
             continue
         rmds = np.load(rmds_path)
+        bins = np.load(bins_path, allow_pickle=True)
         motifs = np.load(motif_path)
-        if rmds.size == 0:
+        if rmds.size == 0 or bins.size != rmds.size:
             continue
+        rmds_by_sample[sample] = dict(zip(bins.tolist(), rmds.tolist()))
         order.append(sample)
-        rmds_rows.append(rmds)
         motif_rows.append(motifs)
         y.append(1 if row["response"] == "Responder" else 0)
         groups.append(row["institute"])
@@ -244,11 +370,36 @@ def main(argv: list[str] | None = None) -> int:
     visits = np.asarray(visits)
     institutes = np.asarray(institutes)
     batches = np.asarray(batches)
-    rmds_X = np.vstack(rmds_rows)
     motif_X = np.vstack(motif_rows)
+
+    # The rMDS is a per-bin statistic, so the samples have to sit on one
+    # grid for the matrix to mean anything. A bin with no fragments in a
+    # sample has no diversity in it, and a handful of bins are like
+    # that -- one of them (chr21:11) has fragments in 48 samples and
+    # none in 136. The shared grid is therefore the bins EVERY sample
+    # has fragments in, and the bins that were dropped are counted in
+    # the report rather than quietly imputed.
+    shared = set(rmds_by_sample[order[0]])
+    for sample in order[1:]:
+        shared &= set(rmds_by_sample[sample])
+    union = set()
+    for sample in order:
+        union |= set(rmds_by_sample[sample])
+    grid = sorted(shared)
+    rmds_X = np.vstack([
+        np.asarray([rmds_by_sample[sample][key] for key in grid])
+        for sample in order])
+    # Re-standardise on the shared grid: a sample's z-scores were
+    # computed over the bins IT had, and the shared grid is a subset of
+    # them, so the scale differs slightly from sample to sample.
+    rmds_X = (rmds_X - rmds_X.mean(axis=1, keepdims=True))
+    sd = rmds_X.std(axis=1, keepdims=True)
+    rmds_X = np.divide(rmds_X, sd, out=np.zeros_like(rmds_X), where=sd > 0)
+
     print(f"      n={len(order)} ({int(y.sum())} responders, "
           f"{int((1 - y).sum())} non-responders), {len(set(patients))} patients, "
-          f"{rmds_X.shape[1]} rMDS bins, {motif_X.shape[1]} motifs", flush=True)
+          f"{len(grid)} shared rMDS bins (of {len(union)} in the union), "
+          f"{motif_X.shape[1]} motifs", flush=True)
 
     results: dict = {
         "doi": "10.5281/zenodo.15738112",
@@ -262,45 +413,31 @@ def main(argv: list[str] | None = None) -> int:
             "institutes": sorted(set(institutes.tolist())),
             "visits": sorted(set(visits.tolist())),
             "rmds_bins": int(rmds_X.shape[1]),
+            "rmds_bins_in_the_union": len(union),
+            "rmds_bins_dropped_for_being_incomplete": len(union) - len(grid),
             "per_institute": {name: int((institutes == name).sum())
                               for name in sorted(set(institutes.tolist()))},
+            "responder_fraction_by_institute": {
+                name: round(float(y[institutes == name].mean()), 4)
+                for name in sorted(set(institutes.tolist()))},
+            "the_label_is_internally_consistent": _label_is_consistent(
+                metadata, order),
         },
     }
 
     print("[2/6] the published claim: the per-bin rMDS differential ...",
           flush=True)
-    from scipy import stats
-
-    with np.errstate(divide="ignore", invalid="ignore"):
-        p_responders = [rmds_X[y == 1, j][np.isfinite(rmds_X[y == 1, j])]
-                        for j in range(rmds_X.shape[1])]
-        p_non = [rmds_X[y == 0, j][np.isfinite(rmds_X[y == 0, j])]
-                 for j in range(rmds_X.shape[1])]
-    pvalues = np.ones(rmds_X.shape[1])
-    differences = np.zeros(rmds_X.shape[1])
-    for j in range(rmds_X.shape[1]):
-        if len(p_responders[j]) < 3 or len(p_non[j]) < 3:
-            continue
-        t, p = stats.ttest_ind(p_responders[j], p_non[j], equal_var=False)
-        pvalues[j] = p if np.isfinite(p) else 1.0
-        differences[j] = (p_responders[j].mean() - p_non[j].mean())
-    order_p = np.argsort(pvalues)
-    ranked = pvalues[order_p] * len(pvalues) / (np.arange(len(pvalues)) + 1)
-    fdr = np.minimum.accumulate(ranked[::-1])[::-1]
-    adjusted = np.ones_like(fdr)
-    adjusted[order_p] = np.minimum(fdr, 1.0)
-    significant = adjusted < 0.1
+    differential = _bin_differential(rmds_X, y)
     results["published_claim_rmds"] = {
         "definition": ("the normalized Shannon entropy of the 5' end 4-mer "
                        "frequencies in 500 kb bins, z-scored across the "
                        "genome within each sample -- the study's rMDS"),
-        "bins_tested": int(rmds_X.shape[1]),
-        "bins_fdr_below_0.1": int(significant.sum()),
-        "fraction_significant": round(float(significant.mean()), 4),
-        "higher_in_responders": int((significant & (differences > 0)).sum()),
-        "lower_in_responders": int((significant & (differences < 0)).sum()),
-        "median_abs_difference": round(float(np.median(np.abs(differences))),
-                                       4),
+        "bins_tested": differential["bins_tested"],
+        "bins_fdr_below_0.1": differential["bins_fdr_below_0.1"],
+        "fraction_significant": differential["fraction_significant"],
+        "higher_in_responders": differential["higher_in_responders"],
+        "lower_in_responders": differential["lower_in_responders"],
+        "median_abs_difference": differential["median_abs_difference"],
         "note": ("the study reports 1,080 differentially differential bins "
                  "at FDR < 0.1 out of the autosome's 500 kb bins; the count "
                  "here is computed on the deposited fragments with the "
@@ -325,7 +462,58 @@ def main(argv: list[str] | None = None) -> int:
         print(f"      {name}: pooled OOF AUC {auc:.4f} "
               f"[{block['de_long']['ci_lo']}, {block['de_long']['ci_hi']}]",
               flush=True)
+
+    # The same measurement with the study's own batch correction applied
+    # -- the batch's own terms removed, the response's term kept. This
+    # is the question the study asks; the uncorrected reading above is
+    # the question this repository has always asked, which is what the
+    # features do before anything is taken out.
+    isolation = _days_since_earliest(
+        [metadata[sample].get("isolation_date", "") for sample in order])
+    prep = _days_since_earliest(
+        [metadata[sample].get("library_prep_date", "") for sample in order])
+    corrected = _batch_corrected(rmds_X, isolation, prep, institutes, y)
+    corrected = (corrected - corrected.mean(axis=1, keepdims=True))
+    sd = corrected.std(axis=1, keepdims=True)
+    corrected = np.divide(corrected, sd, out=np.zeros_like(corrected),
+                           where=sd > 0)
+    auc_c, per_seed_c, oof_c = _grouped_cv_auc(corrected, y, patients)
+    model_results["rmds_bins_batch_corrected"] = {
+        "pooled_out_of_fold_auc": round(auc_c, 4),
+        "per_seed_aucs": [round(a, 4) for a in per_seed_c],
+        "de_long": _delong(y, oof_c),
+        "permutation_p": round(_permutation_p(y, oof_c), 6),
+        "note": ("the study's own correction: a per-bin model on the "
+                 "cfDNA isolation date, the WGS library-preparation date "
+                 "and the collection institute, with the response kept in "
+                 "the model as a covariate that the correction does not "
+                 "remove"),
+    }
+    print(f"      rmds_bins_batch_corrected: pooled OOF AUC {auc_c:.4f} "
+          f"[{model_results['rmds_bins_batch_corrected']['de_long']['ci_lo']}, "
+          f"{model_results['rmds_bins_batch_corrected']['de_long']['ci_hi']}]",
+          flush=True)
     results["model"] = model_results
+
+    corrected_differential = _bin_differential(corrected, y)
+    results["published_claim_rmds_batch_corrected"] = {
+        "definition": ("the same per-bin differential on the study's own "
+                       "batch-corrected rMDS: the isolation date, the "
+                       "library-preparation date and the collection "
+                       "institute are modelled out of every bin, and the "
+                       "response is kept in the model"),
+        "bins_fdr_below_0.1": corrected_differential["bins_fdr_below_0.1"],
+        "higher_in_responders": corrected_differential["higher_in_responders"],
+        "lower_in_responders": corrected_differential["lower_in_responders"],
+        "note": ("the study reports 1,080 bins differential at FDR < 0.1 "
+                 "out of the autosome's 500 kb bins, and the study's "
+                 "classifier reaches AUC 0.99 in patient-level "
+                 "cross-validation and 0.89 with an institute held out"),
+    }
+    print(f"      batch-corrected: "
+          f"{corrected_differential['bins_fdr_below_0.1']} of "
+          f"{corrected_differential['bins_tested']} bins differ at "
+          f"FDR < 0.1", flush=True)
 
     print("[4/6] transfer to an unseen centre (the study's LOIO) ...",
           flush=True)
@@ -437,6 +625,51 @@ def main(argv: list[str] | None = None) -> int:
         print(f"      visit {visit}: n={int(mask.sum())} AUC {auc:.4f}",
               flush=True)
     results["per_visit_rmds"] = per_visit
+
+    # The depth control. Sequencing depth is the confound the ccRCC
+    # cohort turned out to carry, and the rMDS is an entropy -- an
+    # estimate whose noise depends on how many fragments a bin has -- so
+    # the depth has to be asked about before the number means anything.
+    if args.prep_report:
+        from scipy import stats as _stats
+
+        prep = json.loads(open(args.prep_report, encoding="utf-8").read())
+        depths = np.asarray([prep["per_sample"][sample]["fragments_in_file"]
+                             for sample in order], dtype=float)
+        rho, p_value = _stats.spearmanr(depths, y)
+        depth_only = np.zeros(len(y), dtype=float)
+        for train, test in StratifiedKFold(5, shuffle=True,
+                                          random_state=0).split(
+                depths.reshape(-1, 1), y):
+            model = LogisticRegression(max_iter=1000).fit(
+                depths[train].reshape(-1, 1), y[train])
+            depth_only[test] = model.predict_proba(
+                depths[test].reshape(-1, 1))[:, 1]
+        # The score with the depth regressed out of it, which is the
+        # control that says whether the separation was the depth.
+        _, _, oof_rmds = _grouped_cv_auc(rmds_X, y, patients)
+        design = np.column_stack([np.ones(len(y)), depths])
+        beta, *_ = np.linalg.lstsq(design, oof_rmds, rcond=None)
+        without_depth = oof_rmds - design @ beta
+        results["depth_control"] = {
+            "median_fragments_responders": int(np.median(depths[y == 1])),
+            "median_fragments_non_responders": int(np.median(depths[y == 0])),
+            "spearman_depth_vs_response": round(float(rho), 4),
+            "spearman_p": round(float(p_value), 6),
+            "auc_depth_alone": round(float(roc_auc_score(y, depth_only)), 4),
+            "auc_model": round(float(roc_auc_score(y, oof_rmds)), 4),
+            "auc_model_with_depth_removed": round(
+                float(roc_auc_score(y, without_depth)), 4),
+            "note": ("the rMDS is an entropy, so its noise depends on how "
+                     "many fragments a bin holds; this asks whether the "
+                     "depth does the separating"),
+        }
+        print(f"      depth control: depth alone AUC "
+              f"{results['depth_control']['auc_depth_alone']}, "
+              f"the model {results['depth_control']['auc_model']}, "
+              f"without the depth "
+              f"{results['depth_control']['auc_model_with_depth_removed']}",
+              flush=True)
 
     Path(args.out_json).parent.mkdir(parents=True, exist_ok=True)
     Path(args.out_json).write_text(

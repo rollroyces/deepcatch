@@ -108,14 +108,17 @@ Peiyong Jiang (CUHK — 4-mer end-motif HCC detection)
   training-fixed threshold** rather than an AUC.  Is that the most
   defensible summary for a reviewer, or should such a study be excluded
   from the headline entirely?
-- **Four more external cohorts have since been scored** — a second
+- **Five more external cohorts have since been scored** — a second
   external family (ccRCC, 12 samples, AUC 0.9444 [0.8156, 1.0], exact
   permutation p = 0.0043), a colorectal cohort with a **graded** label
   (SAUNA, 9 samples carrying a per-sample tumour fraction), a
   hereditary-cancer **screening** cohort (Cleveland Clinic PHTS, 99
-  samples, stage-graded), and the only public cohort carrying
-  **fragment end motifs** with cancer/healthy labels (223 samples).
-  Three questions come out of them, and we would rather a reviewer asked
+  samples, stage-graded), the only public cohort carrying
+  **fragment end motifs** with cancer/healthy labels (223 samples), and
+  a cohort whose endpoint is a **treatment response** rather than a
+  cancer/healthy contrast (immunotherapy responders, 184 longitudinal
+  plasma samples from 68 patients across six centres).
+  Four questions come out of them, and we would rather a reviewer asked
   them than the other way round:
   - *Does the model track tumour burden?* In SAUNA — colorectal, the
     training cohort's own cancer type, hg38, at the training cohort's
@@ -152,6 +155,21 @@ Peiyong Jiang (CUHK — 4-mer end-motif HCC detection)
     AUCs cannot be read as cancer signals.  Our own motif model lands
     at 0.3413 there — inverted — which is what a mismatch of motif
     definitions looks like.
+  - *What about the one public cohort whose endpoint is a treatment
+    response?* The immunotherapy cohort (185 longitudinal plasma
+    samples from 68 patients across six centres) is scored with the
+    same protocol, and the answer is negative in a way the other
+    cohorts are not: **the study's own metric finds 0 of 5,527 bins
+    differential** at FDR < 0.1 where the paper reports 1,080, and the
+    classifier reaches 0.3373 (0.4162 with the study's own batch
+    correction).  The control says why: **the same features separate
+    two collection centres that share a response label at 0.9813**, the
+    centres' responder fractions run from 0.35 to 0.79, and inside a
+    single centre the response separation is nothing.  The depth is not
+    what does the separating either (depth alone 0.4530; with the depth
+    regressed out, 0.3356).  Is a cohort whose own published claim does
+    not come out of its own deposit worth reporting at all, or is it
+    evidence about the deposit rather than about the biology?
   - Is that the right way to report a cohort whose signals are
     confounded with study: as a null about the cohort, or should such
     cohorts be left out of the external evidence altogether?

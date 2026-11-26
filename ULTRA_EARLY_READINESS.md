@@ -159,6 +159,34 @@ measurement, and the binary contrast in SAUNA (7 CRC against 2 benign,
 AUC 0.7143 [0.3101, 1.0]) is far too thin to quote on its own — the
 gradient is the readout, not the AUC.
 
+**And a third external cohort answers a different question, and its
+answer is a null with a measured mechanism.** The immunotherapy cohort
+(Zenodo 10.5281/zenodo.15738112) is the only public cfDNA deposit whose
+endpoint is clinical in the treatment-response sense: 185 longitudinal
+plasma samples from 68 head-and-neck patients who received pembrolizumab,
+across six academic centres. Its labels are not in the deposit — they are
+in the study's own analysis repository — and the derived table is
+committed at `data/external_cohort/immunotherapy_sample_metadata.tsv`.
+
+Scored with the same protocol and the same confound control
+(`results/external_cohort_zenodo_immunotherapy.json`), the answer is
+negative, and the study's own metric is what says so: **0 of 5,527**
+500 kb bins differ between immunotherapy responders and non-responders at
+FDR < 0.1, before or after the study's own batch correction, where the
+paper reports 1,080. The classifier reaches AUC **0.3373** (0.4162 with
+the correction applied), while the same features separate two collection
+centres that **share** a response label at up to **0.9813** — the
+cohort's structure is the centre, the centres' responder fractions run
+from 0.35 to 0.79, and inside a single centre the response separation
+is nothing (0.06 to 0.40). The depth is not what does the separating
+either (depth alone 0.4530; with the depth regressed out, 0.3356).
+
+This document's question is about ultra-early detection, and a
+treatment-response cohort does not answer it. What it does answer is
+where a public cohort stops being usable, and the answer here is
+sharper than the other four: the study's own published claim does not
+come out of the study's own deposit.
+
 ---
 
 ## 2. Panel-LLR ultra-low-VAF detector is ready (in silico)

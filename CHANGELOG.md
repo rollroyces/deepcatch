@@ -457,6 +457,47 @@ cohort size.
   the copy and its source, and names the copy wherever the source is
   named -- one line, instead of a second protection list that would have
   to be edited together with the first for ever.
+- **A public cohort whose endpoint is a treatment response does not
+  reproduce its own published claim on the deposited data, and the
+  control says why.** Zenodo 10.5281/zenodo.15738112 is the only
+  public cfDNA deposit the survey found whose readout is clinical in
+  the treatment-response sense: 185 longitudinal plasma samples from 68
+  head-and-neck patients who received pembrolizumab, across six
+  academic centres (Bandaru et al., medRxiv
+  10.64898/2026.03.24.26348354; JCI 10.1172/JCI196284).
+
+  **The labels are not in the deposit** -- the Zenodo record carries no
+  description and no notes, and the archive holds fragment files only.
+  They are in the study's own analysis repository
+  (`github.com/epifluidlab/headneck`, `Supplementary_Tables/ST1`), and
+  the derived 185-row table is committed at
+  `data/external_cohort/immunotherapy_sample_metadata.tsv`; the label
+  is checked against the study's own response grade before anything is
+  scored.
+
+  What the numbers say: the study's own unsupervised statistic finds
+  **0 of 5,527** bins differential between responders and non-responders
+  at FDR < 0.1 -- before or after the study's own batch correction --
+  where the paper reports 1,080. The classifier reaches **AUC 0.3373**
+  [0.2585, 0.4161] on the rMDS bins, 0.4162 with the study's
+  correction applied, and 0.4539 on the 256 motifs. **And the control
+  is what decides how that reads**: the same features separate two
+  collection centres that *share* a response label at up to **AUC
+  0.9813**, the response separation inside a single centre is nothing
+  (0.06 to 0.40), the centres' responder fractions run from 0.35 to
+  0.79, and the depth does not do the separating either (depth alone
+  0.4530; with the depth regressed out, 0.3356).
+
+  So the cohort's structure is the collection centre, and the response
+  is not separable inside one. That is a statement about the cohort and
+  the deposit rather than about the biology -- and it is worth having
+  precisely because it is the first public cohort in this repository
+  whose endpoint is a treatment response and the first one where the
+  published claim itself does not come out.
+  `scripts/prepare_zenodo_immunotherapy_cohort.py`,
+  `scripts/external_cohort_zenodo_immunotherapy.py`,
+  `results/external_cohort_zenodo_immunotherapy.json`,
+  `docs/PUBLIC_DATA_SOURCES.md` §6.5.
 
 - **The repository's evidence that bioRxiv's affiliation rule "is not
   enforced in practice" was measuring the wrong thing.** The rule was read

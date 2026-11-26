@@ -111,6 +111,57 @@ EXPECTED_SAUNA_CHANNEL_RHO_CRC = 0.9643
 _SAUNA_ARTIFACT = "results/external_cohort_zenodo_sauna.json"
 EXPECTED_PHTS_WITHIN_COHORT_AUC = 0.5465
 
+# The immunotherapy cohort, pinned. It is the first public cohort whose
+# readout is a TREATMENT RESPONSE rather than a cancer/healthy
+# contrast, and the number that matters here is the CONFOUND: the same
+# features separate two collection centres that share a response label
+# at 0.9813, so what the cohort's structure carries is the centre.
+#
+# The response AUC itself is BELOW chance (0.3373), and the study's own
+# unsupervised statistic finds nothing at all (0 of 5,527 bins at
+# FDR < 0.1, where the study reports 1,080). The batch correction the
+# study applies does not change the reading (0.4162), and the depth is
+# not the explanation either (depth alone 0.453; with the depth
+# regressed out 0.3356).
+_IMMUNOTHERAPY_ARTIFACT = "results/external_cohort_zenodo_immunotherapy.json"
+_IMMUNOTHERAPY_PREP_ARTIFACT = "results/zenodo_immunotherapy_prep.json"
+_IMMUNOTHERAPY_DOI = "10.5281/zenodo.15738112"
+EXPECTED_IMMUNOTHERAPY_N = 184
+EXPECTED_IMMUNOTHERAPY_N_RESPONDERS = 107
+EXPECTED_IMMUNOTHERAPY_N_NON_RESPONDERS = 77
+EXPECTED_IMMUNOTHERAPY_N_PATIENTS = 68
+EXPECTED_IMMUNOTHERAPY_N_INSTITUTES = 6
+EXPECTED_IMMUNOTHERAPY_N_LABELLED = 185
+EXPECTED_IMMUNOTHERAPY_BINS = 5527
+EXPECTED_IMMUNOTHERAPY_BINS_UNION = 5531
+EXPECTED_IMMUNOTHERAPY_AUC = 0.3373
+EXPECTED_IMMUNOTHERAPY_BATCH_CORRECTED_AUC = 0.4162
+EXPECTED_IMMUNOTHERAPY_MOTIF_AUC = 0.4539
+EXPECTED_IMMUNOTHERAPY_CONTROL_AUC = 0.9813
+EXPECTED_IMMUNOTHERAPY_SIGNIFICANT_BINS = 0
+EXPECTED_IMMUNOTHERAPY_DEPTH_AUC = 0.453
+EXPECTED_IMMUNOTHERAPY_DEPTH_REMOVED_AUC = 0.3356
+
+# The limits that have to travel with this cohort's number. The cohort
+# answers a clinical question (who responds to pembrolizumab), the
+# features are dominated by the collection centre, and the measured
+# separation is below chance -- so a document that quotes any of these
+# numbers without saying what the cohort can and cannot answer is
+# overclaiming.
+REQUIRED_IMMUNOTHERAPY_LIMITS = (
+    # the centre control: the features separate two centres that share
+    # a response label better than they separate the response
+    "0.9813",
+    # the measured AUC, which is below chance
+    "0.3373",
+    # the endpoint, so a reader does not take it for a cancer/healthy
+    # contrast
+    "responder",
+    # and the number of bins the study's own statistic finds, which is
+    # none of them
+    "5,527",
+)
+
 _ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 # The limits that have to travel with the number. A document that states
@@ -187,6 +238,14 @@ def _phts() -> dict:
 
 def _phts_prep() -> dict:
     return _load(_PHTS_PREP_ARTIFACT)
+
+
+def _immunotherapy() -> dict:
+    return _load(_IMMUNOTHERAPY_ARTIFACT)
+
+
+def _immunotherapy_prep() -> dict:
+    return _load(_IMMUNOTHERAPY_PREP_ARTIFACT)
 
 
 def _documents_mentioning(needle: str) -> list[Path]:
@@ -323,6 +382,40 @@ def test_the_cohort_artifact_is_internally_consistent():
     assert counts["0"] == 5 and counts["1"] == 22
     assert counts["2"] == 10 and counts["3"] == 2
 
+    # And the immunotherapy cohort: 184 samples from 68 patients, and
+    # every patient contributes samples of ONE response class only --
+    # a patient's response does not change between three draws, so the
+    # patient is the unit the cross-validation has to group on.
+    immuno = _immunotherapy()
+    immuno_cohort = immuno["cohort"]
+    assert immuno_cohort["samples"] == EXPECTED_IMMUNOTHERAPY_N
+    assert immuno_cohort["responders"] == EXPECTED_IMMUNOTHERAPY_N_RESPONDERS
+    assert immuno_cohort["non_responders"] == (
+        EXPECTED_IMMUNOTHERAPY_N_NON_RESPONDERS)
+    assert (immuno_cohort["responders"] + immuno_cohort["non_responders"]
+            == immuno_cohort["samples"])
+    assert immuno_cohort["patients"] == EXPECTED_IMMUNOTHERAPY_N_PATIENTS
+    assert len(immuno_cohort["institutes"]) == EXPECTED_IMMUNOTHERAPY_N_INSTITUTES
+    assert sum(immuno_cohort["per_institute"].values()) == (
+        EXPECTED_IMMUNOTHERAPY_N)
+    # The label has to agree with the study's own response grade, and
+    # the cohort's grid has to be the one every sample has.
+    assert immuno_cohort["the_label_is_internally_consistent"] is True
+    assert immuno_cohort["rmds_bins"] == EXPECTED_IMMUNOTHERAPY_BINS
+    assert immuno_cohort["rmds_bins_in_the_union"] == (
+        EXPECTED_IMMUNOTHERAPY_BINS_UNION)
+    # The preparation report has to agree with the cohort's own count.
+    prep = _immunotherapy_prep()
+    assert prep["samples"]["prepared"] == EXPECTED_IMMUNOTHERAPY_N
+    assert prep["samples"]["labelled"] == EXPECTED_IMMUNOTHERAPY_N_LABELLED
+    assert len(prep["per_sample"]) == EXPECTED_IMMUNOTHERAPY_N
+    # The deposited files are NOT the study's filtered set, so the
+    # filters are applied here and the report has to say so.
+    assert prep["filters"]["min_fragment_length"] == 50
+    assert prep["filters"]["max_fragment_length"] == 350
+    assert prep["filters"]["min_mapq"] == 30
+    assert prep["filters"]["blacklist_excluded"] is False
+
 
 def test_the_cohort_numbers_are_pinned():
     """The cohort cannot quietly change size, stage or number."""
@@ -418,6 +511,44 @@ def test_the_cohort_numbers_are_pinned():
     verdict = phts["stage_question"]["verdict"]
     assert verdict["a_model_fitted_here_separates"] is False
 
+    # The immunotherapy cohort's numbers, pinned the same way. The
+    # reading is a null, and a null that drifts into a positive result
+    # has to be a deliberate act.
+    immuno = _immunotherapy()
+    immuno_model = immuno["model"]
+    assert immuno_model["rmds_bins"]["pooled_out_of_fold_auc"] == (
+        EXPECTED_IMMUNOTHERAPY_AUC), (
+        f"the immunotherapy cohort's response AUC changed to "
+        f"{immuno_model['rmds_bins']['pooled_out_of_fold_auc']}. If the "
+        "cohort, the protocol or the rMDS changed, update the pins here and "
+        "in the documents at the same time.")
+    assert immuno_model["rmds_bins_batch_corrected"]["pooled_out_of_fold_auc"] == (
+        EXPECTED_IMMUNOTHERAPY_BATCH_CORRECTED_AUC)
+    assert immuno_model["motifs_256"]["pooled_out_of_fold_auc"] == (
+        EXPECTED_IMMUNOTHERAPY_MOTIF_AUC)
+    # The study's own unsupervised statistic: it reports 1,080 bins
+    # differential at FDR < 0.1, and here there are none.
+    assert immuno["published_claim_rmds"]["bins_fdr_below_0.1"] == (
+        EXPECTED_IMMUNOTHERAPY_SIGNIFICANT_BINS), (
+        "the study's per-bin differential now finds bins on the deposited "
+        "data; the reading of this cohort has to be re-measured")
+    assert immuno["published_claim_rmds_batch_corrected"][
+        "bins_fdr_below_0.1"] == EXPECTED_IMMUNOTHERAPY_SIGNIFICANT_BINS
+    # The confound control, which is what decides how the numbers above
+    # read: the same features separate two collection centres that share
+    # a response label, so the cohort's structure is the centre.
+    control = immuno["confound_control_centres"]["rmds_bins"]
+    assert max(v["auc"] for v in control.values()) == (
+        EXPECTED_IMMUNOTHERAPY_CONTROL_AUC), (
+        "the centre control moved; the conclusion about this cohort is a "
+        "conclusion ABOUT the centre, and it has to be re-measured")
+    # And the depth is not what does the separating either.
+    immuno_depth = immuno["depth_control"]
+    assert immuno_depth["auc_depth_alone"] == EXPECTED_IMMUNOTHERAPY_DEPTH_AUC
+    assert immuno_depth["auc_model_with_depth_removed"] == (
+        EXPECTED_IMMUNOTHERAPY_DEPTH_REMOVED_AUC)
+    assert immuno["doi"] == _IMMUNOTHERAPY_DOI
+
 
 def test_every_document_that_mentions_the_cohort_states_its_limits():
     """The number and the caveats travel together.
@@ -467,6 +598,26 @@ def test_every_document_that_mentions_the_cohort_states_its_limits():
                         f"{rel} mentions the pre-diagnosis arm but does not "
                         f"state {limit!r} -- the interval between the draw "
                         "and the diagnosis is what that arm is")
+    assert not problems, "\n  ".join(problems)
+
+    # The immunotherapy cohort has the same obligation, and its limits
+    # are the ones a reader is most likely to skip: that the endpoint is
+    # a treatment response, that the collection centre carries the
+    # cohort's structure, and that the measured separation is below
+    # chance.
+    immuno_documents = _documents_mentioning(_IMMUNOTHERAPY_DOI)
+    assert immuno_documents, "nothing mentions the immunotherapy cohort"
+    problems = []
+    for path in immuno_documents:
+        rel = path.relative_to(_REPO_ROOT)
+        text = path.read_text(encoding="utf-8")
+        if Path(_IMMUNOTHERAPY_ARTIFACT).name not in text:
+            problems.append(f"{rel} does not name {_IMMUNOTHERAPY_ARTIFACT}")
+        for limit in REQUIRED_IMMUNOTHERAPY_LIMITS:
+            if limit not in text:
+                problems.append(
+                    f"{rel} does not state {limit!r} -- one of the limits that "
+                    "has to travel with the number")
     assert not problems, "\n  ".join(problems)
 
 

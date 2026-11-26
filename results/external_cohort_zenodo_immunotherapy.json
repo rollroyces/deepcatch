@@ -1,0 +1,1472 @@
+{
+  "cohort": {
+    "institutes": [
+      "MD Anderson",
+      "Medical University of South Carolina",
+      "Ohio State University",
+      "University of Cincinnati",
+      "University of Louisville",
+      "University of Michigan"
+    ],
+    "non_responders": 77,
+    "patients": 68,
+    "per_institute": {
+      "MD Anderson": 24,
+      "Medical University of South Carolina": 8,
+      "Ohio State University": 17,
+      "University of Cincinnati": 87,
+      "University of Louisville": 20,
+      "University of Michigan": 28
+    },
+    "responder_fraction_by_institute": {
+      "MD Anderson": 0.7917,
+      "Medical University of South Carolina": 0.375,
+      "Ohio State University": 0.3529,
+      "University of Cincinnati": 0.5632,
+      "University of Louisville": 0.7,
+      "University of Michigan": 0.5714
+    },
+    "responders": 107,
+    "rmds_bins": 5527,
+    "rmds_bins_dropped_for_being_incomplete": 4,
+    "rmds_bins_in_the_union": 5531,
+    "samples": 184,
+    "the_label_is_internally_consistent": true,
+    "visits": [
+      "Adj Wk 1",
+      "Day 0",
+      "Screen"
+    ]
+  },
+  "confound_control_centres": {
+    "motifs_256": {
+      "MD Anderson_vs_Medical University of South Carolina_Non-Responder": {
+        "auc": 0.6302,
+        "n_left": 24,
+        "n_right": 8,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6094,
+          0.5938,
+          0.5365,
+          0.7135,
+          0.6667
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_Medical University of South Carolina_Responder": {
+        "auc": 0.6302,
+        "n_left": 24,
+        "n_right": 8,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6094,
+          0.5938,
+          0.5365,
+          0.7135,
+          0.6667
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_Ohio State University_Non-Responder": {
+        "auc": 0.6936,
+        "n_left": 24,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5637,
+          0.6373,
+          0.6936,
+          0.7672,
+          0.6005
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_Ohio State University_Responder": {
+        "auc": 0.6936,
+        "n_left": 24,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5637,
+          0.6373,
+          0.6936,
+          0.7672,
+          0.6005
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.967,
+        "n_left": 24,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9631,
+          0.9703,
+          0.9387,
+          0.9531,
+          0.9732
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Cincinnati_Responder": {
+        "auc": 0.967,
+        "n_left": 24,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9631,
+          0.9703,
+          0.9387,
+          0.9531,
+          0.9732
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Louisville_Non-Responder": {
+        "auc": 0.4354,
+        "n_left": 24,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5917,
+          0.3771,
+          0.4021,
+          0.5625,
+          0.3542
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Louisville_Responder": {
+        "auc": 0.4354,
+        "n_left": 24,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5917,
+          0.3771,
+          0.4021,
+          0.5625,
+          0.3542
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Michigan_Non-Responder": {
+        "auc": 0.7098,
+        "n_left": 24,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.7247,
+          0.6682,
+          0.6577,
+          0.7277,
+          0.6637
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Michigan_Responder": {
+        "auc": 0.7098,
+        "n_left": 24,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.7247,
+          0.6682,
+          0.6577,
+          0.7277,
+          0.6637
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_Ohio State University_Non-Responder": {
+        "auc": 0.9338,
+        "n_left": 8,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9706,
+          0.9044,
+          0.9485,
+          0.9338,
+          0.8971
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_Ohio State University_Responder": {
+        "auc": 0.9338,
+        "n_left": 8,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9706,
+          0.9044,
+          0.9485,
+          0.9338,
+          0.8971
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.9713,
+        "n_left": 8,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9756,
+          0.9741,
+          0.9684,
+          0.9612,
+          0.9813
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Cincinnati_Responder": {
+        "auc": 0.9713,
+        "n_left": 8,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9756,
+          0.9741,
+          0.9684,
+          0.9612,
+          0.9813
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Louisville_Non-Responder": {
+        "auc": 0.4562,
+        "n_left": 8,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.525,
+          0.4875,
+          0.5063,
+          0.575,
+          0.2625
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Louisville_Responder": {
+        "auc": 0.4562,
+        "n_left": 8,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.525,
+          0.4875,
+          0.5063,
+          0.575,
+          0.2625
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Michigan_Non-Responder": {
+        "auc": 0.9643,
+        "n_left": 8,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9598,
+          0.9554,
+          0.9688,
+          0.9152,
+          0.9777
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Michigan_Responder": {
+        "auc": 0.9643,
+        "n_left": 8,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9598,
+          0.9554,
+          0.9688,
+          0.9152,
+          0.9777
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.8594,
+        "n_left": 17,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8039,
+          0.808,
+          0.8614,
+          0.8776,
+          0.881
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Cincinnati_Responder": {
+        "auc": 0.8594,
+        "n_left": 17,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8039,
+          0.808,
+          0.8614,
+          0.8776,
+          0.881
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Louisville_Non-Responder": {
+        "auc": 0.5147,
+        "n_left": 17,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3794,
+          0.5588,
+          0.4412,
+          0.5676,
+          0.5765
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Louisville_Responder": {
+        "auc": 0.5147,
+        "n_left": 17,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3794,
+          0.5588,
+          0.4412,
+          0.5676,
+          0.5765
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Michigan_Non-Responder": {
+        "auc": 0.6092,
+        "n_left": 17,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5231,
+          0.6702,
+          0.7143,
+          0.5651,
+          0.5189
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Michigan_Responder": {
+        "auc": 0.6092,
+        "n_left": 17,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5231,
+          0.6702,
+          0.7143,
+          0.5651,
+          0.5189
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Cincinnati_vs_University of Louisville_Non-Responder": {
+        "auc": 0.8638,
+        "n_left": 87,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8741,
+          0.831,
+          0.8,
+          0.7816,
+          0.8805
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Cincinnati_vs_University of Louisville_Responder": {
+        "auc": 0.8638,
+        "n_left": 87,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8741,
+          0.831,
+          0.8,
+          0.7816,
+          0.8805
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Cincinnati_vs_University of Michigan_Non-Responder": {
+        "auc": 0.9187,
+        "n_left": 87,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8567,
+          0.9158,
+          0.9319,
+          0.7984,
+          0.9241
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Cincinnati_vs_University of Michigan_Responder": {
+        "auc": 0.9187,
+        "n_left": 87,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8567,
+          0.9158,
+          0.9319,
+          0.7984,
+          0.9241
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Louisville_vs_University of Michigan_Non-Responder": {
+        "auc": 0.3786,
+        "n_left": 20,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3893,
+          0.325,
+          0.3429,
+          0.5607,
+          0.4214
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Louisville_vs_University of Michigan_Responder": {
+        "auc": 0.3786,
+        "n_left": 20,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3893,
+          0.325,
+          0.3429,
+          0.5607,
+          0.4214
+        ],
+        "shared_label": "Responder"
+      }
+    },
+    "rmds_bins": {
+      "MD Anderson_vs_Medical University of South Carolina_Non-Responder": {
+        "auc": 0.4375,
+        "n_left": 24,
+        "n_right": 8,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4167,
+          0.4323,
+          0.4323,
+          0.5208,
+          0.5521
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_Medical University of South Carolina_Responder": {
+        "auc": 0.4375,
+        "n_left": 24,
+        "n_right": 8,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4167,
+          0.4323,
+          0.4323,
+          0.5208,
+          0.5521
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_Ohio State University_Non-Responder": {
+        "auc": 0.2868,
+        "n_left": 24,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.2892,
+          0.3358,
+          0.2917,
+          0.3064,
+          0.326
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_Ohio State University_Responder": {
+        "auc": 0.2868,
+        "n_left": 24,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.2892,
+          0.3358,
+          0.2917,
+          0.3064,
+          0.326
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.8956,
+        "n_left": 24,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8736,
+          0.9128,
+          0.8712,
+          0.8894,
+          0.9004
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Cincinnati_Responder": {
+        "auc": 0.8956,
+        "n_left": 24,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8736,
+          0.9128,
+          0.8712,
+          0.8894,
+          0.9004
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Louisville_Non-Responder": {
+        "auc": 0.4354,
+        "n_left": 24,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4938,
+          0.4896,
+          0.4,
+          0.4417,
+          0.3521
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Louisville_Responder": {
+        "auc": 0.4354,
+        "n_left": 24,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4938,
+          0.4896,
+          0.4,
+          0.4417,
+          0.3521
+        ],
+        "shared_label": "Responder"
+      },
+      "MD Anderson_vs_University of Michigan_Non-Responder": {
+        "auc": 0.4911,
+        "n_left": 24,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3244,
+          0.4613,
+          0.5164,
+          0.5268,
+          0.5982
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "MD Anderson_vs_University of Michigan_Responder": {
+        "auc": 0.4911,
+        "n_left": 24,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.3244,
+          0.4613,
+          0.5164,
+          0.5268,
+          0.5982
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_Ohio State University_Non-Responder": {
+        "auc": 0.8162,
+        "n_left": 8,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8676,
+          0.6397,
+          0.8382,
+          0.8897,
+          0.6471
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_Ohio State University_Responder": {
+        "auc": 0.8162,
+        "n_left": 8,
+        "n_right": 17,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8676,
+          0.6397,
+          0.8382,
+          0.8897,
+          0.6471
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.9813,
+        "n_left": 8,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9799,
+          0.9813,
+          0.9885,
+          0.9799,
+          0.9842
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Cincinnati_Responder": {
+        "auc": 0.9813,
+        "n_left": 8,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.9799,
+          0.9813,
+          0.9885,
+          0.9799,
+          0.9842
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Louisville_Non-Responder": {
+        "auc": 0.55,
+        "n_left": 8,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6562,
+          0.5125,
+          0.5687,
+          0.6188,
+          0.4813
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Louisville_Responder": {
+        "auc": 0.55,
+        "n_left": 8,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6562,
+          0.5125,
+          0.5687,
+          0.6188,
+          0.4813
+        ],
+        "shared_label": "Responder"
+      },
+      "Medical University of South Carolina_vs_University of Michigan_Non-Responder": {
+        "auc": 0.6741,
+        "n_left": 8,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6027,
+          0.6786,
+          0.75,
+          0.7321,
+          0.6607
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Medical University of South Carolina_vs_University of Michigan_Responder": {
+        "auc": 0.6741,
+        "n_left": 8,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.6027,
+          0.6786,
+          0.75,
+          0.7321,
+          0.6607
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Cincinnati_Non-Responder": {
+        "auc": 0.8066,
+        "n_left": 17,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.7661,
+          0.7884,
+          0.7181,
+          0.8398,
+          0.8438
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Cincinnati_Responder": {
+        "auc": 0.8066,
+        "n_left": 17,
+        "n_right": 87,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.7661,
+          0.7884,
+          0.7181,
+          0.8398,
+          0.8438
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Louisville_Non-Responder": {
+        "auc": 0.5176,
+        "n_left": 17,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5294,
+          0.5265,
+          0.5029,
+          0.4529,
+          0.5088
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Louisville_Responder": {
+        "auc": 0.5176,
+        "n_left": 17,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5294,
+          0.5265,
+          0.5029,
+          0.4529,
+          0.5088
+        ],
+        "shared_label": "Responder"
+      },
+      "Ohio State University_vs_University of Michigan_Non-Responder": {
+        "auc": 0.3908,
+        "n_left": 17,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5,
+          0.3319,
+          0.5063,
+          0.4118,
+          0.3172
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "Ohio State University_vs_University of Michigan_Responder": {
+        "auc": 0.3908,
+        "n_left": 17,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.5,
+          0.3319,
+          0.5063,
+          0.4118,
+          0.3172
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Cincinnati_vs_University of Louisville_Non-Responder": {
+        "auc": 0.7897,
+        "n_left": 87,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.85,
+          0.7575,
+          0.7575,
+          0.8149,
+          0.777
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Cincinnati_vs_University of Louisville_Responder": {
+        "auc": 0.7897,
+        "n_left": 87,
+        "n_right": 20,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.85,
+          0.7575,
+          0.7575,
+          0.8149,
+          0.777
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Cincinnati_vs_University of Michigan_Non-Responder": {
+        "auc": 0.8013,
+        "n_left": 87,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8169,
+          0.7828,
+          0.7537,
+          0.8054,
+          0.8128
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Cincinnati_vs_University of Michigan_Responder": {
+        "auc": 0.8013,
+        "n_left": 87,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.8169,
+          0.7828,
+          0.7537,
+          0.8054,
+          0.8128
+        ],
+        "shared_label": "Responder"
+      },
+      "University of Louisville_vs_University of Michigan_Non-Responder": {
+        "auc": 0.3589,
+        "n_left": 20,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4554,
+          0.3161,
+          0.2375,
+          0.5839,
+          0.3214
+        ],
+        "shared_label": "Non-Responder"
+      },
+      "University of Louisville_vs_University of Michigan_Responder": {
+        "auc": 0.3589,
+        "n_left": 20,
+        "n_right": 28,
+        "note": "two groups that SHARE a label; the AUC here is the separation of the groups themselves, so a high value means the features carry group-level structure and the response AUC cannot be read as a response signal",
+        "per_seed_aucs": [
+          0.4554,
+          0.3161,
+          0.2375,
+          0.5839,
+          0.3214
+        ],
+        "shared_label": "Responder"
+      }
+    }
+  },
+  "depth_control": {
+    "auc_depth_alone": 0.453,
+    "auc_model": 0.3373,
+    "auc_model_with_depth_removed": 0.3356,
+    "median_fragments_non_responders": 26251663,
+    "median_fragments_responders": 24363847,
+    "note": "the rMDS is an entropy, so its noise depends on how many fragments a bin holds; this asks whether the depth does the separating",
+    "spearman_depth_vs_response": -0.0864,
+    "spearman_p": 0.243603
+  },
+  "doi": "10.5281/zenodo.15738112",
+  "generated_at": "2026-11-26T07:11:20.101493+00:00",
+  "leave_one_institute_out": {
+    "motifs_256": {
+      "MD Anderson": {
+        "auc": 0.8211,
+        "de_long": {
+          "auc": 0.8211,
+          "ci_hi": 0.9975,
+          "ci_lo": 0.6446,
+          "n_neg": 5,
+          "n_pos": 19
+        },
+        "n": 24
+      },
+      "Medical University of South Carolina": {
+        "auc": 0.8,
+        "de_long": {
+          "auc": 0.8,
+          "ci_hi": 1.0,
+          "ci_lo": 0.4543,
+          "n_neg": 5,
+          "n_pos": 3
+        },
+        "n": 8
+      },
+      "Ohio State University": {
+        "auc": 0.4848,
+        "de_long": {
+          "auc": 0.4848,
+          "ci_hi": 0.805,
+          "ci_lo": 0.1647,
+          "n_neg": 11,
+          "n_pos": 6
+        },
+        "n": 17
+      },
+      "University of Cincinnati": {
+        "auc": 0.3426,
+        "de_long": {
+          "auc": 0.3426,
+          "ci_hi": 0.461,
+          "ci_lo": 0.2243,
+          "n_neg": 38,
+          "n_pos": 49
+        },
+        "n": 87
+      },
+      "University of Louisville": {
+        "auc": 0.4286,
+        "de_long": {
+          "auc": 0.4286,
+          "ci_hi": 0.7202,
+          "ci_lo": 0.137,
+          "n_neg": 6,
+          "n_pos": 14
+        },
+        "n": 20
+      },
+      "University of Michigan": {
+        "auc": 0.3229,
+        "de_long": {
+          "auc": 0.3229,
+          "ci_hi": 0.5422,
+          "ci_lo": 0.1036,
+          "n_neg": 12,
+          "n_pos": 16
+        },
+        "n": 28
+      }
+    },
+    "rmds_bins": {
+      "MD Anderson": {
+        "auc": 0.3579,
+        "de_long": {
+          "auc": 0.3579,
+          "ci_hi": 0.5948,
+          "ci_lo": 0.121,
+          "n_neg": 5,
+          "n_pos": 19
+        },
+        "n": 24
+      },
+      "Medical University of South Carolina": {
+        "auc": 0.0667,
+        "de_long": {
+          "auc": 0.0667,
+          "ci_hi": 0.2515,
+          "ci_lo": 0.0,
+          "n_neg": 5,
+          "n_pos": 3
+        },
+        "n": 8
+      },
+      "Ohio State University": {
+        "auc": 0.5758,
+        "de_long": {
+          "auc": 0.5758,
+          "ci_hi": 0.9269,
+          "ci_lo": 0.2246,
+          "n_neg": 11,
+          "n_pos": 6
+        },
+        "n": 17
+      },
+      "University of Cincinnati": {
+        "auc": 0.399,
+        "de_long": {
+          "auc": 0.399,
+          "ci_hi": 0.5211,
+          "ci_lo": 0.277,
+          "n_neg": 38,
+          "n_pos": 49
+        },
+        "n": 87
+      },
+      "University of Louisville": {
+        "auc": 0.2976,
+        "de_long": {
+          "auc": 0.2976,
+          "ci_hi": 0.5406,
+          "ci_lo": 0.0546,
+          "n_neg": 6,
+          "n_pos": 14
+        },
+        "n": 20
+      },
+      "University of Michigan": {
+        "auc": 0.5781,
+        "de_long": {
+          "auc": 0.5781,
+          "ci_hi": 0.8063,
+          "ci_lo": 0.35,
+          "n_neg": 12,
+          "n_pos": 16
+        },
+        "n": 28
+      }
+    }
+  },
+  "model": {
+    "motifs_256": {
+      "de_long": {
+        "auc": 0.4539,
+        "ci_hi": 0.5401,
+        "ci_lo": 0.3678,
+        "n_neg": 77,
+        "n_pos": 107
+      },
+      "per_seed_aucs": [
+        0.4306,
+        0.4698,
+        0.4806,
+        0.4203,
+        0.4636
+      ],
+      "permutation_p": 0.852107,
+      "pooled_out_of_fold_auc": 0.4539
+    },
+    "rmds_bins": {
+      "de_long": {
+        "auc": 0.3373,
+        "ci_hi": 0.4161,
+        "ci_lo": 0.2585,
+        "n_neg": 77,
+        "n_pos": 107
+      },
+      "per_seed_aucs": [
+        0.3465,
+        0.3757,
+        0.3464,
+        0.3733,
+        0.4015
+      ],
+      "permutation_p": 0.9999,
+      "pooled_out_of_fold_auc": 0.3373
+    },
+    "rmds_bins_batch_corrected": {
+      "de_long": {
+        "auc": 0.4162,
+        "ci_hi": 0.4997,
+        "ci_lo": 0.3326,
+        "n_neg": 77,
+        "n_pos": 107
+      },
+      "note": "the study's own correction: a per-bin model on the cfDNA isolation date, the WGS library-preparation date and the collection institute, with the response kept in the model as a covariate that the correction does not remove",
+      "per_seed_aucs": [
+        0.41,
+        0.446,
+        0.4107,
+        0.4321,
+        0.4504
+      ],
+      "permutation_p": 0.973001,
+      "pooled_out_of_fold_auc": 0.4162
+    }
+  },
+  "per_visit_rmds": {
+    "Adj Wk 1": {
+      "n": 53,
+      "per_seed_aucs": [
+        0.217,
+        0.2414,
+        0.2601,
+        0.2342,
+        0.2974
+      ],
+      "pooled_out_of_fold_auc": 0.2055,
+      "responders": 29
+    },
+    "Day 0": {
+      "n": 63,
+      "per_seed_aucs": [
+        0.3632,
+        0.4326,
+        0.4137,
+        0.3253,
+        0.3947
+      ],
+      "pooled_out_of_fold_auc": 0.3695,
+      "responders": 38
+    },
+    "Screen": {
+      "n": 68,
+      "per_seed_aucs": [
+        0.525,
+        0.5054,
+        0.4804,
+        0.4571,
+        0.483
+      ],
+      "pooled_out_of_fold_auc": 0.4786,
+      "responders": 40
+    }
+  },
+  "published_claim_rmds": {
+    "bins_fdr_below_0.1": 0,
+    "bins_tested": 5527,
+    "definition": "the normalized Shannon entropy of the 5' end 4-mer frequencies in 500 kb bins, z-scored across the genome within each sample -- the study's rMDS",
+    "fraction_significant": 0.0,
+    "higher_in_responders": 0,
+    "lower_in_responders": 0,
+    "median_abs_difference": 0.0132,
+    "note": "the study reports 1,080 differentially differential bins at FDR < 0.1 out of the autosome's 500 kb bins; the count here is computed on the deposited fragments with the study's length and MAPQ filters and without the ENCODE blacklist exclusion"
+  },
+  "published_claim_rmds_batch_corrected": {
+    "bins_fdr_below_0.1": 0,
+    "definition": "the same per-bin differential on the study's own batch-corrected rMDS: the isolation date, the library-preparation date and the collection institute are modelled out of every bin, and the response is kept in the model",
+    "higher_in_responders": 0,
+    "lower_in_responders": 0,
+    "note": "the study reports 1,080 bins differential at FDR < 0.1 out of the autosome's 500 kb bins, and the study's classifier reaches AUC 0.99 in patient-level cross-validation and 0.89 with an institute held out"
+  },
+  "response_auc_within_technical_group": {
+    "institute_motifs_256": {
+      "MD Anderson": {
+        "n": 24,
+        "patients": 10,
+        "per_seed_aucs": [
+          0.7368,
+          0.7474,
+          0.7053,
+          0.5474,
+          0.5263
+        ],
+        "pooled_out_of_fold_auc": 0.6421,
+        "responders": 19
+      },
+      "Ohio State University": {
+        "n": 17,
+        "patients": 6,
+        "per_seed_aucs": [
+          0.4545,
+          0.4545,
+          0.6667,
+          0.4545,
+          0.4545
+        ],
+        "pooled_out_of_fold_auc": 0.5,
+        "responders": 6
+      },
+      "University of Cincinnati": {
+        "n": 87,
+        "patients": 31,
+        "per_seed_aucs": [
+          0.3786,
+          0.4721,
+          0.3566,
+          0.4764,
+          0.4941
+        ],
+        "pooled_out_of_fold_auc": 0.4345,
+        "responders": 49
+      },
+      "University of Louisville": {
+        "n": 20,
+        "patients": 7,
+        "per_seed_aucs": [
+          0.4286,
+          0.4286,
+          0.3571,
+          0.4286,
+          0.4286
+        ],
+        "pooled_out_of_fold_auc": 0.4048,
+        "responders": 14
+      },
+      "University of Michigan": {
+        "n": 28,
+        "patients": 11,
+        "per_seed_aucs": [
+          0.3854,
+          0.4115,
+          0.375,
+          0.4688,
+          0.4688
+        ],
+        "pooled_out_of_fold_auc": 0.3802,
+        "responders": 16
+      }
+    },
+    "institute_rmds_bins": {
+      "MD Anderson": {
+        "n": 24,
+        "patients": 10,
+        "per_seed_aucs": [
+          0.1474,
+          0.2211,
+          0.2947,
+          0.4105,
+          0.5158
+        ],
+        "pooled_out_of_fold_auc": 0.3158,
+        "responders": 19
+      },
+      "Ohio State University": {
+        "n": 17,
+        "patients": 6,
+        "per_seed_aucs": [
+          0.0606,
+          0.0606,
+          0.0303,
+          0.0606,
+          0.0606
+        ],
+        "pooled_out_of_fold_auc": 0.0606,
+        "responders": 6
+      },
+      "University of Cincinnati": {
+        "n": 87,
+        "patients": 31,
+        "per_seed_aucs": [
+          0.253,
+          0.3534,
+          0.2685,
+          0.2691,
+          0.2379
+        ],
+        "pooled_out_of_fold_auc": 0.2395,
+        "responders": 49
+      },
+      "University of Louisville": {
+        "n": 20,
+        "patients": 7,
+        "per_seed_aucs": [
+          0.3333,
+          0.3929,
+          0.5833,
+          0.4524,
+          0.4524
+        ],
+        "pooled_out_of_fold_auc": 0.4048,
+        "responders": 14
+      },
+      "University of Michigan": {
+        "n": 28,
+        "patients": 11,
+        "per_seed_aucs": [
+          0.224,
+          0.1927,
+          0.3385,
+          0.4219,
+          0.4219
+        ],
+        "pooled_out_of_fold_auc": 0.2969,
+        "responders": 16
+      }
+    },
+    "library_batch_motifs_256": {
+      "12/14/20": {
+        "n": 40,
+        "patients": 27,
+        "per_seed_aucs": [
+          0.4271,
+          0.3542,
+          0.487,
+          0.4245,
+          0.3802
+        ],
+        "pooled_out_of_fold_auc": 0.4141,
+        "responders": 24
+      },
+      "12/15/20": {
+        "n": 42,
+        "patients": 27,
+        "per_seed_aucs": [
+          0.5842,
+          0.6122,
+          0.6862,
+          0.5969,
+          0.4668
+        ],
+        "pooled_out_of_fold_auc": 0.551,
+        "responders": 28
+      },
+      "2/26/20": {
+        "n": 19,
+        "patients": 17,
+        "per_seed_aucs": [
+          0.8222,
+          0.7889,
+          0.8556,
+          0.8222,
+          0.7889
+        ],
+        "pooled_out_of_fold_auc": 0.8889,
+        "responders": 10
+      },
+      "2/27/20": {
+        "n": 21,
+        "patients": 19,
+        "per_seed_aucs": [
+          0.3981,
+          0.3796,
+          0.4537,
+          0.4352,
+          0.5093
+        ],
+        "pooled_out_of_fold_auc": 0.3796,
+        "responders": 12
+      },
+      "2/28/20": {
+        "n": 15,
+        "patients": 12,
+        "per_seed_aucs": [
+          0.537,
+          0.6296,
+          0.4444,
+          0.3148,
+          0.6481
+        ],
+        "pooled_out_of_fold_auc": 0.5556,
+        "responders": 6
+      },
+      "3/11/20": {
+        "n": 13,
+        "patients": 12,
+        "per_seed_aucs": [
+          0.619,
+          0.7381,
+          0.7143,
+          0.7381,
+          0.6429
+        ],
+        "pooled_out_of_fold_auc": 0.6667,
+        "responders": 6
+      },
+      "3/8/20": {
+        "n": 24,
+        "patients": 23,
+        "per_seed_aucs": [
+          0.4444,
+          0.2963,
+          0.4593,
+          0.5185,
+          0.3037
+        ],
+        "pooled_out_of_fold_auc": 0.363,
+        "responders": 15
+      }
+    },
+    "library_batch_rmds_bins": {
+      "12/14/20": {
+        "n": 40,
+        "patients": 27,
+        "per_seed_aucs": [
+          0.349,
+          0.2865,
+          0.2448,
+          0.4323,
+          0.2917
+        ],
+        "pooled_out_of_fold_auc": 0.2969,
+        "responders": 24
+      },
+      "12/15/20": {
+        "n": 42,
+        "patients": 27,
+        "per_seed_aucs": [
+          0.4464,
+          0.4005,
+          0.3036,
+          0.5026,
+          0.2883
+        ],
+        "pooled_out_of_fold_auc": 0.3061,
+        "responders": 28
+      },
+      "2/26/20": {
+        "n": 19,
+        "patients": 17,
+        "per_seed_aucs": [
+          0.7333,
+          0.7444,
+          0.6667,
+          0.5889,
+          0.6
+        ],
+        "pooled_out_of_fold_auc": 0.6444,
+        "responders": 10
+      },
+      "2/27/20": {
+        "n": 21,
+        "patients": 19,
+        "per_seed_aucs": [
+          0.5185,
+          0.6111,
+          0.5093,
+          0.5278,
+          0.4722
+        ],
+        "pooled_out_of_fold_auc": 0.5185,
+        "responders": 12
+      },
+      "2/28/20": {
+        "n": 15,
+        "patients": 12,
+        "per_seed_aucs": [
+          0.7222,
+          0.6852,
+          0.7593,
+          0.6481,
+          0.7593
+        ],
+        "pooled_out_of_fold_auc": 0.7593,
+        "responders": 6
+      },
+      "3/11/20": {
+        "n": 13,
+        "patients": 12,
+        "per_seed_aucs": [
+          0.3095,
+          0.3095,
+          0.2143,
+          0.3571,
+          0.3095
+        ],
+        "pooled_out_of_fold_auc": 0.2857,
+        "responders": 6
+      },
+      "3/8/20": {
+        "n": 24,
+        "patients": 23,
+        "per_seed_aucs": [
+          0.5037,
+          0.5778,
+          0.6148,
+          0.6444,
+          0.6148
+        ],
+        "pooled_out_of_fold_auc": 0.637,
+        "responders": 15
+      }
+    }
+  },
+  "study_doi": "10.64898/2026.03.24.26348354"
+}
