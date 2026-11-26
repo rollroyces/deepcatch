@@ -443,6 +443,20 @@ cohort size.
   digit and the word "tests" next to each other, and "998 regression
   tests" has a word in between. The abstract now states the same number
   as the other thirteen documents.
+- **The DOI scanner did not read LaTeX.** A DOI inside a LaTeX
+  `\href{https://doi.org/10.1038/nrc.2017.7}{10.1038/nrc.2017.7}` was read as one long
+  identifier running through the "}{", and the identifier it reported
+  resolved to nothing -- so a registered DOI reported as unregistered.
+  The braces are now characters a DOI may not contain, which is the
+  same reason the full-width brackets were excluded before them.
+- **A generated document is now protected by its source rather than by a
+  second copy of its source's list.** The methods manuscript's LaTeX is
+  generated from its markdown, and the generator's check compares the
+  two texts word for word, so the LaTeX cannot drift from the markdown
+  the figure guards already name. `scripts/benchmark_numbers.py` knows
+  the copy and its source, and names the copy wherever the source is
+  named -- one line, instead of a second protection list that would have
+  to be edited together with the first for ever.
 
 - **The repository's evidence that bioRxiv's affiliation rule "is not
   enforced in practice" was measuring the wrong thing.** The rule was read

@@ -52,7 +52,12 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 # the Chinese README writes a DOI inside full-width parentheses, and the
 # scanner was reading the closing full-width bracket as part of the DOI
 # -- which made a registered DOI report as unregistered.
-_NOT_IN_DOI = r"\s\"'<>,;\\\(\)\]（）［］〈〉【】《》、。，；：？！"
+#
+# The braces are here for the same reason, one LaTeX syntax further on:
+# a DOI inside a LaTeX `\href{https://doi.org/10.1038/nrc.2017.7}{10.1038/nrc.2017.7}` was
+# read as one long identifier running through the "}{", and the
+# identifier it reported resolved to nothing.
+_NOT_IN_DOI = r"\s\"'<>,;\\\(\)\[\]\{\}（）［］〈〉【】《》、。，；：？！"
 _DOI = re.compile(
     rf"10\.\d{{4,9}}/[^{_NOT_IN_DOI}]+"
     rf"(?:\([^{_NOT_IN_DOI}]*\)[^{_NOT_IN_DOI}]*)*")

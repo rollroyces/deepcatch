@@ -32,6 +32,7 @@ from __future__ import annotations
 import importlib.util
 import subprocess
 import sys
+from functools import lru_cache
 from pathlib import Path
 
 import pytest
@@ -46,6 +47,24 @@ def _load_checker():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+@lru_cache(maxsize=1)
+def _the_latex_href_form_is_read_as_one_doi() -> set[str]:
+    """What the scanner makes of a DOI inside a LaTeX ``\\href``.
+
+    The methods manuscript's LaTeX writes its references as
+    ``\\href{https://doi.org/10.1038/nrc.2017.7}{10.1038/nrc.2017.7}``,
+    and the scanner used to read the "}{" as part of the identifier --
+    so a registered DOI was reported as an identifier that resolves to
+    nothing, which is the opposite of what the check is for.
+
+    The helper is cached because the test that calls it is parametrized
+    over seven markup forms, and the scan is the same every time.
+    """
+    found = _load_checker()._dois_in_text(
+        "\\href{https://doi.org/10.1038/nrc.2017.7}{10.1038/nrc.2017.7}")
+    return set(found)
 
 
 @pytest.mark.parametrize("text", [
@@ -69,6 +88,13 @@ def test_markup_is_not_part_of_the_identifier(text):
     found = _load_checker()._dois_in_text(text)
     assert set(found) == {"10.5281/zenodo.24453044"}, (
         f"the DOI in {text!r} was read as {found}")
+
+    # The LaTeX form, which the methods manuscript's generated `.tex`
+    # uses for every reference: the URL and the label are the same
+    # identifier, and the "}{" between them is not part of either.
+    latex = _the_latex_href_form_is_read_as_one_doi()
+    assert latex == {"10.1038/nrc.2017.7"}, (
+        f"a DOI inside a LaTeX \\href was read as {latex}")
 
 
 def test_every_doi_in_the_tree_is_registered():
