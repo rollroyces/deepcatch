@@ -108,6 +108,53 @@ Peiyong Jiang (CUHK — 4-mer end-motif HCC detection)
   training-fixed threshold** rather than an AUC.  Is that the most
   defensible summary for a reviewer, or should such a study be excluded
   from the headline entirely?
+- **Four more external cohorts have since been scored** — a second
+  external family (ccRCC, 12 samples, AUC 0.9444 [0.8156, 1.0], exact
+  permutation p = 0.0043), a colorectal cohort with a **graded** label
+  (SAUNA, 9 samples carrying a per-sample tumour fraction), a
+  hereditary-cancer **screening** cohort (Cleveland Clinic PHTS, 99
+  samples, stage-graded), and the only public cohort carrying
+  **fragment end motifs** with cancer/healthy labels (223 samples).
+  Three questions come out of them, and we would rather a reviewer asked
+  them than the other way round:
+  - *Does the model track tumour burden?* In SAUNA — colorectal, the
+    training cohort's own cancer type, hg38, at the training cohort's
+    depth — the score tracks the tumour fraction (Spearman rho 0.8154
+    within the seven CRC samples, permutation p = 0.0355; the
+    short/long ratio carries more of it, rho 0.9643), and the one
+    patient sampled three times has a short/long ratio that rises with
+    the fraction (0.207, 0.230, 0.261).  This is the first external
+    result here on a graded cancer label rather than a late-stage
+    binary contrast.
+  - *Does it work in a screening population?* In PHTS — where the
+    malignant samples are mostly subclinical — it does not: AUC 0.4506
+    [0.3343, 0.5669], and **not even a model fitted and cross-validated
+    inside that cohort separates it** (0.5465 [0.4319, 0.6612]).  So
+    that null is about the cohort, not about the model, and we report it
+    as such.  Note also that the "pre-diagnosis" arm there is drawn
+    1-7 days **before** the diagnosis, not months: the longest lead time
+    in the whole cohort is seven days, so it is not a lead-time cohort.
+  - *Is the external AUC a sequencing-depth artefact?* Depth alone
+    separates neither held-out study's classes above chance (0.5342 on
+    publication 7, 0.5271 on publication 1), so the headline is not a
+    depth effect — although part of the score is depth-correlated, and
+    removing it lowers publication 7 to 0.7436.  The ccRCC cohort does
+    carry a depth confound (depth alone reaches 0.8333 there), and the
+    model's separation survives it (0.9722 with the depth removed), so
+    we publish that baseline next to the number.
+  - *What about end motifs — the channel the cfDNA field actually
+    argues from?* The end-motif cohort's class AUCs look strong
+    (0.8207 on the published CC-/CA-end statistic, permutation p =
+    5e-05; 0.9958 within the cohort), and the confound control is what
+    decides how they read: **the same 256 features separate two cancer
+    groups from different studies at 0.9996**, so the study structure
+    in those libraries is larger than any class effect and the class
+    AUCs cannot be read as cancer signals.  Our own motif model lands
+    at 0.3413 there — inverted — which is what a mismatch of motif
+    definitions looks like.
+  - Is that the right way to report a cohort whose signals are
+    confounded with study: as a null about the cohort, or should such
+    cohorts be left out of the external evidence altogether?
 
 **Suggested reviewers:** Y.M. Dennis Lo (CUHK — pioneered cfDNA),
 Victor Velculescu (Johns Hopkins — CancerSEEK/DELFI)
