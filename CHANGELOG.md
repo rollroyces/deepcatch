@@ -436,6 +436,20 @@ cohort size.
 
 ### Fixed
 
+- **The venue table had JOSS's length rule wrong, and the JOSS paper is
+  over it.** The table recorded "~2,500 words", which was neither
+  JOSS's current guidance nor its older one: the current author
+  documentation (https://joss.readthedocs.io/en/latest/paper.html,
+  checked 2026-11-26) says "The paper should be between 750-1750
+  words. Authors submitting papers significantly longer than 1750 words
+  may be asked to reduce the length of their paper." `paper.md` measures
+  **2,509 words** — front matter, tables and markup excluded — which is
+  **759 over** the upper bound. The table now carries the real rule, and
+  the JOSS readiness section carries a row with the measurement and
+  where the weight sits (Features 399, Software design 351, Summary
+  340, Research impact statement 265, State of the field 236,
+  References 235), because a request to shorten is a revision round on
+  a 1–3 month review. Which 759 words go is the author's.
 - **The venue table did not record PLOS's abstract limit, and the methods
   manuscript's abstract is over it.** PLOS Computational Biology's own
   submission guidelines (checked 2026-11-26) say two different things
