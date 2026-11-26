@@ -357,13 +357,26 @@ def _abstract_length() -> int:
     return _abstract.abstract_length(tex)
 
 
-def test_changelog_states_the_current_abstract_length():
-    """The release note tells the reader how long the shipped abstract is.
+def test_the_documents_state_the_measured_abstract_lengths():
+    """Every abstract length a document states must be the measured one.
 
-    The abstract is edited after the note is written often enough -- it
-    went from 2894 to 2897 when the dataset names were made precise -- and
-    a release note that states the wrong length sends the author to
+    Two abstracts, two measures. The preprint's is a character count --
+    the text that goes into the server's metadata field -- and it is
+    checked against the renderer that produces the paste-ready text, so
+    the form, that document and this test cannot disagree about it: the
+    abstract is edited after the note is written often enough -- it went
+    from 2894 to 2897 when the dataset names were made precise -- and a
+    release note that states the wrong length sends the author to
     bioRxiv with the wrong number in hand.
+
+    The methods manuscript's is a word count, because PLOS caps it at 300
+    words. That figure was counted by hand in three documents and was
+    wrong -- 414 for an abstract of 436 -- in the very row that says the
+    manuscript "would come back for revision". Nothing re-measured it, so
+    nothing noticed.
+    `scripts/count_manuscript_abstract.py` measures it now, and the
+    check below runs it: every document that states the count must state
+    the measured one, and none may stop stating it.
     """
     length = _abstract_length()
     changelog = _read("CHANGELOG.md")
@@ -375,6 +388,16 @@ def test_changelog_states_the_current_abstract_length():
     assert stated == length, (
         f"the CHANGELOG says the abstract is {stated} characters; "
         f"paper/paper.tex makes it {length}")
+
+    checker = _REPO_ROOT / "scripts" / "count_manuscript_abstract.py"
+    proc = subprocess.run(
+        [sys.executable, str(checker), "--check"],
+        cwd=str(_REPO_ROOT), capture_output=True, text=True, timeout=120,
+        env={k: v for k, v in os.environ.items() if k != "PYTHONPATH"},
+    )
+    assert proc.returncode == 0, (
+        f"the documents disagree about the methods manuscript's abstract "
+        f"length:\n{proc.stdout}\n{proc.stderr}")
 
 
 def test_the_chinese_readme_carries_every_figure_the_english_one_does():

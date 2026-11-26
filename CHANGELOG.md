@@ -436,6 +436,23 @@ cohort size.
 
 ### Fixed
 
+- **The methods manuscript's abstract length was measured wrong, and nothing
+  re-measured it.** Three documents -- this one, the venue map and the
+  methods manuscript's status note -- said the abstract is **414 words**,
+  and the number was wrong when it was written: the abstract measures
+  **436 words** (the gap to PLOS's 300-word cap is **136 words**, not 114),
+  and it has not changed since. The figure had been counted by hand, so
+  nothing could notice it being wrong; the row it sits in is the one that
+  says the manuscript "would come back for revision", which makes a wrong
+  number there worse than a wrong number anywhere else.
+  `scripts/count_manuscript_abstract.py` now measures it by one rule --
+  the `## Abstract` section of `paper/METHODS_PAPER.md`, the source the
+  LaTeX is generated from, counted as the text a reader sees -- and
+  `--check` fails if any of the three documents states a different number,
+  or states none. The count guard in
+  `test/test_paper_numbers_match_artifacts.py` runs it, so the number is
+  measured rather than remembered from now on.
+
 - **The venue map's summary contradicted its own detail: it still presented
   bioRxiv as the route, after the same document had recorded that bioRxiv
   rejected this manuscript.** `docs/JOURNAL_SUBMISSION.md` §1's sequence
@@ -497,7 +514,7 @@ cohort size.
   figures, or amount of supporting information" — so the table's "no
   limit" for the manuscript was right — but "The Abstract should be
   succinct; **it must not exceed 300 words**". The methods manuscript's
-  abstract measures **414 words**, so on that ground alone it would come
+  abstract measures **436 words**, so on that ground alone it would come
   back for revision. The table now carries the abstract rule as its own
   row, the methods manuscript's status note records the gap with the
   other two PLOS requirements (their template, and the figure legends
