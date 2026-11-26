@@ -249,18 +249,28 @@ def _immunotherapy_prep() -> dict:
 
 
 def _documents_mentioning(needle: str) -> list[Path]:
+    """The documents that mention a cohort.
+
+    The docs site is included, not just the markdown: it is the page a
+    reader lands on first, and its cohort table quotes the same numbers
+    the repository's documents quote -- so the limits that have to
+    travel with a number have to travel there too. It was not scanned
+    before, so the landing page was the one place a cohort's number
+    could travel without its limits.
+    """
     found: list[Path] = []
-    for path in sorted(_REPO_ROOT.rglob("*.md")):
-        parts = path.relative_to(_REPO_ROOT).parts
-        if any(part in {".git", "node_modules", "__pycache__", "dist",
-                        "build", ".pytest_cache"} for part in parts):
-            continue
-        try:
-            text = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        if needle in text:
-            found.append(path)
+    for pattern in ("*.md", "*.html"):
+        for path in sorted(_REPO_ROOT.rglob(pattern)):
+            parts = path.relative_to(_REPO_ROOT).parts
+            if any(part in {".git", "node_modules", "__pycache__", "dist",
+                            "build", ".pytest_cache"} for part in parts):
+                continue
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            if needle in text:
+                found.append(path)
     return found
 
 

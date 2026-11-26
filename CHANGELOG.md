@@ -436,6 +436,27 @@ cohort size.
 
 ### Fixed
 
+- **The public landing page counted four external cohorts, and the guard
+  did not reach it.** The site described the ccRCC, SAUNA, PHTS and
+  immunotherapy cohorts and called them "Four more external cohorts",
+  while the repository has **five**: the end-motif cohort (223 samples,
+  Zenodo 10.5281/zenodo.17253504) was missing from the page entirely,
+  even though the reviewer note already said five and listed it. Two
+  gaps in one place:
+  - the page's ccRCC row quoted AUC 0.9444 without the cohort's stage
+    limit -- all six patients are pT3a, two with distant metastasis, so
+    the ranking transfers and the absolute threshold does not;
+  - the cohort-limits guard scanned only `*.md`, so the landing page --
+    the document a reader lands on first -- was the one place a
+    cohort's number could travel without its limits. Nothing on the
+    public page was guarded by that rule at all.
+
+  The page now carries all five cohorts with their limits, names the
+  artifact behind every cohort row it quotes (and links the per-cohort
+  write-ups), and the guard scans the HTML as well as the markdown. The
+  check was verified by removing the stage limit from the page: it
+  fails, and it names the file and the missing limit.
+
 - **The methods manuscript's abstract length was measured wrong, and nothing
   re-measured it.** Three documents -- this one, the venue map and the
   methods manuscript's status note -- said the abstract is **414 words**,
