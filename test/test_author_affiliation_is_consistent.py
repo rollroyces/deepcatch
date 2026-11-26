@@ -118,6 +118,25 @@ def _joss_manuscript() -> str:
     return (_REPO_ROOT / "paper.md").read_text(encoding="utf-8")
 
 
+def _joss_word_count() -> int:
+    """The JOSS paper's length, measured by the script that owns the rule.
+
+    `scripts/count_joss_paper_words.py` counts the prose of every section
+    -- the front matter and the markdown markup excluded -- and reports the
+    per-section numbers as well. The venue map's figure is checked against
+    it, so the two cannot disagree.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "count_joss_paper_words",
+        _REPO_ROOT / "scripts" / "count_joss_paper_words.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.section_words(
+        (_REPO_ROOT / "paper.md").read_text(encoding="utf-8"))["(prose)"]
+
+
 def _front_matter(text: str) -> str:
     """The YAML front matter of the JOSS manuscript."""
     if not text.startswith("---"):
@@ -173,6 +192,25 @@ def test_the_manuscripts_declare_the_sections_and_the_assistance_their_venues_as
           "JOSS format; that claim is only true while the sections are "
           "there."
     )
+
+    # The JOSS paper's length is the number a reviewer counts first, and
+    # it was hand-counted: the venue map said 2,509 words and 759 over,
+    # on a paper that measures 2,562 and 812 over. The row is held to the
+    # measurement now, so the figure in it cannot drift away from the
+    # paper again.
+    measured = _joss_word_count()
+    venue_map = (_REPO_ROOT / "docs" / "JOURNAL_SUBMISSION.md").read_text(
+        encoding="utf-8")
+    # The count is written with a thousands separator ("2,562 words"), so
+    # the pattern has to allow it and the digits have to be read back
+    # without it.
+    stated = re.search(r"the paper's prose is \*\*([\d,]+) words\*\*", venue_map)
+    assert stated, (
+        "the venue map no longer states the JOSS paper's length; put the "
+        "measured number back (scripts/count_joss_paper_words.py)")
+    assert int(stated.group(1).replace(",", "")) == measured, (
+        f"the venue map says the JOSS paper's prose is {stated.group(1)} words; "
+        f"paper.md measures {measured}")
 
     # The AI usage disclosure is the one section whose CONTENT JOSS
     # checks, not just its presence: the policy asks for the tools used,

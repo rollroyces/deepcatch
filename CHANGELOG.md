@@ -436,6 +436,24 @@ cohort size.
 
 ### Fixed
 
+- **The JOSS paper's length was hand-counted, and the hand-count was
+  wrong.** The venue map said the paper is **2,509 words** and **759
+  over** JOSS's 1,750-word guidance; its prose measures **2,334 words**
+  and is **584 over** (2,562 words with the reference list, which JOSS's
+  own format builds separately from the .bib file), on exactly the same
+  text -- the paper has not changed since the figures were recorded, so
+  this was never a drift but a bad count. The per-section weights were
+  hand-counted as well, and each was off by a few words.
+
+  `scripts/count_joss_paper_words.py` now measures it by one rule (the
+  front matter and the markdown markup excluded, everything a reader sees
+  in a section counted) and prints the per-section numbers, because that
+  is where a cut has to be decided. The venue map's row is held to the
+  measurement by the JOSS-format guard in
+  `test/test_author_affiliation_is_consistent.py`, so the figure cannot
+  drift from the paper again. The check was verified by putting the old
+  number back: it fails, and it says which number the paper measures.
+
 - **The public landing page counted four external cohorts, and the guard
   did not reach it.** The site described the ccRCC, SAUNA, PHTS and
   immunotherapy cohorts and called them "Four more external cohorts",
