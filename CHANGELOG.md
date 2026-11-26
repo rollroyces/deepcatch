@@ -436,20 +436,35 @@ cohort size.
 
 ### Fixed
 
+- **The venue table did not record PLOS's abstract limit, and the methods
+  manuscript's abstract is over it.** PLOS Computational Biology's own
+  submission guidelines (checked 2026-11-26) say two different things
+  that the repository's table had merged into one: "Manuscripts can be
+  any length. There are no restrictions on word count, number of
+  figures, or amount of supporting information" — so the table's "no
+  limit" for the manuscript was right — but "The Abstract should be
+  succinct; **it must not exceed 300 words**". The methods manuscript's
+  abstract measures **414 words**, so on that ground alone it would come
+  back for revision. The table now carries the abstract rule as its own
+  row, the methods manuscript's status note records the gap with the
+  other two PLOS requirements (their template, and the figure legends
+  as paragraphs with the figures uploaded separately), and the
+  abridgement is queued with the PLOS variant rather than done
+  silently: which words to cut is the author's.
 - **The methods manuscript still described a world in which only two
   kinds of cohort had ever been scored.** Its limitation (3) said "No
   real plasma in downstream validation", its limitation (5) said what
-  was missing was "a cohort with early-stage labels", and its
-  §4.2 bullet on real plasma fragmentomics enumerated the downstream
+  was missing was "a cohort with early-stage labels", and its §4.2
+  bullet on real plasma fragmentomics enumerated the downstream
   validation cohorts as "either synthetic-plasma ... or Open-Data
   FinaleDB". All three predate the five public plasma cohorts this
   repository has since measured with the same protocol and a confound
   control each (ccRCC, SAUNA, PHTS, the end-motif cohort and the
   treatment-response cohort), and the Stage I question limitation (5)
-  called missing has in fact been asked of two stage-labelled public
-  plasma cohorts, both negative (the PHTS fragments, where nothing
-  separates the cancer arm and not even a model fitted inside the
-  cohort separates it -- 0.4506 and 0.5465 -- and the GSE124600
+  called missing has in fact been asked of the stage-labelled public
+  plasma cohorts, both answers negative (the PHTS fragments, where
+  nothing separates the cancer arm and not even a model fitted inside
+  the cohort separates it -- 0.4506 and 0.5465 -- and the GSE124600
   methylation matrices, where the called-CpG count does not rise with
   stage, rho 0.0961, p 0.26). The claims are now the measured ones,
   and they point at `docs/PUBLIC_DATA_SOURCES.md` §6.1-§6.5 for the
