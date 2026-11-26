@@ -118,6 +118,7 @@ bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</cod
                     <tr><td>ccRCC plasma, Zenodo 10.5281/zenodo.21269430 (never trained on)</td><td>12</td><td>Cancer vs healthy</td><td>0.9444 [0.8156&ndash;1.0], exact permutation p = 0.0043</td></tr>
                     <tr><td>SAUNA colorectal plasma with a per-sample tumour fraction (Zenodo 10.5281/zenodo.15097509)</td><td>9</td><td>Score vs tumour fraction</td><td>Spearman rho 0.8154 within the CRC samples (p = 0.0355)</td></tr>
                     <tr><td>Cleveland Clinic PHTS screening plasma, stage-graded (Zenodo 10.5281/zenodo.15109495)</td><td>99</td><td>Cancer vs no cancer</td><td>0.4506 [0.3343&ndash;0.5669] &mdash; and not even a model fitted inside the cohort separates it (0.5465)</td></tr>
+                    <tr><td>Immunotherapy responder plasma, six centres (Zenodo 10.5281/zenodo.15738112)</td><td>184</td><td>Responder vs non-responder</td><td>0.3373 &mdash; and the same features separate two centres that <em>share</em> a response label at 0.9813, so the cohort's structure is the centre</td></tr>
                     <tr><td>Leave-one-study-out (train one publication, test the other)</td><td>627</td><td>Transfer</td><td>0.681 / 0.936</td></tr>
                     <tr><td>Mutation × tumor-naive fusion (same 627)</td><td>627</td><td>Channel fusion</td><td>0.9884 ± 0.0010</td></tr>
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
