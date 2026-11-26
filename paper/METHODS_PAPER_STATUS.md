@@ -43,7 +43,14 @@
 | `paper/REPRODUCE.md` | ✅ NEW | ~190 | one-bash driver + step-by-step manual commands + acceptance checklist |
 | `paper/REPRODUCE.sh` | ✅ NEW (executable) | (script) | runs cross_study_finallydb.py + pytest gate; accepts `--quick`, `--no-test` |
 
-**Total: ~4,470 words** (well under the 5,000-word ceiling; measured by `wc -w paper/METHODS_PAPER.md` = 4,428 — `wc -w` under-counts markdown table cells).
+**Total: ~4,470 words** (well under the 5,000-word ceiling; measured by `wc -w paper/METHODS_PAPER.md` = 4,428 — `wc -w` under-counts markdown table cells)
+
+> **The word count above is the September snapshot's, and the manuscript has
+> grown since: ~7,800 prose words as of 2026-11-26** (`wc -w` on the whole
+> file reads 9,780, which counts the table cells). The 5,000-word figure
+> was a working target, not a venue's limit: both venues this manuscript
+> targets (PLOS Computational Biology and Bioinformatics Advances) record
+> **no length limit** in `docs/JOURNAL_SUBMISSION.md` §7..
 
 ---
 

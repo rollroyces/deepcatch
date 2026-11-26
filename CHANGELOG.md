@@ -436,6 +436,24 @@ cohort size.
 
 ### Fixed
 
+- **The methods manuscript still described a world in which only two
+  kinds of cohort had ever been scored.** Its limitation (3) said "No
+  real plasma in downstream validation", its limitation (5) said what
+  was missing was "a cohort with early-stage labels", and its
+  §4.2 bullet on real plasma fragmentomics enumerated the downstream
+  validation cohorts as "either synthetic-plasma ... or Open-Data
+  FinaleDB". All three predate the five public plasma cohorts this
+  repository has since measured with the same protocol and a confound
+  control each (ccRCC, SAUNA, PHTS, the end-motif cohort and the
+  treatment-response cohort), and the Stage I question limitation (5)
+  called missing has in fact been asked of two stage-labelled public
+  plasma cohorts, both negative (the PHTS fragments, where nothing
+  separates the cancer arm and not even a model fitted inside the
+  cohort separates it -- 0.4506 and 0.5465 -- and the GSE124600
+  methylation matrices, where the called-CpG count does not rise with
+  stage, rho 0.0961, p 0.26). The claims are now the measured ones,
+  and they point at `docs/PUBLIC_DATA_SOURCES.md` §6.1-§6.5 for the
+  cohorts themselves.
 - **The methods manuscript's abstract quoted the suite's size from three
   releases ago.** It said 998 regression tests where the suite has 1040
   -- the number §2.5 states correctly, two paragraphs further on. The

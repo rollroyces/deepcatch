@@ -524,7 +524,7 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 \subsection{What this work does NOT do}
 \begin{itemize}
 \item
-\textbf{Clinical validation.} DeepCatch is not a clinical assay. No real-plasma cohort has been sequenced. No patient samples were collected under IRB.
+\textbf{Clinical validation.} DeepCatch is not a clinical assay. No plasma has been sequenced by this project and no patient samples were collected under IRB; the public plasma cohorts it scores were sequenced by their depositors.
 \item
 \textbf{FDA pathway.} No regulatory submission is planned or implied.
 \item
@@ -536,7 +536,7 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 \item
 \textbf{Per-cancer denominators are small.} Top-5 cancer n ranges from 28 (OV) to 89 (HCC\_J); CIs on sens@99 (e.g. OV [0.758--1.000], PAAD [0.333--0.810]) are wide. Conclusions about per-cancer performance should be read as ordinal, not cardinal.
 \item
-\textbf{Real plasma fragmentomics.} The pretraining cohort is from FinaleDB plasma (Cristiano 2019, Jiang 2015), but the downstream validation cohorts are either synthetic-plasma (TCGA-LUAD real mutations + Poisson sampling, \S{}3.1) or Open-Data FinaleDB uniformly-preprocessed plasma (\S{}3.2/3.3). A real-plasma fragmentomics validation requires an IRB-approved prospective cohort --- see \S{}4.4.
+\textbf{Real plasma fragmentomics.} The pretraining cohort is from FinaleDB plasma (Cristiano 2019, Jiang 2015). The downstream validation cohorts are synthetic-plasma (TCGA-LUAD real mutations + Poisson sampling, \S{}3.1), Open-Data FinaleDB uniformly-preprocessed plasma (\S{}3.2/3.3), and five further public plasma cohorts scored with this repository's protocol and its confound controls each --- a ccRCC cohort, a colorectal cohort with a graded tumour fraction, a hereditary-cancer screening cohort, an end-motif cohort and a treatment-response cohort (\pathurl{docs/PUBLIC_DATA_SOURCES.md} \S{}6.1--\S{}6.5). None of them is a cohort this project sequenced itself, so a real-plasma validation run end to end still requires an IRB-approved prospective cohort --- see \S{}4.4.
 \end{itemize}
 
 \subsection{Limitations}
@@ -546,11 +546,11 @@ DeepCatch provides a reproducible fragmentomics engineering substrate. It takes 
 \item
 \textbf{Simulated healthy controls.} The healthy arm of every paired patient is a TF=\allowbreak{}0 simulation of the same patient's mutations, not an unrelated healthy donor. This is the standard analytical validation approach (Newman 2016 [6]) but it is not a substitute for unrelated healthy plasma.
 \item
-\textbf{No real plasma in downstream validation.} The 0.1\% ctDNA numbers are from synthetic reads. Real plasma has additional noise sources (PCR bias, mapping ambiguity, contamination) that the simulation does not capture.
+\textbf{The 0.1\% ctDNA numbers are from synthetic reads.} The synthetic-plasma arm has noise sources (PCR bias, mapping ambiguity, contamination) that the simulation does not capture. The real-plasma cohorts are the five public ones in \pathurl{docs/PUBLIC_DATA_SOURCES.md} \S{}6.1--\S{}6.5, and each of them was scored with a confound control, so the limitation there is the cohort's own composition rather than an absence of real plasma.
 \item
 \textbf{FinaleDB access is partial, and one verdict in the repo was wrong.} The API is reachable again (it was down between 2026-09 and 2026-11-15), but S3 access is per-object: the \texttt{*.frag.tsv.bgz}, insert-size and \texttt{*.bigWig} objects return 200 while \texttt{*.bedGraph.bgz} returns 403. A single-key probe had previously reported the whole corpus as private; the multi-key probe in \pathurl{scripts/fetch_external_cohort.py} is what corrected it.
 \item
-\textbf{The held-out cohort's cancer arm is advanced-stage.} Where the public records characterise it, the held-out cohort is late-stage: publication 1 is Stage IV throughout (its GEO extract protocol) and publication 9 is metastatic. The external AUCs are therefore a cross-study transfer result between advanced-stage cancer plasma and non-cancer plasma, and they say nothing about Stage I detection. The Stage I breakdown machinery is ready (\texttt{build\_\allowbreak{}stage\_\allowbreak{}breakdown\_\allowbreak{}table}); what is missing is a cohort with early-stage labels (\S{}3.2.2).
+\textbf{The held-out cohort's cancer arm is advanced-stage.} Where the public records characterise it, the held-out cohort is late-stage: publication 1 is Stage IV throughout (its GEO extract protocol) and publication 9 is metastatic. The external AUCs are therefore a cross-study transfer result between advanced-stage cancer plasma and non-cancer plasma, and they say nothing about Stage I detection. The Stage I breakdown machinery is ready (\texttt{build\_\allowbreak{}stage\_\allowbreak{}breakdown\_\allowbreak{}table}), and the question has since been asked of the stage-labelled public plasma cohorts, with the answers negative: the Cleveland Clinic PHTS screening fragments, where nothing separates the cancer arm from the no-cancer arm (AUC 0.4506) and not even a model fitted and cross-validated inside that cohort separates it (0.5465), and the GSE124600 methylation matrices --- 142 CRC and 132 control plasma samples, stages \texttt{Stage\_\allowbreak{}I}, \texttt{Stage\_\allowbreak{}II}, \texttt{Stage\_\allowbreak{}III} and \texttt{Stage\_\allowbreak{}IV}, recorded in \pathurl{results/geo_gse124600_cohort.json} --- where the called-CpG count does not rise with stage (Spearman rho 0.0961, p 0.26) (\pathurl{docs/PUBLIC_DATA_SOURCES.md} \S{}6.3 and \S{}4.1).
 \item
 \textbf{Encoder size.} PRODUCTION\_CONFIG is 543,872 parameters (embed\_dim=\allowbreak{}128, 4 layers, 4 heads). State-of-the-art fragmentomics encoders are 10--100$\times$ larger. The present model fits on CPU in \textless{}5 seconds; clinical-grade models would require GPU training.
 \item
