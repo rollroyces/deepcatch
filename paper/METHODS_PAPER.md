@@ -63,6 +63,11 @@ The contribution is not a new model class. It is a reproducible engineering subs
 
 DeepCatch consumes a per-sample cfDNA feature dict with six modality slots, defined in `src/foundation/config.py`:
 
+**Table 1.** The six-modality feature schema. Every dimension is the
+value in `MODALITY_DIMS` (`src/foundation/config.py`); the last three
+slots are optional and are zero-filled when the corresponding data is
+not available.
+
 | Modality | Dim | Description |
 |---|---:|---|
 | `frag_basic` | 4 | panel-LLR score (when tumor-informed) + 3 length-summary stats (mean, median, short-fragment fraction) |
@@ -84,6 +89,8 @@ The encoder (`src/foundation/model.py:MultiModalEncoder`) is a per-modality `Lin
 
 Downstream classification is a `FoundationDownstream` head: 0.7 × frozen-pretrained-encoder → LR-head + 0.3 × trainable Transformer, with binary cross-entropy (default) or focal-BCE (`loss="sens_at_spec"`, opt-in, `alpha_pos` sweep parameter) as the loss.
 
+**Figure 5** (`docs/figures/fig5_encoder_architecture.png`) is the whole path in one picture: the six modality slots, the per-modality projection, the `[CLS]` token and the four-layer transformer, the two pre-training phases that produce the checkpoint, and the 0.7 / 0.3 blend that turns the encoder into a score. Every number on it is a constant read out of `src/foundation/config.py`, `src/foundation/model.py` and `scripts/pretrain_production_finaledb.py`.
+
 ### 2.3 Panel-based detection (when prior cohort is known)
 
 For tumor-informed panel detection, the same `FoundationDownstream` consumes a modality dict where `frag_basic[:, 0]` is the panel-LLR sum (the sufficient statistic under independent Poisson observation at each locus), `frag_enhanced[:, 0]` is the patient-level frag score, and the other modalities are filled with cohort-derived priors. The panel-LLR scoring function, the Fisher-method aggregate, and the strand-concordance-weighted variant are documented in `paper/paper.tex` (§2 of the benchmark paper) and `scripts/foundation_real_smoke.py`.
@@ -98,6 +105,8 @@ Every reported number follows one protocol:
 4. **Per-cancer sensitivity at fixed specificity with DeLong CIs.** Per-cancer sensitivity at 95% and 99% specificity is computed by pooling OOF predictions across seeds, fixing the threshold at the empirical 95th / 99th percentile of the healthy controls, and applying the DeLong method [14] to estimate the AUC confidence interval. See `results/per_cancer_sens_at_spec/`.
 5. **Bit-identical paired-design sanity.** For every ablation, the non-ablation metrics (`panel_only_aucs`, `frag_only_aucs`, `lr_baseline_aucs`, `naive_avg_aucs`) are verified bit-identical to <1e-9 across the two JSONs, proving the only difference is the ablated knob.
 
+**Figure 6** (`docs/figures/fig6_validation_protocol.png`) is the protocol and its three controls in one picture: the per-patient split that replaced the leaky `StratifiedKFold`, the out-of-fold scores it produces, the metrics that are reported, and the three controls — the true-confound control, the shuffled-label control, and the bit-identical sanity check — that make the numbers readable rather than merely available.
+
 ### 2.5 Implementation and tests
 
 The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 1040 tests run across the two CI jobs (854 core, 186 deep-learning; 23 of the core ones need a local `.venv` or the sibling repository's checkout and skip elsewhere); the pretrain-bug-fix regression suite (`test/test_pretrain_bug_fix.py`, 11 tests) pins the contract that the synthetic generator is never invoked when real data is supplied. Code, data, results, and ablations are version-controlled at github.com/rollroyces/deepcatch (MIT license).
@@ -110,7 +119,7 @@ The framework is implemented in PyTorch with NumPy / scikit-learn baselines. 104
 
 > Source-of-truth: `results/cross_study_finallydb_gc_corrected.json` (§3.2 headline), `results/cross_study_finallydb.json` (§3.2 legacy, no GC), `results/per_cancer_sens_at_spec.json` (§3.3), `results/cross_study_finallydb_shuffled_control.json` (the null control) and `docs/CROSS_STUDY_BENCHMARK_GC_CORRECTED.md` (the running benchmark narrative). All pooled numbers are 5-seed × 5-fold StratifiedKFold internal CV (pooled OOF); no external validation, no clinical plasma cohort.
 >
-> Figures: `docs/figures/fig1_pooled_roc.png` (§3.2), `docs/figures/fig2_per_cancer_roc.png` (§3.3), `docs/figures/fig3_calibration.png` (§3.2 sens@spec operating points in ROC space), `docs/figures/fig4_sens_operating_points.png` (§3.3 grouped per-cancer bars). Reproducible via `python scripts/plot_figures.py`; see `docs/figures/README.md`.
+> Figures: `docs/figures/fig1_pooled_roc.png` (§3.2), `docs/figures/fig2_per_cancer_roc.png` (§3.3), `docs/figures/fig3_calibration.png` (§3.2 sens@spec operating points in ROC space), `docs/figures/fig4_sens_operating_points.png` (§3.3 grouped per-cancer bars), `docs/figures/fig5_encoder_architecture.png` (§2.2, the encoder and its pre-training phases) and `docs/figures/fig6_validation_protocol.png` (§2.4, the protocol and its three controls). The first four are reproducible via `python scripts/plot_figures.py`; the last two are self-contained HTML under `docs/figures/` with the PNG beside it; see `docs/figures/README.md`.
 
 ### 3.1 Honest baseline AUC on paired synthetic cohort (20-patient TCGA-LUAD)
 

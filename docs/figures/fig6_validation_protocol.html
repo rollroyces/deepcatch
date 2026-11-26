@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepCatch — validation protocol</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* The DeepCatch docs site's own palette (docs/site/assets/style.css) */
+      --color-paper:   #f6f8fa;
+      --color-ink:     #1f2328;
+      --color-muted:   #57606a;
+      --color-soft:    #8b949e;
+      --color-accent:  #218bff;
+      --font-sans:     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --font-mono:     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1280px; width: 100%; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Protocol · DeepCatch</p>
+    <h1>One protocol, and the three controls that make its numbers readable</h1>
+
+    <svg viewBox="0 116 1240 432" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="validation-protocol-title validation-protocol-desc">
+      <title id="validation-protocol-title">DeepCatch validation protocol and its controls</title>
+      <desc id="validation-protocol-desc">A paired cohort is split by per-patient grouped five-fold cross-validation over five seeds, producing out-of-fold scores and reported metrics, while three controls run alongside: a true-confound control that injects per-study batch effects, a shuffled-label control that permutes labels in each half of the cohort, and a bit-identical sanity check that requires the non-ablated metrics to agree to within 1e-9.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#57606a"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f6f8fa"/>
+
+      <!-- zones (bg -> zones -> arrows -> nodes) -->
+      <rect x="24" y="128" width="1192" height="168" rx="8" fill="rgba(31,35,40,0.02)" stroke="rgba(31,35,40,0.10)" stroke-width="0.8"/>
+      <rect x="36" y="132" width="104" height="12" rx="2" fill="#f6f8fa"/>
+      <text x="88" y="141" fill="rgba(31,35,40,0.40)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">PROTOCOL</text>
+
+      <rect x="24" y="368" width="892" height="168" rx="8" fill="rgba(31,35,40,0.02)" stroke="rgba(31,35,40,0.10)" stroke-width="0.8"/>
+      <rect x="36" y="372" width="100" height="12" rx="2" fill="#f6f8fa"/>
+      <text x="86" y="381" fill="rgba(31,35,40,0.40)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">CONTROLS</text>
+
+      <!-- arrows (before nodes) -->
+      <path d="M 300,220 H 340" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 600,220 H 640" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 900,220 H 940" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 170,280 V 400" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 470,280 V 400" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 770,280 V 400" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- node 1: the cohort -->
+      <rect x="40" y="160" width="260" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="48" y="166" width="60" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="78" y="175" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">COHORT</text>
+      <text x="170" y="196" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Paired cohort</text>
+      <text x="170" y="220" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">both arms of every patient</text>
+      <text x="170" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">n=627 for the cross-study run</text>
+      <text x="170" y="260" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">FinaleDB publications 6 + 8</text>
+
+      <!-- node 2: the split (focal) -->
+      <rect x="340" y="160" width="260" height="120" rx="6" fill="rgba(33,139,255,0.08)" stroke="#218bff" stroke-width="1"/>
+      <rect x="348" y="166" width="44" height="12" rx="2" fill="transparent" stroke="#218bff" stroke-width="0.8"/>
+      <text x="370" y="175" fill="#218bff" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">SPLIT</text>
+      <text x="470" y="196" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">5-seed × 5-fold GroupKFold</text>
+      <text x="470" y="220" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">per patient · seeds {0..4}</text>
+      <text x="470" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">replaced a leaky StratifiedKFold</text>
+      <text x="470" y="260" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">that inflated the AUC to 0.94</text>
+
+      <!-- node 3: the out-of-fold scores -->
+      <rect x="640" y="160" width="260" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="648" y="166" width="36" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="666" y="175" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">OOF</text>
+      <text x="770" y="196" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Out-of-fold scores</text>
+      <text x="770" y="220" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">pooled across the five seeds</text>
+      <text x="770" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">PCA seeded by the fold split</text>
+      <text x="770" y="260" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">so a re-run is bit-identical</text>
+
+      <!-- node 4: the reported metrics -->
+      <rect x="940" y="160" width="260" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="948" y="166" width="64" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="980" y="175" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">REPORT</text>
+      <text x="1070" y="196" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Reported metrics</text>
+      <text x="1070" y="220" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">pooled AUC · per-cancer AUC</text>
+      <text x="1070" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">sens@95/99 spec · DeLong 95% CI</text>
+      <text x="1070" y="260" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">and the negatives, in full</text>
+
+      <!-- node 5: the true-confound control -->
+      <rect x="40" y="400" width="260" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="48" y="406" width="64" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="80" y="415" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CONTROL</text>
+      <text x="170" y="436" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">True-confound control</text>
+      <text x="170" y="460" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">per-study batch effects injected</text>
+      <text x="170" y="476" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">the per-study AUC beside the pooled</text>
+      <text x="170" y="500" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">delta_auc_pooled_minus_per_study_mean</text>
+
+      <!-- node 6: the shuffled-label control (focal) -->
+      <rect x="340" y="400" width="260" height="120" rx="6" fill="rgba(33,139,255,0.08)" stroke="#218bff" stroke-width="1"/>
+      <rect x="348" y="406" width="64" height="12" rx="2" fill="transparent" stroke="#218bff" stroke-width="0.8"/>
+      <text x="380" y="415" fill="#218bff" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CONTROL</text>
+      <text x="470" y="436" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Shuffled-label control</text>
+      <text x="470" y="460" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">labels permuted in each half</text>
+      <text x="470" y="476" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">the delta against the real AUC</text>
+      <text x="470" y="500" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">is the honest diagnostic, not the absolute</text>
+
+      <!-- node 7: the bit-identical sanity check -->
+      <rect x="640" y="400" width="260" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="648" y="406" width="48" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="672" y="415" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CHECK</text>
+      <text x="770" y="436" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Bit-identical sanity</text>
+      <text x="770" y="460" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">the non-ablated metrics must agree</text>
+      <text x="770" y="476" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">to &lt;1e-9 across the two JSONs</text>
+      <text x="770" y="500" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">so only the ablated knob differs</text>
+    </svg>
+  </div>
+</body>
+</html>

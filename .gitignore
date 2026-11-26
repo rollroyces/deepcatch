@@ -160,3 +160,6 @@ results/delfi_1000g_validation/*.fai
 results/delfi_1000g_validation/*.py
 results/prof_jiang_4mer_analysis/deepcatch_manifesto.md
 *.xlsx
+
+# Local Diagram Design style marker (names a profile in this machine's home library)
+.diagram-design

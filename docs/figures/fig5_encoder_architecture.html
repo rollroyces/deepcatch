@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepCatch — multi-modal encoder architecture</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      /* The DeepCatch docs site's own palette (docs/site/assets/style.css) */
+      --color-paper:   #f6f8fa;
+      --color-ink:     #1f2328;
+      --color-muted:   #57606a;
+      --color-soft:    #8b949e;
+      --color-accent:  #218bff;
+      --font-sans:     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --font-mono:     ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1280px; width: 100%; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+
+    svg { width: 100%; min-width: 900px; display: block; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · DeepCatch</p>
+    <h1>Multi-modal encoder: six modalities in, one blended cancer score out</h1>
+
+    <svg viewBox="0 132 1240 416" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="encoder-arch-title encoder-arch-desc">
+      <title id="encoder-arch-title">DeepCatch multi-modal encoder architecture</title>
+      <desc id="encoder-arch-desc">Six modality slots pass through per-modality linear projections into a CLS token plus four-layer transformer, are pre-trained on two hundred real samples with masked-modality prediction and InfoNCE contrastive phases, and are combined by a blended score that weights the frozen encoder at 0.7 and a trainable transformer at 0.3.</desc>
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#57606a"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#218bff"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f6f8fa"/>
+
+      <!-- zones (drawn first: bg -> zones -> arrows -> nodes) -->
+      <rect x="40" y="144" width="420" height="392" rx="8" fill="rgba(31,35,40,0.02)" stroke="rgba(31,35,40,0.10)" stroke-width="0.8"/>
+      <rect x="52" y="148" width="96" height="12" rx="2" fill="#f6f8fa"/>
+      <text x="100" y="157" fill="rgba(31,35,40,0.40)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">ENCODER</text>
+
+      <rect x="500" y="144" width="340" height="392" rx="8" fill="rgba(31,35,40,0.02)" stroke="rgba(31,35,40,0.10)" stroke-width="0.8"/>
+      <rect x="512" y="148" width="140" height="12" rx="2" fill="#f6f8fa"/>
+      <text x="582" y="157" fill="rgba(31,35,40,0.40)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">PRE-TRAINING</text>
+
+      <rect x="880" y="144" width="320" height="392" rx="8" fill="rgba(31,35,40,0.02)" stroke="rgba(31,35,40,0.10)" stroke-width="0.8"/>
+      <rect x="892" y="148" width="128" height="12" rx="2" fill="#f6f8fa"/>
+      <text x="956" y="157" fill="rgba(31,35,40,0.40)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.14em">DOWNSTREAM</text>
+
+      <!-- arrows (before nodes) -->
+      <path d="M 250,248 V 288" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 250,360 V 400" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 436,448 H 472 Q 480,448 480,440 V 244 Q 480,236 488,236 H 524" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 670,296 V 328" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 816,376 H 852 Q 860,376 860,368 V 244 Q 860,236 868,236 H 904" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 1040,296 V 328" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 1040,416 V 448" fill="none" stroke="#57606a" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- node 1: the six modality slots -->
+      <rect x="64" y="176" width="372" height="72" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="72" y="182" width="52" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="98" y="191" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">MODALITY</text>
+      <text x="250" y="212" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Six modality slots</text>
+      <text x="250" y="230" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">frag_basic 4 · frag_enhanced 44 · cnv 6</text>
+      <text x="250" y="242" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">sero 4 · gnn 1 · tissue 24</text>
+
+      <!-- node 2: the projection -->
+      <rect x="64" y="288" width="372" height="72" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="72" y="294" width="40" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="92" y="303" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">PROJ</text>
+      <text x="250" y="324" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Per-modality LinearProjection</text>
+      <text x="250" y="344" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">each modality → embed_dim 128</text>
+
+      <!-- node 3: the transformer (focal) -->
+      <rect x="64" y="400" width="372" height="96" rx="6" fill="rgba(33,139,255,0.08)" stroke="#218bff" stroke-width="1"/>
+      <rect x="72" y="406" width="60" height="12" rx="2" fill="transparent" stroke="#218bff" stroke-width="0.8"/>
+      <text x="102" y="415" fill="#218bff" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">ENCODER</text>
+      <text x="250" y="436" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">[CLS] token + 4-layer Transformer</text>
+      <text x="250" y="456" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">4-head self-attention · ff_dim 256 · dropout 0.1</text>
+      <text x="250" y="472" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">absent modality → learned missing token</text>
+
+      <!-- node 4: pre-training (focal) -->
+      <rect x="524" y="176" width="292" height="120" rx="6" fill="rgba(33,139,255,0.08)" stroke="#218bff" stroke-width="1"/>
+      <rect x="532" y="182" width="68" height="12" rx="2" fill="transparent" stroke="#218bff" stroke-width="0.8"/>
+      <text x="566" y="191" fill="#218bff" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">PRETRAIN</text>
+      <text x="670" y="212" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Pre-training on 200 real samples</text>
+      <text x="670" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">Phase 1 masked-modality-prediction · 15 ep</text>
+      <text x="670" y="252" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">Phase 2 InfoNCE contrastive · 5 ep</text>
+      <text x="670" y="276" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">Jiang 2015 + Cristiano 2019 plasma</text>
+
+      <!-- node 5: the checkpoint -->
+      <rect x="524" y="328" width="292" height="96" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="532" y="334" width="44" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="554" y="343" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">CKPT</text>
+      <text x="670" y="364" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">PRODUCTION checkpoint</text>
+      <text x="670" y="384" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">543,872 parameters · not distributed</text>
+      <text x="670" y="400" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">regenerated by pretrain_production_finaledb.py</text>
+
+      <!-- node 6: the blend -->
+      <rect x="904" y="176" width="272" height="120" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="912" y="182" width="48" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="936" y="191" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">BLEND</text>
+      <text x="1040" y="212" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Foundation score</text>
+      <text x="1040" y="236" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">0.7 × frozen encoder + LR head</text>
+      <text x="1040" y="252" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">0.3 × trainable transformer</text>
+      <text x="1040" y="276" fill="#8b949e" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">per fold, inside the CV</text>
+
+      <!-- node 7: the loss -->
+      <rect x="904" y="328" width="272" height="88" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="912" y="334" width="44" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="934" y="343" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">LOSS</text>
+      <text x="1040" y="364" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Training objective</text>
+      <text x="1040" y="384" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">binary cross-entropy (default)</text>
+      <text x="1040" y="400" fill="#57606a" font-size="9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle">focal-BCE (sens_at_spec)</text>
+
+      <!-- node 8: the output -->
+      <rect x="904" y="448" width="272" height="64" rx="6" fill="#ffffff" stroke="#d0d7de" stroke-width="1"/>
+      <rect x="912" y="454" width="36" height="12" rx="2" fill="transparent" stroke="#d0d7de" stroke-width="0.8"/>
+      <text x="930" y="463" fill="rgba(31,35,40,0.55)" font-size="8" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">OUT</text>
+      <text x="1040" y="488" fill="#1f2328" font-size="12" font-weight="600" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" text-anchor="middle">Cancer score per sample</text>
+    </svg>
+  </div>
+</body>
+</html>

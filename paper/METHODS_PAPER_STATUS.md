@@ -59,9 +59,9 @@
 
 - **Author list** (`[co-authors: TBD]` placeholder). Yu Ching Lam is the lead; collaborators TBD.
 - **Final venue** between PLOS Computational Biology and Bioinformatics Advances (both plausible).
-- **Figure 1** — the multi-modal encoder architecture diagram. Source: `paper/PAPER.md` Figure 1 (panel-LLR scoring) is already there; this paper needs a different figure (encoder + cross-attention + pre-training phases).
-- **Figure 2** — the validation protocol schematic (5-seed × 5-fold GroupKFold + shuffled-label control).
-- **Table 1** — the six-modality schema with concrete per-modality dim and example feature (currently inline in §2.1).
+- ~~**Figure 1** — the multi-modal encoder architecture diagram.~~ ✅ **done 2026-11-26**: `docs/figures/fig5_encoder_architecture.html` (+ `.png`) — the six modality slots, the projection, the `[CLS]` token and the four-layer transformer, the two pre-training phases, the checkpoint, and the 0.7 / 0.3 blend. Every constant on it is read out of `src/foundation/config.py`, `src/foundation/model.py` and `scripts/pretrain_production_finaledb.py`; the manuscript's §2.2 references it.
+- ~~**Figure 2** — the validation protocol schematic (5-seed × 5-fold GroupKFold + shuffled-label control).~~ ✅ **done 2026-11-26**: `docs/figures/fig6_validation_protocol.html` (+ `.png`) — the split, the out-of-fold scores, the reported metrics, and the three controls (true-confound, shuffled-label, bit-identical sanity); the manuscript's §2.4 references it.
+- ~~**Table 1** — the six-modality schema with concrete per-modality dim and example feature.~~ ✅ **done 2026-11-26**: the table is in §2.1 with the dims from `MODALITY_DIMS` (`src/foundation/config.py`), and it is now a numbered table with a caption.
 - **LaTeX port** (`paper/METHODS_PAPER.tex`) for the venue submission (Bioinformatics Advances requires LaTeX; PLOS Comp Bio accepts either).
 
 ## What's intentionally NOT in this draft
