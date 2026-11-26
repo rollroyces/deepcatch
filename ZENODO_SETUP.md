@@ -15,7 +15,7 @@ which would have put the DOI on the wrong version).
 - **README** has citation blocks.
 - **MODEL.md** has a `@software` BibTeX entry ready for the DOI.
 - **paper.md** and `paper/PAPER.md` have `@misc` BibTeX entries.
-- The submission artefact is `paper/biorxiv_submission_v2.3.0.pdf`
+- The release artefact is `paper/biorxiv_submission_v2.3.0.pdf`
   (compiled from the current `paper/paper.tex`).
 
 ## What needs to happen (one-time, ~5 minutes)
@@ -202,33 +202,35 @@ A test enforces this: a `doi:` key, or an `identifiers:` entry of type
 ## What the DOI does NOT give you
 
 - **Peer review.** A Zenodo DOI is not the same as a journal
-  acceptance. For peer review, follow up with bioRxiv → journal
-  submission.
-- **Indexing in PubMed.** Zenodo DOIs are not PubMed-indexed. bioRxiv
-  DOIs are also not PubMed-indexed. Only journal-acceptance DOIs
-  end up in PubMed.
+  acceptance. For peer review, follow up with a journal submission —
+  JOSS or PLOS Computational Biology (see `docs/JOURNAL_SUBMISSION.md`).
+- **Indexing in PubMed.** Zenodo DOIs are not PubMed-indexed, and
+  neither are arXiv's (a DataCite DOI). Only a journal's own DOI ends
+  up in PubMed.
 
-## Alternative: just use bioRxiv's DOI
+## The preprint server's own DOI
 
-Once the bioRxiv submission is accepted (~24-48 hour screening),
-bioRxiv will assign a DOI. That DOI is just as good as Zenodo's for the
-purposes of being cited, and it's more discoverable to the
-bioinformatics community. The choice is yours; both work.
+arXiv assigns a DOI automatically when the preprint is posted — a
+**DataCite** DOI (`10.48550/arXiv.NNNNNN`) — and that is the *paper's*
+identifier, not the software's. Both are needed: the Zenodo DOI is what
+a reviewer cites for the **code**, the arXiv DOI is what they cite for
+the **paper**. They are different objects with different registries
+(Crossref for Zenodo, DataCite for arXiv), so the ORCID record wants
+both.
 
 ## Honest recommendation
 
-- **Submit to bioRxiv first** — the PDF is
-  `paper/biorxiv_submission_v2.3.0.pdf` and the submission metadata is
-  in `paper/BIORXIV_SUBMISSION.md` (see also
-  `docs/JOURNAL_SUBMISSION.md` for the venue map).
-- **Once the bioRxiv DOI is in hand, use it as the primary citation
-  in the README** rather than a Zenodo DOI. bioRxiv is more visible
-  in the bioinformatics community.
-- **Tag the GitHub release with `v2.3.0`** (and, if you want the
-  preprint code pinned separately, `v2.3.0-bioRxiv-2026-XX-XX`) so
-  anyone reproducing the result uses the exact same code as the
-  pre-print.
-- **Zenodo is a backup**, not the primary. Skip it if you don't want
-  the extra 5 minutes — but if you do tag, tag **v2.3.0**, because a
-  DOI minted on an older tag would misrepresent which code produced the
-  reported numbers.
+- **Submit to arXiv first** — the source bundle is built and verified by
+  `python3 scripts/make_arxiv_bundle.py --verify`, and every field of
+  the submission form is written down in `paper/BIORXIV_SUBMISSION.md`
+  §3a (see also `docs/JOURNAL_SUBMISSION.md` for the venue map).
+- **Cite the software by its Zenodo DOI and the paper by its arXiv
+  DOI.** arXiv is the only route left open: bioRxiv rejected the
+  manuscript on 2026-11-25 under its affiliation rule, so there is no
+  bioRxiv DOI to wait for.
+- **The Zenodo archive already exists** — `v2.3.0` is published as
+  10.5281/zenodo.24453044. Its one stale detail is the creator
+  affiliation, which still reads as it stood at that tag ("…verified
+  email domain umich.edu"); Zenodo lets a published record's metadata
+  be edited without changing its DOI, so that is a two-minute fix
+  rather than a new version (`docs/JOURNAL_SUBMISSION.md` §4).

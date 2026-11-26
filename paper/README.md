@@ -1,15 +1,17 @@
 # DeepCatch Paper — Compilation and Submission Guide
 
 This directory holds the DeepCatch manuscripts and the artefacts needed to
-submit them. **Status as of v2.3.0 (2026-11-16): the preprint is compiled
-and current; it has NOT been uploaded** — the remaining steps need the
-author's arXiv account and the Zenodo DOI.
+submit them. **Status as of v2.3.0 (2026-11-26): the preprint is compiled
+and current; it has NOT been submitted** — the remaining steps need the
+author's arXiv account and his own **Submit Article** click. The release
+carries the Zenodo DOI (10.5281/zenodo.24453044), so nothing else is
+waiting on it.
 
 ## Which manuscript is which
 
 | File | What it is | State |
 |------|------------|-------|
-| `paper.tex` | **Primary manuscript** (preprint). Panel-based MRD detection, the tumor-naive fragmentomics channel, the held-out external validation, the leave-one-study-out transfer measurement and the methylation null. | ✓ compiles; `biorxiv_submission_v2.3.0.pdf` is the submission artefact |
+| `paper.tex` | **Primary manuscript** (preprint). Panel-based MRD detection, the tumor-naive fragmentomics channel, the held-out external validation, the leave-one-study-out transfer measurement and the methylation null. | ✓ compiles; `biorxiv_submission_v2.3.0.pdf` is the compiled reference copy — arXiv receives the TeX source bundle |
 | `biorxiv_submission_v2.3.0.pdf` | Compiled submission PDF (9 pages, 3 figures) | ✓ current — regenerated from `paper.tex` after the v2.3.0 results landed |
 | `METHODS_PAPER.md` | The long-form methods manuscript (the PLOS Computational Biology / Bioinformatics Advances article; JOSS gets the root `paper.md`). Same evidence, more detail, per-cancer tables and a reproducibility paragraph. | ✓ numbers regenerated from the seeded benchmark |
 | `METHODS_PAPER.tex` | The methods manuscript as LaTeX — **generated** from `METHODS_PAPER.md` by `scripts/markdown_to_latex_paper.py`, not transcribed. Do not hand-edit it: the next generation erases the edit. | ✓ compiles under pdfTeX and tectonic; CI compiles it and uploads the PDF. **Not yet a PLOS submission file**: it uses the `article` class, and PLOS Comp Bio requires its own template (see `docs/JOURNAL_SUBMISSION.md`) |

@@ -3,11 +3,10 @@
 
 Why this exists
 ---------------
-The preprint can be posted to bioRxiv (a PDF) or to arXiv (a LaTeX
-source archive). The arXiv route has one requirement the bioRxiv route
-does not: the source has to compile *standalone*, outside this
-repository. This manuscript reaches outside the repository for three
-figures:
+The preprint goes to arXiv, and arXiv takes a LaTeX source archive
+rather than a PDF. That has one requirement a PDF upload does not: the
+source has to compile *standalone*, outside this repository. This
+manuscript reaches outside the repository for three figures:
 
     ../results/real_tcga_performance.png
     ../docs/figures/fig1_pooled_roc.png

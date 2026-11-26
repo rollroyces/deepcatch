@@ -466,7 +466,9 @@ def build_document() -> str:
         "\n"
         f"<!-- {length} characters against bioRxiv's {BIORXIV_LIMIT}-character "
         "limit;\n"
-        "     this is the text to paste into the submission form. -->\n"
+        "     this is the manuscript's own abstract. The live route is arXiv, and\n"
+        "     its metadata field takes the abridged text in "
+        "docs/ARXIV_ABSTRACT.md. -->\n"
     )
 
 

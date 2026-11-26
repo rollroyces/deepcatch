@@ -5,9 +5,11 @@
 > [`biorxiv_submission_v2.3.0.pdf`](biorxiv_submission_v2.3.0.pdf). This
 > file predates the held-out external-validation, leave-one-study-out and
 > methylation-channel results, so it does not contain them — its abstract
-> is a shorter earlier revision of the same one. The paste-ready abstract
-> for the bioRxiv form is
-> [`../docs/PREPRINT_ABSTRACT.md`](../docs/PREPRINT_ABSTRACT.md), which is
+> is a shorter earlier revision of the same one. The paste-ready text of
+> the manuscript's own abstract is
+> [`../docs/PREPRINT_ABSTRACT.md`](../docs/PREPRINT_ABSTRACT.md), and the
+> abridged text for arXiv's metadata field is
+> [`../docs/ARXIV_ABSTRACT.md`](../docs/ARXIV_ABSTRACT.md); both are
 > generated from the current manuscript.
 
 **Authors:** Yu Ching Lam¹

@@ -434,7 +434,7 @@ artifact no longer holds.
 | Per-cancer-type AUC and sens@spec | ✅ LUAD 0.9825, OV 0.9930, CRC 0.9754, BRCA 0.9738, HCC 0.7221 — **the spread is real, and that is the interesting part** | `results/per_cancer_sens_at_spec.json` |
 | Methylation channel | ✅ runs end-to-end on real public fragments (103,863 loci) and is reported as a **null**: AUC 0.9444 is exactly its coverage baseline (difference 0.0, p = 1.0) | `docs/METHYLATION_PIPELINE.md` |
 | Mutation-informed panel | ✅ real TCGA-LUAD mutations (5,738) scored with CADD v1.7; the **plasma reads are simulated** at a target ctDNA fraction, not sequenced from a patient | `RESULTS.md` §1 |
-| arXiv preprint | ⏳ PDF ready and current (v2.3.0); awaiting the author's upload + the Zenodo DOI | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
+| arXiv preprint | ⏳ the source bundle is built and verified, and every form field is prepared; awaiting the author's arXiv account (captcha + email verification) and his own **Submit Article** click | `paper/BIORXIV_SUBMISSION.md`, `docs/JOURNAL_SUBMISSION.md` |
 | 1040 tests collected (`pytest src test -q`) | ✅ 854 core + 186 deep-learning, all green | `test/` + the per-module suites |
 | CI jobs green (core, deep-learning, paper PDF, docs site) | ✅ | `.github/workflows/` |
 | 4 audit rounds completed | ✓ | `~/JOURNAL_REVIEW_*`, `~/ROUND4_*`, repo `AUDIT_REPORT*.md` |

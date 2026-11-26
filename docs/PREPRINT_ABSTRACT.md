@@ -21,4 +21,5 @@ Conclusions. DeepCatch provides a reproducible, honest benchmark for ultra-sensi
 Keywords: cfDNA; ctDNA; MRD; liquid biopsy; early cancer detection; panel-based detection; duplex sequencing; open science
 
 <!-- 2940 characters against bioRxiv's 3000-character limit;
-     this is the text to paste into the submission form. -->
+     this is the manuscript's own abstract. The live route is arXiv, and
+     its metadata field takes the abridged text in docs/ARXIV_ABSTRACT.md. -->

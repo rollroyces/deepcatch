@@ -43,6 +43,37 @@ def _tex() -> str:
     return (_REPO_ROOT / "paper" / "paper.tex").read_text(encoding="utf-8")
 
 
+# The documents that tell the author where the preprint goes.
+#
+# The route was settled on 2026-11-25: bioRxiv rejected this manuscript
+# because it requires an institutional affiliation, and arXiv asks for
+# none. `docs/JOURNAL_SUBMISSION.md` then said, in its own summary,
+# "Submit the preprint to bioRxiv now" while the rows below it recorded
+# the rejection -- the summary and the detail had drifted apart, and
+# nothing checked it. A document that sends the author to a server that
+# has already refused the paper is worse than a stale number: it costs
+# him a submission to find out.
+_ROUTE_DOCUMENTS = (
+    "NEXT_STEPS.md",
+    "ZENODO_SETUP.md",
+    "docs/JOURNAL_SUBMISSION.md",
+    "docs/PATH_TO_IMPACT.md",
+    "docs/PORTFOLIO_ROADMAP.md",
+    "docs/SCHOLAR_VISIBILITY.md",
+)
+
+# An instruction to send the manuscript to bioRxiv. The closed attempt is
+# still recorded in these documents -- it is *why* the route is arXiv --
+# and those records are not imperative, so the check is for the
+# instruction, not for the mention.
+_TO_BIORXIV = re.compile(
+    r"\b(?:submit|submitting|submitted|upload|uploaded|uploading|post|"
+    r"posted|posting|publish|published|publishing)"
+    r"\s+(?:\w+\s+){0,3}to\s+bioRxiv\b",
+    re.I,
+)
+
+
 def test_the_abstract_is_the_manuscripts_abstract():
     """Every headline number in the manuscript is in the rendered text."""
     abstract = _gen.latex_abstract(_tex())
@@ -70,8 +101,31 @@ def test_the_rendered_abstract_fits_biorxivs_limit():
         f"3000 and the repo keeps a 2950 margin")
 
 
-def test_the_document_states_the_length_it_measured():
-    """The number the document prints is the number it has."""
+def test_the_documents_state_the_measured_length_and_the_live_route():
+    """Every character count and every route in a document must be real.
+
+    The character count comes first, and it has been wrong before: the
+    arXiv field's length is also quoted in prose, in documents that
+    are NOT generated -- and prose is not regenerated, so the number
+    drifts away from the file the paste-ready text lives in. It already
+    did: the field's text grew by two characters when its paragraph
+    breaks were indented the way arXiv's own text processing needs, and
+    three documents kept quoting the old length while the paste-ready
+    file measured the new one. Every character count a document states
+    must therefore be one the generator measures, or one of the two
+    limits it holds.
+
+    The route belongs in the same place, because it drifts the same way
+    and costs more than a stale number. The route was settled on
+    2026-11-25: bioRxiv rejected this manuscript because it requires an
+    institutional affiliation, and arXiv asks for none.
+    `docs/JOURNAL_SUBMISSION.md` then said, in its own summary, "Submit
+    the preprint to bioRxiv now" while the rows below it recorded the
+    rejection -- the summary and the detail had drifted apart, and
+    nothing checked it. A document that sends the author to a server
+    that has already refused the paper is worse than a stale number: it
+    costs him a submission to find out.
+    """
     document = _gen.build_document()
     length = _gen.abstract_length(_tex())
     assert f"{length} characters" in document, (
@@ -80,15 +134,6 @@ def test_the_document_states_the_length_it_measured():
     # And the abstract it carries is the abstract that was measured.
     assert _gen.latex_abstract(_tex()) in document
 
-    # The arXiv field's length is also quoted in prose, in documents that
-    # are NOT generated -- and prose is not regenerated, so the number
-    # drifts away from the file the paste-ready text lives in. It already
-    # did: the field's text grew by two characters when its paragraph
-    # breaks were indented the way arXiv's own text processing needs, and
-    # three documents kept quoting the old length while the paste-ready
-    # file measured the new one. Every character count a document states
-    # must therefore be one the generator measures, or one of the two
-    # limits it holds.
     tex = _tex()
     allowed = {
         _gen.abstract_length(tex),              # the manuscript's abstract
@@ -118,6 +163,45 @@ def test_the_document_states_the_length_it_measured():
         + "\nThe paste-ready text is generated and its length is measured, "
           "not written by hand: re-run the generator and quote the number "
           "it prints.")
+
+    # The route, in the documents that tell the author where to take it.
+    # The closed attempt is still recorded in them -- it is *why* the
+    # route is arXiv -- and those records are not imperative, so the
+    # check is for the instruction, not for the mention.
+    sent_to_biorxiv: list[str] = []
+    for rel in _ROUTE_DOCUMENTS:
+        path = _REPO_ROOT / rel
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8")
+        for match in _TO_BIORXIV.finditer(text):
+            sent_to_biorxiv.append(f"{rel}: {match.group(0)!r}")
+        assert "arXiv" in text, (
+            f"{rel} does not name the route at all; the preprint goes to "
+            "arXiv, and a document that never says where it goes is one "
+            "more document to drift.")
+    assert not sent_to_biorxiv, (
+        "a document still sends the preprint to bioRxiv:\n  "
+        + "\n  ".join(sent_to_biorxiv)
+        + "\nbioRxiv rejected this manuscript on 2026-11-25 under its "
+          "affiliation rule (\"your manuscript is inappropriate for bioRxiv "
+          "because bioRxiv requires authors to add an institutional "
+          "affiliation\"), so the route is arXiv.")
+
+    # And the route has to be named where the reader acts on it: the
+    # submission sequence and the recommendation in the venue map.
+    journal = (_REPO_ROOT / "docs" / "JOURNAL_SUBMISSION.md").read_text(
+        encoding="utf-8")
+    assert "arXiv preprint" in journal, (
+        "docs/JOURNAL_SUBMISSION.md's submission sequence does not name the "
+        "route; the preprint goes to arXiv.")
+    parts = journal.split("**Recommendation.**", 1)
+    assert len(parts) == 2, (
+        "docs/JOURNAL_SUBMISSION.md has no Recommendation paragraph; the "
+        "route has to be stated somewhere a reader acts on.")
+    assert "arXiv" in parts[1].split("\n\n", 1)[0], (
+        "docs/JOURNAL_SUBMISSION.md's recommendation does not name the "
+        "route; the preprint goes to arXiv.")
 
 
 def test_the_title_and_the_citation_file_agree():

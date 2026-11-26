@@ -436,6 +436,45 @@ cohort size.
 
 ### Fixed
 
+- **The venue map's summary contradicted its own detail: it still presented
+  bioRxiv as the route, after the same document had recorded that bioRxiv
+  rejected this manuscript.** `docs/JOURNAL_SUBMISSION.md` §1's sequence
+  diagram, §1's prose ("bioRxiv assigns the DOI and the priority"), §2's
+  venue table ("Fits this work? yes — priority + DOI"), §2's
+  Recommendation ("Submit the preprint to bioRxiv now") and §3's own
+  heading ("bioRxiv — ready except for the upload") all still sent the
+  author to the server that had already refused the paper — while the rows
+  below recorded the rejection in bioRxiv's own words: *"your manuscript is
+  inappropriate for bioRxiv because bioRxiv requires authors to add an
+  institutional affiliation"* (2026-11-25). The live route is arXiv, whose
+  registration asks for no institutional affiliation and offers "Independent"
+  by name. §1 and §2 now name arXiv, §3 leads with the arXiv readiness
+  table and keeps the bioRxiv one as the record of the closed attempt, and
+  §4 was rewritten: the Zenodo DOI is already minted
+  (10.5281/zenodo.24453044) and the open item is the archive's creator
+  metadata, which still carries the affiliation as it stood at that tag.
+  Two things the route change costs are stated rather than glossed:
+  bioRxiv's direct transfer to a partner journal is gone (arXiv's
+  submission workflow ends at "Submit Article"), and the preprint's DOI is
+  a **DataCite** DOI, not a Crossref one. The same sweep reached
+  `NEXT_STEPS.md` (§0, the "TODAY" action list), `docs/PATH_TO_IMPACT.md`,
+  `docs/PORTFOLIO_ROADMAP.md`, `ZENODO_SETUP.md` and
+  `docs/SCHOLAR_VISIBILITY.md`, all of which still named bioRxiv as the
+  server to submit to. A guard now holds it: the preprint-document test
+  checks that no document in the route set instructs a submission to
+  bioRxiv, that each of them names arXiv, and that the venue map's
+  sequence and recommendation name it too — the same drift the character
+  count had already been caught in, caught in the same place.
+- **Two claims about Zenodo and about arXiv's abstract limit were wrong.**
+  The repository said the published v2.3.0 archive was immutable, so a
+  changed declaration could only reach it as a new release with a new
+  DOI: Zenodo's own help says the opposite — "You can edit the metadata
+  (title, creators, etc) of a published record at any time… This does not
+  affect your DOI" — so the stale creator affiliation is a two-minute
+  edit and a new tag is an option, not a requirement. And the local
+  submission sheet said arXiv's 1,920-character limit would force the
+  manuscript's own abstract to be abridged: the limit is on the metadata
+  field, and the manuscript keeps its abstract unchanged.
 - **The venue table had JOSS's length rule wrong, and the JOSS paper is
   over it.** The table recorded "~2,500 words", which was neither
   JOSS's current guidance nor its older one: the current author

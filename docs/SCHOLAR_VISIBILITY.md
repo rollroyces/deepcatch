@@ -41,8 +41,8 @@ markdown manuscripts, `CITATION.cff` and `AUTHORS`.
 | Source | State |
 |---|---|
 | ORCID `0009-0008-9113-769X` | name **Yu Ching Lam** (given "Yu Ching", family "Lam") — identical to every surface above. **The works list is empty**: the Zenodo DOI is not linked to the record, so ORCID-based discovery finds nothing. The record also still carries one public, open-ended employment (University of Michigan), which is the affiliation question in §4. |
-| Zenodo `10.5281/zenodo.24453044` | published, v2.3.0, MIT, creator "Lam, Yu Ching" **with the ORCID**, related identifier pointing at the `v2.3.0` tag. This is the citable software identifier, and its metadata is complete. |
-| The preprint | **not posted yet** — no bioRxiv or arXiv DOI exists, so the paper itself is not in any index. Everything below depends on this. |
+| Zenodo `10.5281/zenodo.24453044` | published, v2.3.0, MIT, creator "Lam, Yu Ching" **with the ORCID**, related identifier pointing at the `v2.3.0` tag. This is the citable software identifier. Its one stale detail is the creator's affiliation, which still reads as it stood at that tag — editable in place, DOI unchanged (`docs/JOURNAL_SUBMISSION.md` §4) |
+| The preprint | **not posted yet** — no arXiv DOI exists, so the paper itself is not in any index. Everything below depends on this. |
 | The repository | the name, the affiliation, the ORCID, the title and the DOI are consistent across the surfaces an index reads, and a guard keeps them that way. |
 
 ## 3. The three steps that need the author's accounts
@@ -51,31 +51,27 @@ In this order; each one is quick.
 
 ### 3.1 Post the preprint
 
-bioRxiv or arXiv — both feed Google Scholar automatically once the
-record is public, and both take the ORCID from the manuscript, which
-`paper/paper.tex` already carries in the author block. This is the
-step that creates the paper's citation, and it is the reason the
-manuscript's affiliation has to be decided first (it is copied onto
-the record).
+**arXiv — the route.** bioRxiv needs an institutional affiliation (see
+§4) and rejected this manuscript on 2026-11-25 under that rule; arXiv
+does not, and the source archive is already built and checked
+(`python3 scripts/make_arxiv_bundle.py --verify`). It feeds Google
+Scholar automatically once the record is public, and it takes the ORCID
+from the manuscript, which `paper/paper.tex` already carries in the
+author block. This is the step that creates the paper's citation, and it
+is the reason the manuscript's affiliation has to be decided first (it
+is copied onto the record).
 
-bioRxiv needs an institutional affiliation (see §4); arXiv does not,
-and the source archive is already built and checked
-(`python3 scripts/make_arxiv_bundle.py --verify`).
-
-**The bioRxiv account comes before the ORCID, not after.** ORCID sign-in
-only works once an account exists and the iD is associated with it from
-the account's Personal Info area: until then the callback answers "No
-account is associated with orcid, please login and associate orcid via
-the edit personal information page", and the returned URL carries
-`orcidcode=0003`. The ORCID side can therefore succeed while the
-bioRxiv side still refuses the author — which is what an ORCID
-authorization alone looks like. The reason is in the record: the ORCID
-exposes **no email address** (ORCID keeps email addresses private by
-default, and this one does), so "Create an account with ORCiD" has no
-address to register with. The working order is: email → "Check for
-Account" → create or sign in → associate the iD → submit. The
-affiliation the account carries is the one the preprint must declare,
-so that field and §4 are the same decision.
+**The arXiv account comes before the ORCID link, not after.** arXiv's own
+account page offers "Link my arXiv account with ORCID" — "This linkage
+will allow your works on arXiv to be unambiguously connected to your
+works in other systems", and "arXiv will use ORCID iDs in preference to
+the internal arXiv author identifiers". Until the link exists, an ORCID
+authorization alone changes nothing: the iD is what the DataCite
+deposit carries, so without it the work reaches the record without an
+ORCID. The working order is: register (email, username `rollroyces`,
+password, captcha) → verify the email from the message arXiv sends →
+link the iD → submit. The affiliation the account carries is the one the
+preprint must declare, so that field and §4 are the same decision.
 
 ### 3.2 Add the works to the ORCID record
 
@@ -90,8 +86,7 @@ registries:
 | Work | Source to pick in Search & Link | Why |
 |---|---|---|
 | the release (Zenodo) | **DataCite** | DataCite issued the DOI, and ORCID's DataCite integration covers software and datasets |
-| the preprint (bioRxiv) | **Crossref** | bioRxiv mints Crossref DOIs (prefix 10.1101) |
-| the preprint (arXiv, if that route is used instead) | **DataCite** | arXiv assigns its own DOIs (`10.48550/arXiv.NNNNNN`) and "the associated article metadata is submitted to DataCite", not Crossref — so the source to pick depends on which server posted the preprint, and the arXiv case is DataCite |
+| the preprint (arXiv) | **DataCite** | arXiv assigns its own DOIs (`10.48550/arXiv.NNNNNN`) and "the associated article metadata is submitted to DataCite", not Crossref. (bioRxiv would have been Crossref, prefix 10.1101 — but it rejected this manuscript, so no bioRxiv DOI was ever minted) |
 
 Search for the DOI, confirm the record, and grant the source
 permission. Two works, two clicks each.
@@ -141,7 +136,7 @@ the ones a reviewer compares against each other:
 | Surface | The affiliation it declares | Guarded? |
 |---|---|---|
 | `paper/paper.tex` (the manuscript's author block, and so the title page of the uploaded PDF) | `Independent Researcher` | yes, exactly |
-| `CITATION.cff` (and the Zenodo record, which archived the same declaration) | `Independent Researcher` — and the Zenodo v2.3.0 record carries that same string with a qualifier, `Independent Researcher (no institutional affiliation; verified email domain umich.edu)`, read back from the published record on 2026-11-25; that version is immutable, so a later change of declaration reaches the archive as a new release with a new DOI | yes, exactly |
+| `CITATION.cff` (and the Zenodo record, which archived the same declaration) | `Independent Researcher` — and the Zenodo v2.3.0 record carries that same string with a qualifier, `Independent Researcher (no institutional affiliation; verified email domain umich.edu)`, read back from the published record on 2026-11-25; Zenodo lets a published record's metadata be edited without changing its DOI ("You can edit the metadata (title, creators, etc) of a published record at any time… This does not affect your DOI"), so the archive can be brought into line in place — or, if a new release is wanted instead, as a new version with a new DOI | yes, exactly |
 | `docs/PREPRINT_ABSTRACT.md` (generated from the manuscript) | `Independent Researcher` | yes, exactly |
 | `paper.md` (the JOSS paper's author field) | `Independent Researcher` | yes, exactly |
 | `MODEL.md` (the model card's author row) | `Independent Researcher` | yes, exactly |

@@ -26,21 +26,29 @@ partner that makes someone else's assay clinically valid.
 
 ## Phase 1: Publish (Week 1-2)
 
-### 1.1 bioRxiv preprint (24-48 hours)
+### 1.1 arXiv preprint (1-4 days of moderation)
 
 ```
-1. Register at orcid.org (free, 5 min)
-2. Register at biorxiv.org with ORCID (free, 5 min)
+1. The ORCID is already registered (`0009-0008-9113-769X`) and verified
+2. Register at arxiv.org (free, 5 min + a captcha) — username rollroyces,
+   organization "Independent", archives q-bio
 3. Affiliation: "Independent Researcher"
-4. Submit abstract from docs/PREPRINT_ABSTRACT.md
+4. Submit the source bundle, with the abstract field from
+   docs/ARXIV_ABSTRACT.md
 5. Link to github.com/rollroyces/deepcatch in the preprint
 ```
 
-A bioRxiv preprint gives you:
+An arXiv preprint gives you:
 - A DOI (permanent, citable identifier)
-- Inclusion in Google Scholar, PubMed, Europe PMC
+- Inclusion in Google Scholar, Europe PMC
 - A timestamp (priority of discovery)
 - Something to put in your email signature when you contact partners
+
+> **bioRxiv was the first choice and it is closed.**  It rejected this
+> manuscript on 2026-11-25: bioRxiv requires an institutional affiliation,
+> and "Independent Researcher" is not an entity it will open for.  arXiv
+> asks for no institutional affiliation — *"If you are unaffiliated you may
+> enter 'Independent' as your organization"* — so that is the route.
 
 ### 1.2 Social proof (this week)
 
@@ -69,8 +77,8 @@ Post exactly these three things:
 
 Zenodo (zenodo.org) mints a DOI for your GitHub release.  Connect your
 GitHub account → select the deepcatch repo → publish v2.3.0.  This gives
-you a permanent DOI independent of bioRxiv, and auto-updates with new
-releases.
+you a permanent DOI independent of the preprint server, and auto-updates
+with new releases.
 
 ---
 
@@ -110,7 +118,7 @@ to say.
 > the computational side; you provide the data.  The result is a co-authored
 > clinical validation paper and a validated pipeline your team can use.
 
-> The preprint is at [biorxiv link].  Would you be open to a 15-minute
+> The preprint is at [arXiv link].  Would you be open to a 15-minute
 > call to discuss?
 
 > Best,
@@ -215,7 +223,7 @@ everyone who tested it confirmed it works.
   parameters.  Ship it.
 
 - **Do not wait for institutional support.**  The open-source path does not
-  require it.  bioRxiv, Twitter, and GitHub are the institution.
+  require it.  arXiv, Twitter, and GitHub are the institution.
 
 - **Do not overclaim.**  The paper says "simulation benchmark with real
   mutations."  It does NOT say "clinically validated."  The clinical
@@ -230,8 +238,8 @@ everyone who tested it confirmed it works.
 
 ## Your first 3 actions, right now
 
-1. **Register on ORCID** → orcid.org/register (5 min)
-2. **Submit to bioRxiv** → biorxiv.org/submit (abstract at docs/PREPRINT_ABSTRACT.md)
+1. **Register the arXiv account** → arxiv.org/user/register (5 min + a captcha) — username `rollroyces`, organization "Independent", archives q-bio. The ORCID is already registered and verified, so nothing else is waiting.
+2. **Submit to arXiv** → arxiv.org/submit (the abstract field is at docs/ARXIV_ABSTRACT.md; the source bundle is built by `python3 scripts/make_arxiv_bundle.py --verify`)
 3. **Send the partner email** → pick 3 contacts from the target list above, personalize the template, send today
 
 That's it.  The pipeline is ready.  The benchmark is solid.  The assay

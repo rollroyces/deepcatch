@@ -1,7 +1,7 @@
 # DeepCatch + cfdna-fragmentomics-pipeline: Consolidated Research Results
 
 **Document version**: 2026-08-24
-**For**: bioRxiv submission package + future collaborators / reviewers
+**For**: preprint submission package + future collaborators / reviewers
 **Repos**:
 - github.com/rollroyces/deepcatch (v2.2.0)
 - github.com/rollroyces/cfdna-fragmentomics-pipeline (v0.2.0)

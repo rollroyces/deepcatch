@@ -21,32 +21,41 @@ asserts that the manuscript quotes the artifacts.
 
 ## 0. Publish the preprint (TODAY — 10 minutes)
 
-The PDF is compiled and current: **`paper/biorxiv_submission_v2.3.0.pdf`**
-(9 pages, 3 figures, all results current). Three steps, all of them
+The manuscript is compiled and current: **`paper/biorxiv_submission_v2.3.0.pdf`**
+(9 pages, 3 figures, all results current), and the file arXiv actually
+receives — the TeX source archive — is built and verified by
+`python3 scripts/make_arxiv_bundle.py --verify`. Three steps, all of them
 need your browser session:
 
 ```bash
-# 1. Zenodo integration (once) -> https://zenodo.org/account/settings/github/
-#    enable rollroyces/deepcatch
+# 1. Register the arXiv account (two steps, a captcha and an email
+#    verification) -> https://arxiv.org/user/register
+#    username rollroyces, organization "Independent", archives q-bio
+#
+#    (optional, and not blocking the preprint): Zenodo's v2.3.0 record
+#    carries the affiliation as it stood at that tag. It can be edited in
+#    place, or a new tag can be cut -- see docs/JOURNAL_SUBMISSION.md §4
 
-# 2. Tag the release (the DOI is minted from the tag)
-cd /path/to/deepcatch
-git checkout main && git pull
-git tag -a v2.3.0 -m "DeepCatch v2.3.0: held-out external validation (0.9444), leave-one-study-out transfer, regularized late fusion (0.9825), methylation channel measured as a null, reproducible benchmark"
-git push origin v2.3.0
-# then publish the release at
-# https://github.com/rollroyces/deepcatch/releases/new
-# attaching paper/biorxiv_submission_v2.3.0.pdf
+# 2. Download the source archive from the latest "Compile Paper PDF" run
+#    (it holds deepcatch_v2_3_0.tar.gz) -- not a locally built copy
+gh run list --workflow compile-paper.yml --limit 1
+gh run download <run-id> -n deepcatch-arxiv-source
 
-# 3. Upload the PDF to bioRxiv and add the corresponding-author email
-#    to the submission form (the email is deliberately not in the repo)
+# 3. Fill in the submission form and press "Submit Article" yourself
+#    (every field is written down in paper/BIORXIV_SUBMISSION.md §3a)
 ```
 
-The submission metadata is in `paper/BIORXIV_SUBMISSION.md`; the venue
-map for what comes after the preprint is in
-`docs/JOURNAL_SUBMISSION.md` (preprint first, then JOSS or PLOS
-Computational Biology). The ORCID is already registered and in
-`CITATION.cff`, and the release carries the DOI
+**bioRxiv was the first route and it is closed.** It rejected the
+manuscript on 2026-11-25 because it requires an institutional
+affiliation, and `Independent Researcher` is not an entity it will open
+for. arXiv asks for none — its own directions say *"If you are
+unaffiliated you may enter 'Independent' as your organization"*.
+
+The submission fields are in `paper/BIORXIV_SUBMISSION.md` §3a (that file
+is gitignored: it carries personal details); the venue map for what comes
+after the preprint is in `docs/JOURNAL_SUBMISSION.md` (preprint first,
+then JOSS or PLOS Computational Biology). The ORCID is already registered
+and in `CITATION.cff`, and the release carries the DOI
 10.5281/zenodo.24453044 (v2.3.0), declared there too.
 
 ---

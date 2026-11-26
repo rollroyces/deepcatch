@@ -78,7 +78,7 @@ pretrained-model breakthrough.
 
 🚫 **Held-out clinical validation** — needs real plasma cfDNA from a clinical collaborator.
 
-🚫 **bioRxiv submission** — the PDF is compiled and current, and the ORCID (`0009-0008-9113-769X`) is registered, claimed and email-verified against the ORCID registry. What remains is the upload itself, the corresponding-author email, and the Zenodo DOI (see `ZENODO_SETUP.md`).
+🚫 **The preprint submission** — the route is **arXiv**, and it is closed on bioRxiv: bioRxiv rejected the manuscript on 2026-11-25 because it requires an institutional affiliation. The ORCID (`0009-0008-9113-769X`) is registered, claimed and email-verified against the ORCID registry, the source bundle is built and verified by `python3 scripts/make_arxiv_bundle.py --verify`, and every field of the submission form is written down in `paper/BIORXIV_SUBMISSION.md` §3a. What remains is the arXiv account (the captcha and the email verification) and the author's own **Submit Article** click. The Zenodo DOI is done: `10.5281/zenodo.24453044` (see `ZENODO_SETUP.md`).
 
 🚫 **Clinical metadata** (Enhancement #5) — blocked on the FinaleDB Postgres side; the fragment objects are reachable, the metadata is not.
 
@@ -94,12 +94,12 @@ pretrained-model breakthrough.
 |---|---|---|---|---|
 | Register production ORCID at orcid.org (currently sandbox) | both | user | 15 min | user action |
 | Render `BIORXIV_PAPER_FRAGMENTOMICS.md` to PDF (pandoc) | deepcatch-methylation | me | 30 min | none |
-| Submit to bioRxiv via web form | both | user | 30-60 min | user action + production ORCID |
+| Submit to arXiv via web form | both | user | 30-60 min | user action (the arXiv account: captcha + email verification) |
 | Email Yaping Liu / Ravi Bandaru (Northwestern) for FinaleDB IAM | both | me (via Gmail skill) | 15 min | none |
 | Create Zenodo deposit + DOI for code release | all 3 | me | 1 hour | user action (Zenodo login) |
 | Update docs site with v3 status badge | deepcatch | me | 15 min | V3 implementation |
 
-**Exit criteria:** Papers on bioRxiv with DOIs; FinaleDB IAM response or polite decline.
+**Exit criteria:** The preprint posted on arXiv with its DOI; FinaleDB IAM response or polite decline.
 
 ### Phase B — V3 model implementation (4-8 weeks)
 
@@ -159,7 +159,7 @@ pretrained-model breakthrough.
 
 ### This week (sequential, not parallel)
 
-1. ⏳ **Register production ORCID** (user, 15 min) — gates bioRxiv submission (still pending — was ⏳ in the 2026-09-15 version)
+1. ✅ **Register the ORCID** — done: `0009-0008-9113-769X` is registered, claimed and email-verified against the ORCID registry. What gates the preprint now is the arXiv account, not the ORCID
 2. ⏳ **Render BIORXIV_PAPER_FRAGMENTOMICS.md to PDF** (me, 30 min) — pandoc (still pending)
 3. ⏳ **Email FinaleDB authors** (me, 15 min) — request FinaleDB IAM or Globus auth (still pending)
 4. ✅ **CADD Top-K=20 per-subgroup validated on 150-patient GDC cohort** (me, complete at `8b6ce59`) — whole-cohort +35pp; per-subgroup +24 to +50pp on 7/8 LUAD subgroups; supersedes Top-K=200 from 20-patient cohort
@@ -168,7 +168,7 @@ pretrained-model breakthrough.
 
 ### Next 2 weeks
 
-7. ⏳ **bioRxiv submission** (user, 30-60 min) — once ORCID is registered (this is the **next user action** that unblocks public visibility)
+7. ⏳ **arXiv submission** (user, 30-60 min) — the arXiv account (captcha, then the email verification) and the author's own **Submit Article** click; every field of the form is already prepared in `paper/BIORXIV_SUBMISSION.md` §3a (this is the **next user action** that unblocks public visibility)
 8. ⏳ **V3 Phase B implementation** (me, 6-8 hours wall time, mostly compute) — informed by per-cancer top-K + CADD subgroup results
 9. ⏳ **Update docs site** (me, 30 min) — V3 status badge + new headline numbers if Phase B succeeds
 
@@ -194,7 +194,7 @@ pretrained-model breakthrough.
 | V3 Sens@99% doesn't reach 0.80 target | Medium (50%) | Medium | Ship V3 as methods paper anyway; honest framing in paper |
 | V3 per-cancer Sens@99% < 0.50 (esp. OV) | Medium (40%) | High | Document OV gap; ship per-cancer partial results with caveat |
 | FinaleDB remains broken | Medium (40%) | High | Use Zenodo CRAG + synthetic; rely on existing 627-sample cohort |
-| bioRxiv rejected (research-stage, not clinical) | Medium (30%) | Low | Target Bioinformatics / PLOS Comp Bio instead; documented in JOURNAL_REVIEW_REJECTION_ANALYSIS.md |
+| bioRxiv rejected the manuscript (no institutional affiliation, 2026-11-25) | **Materialised** | Low | The route is arXiv, which asks for no institutional affiliation; the journal targets (JOSS, PLOS Comp Bio, Bioinformatics Advances) are unchanged |
 | Production ORCID rejected (sandbox transition issues) | Low (10%) | High | Submit without ORCID if needed; some journals accept this |
 | Methylation integration doesn't improve AUC | High (60%) | Medium | Honest paper; methylation as research-stage channel only |
 | Prevalence bottleneck blocks clinical translation | **High (75%)** | High | Honest paper; explicit "research-stage, not screening-ready" statement |
@@ -216,7 +216,7 @@ pretrained-model breakthrough.
 The portfolio is complete when **all** of the following are met:
 
 - ☐ All 3 repos on main, all CI green, all tests passing
-- ☐ bioRxiv paper submitted with DOI
+- ☐ Preprint submitted to arXiv with its DOI
 - ☐ Zenodo DOI for all 3 repos
 - ☐ V3 model implemented + evaluated against acceptance criteria (or honest "V3.0 methods paper" if sensitivity targets missed)
 - ☐ Per-cancer AUC table committed to results/
@@ -233,7 +233,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 | # | Criterion | Status (2026-09-17) | Evidence |
 |---|---|---|---|
 | 1 | All 3 repos on main, CI green, tests passing | ✅ | deepcatch (current `main`: **1040 tests**, 3 CI workflows / 10 jobs green; the milestone commit was `760eb31`), pipeline `eb1529e` (126/126), methylation `addfcab` (15/15, not present in this workspace) |
-| 2 | bioRxiv paper submitted with DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`) and `paper/biorxiv_submission_v2.3.0.pdf` is compiled and current; only the upload and the contact email remain |
+| 2 | Preprint submitted to arXiv with its DOI | ☐ | Pending user action — the ORCID is registered (`0009-0008-9113-769X`), the source bundle is built and verified, and every form field is prepared in `paper/BIORXIV_SUBMISSION.md` §3a; what remains is the arXiv account (his captcha and email verification) and his own **Submit Article** click |
 | 3 | Zenodo DOI for all 3 repos | ☐ | Pending user action (Zenodo login) |
 | 4 | V3 model implemented + evaluated | ✅ | The V3 pipeline runs end-to-end on real public fragments and is **evaluated**: the channel is a null (0.9444 = the coverage baseline; matched-locus difference 0.0 over 103,863 CpGs, p=1.0) with its mechanism and a depth-ablation control. `results/methylation_cohort_channel.json` (the AUCs and the matched-locus test), `results/methylation_channel_diagnosis.json` (the mechanism) |
 | 5 | Per-cancer AUC table committed | ✅ | `results/per_cancer_auc.json` + table in `bench` |
@@ -255,7 +255,7 @@ Currently met: **8 of 12** (was 7 of 11; +1 new criterion, +1 newly met by `8b6c
 | Methylation phasing | `deepcatch-methylation/METHYLATION_PROJECT.md` + `PHASE0_PLAN.md` |
 | Clinical production path | `docs/PRODUCTION_ROADMAP.md` (historical — superseded by §2 Phase D above) |
 | Immediate tactical actions | `NEXT_STEPS.md` (historical — most items now done) |
-| bioRxiv manuscript | `paper/paper.tex` (this repo) + `deepcatch-methylation/BIORXIV_PAPER*.md` |
+| Preprint manuscript | `paper/paper.tex` (this repo) + `deepcatch-methylation/BIORXIV_PAPER*.md` |
 | Reviewer pack | `REVIEWERS.md` |
 | Audit findings | `AUDIT_REPORT_2.md` |
 | Speed optimization | `cfdna-fragmentomics-pipeline/docs/SPEED_OPTIMIZATION.md` |
@@ -278,9 +278,9 @@ portfolio** with all headline results validated, a comprehensive Sens@Spec +
 PPV@Prev table, per-cancer top-K channel selection, and a new per-subgroup
 CADD Top-K=20 finding that lifts within-subgroup Sens@99% by **+24 to +50pp**
 on a **150-patient GDC TCGA-LUAD cohort** (7 of 8 LUAD subgroups positive,
-median +37pp). Two bioRxiv papers are drafted and the PDF is rendered —
-submission is blocked only on the user registering a production ORCID
-(currently sandbox `0009-0008-9113-769X`).
+median +37pp). Two preprint papers are drafted and the PDF is rendered —
+submission is blocked only on the arXiv account (the ORCID is registered
+and email-verified: `0009-0008-9113-769X`).
 
 The V3 design is **being revised** as of 2026-09-17 22:30: pooled Sens@99%
 target 0.80 (more defensible than the original 0.85), per-cancer Sens@99%
@@ -305,9 +305,11 @@ per-cancer channel selection, and the CADD×AlphaMissense honest null result.
 **Pending user action (this is what blocks public visibility):**
 - ~~Register production ORCID~~ — done (`0009-0008-9113-769X`, also in
   `CITATION.cff`)
-- **Submit to bioRxiv** — `paper/biorxiv_submission_v2.3.0.pdf` is
-  compiled and current; the form still needs the corresponding-author
-  email (deliberately not in the repo)
+- **Submit to arXiv** — the source bundle is built and verified by
+  `python3 scripts/make_arxiv_bundle.py --verify`, and every field of the
+  form is written down in `paper/BIORXIV_SUBMISSION.md` §3a; what remains
+  is the author's arXiv account (captcha, then email verification) and his
+  own **Submit Article** click
 - **Zenodo**: link the GitHub account
   (<https://zenodo.org/account/settings/github/>) and tag `v2.3.0`; the
   runbook is `ZENODO_SETUP.md`

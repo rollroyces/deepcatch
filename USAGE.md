@@ -15,7 +15,7 @@ developers extending the code.
 This document covers: install, data, common workflows, the CLI
 reference, output interpretation, and troubleshooting. The
 **scientific audit trail** is in [`RESULTS.md`](RESULTS.md) and
-[`AUDIT_REPORT_2.md`](AUDIT_REPORT_2.md); the **bioRxiv submission
+[`AUDIT_REPORT_2.md`](AUDIT_REPORT_2.md); the **preprint submission
 package** is in [`paper/BIORXIV_SUBMISSION.md`](paper/BIORXIV_SUBMISSION.md);
 the **model card** is in [`MODEL.md`](MODEL.md).
 
@@ -514,7 +514,7 @@ at fixed specificity, not for PPV directly.
 ## 9. Where to go next
 
 - **For audit trail**: [`RESULTS.md`](RESULTS.md) and [`AUDIT_REPORT_2.md`](AUDIT_REPORT_2.md)
-- **For bioRxiv submission**: [`paper/BIORXIV_SUBMISSION.md`](paper/BIORXIV_SUBMISSION.md)
+- **For the preprint submission**: [`paper/BIORXIV_SUBMISSION.md`](paper/BIORXIV_SUBMISSION.md)
 - **For DeepCatch's mutation-informed channel**: see the [DeepCatch repo's USAGE.md](../DeepCatch/USAGE.md)
 - **For a real-world MCED framing**: this work is honest methods, not
   clinical validation. For clinical-impact claims, see the limitations

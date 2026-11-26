@@ -112,7 +112,7 @@ jobs:
             exit 1
           fi
 
-      # The arXiv source bundle is the fallback venue's artefact, and the
+      # The arXiv source bundle is the venue's artefact, and the
       # submission PDF is uploaded before this runs on purpose: a broken
       # bundle must never take the submission artefact down with it. The
       # step REPORTS the failure rather than swallowing it -- with
