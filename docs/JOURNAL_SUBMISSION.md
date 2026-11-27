@@ -229,3 +229,18 @@ submissions, which cite the software's permanent identifier.
 | "Are the numbers reproducible?" | §2.5: the PCA is seeded, and `test/test_benchmark_reproducibility.py` asserts that two runs agree exactly. |
 | "Do the artifacts match the text?" | `scripts/benchmark_numbers.py` prints every quoted figure straight from the committed JSON. |
 | "No clinical cohort." | §4.2 and §4.3: this is an open-data methods benchmark, not a clinical validation, and it says so. |
+
+---
+
+## 6. Prepared, and waiting for the author's word
+
+Four things are finished and **not applied**. Each lives on its own branch
+in this repository — branches that are not pushed yet — so each is a diff
+to read rather than a decision to make from scratch.
+
+| What | Branch | What it holds | What it still needs |
+|---|---|---|---|
+| The three candidate paragraphs | `feat/preprint-candidate-paragraphs` | The PHTS null, the sequencing-depth control and the SAUNA gradient, written into `paper/paper.tex`; 43 drafted numbers checked against the artifacts; the submission PDF rebuilt (9 pages, 3 figures) and the arXiv bundle still compiling standalone | Your sentence on whether they belong in the manuscript. **This one is decided before the upload** — a changed manuscript means a changed PDF and a changed bundle |
+| The PLOS abstract | `feat/plos-abstract-candidate` | A **288-word** abstract inside PLOS's 300-word cap: a strict compression of the methods abstract that adds no claim and states no number the manuscript's abstract does not | Which of the two venues, and the author's wording |
+| The JOSS length cut | `feat/joss-length-candidate` | The JOSS paper's prose at **1,742 words**, inside JOSS's 750–1,750 range, with the duplication removed rather than the substance: every section JOSS requires, every number the registry pins to `paper.md`, and the AI disclosure's content are unchanged | Whether the cut reads right. The venue map's own row lists what was removed |
+| The CANCER-SEEK modules | `feat/cancer-seek-modules-only` | The twelve modules ported from three archived sibling repositories, on top of current `main`, merging with no conflict, with the suite's test count and every document that states it moved with it | Whether the stack belongs in a repository whose published methylation result is a measured **null**, and whether PR #7 is closed in favour of it |

@@ -436,6 +436,23 @@ cohort size.
 
 ### Fixed
 
+- **The venue map did not say that four candidates were ready.** The
+  prepared work -- the three candidate paragraphs, the PLOS abstract, the
+  JOSS length cut and the CANCER-SEEK port -- existed as branches and as
+  a private working sheet, and the document that tracks "what is still
+  missing" did not mention any of it. It now has a section that says what
+  each candidate holds and what it still waits for, and it marks the one
+  with a deadline attached: the paragraphs are decided *before* the
+  upload, because a changed manuscript means a changed PDF and a changed
+  source bundle.
+
+  The ORCID account is on the same list, and the visibility document now
+  says what the record actually holds: read from the public API on
+  2026-11-27, it carries one open-ended University of Michigan
+  employment (no start date and no end date), no educations, no works and
+  no researcher-URLs -- so the GitHub link is not there either, which is
+  one more click in the account.
+
 - **The number of cohorts was not checked anywhere.** The landing page
   said "Four more external cohorts" and described four after the
   immunotherapy cohort had been scored, while the repository has
