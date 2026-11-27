@@ -436,6 +436,15 @@ cohort size.
 
 ### Fixed
 
+- **The screening cohort's superlative was not exact.** Two documents
+  called the Cleveland Clinic PHTS cohort "the first stage-graded
+  fragment cohort" -- but the ccRCC cohort was scored earlier and
+  carries a pT stage too (all six of its cancer samples are stage III).
+  What makes the PHTS cohort the one that can answer a Stage I question
+  is that its stage labels **span a gradient** (0: 5, 1: 22, 2: 10, 3: 2)
+  and the ccRCC cohort's do not. The two documents, and the candidate
+  paragraph that repeats the claim, now say exactly that.
+
 - **The landing page's traceability claim was false.** It said "Every
   number on this page is in a committed JSON artifact", and the
   tissue-of-origin figures were not: the macro AUC 0.9533, the

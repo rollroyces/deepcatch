@@ -555,7 +555,10 @@ stage breakdown is flat: the pre-diagnosis arm (n=9) is at chance (AUC
 0.5, CI [0.3052, 0.6948]), stage 0 (n=5) 0.556, stages 0-1 (n=27)
 0.4119, stages 2-3 (n=12) 0.575, all staged (n=39) 0.4621, and the
 stage gradient is not monotone (Spearman rho 0.172, p 0.297). This is
-the first stage-graded *fragment* cohort this repository has scored.
+the only fragment cohort this repository has scored whose stage labels
+span a gradient. The ccRCC cohort was scored earlier and carries a pT
+stage, but all six of its cancer samples are stage III, so it cannot answer
+a Stage I question.
 
 So the honest summary of this cohort is neither "the model works on a
 second cohort" nor "the model fails on a second cohort" — it is "**this
