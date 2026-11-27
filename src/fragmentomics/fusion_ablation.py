@@ -69,7 +69,7 @@ if __package__ in (None, ""):
     from validation.delong_test import delong_test as _delong_test_fn
 else:
     from .tumor_naive_adapter import (
-        load_cohort, load_labels_tsv,
+        load_cohort, load_labels_and_studies,
         CHANNEL_NAMES,
     )
     # DeLong test: try the relative form first; if that fails, fall back

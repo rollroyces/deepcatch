@@ -110,6 +110,32 @@ def _run_cli(feat_dir: Path, labels: Path, out: Path) -> dict:
     return json.loads(out.read_text())
 
 
+def _run_module_cli(module: str, feat_dir: Path, labels: Path,
+                    out: Path) -> dict:
+    proc = subprocess.run(
+        [sys.executable, "-m", module,
+         "--features-dir", str(feat_dir),
+         "--labels", str(labels),
+         "--pca-n", "10",
+         "--seeds", "2",
+         "--out", str(out)],
+        capture_output=True, text=True, cwd=str(_REPO_ROOT),
+        timeout=600,
+    )
+    assert proc.returncode == 0, (
+        f"{module} CLI failed (rc={proc.returncode}):\n"
+        f"stdout:\n{proc.stdout[-2000:]}\nstderr:\n{proc.stderr[-2000:]}"
+    )
+    return json.loads(out.read_text())
+
+
+def _fusion_auc(payload: dict) -> float:
+    return next(
+        m["mean"] for m in payload["per_strategy"]["tumor_naive"]
+        if m["metric"] == "auc"
+    )
+
+
 def test_the_headered_labels_layout_keeps_the_signal(tmp_path):
     """The canonical `sample disease_class label study` layout must work.
 
@@ -129,6 +155,24 @@ def test_the_headered_labels_layout_keeps_the_signal(tmp_path):
         f"the harmonisation grouped by class and removed the signal"
     )
 
+    tn = _run_module_cli("src.fragmentomics.train_tumor_naive",
+                         feat_dir, labels, tmp_path / "tn.json")
+    assert tn["studies"] == ["studyA", "studyB"], (
+        f"train_tumor_naive parsed studies={tn['studies']}; expected real "
+        f"study names rather than label values"
+    )
+    assert tn["auc_mean"] > 0.7, (
+        f"train_tumor_naive AUC is {tn['auc_mean']:.4f} on a cohort with a "
+        f"clear class signal"
+    )
+
+    fusion = _run_module_cli("src.fragmentomics.fusion_ablation",
+                             feat_dir, labels, tmp_path / "fusion.json")
+    assert _fusion_auc(fusion) > 0.7, (
+        f"fusion_ablation tumor_naive AUC is {_fusion_auc(fusion):.4f} on a "
+        f"cohort with a clear class signal"
+    )
+
 
 def test_the_two_label_layouts_agree(tmp_path):
     """The same cohort must give the same answer in either layout."""
@@ -144,4 +188,23 @@ def test_the_two_label_layouts_agree(tmp_path):
         b["per_strategy"]["tumor_naive"]["auc"], abs=1e-9), (
         "the headered and headerless labels files describe the same cohort "
         "but the decision curve gave different answers"
+    )
+
+    tn_a = _run_module_cli("src.fragmentomics.train_tumor_naive",
+                           feat_dir, headered, tmp_path / "tn_a.json")
+    tn_b = _run_module_cli("src.fragmentomics.train_tumor_naive",
+                           feat_dir, headerless, tmp_path / "tn_b.json")
+    assert tn_a["studies"] == tn_b["studies"] == ["studyA", "studyB"]
+    assert tn_a["auc_mean"] == pytest.approx(tn_b["auc_mean"], abs=1e-9), (
+        "the headered and headerless labels files describe the same cohort "
+        "but train_tumor_naive gave different answers"
+    )
+
+    fus_a = _run_module_cli("src.fragmentomics.fusion_ablation",
+                            feat_dir, headered, tmp_path / "fus_a.json")
+    fus_b = _run_module_cli("src.fragmentomics.fusion_ablation",
+                            feat_dir, headerless, tmp_path / "fus_b.json")
+    assert _fusion_auc(fus_a) == pytest.approx(_fusion_auc(fus_b), abs=1e-9), (
+        "the headered and headerless labels files describe the same cohort "
+        "but fusion_ablation gave different answers"
     )
