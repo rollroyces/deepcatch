@@ -2,6 +2,7 @@
 > Headline: open-data cross-study AUC **0.9684 ± 0.0027** on FinaleDB publications 6+8 (n=627) with default GC correction (legacy baseline 0.9770 is inflated by ~0.009 of GC-axis proxy detection; both numbers reported in the table below). True-confound control collapses to ~0.48 — see [`docs/CROSS_STUDY_BENCHMARK.md`](docs/CROSS_STUDY_BENCHMARK.md).
 > Publication-by-publication readiness (FinaleDB API/S3 status) in [`docs/PUBLICATION_READINESS.md`](docs/PUBLICATION_READINESS.md).
 > External validation on held-out public publications (never trained on): **AUC 0.9444** [0.8731, 1.0] on FinaleDB publication 7 (WGS, n=31), 0.708 on publication 1 (WGS, n=52), 0.7385 pooled over the publications carrying both classes. Transfer between whole-genome studies is real but far from uniform. The pooled 0.968 is a *within-cohort* number — leave-one-study-out gives 0.6805. See [`docs/EXTERNAL_VALIDATION.md`](docs/EXTERNAL_VALIDATION.md).
+> **Five further public plasma cohorts** have since been scored with this repository's own protocol and a confound control each: a ccRCC cohort (the ranking transfers), a colorectal cohort with a graded tumour fraction (the score tracks it), a hereditary-cancer screening cohort (the null is about the data, not the model), an end-motif cohort (the study structure dominates the class effect) and a treatment-response cohort (the cohort's structure is the collection centre, not the response). See [`docs/PUBLIC_DATA_SOURCES.md`](docs/PUBLIC_DATA_SOURCES.md) §6.
 > For **methods research only** — not a clinical assay, not for patient use.
 
 ---
@@ -478,7 +479,8 @@ deepcatch/
 
 | Commit | What changed |
 |---|---|
-| **v2.3.0** (HEAD) | **External validation on held-out public publications** (AUC 0.9444 on pub 7 WGS, 0.708 on pub 1, 0.7385 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments, and the channel is **measured to be a null** (0.9444 = the coverage baseline; matched-locus difference 0.0, p = 1.0) · CI repaired from 2 red jobs to 8 green |
+| **after v2.3.0** | **Five further public plasma cohorts** scored with this repository's protocol and a confound control each (ccRCC, a graded tumour-fraction cohort, a screening cohort, an end-motif cohort, a treatment-response cohort) · the preprint route moved to arXiv after bioRxiv's affiliation rule · the JOSS length cut, the PLOS abstract and the candidate paragraphs are prepared and waiting for the author |
+| **v2.3.0** (2026-11-23) | **External validation on held-out public publications** (AUC 0.9444 on pub 7 WGS, 0.708 on pub 1, 0.7385 pooled) · leave-one-study-out (0.6805) · regularized late fusion + Bayesian model averaging replace the neural encoder (0.9825 / 0.9650 vs 0.554) · the methylation path runs end to end on real public fragments, and the channel is **measured to be a null** (0.9444 = the coverage baseline; matched-locus difference 0.0, p = 1.0) · CI repaired from 2 red jobs to 8 green |
 | **c782efc** | **GC correction + 4-mer motifs + shuffled null** cross-study (`scripts/cross_study_finallydb.py` extended, 3 new docs + 4 cached JSON results) |
 | `eb9948a` | Fix: refuse to fabricate cross-platform AUC from `synth_*` files |
 | `d9fc205` | hg19 references installed + cross-platform `data_source='both'` (synthetic-fixture) |

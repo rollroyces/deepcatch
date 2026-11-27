@@ -436,6 +436,18 @@ cohort size.
 
 ### Fixed
 
+- **The README's front page did not mention the five public plasma
+  cohorts.** The status block named the held-out FinaleDB publications
+  and stopped there, and the "recent additions" table's newest row was
+  still `v2.3.0` with a stale "(HEAD)" marker -- so the repository's
+  largest body of new evidence (a ccRCC cohort whose ranking transfers, a
+  colorectal cohort with a graded tumour fraction, a screening cohort
+  whose null is about the data rather than the model, an end-motif cohort
+  where the study structure dominates the class effect, and a
+  treatment-response cohort whose structure is the collection centre) was
+  absent from the page a reader lands on first, and the table did not
+  show that anything had happened since the release. Both are fixed.
+
 - **The venue map did not say that four candidates were ready.** The
   prepared work -- the three candidate paragraphs, the PLOS abstract, the
   JOSS length cut and the CANCER-SEEK port -- existed as branches and as
