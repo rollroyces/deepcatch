@@ -436,6 +436,17 @@ cohort size.
 
 ### Fixed
 
+- **The number of cohorts was not checked anywhere.** The landing page
+  said "Four more external cohorts" and described four after the
+  immunotherapy cohort had been scored, while the repository has
+  **five** -- and nothing caught it, because the cohort-limits guard
+  looked at the cohorts a document *mentioned*, and a count is not a
+  cohort. The pin now covers the count: every document that states how
+  many cohorts there are must say five, with the changelog and the dated
+  audit reports exempt because they record what was said when. The check
+  was verified by putting "Four" back on the page: it fails, and it
+  names the file and the phrase.
+
 - **The JOSS paper's length was hand-counted, and the hand-count was
   wrong.** The venue map said the paper is **2,509 words** and **759
   over** JOSS's 1,750-word guidance; its prose measures **2,334 words**

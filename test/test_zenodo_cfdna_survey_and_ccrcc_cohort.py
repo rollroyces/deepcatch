@@ -453,6 +453,38 @@ def test_the_cohort_numbers_are_pinned():
     assert cohort["n_cancer"] == EXPECTED_N_CANCER
     assert cohort["n_healthy"] == EXPECTED_N_HEALTHY
 
+    # And the NUMBER of cohorts the documents claim. The landing page
+    # said "Four more external cohorts" and described four after the
+    # immunotherapy cohort had been scored -- while the repository has
+    # five -- and nothing caught it, because the guard below only looked
+    # at the cohorts a document mentioned, and a count is not a cohort.
+    # The changelog and the dated audit reports are records of what was
+    # said when, so they are exempt.
+    expected = "five"
+    count_pattern = re.compile(
+        r"\b(\w+)\s+(?:more|further)\s+(?:external\s+|public\s+)?"
+        r"(?:plasma\s+)?cohorts\b", re.I)
+    problems = []
+    for pattern in ("*.md", "*.html"):
+        for path in sorted(_REPO_ROOT.rglob(pattern)):
+            rel = path.relative_to(_REPO_ROOT)
+            if rel.name in {"CHANGELOG.md", "AUDIT_REPORT_2.md"}:
+                continue
+            if any(part in {".git", "node_modules", "__pycache__", "dist",
+                            "build"} for part in rel.parts):
+                continue
+            text = path.read_text(encoding="utf-8")
+            for match in count_pattern.finditer(text):
+                if match.group(1).lower() != expected:
+                    problems.append(
+                        f"{rel} says '{match.group(0)}'; the repository has "
+                        f"{expected} public plasma cohorts")
+    assert not problems, (
+        "a document states the wrong number of cohorts:\n  "
+        + "\n  ".join(problems)
+        + "\nThe count is what a reader takes away, and a cohort that was "
+          "scored but not counted reads as a cohort that does not exist.")
+
     # The screening cohort's numbers, pinned the same way. These are the
     # measured ones, and a re-run that moves them has to be deliberate.
     phts = _phts()
