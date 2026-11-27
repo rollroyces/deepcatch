@@ -151,5 +151,5 @@ jobs:
         with:
           name: deepcatch-arxiv-source
           path: dist/deepcatch_v2_3_0.tar.gz
-          retention-days: 90
+          retention-days: 7
           if-no-files-found: warn
