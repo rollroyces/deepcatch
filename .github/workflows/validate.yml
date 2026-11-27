@@ -277,6 +277,6 @@ jobs:
           python3 -c "import json, sys; d = json.load(open('results/foundation_real_smoke.json')); sys.exit(0 if d['gate_pass'] else 1)"
       - uses: actions/upload-artifact@v4
         with:
-          retention-days: 7
+          retention-days: 2
           name: deepcatch-results
           path: results/
