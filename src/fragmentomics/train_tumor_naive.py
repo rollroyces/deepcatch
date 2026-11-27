@@ -46,11 +46,11 @@ from sklearn.preprocessing import StandardScaler
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
     from fragmentomics.tumor_naive_adapter import (
-        load_cohort, load_labels_tsv, CHANNEL_NAMES, CHANNEL_DIMS,
+        load_cohort, load_labels_and_studies, CHANNEL_NAMES, CHANNEL_DIMS,
     )
 else:
     from .tumor_naive_adapter import (
-        load_cohort, load_labels_tsv, CHANNEL_NAMES, CHANNEL_DIMS,
+        load_cohort, load_labels_and_studies, CHANNEL_NAMES, CHANNEL_DIMS,
     )
 
 
@@ -119,23 +119,14 @@ def _evaluate_seed(X: np.ndarray, y: np.ndarray, study: np.ndarray,
 # ---------- CLI ----------
 
 def _parse_study(labels_tsv: str) -> dict[str, str]:
-    """Read `{sample}\\t{label}[\\t{study}]` → sample→study string.
+    """Read sample → study using the header-aware column resolver.
 
-    Tolerates both 2-column and 3-column label files.
+    Handles both headered layouts (such as the canonical 4-column
+    `sample / disease_class / label / study`) and headerless 2/3-column
+    files, defaulting to ``"default"`` when no study column is present.
     """
-    out: dict[str, str] = {}
-    with open(labels_tsv) as f:
-        for line in f:
-            line = line.rstrip("\n").rstrip("\r")
-            if not line or line.startswith("#"):
-                continue
-            parts = line.split("\t")
-            if len(parts) >= 3:
-                out[parts[0]] = parts[2]
-            else:
-                # default to a single study
-                out[parts[0]] = "default"
-    return out
+    labels, studies = load_labels_and_studies(labels_tsv)
+    return {s: studies.get(s, "default") for s in labels}
 
 
 def main() -> int:
@@ -175,8 +166,7 @@ def main() -> int:
         if c not in CHANNEL_DIMS:
             ap.error(f"unknown channel {c!r}; valid: {list(CHANNEL_DIMS)}")
 
-    labels = load_labels_tsv(args.labels)
-    study_of = _parse_study(args.labels)
+    labels, study_of = load_labels_and_studies(args.labels)
     sample_ids = sorted(labels)
     print(f"[adapter] loading {len(sample_ids)} samples from {args.features_dir}",
           file=sys.stderr)
