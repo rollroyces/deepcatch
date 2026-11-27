@@ -436,6 +436,25 @@ cohort size.
 
 ### Fixed
 
+- **The landing page's traceability claim was false.** It said "Every
+  number on this page is in a committed JSON artifact", and the
+  tissue-of-origin figures were not: the macro AUC 0.9533, the
+  within-Cristiano 0.9338, Top-1 79.4% and Top-2 90.7% come from an
+  archived experiment (commit `91a95b0`) that is **not in this
+  repository's history**, and the deconvolution model that produced them
+  is not committed either -- so they can be read but not recomputed here.
+  They are real results, and they are now marked as an archived run in
+  both the landing page and the portfolio roadmap, which is what the
+  wiki already does for the Jiang figures. The page's claim is now true,
+  and a guard keeps the exception next to the figures: if the page states
+  one of them without saying where it comes from, the check fails.
+
+  The roadmap needed the same note for a wider reason: nine of the ten
+  commit hashes in its "what we have shipped" section belong to archived
+  branches and are not in this repository's history at all, so a reader
+  who followed them found nothing. The section now says so, and points at
+  `results/` for the figures the committed code regenerates.
+
 - **The README's front page did not mention the five public plasma
   cohorts.** The status block named the held-out FinaleDB publications
   and stopped there, and the "recent additions" table's newest row was

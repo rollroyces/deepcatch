@@ -93,7 +93,7 @@ bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</cod
                 </div>
                 <div class="card">
                     <h3>Tissue-of-origin</h3>
-                    <p>6-class TOO from fragmentomics alone: macro AUC 0.9533 (full), 0.9338 within-Cristiano (batch-effect removed). Top-1 79.4%, top-2 90.7%.</p>
+                    <p>6-class TOO from fragmentomics alone: macro AUC 0.9533 (full), 0.9338 within-Cristiano (batch-effect removed). Top-1 79.4%, top-2 90.7%. <em>These four figures come from an archived experiment (<code>91a95b0</code>) whose input and output are not in this repository, so they can be read but not recomputed here &mdash; the deconvolution model that produced them is not committed either.</em></p>
                 </div>
                 <div class="card">
                     <h3>Methylation channel (separate repo)</h3>
@@ -125,7 +125,7 @@ bash RUN_ALL.sh --quick      # the validation run, into a scratch directory</cod
                     <tr><td>Tumor-naive fragmentomics + synthetic mutation (5-channel)</td><td>545</td><td>Cross-channel</td><td>0.9921 pooled</td></tr>
                     <tr><td>TCGA-LUAD panel LLR @ 0.1% ctDNA</td><td>20 patients</td><td>Ultra-low VAF</td><td>0.921 (Sens@95% = 0.770)</td></tr>
                     <tr><td>Multi-cancer 5-class OvR (LR+PCA(200))</td><td>236 cancer</td><td>Cancer subtyping</td><td>0.970 ± 0.001 macro</td></tr>
-                    <tr><td>Tissue-of-origin (within-Cristiano, 5-class)</td><td>336 cancer</td><td>Tissue origin</td><td>0.934 ± 0.002 macro</td></tr>
+                    <tr><td>Tissue-of-origin (within-Cristiano, 5-class)</td><td>336 cancer</td><td>Tissue origin</td><td>0.934 ± 0.002 macro <em>(archived run &mdash; not recomputable from this repository)</em></td></tr>
                     <tr><td>FLARE/GSE317007 (ONT real cfDNA)</td><td>12 HNSCC</td><td>Cross-platform</td><td>Reproduces CG-depletion signature</td></tr>
                 </tbody>
             </table>

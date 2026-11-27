@@ -249,6 +249,32 @@ def test_the_readme_says_where_the_benchmark_input_comes_from():
             "the quick start cannot work"
         )
 
+    # The public landing page says that every number on it is in a
+    # committed JSON artifact. The tissue-of-origin figures are the
+    # exception: they come from an archived experiment whose input,
+    # output and model are not in this repository, so they can be read
+    # but not recomputed here. A page that says "every number is in a
+    # committed artifact" has to name its exceptions next to them --
+    # otherwise the claim is false, and a reader cannot tell which
+    # figures they can check.
+    site = (_REPO_ROOT / "docs" / "site" / "index.html").read_text(
+        encoding="utf-8")
+    blocks = re.split(r"(?:\n\s*\n|</tr>|</p>)", site)
+    for figure in ("0.9533", "0.9338", "79.4", "90.7", "0.934"):
+        if figure not in site:
+            continue
+        for block in blocks:
+            if figure not in block:
+                continue
+            assert "archived" in block.lower(), (
+                f"the landing page states {figure} without saying where it "
+                "comes from. These figures are from an archived experiment "
+                "whose input, output and model are not in this repository, "
+                "so the page has to say so next to them: the page claims "
+                "that every number on it is in a committed artifact, and "
+                "that claim has to be true."
+            )
+
 
 def test_every_figure_the_manuscript_includes_exists():
     """The manuscript's figures must be in the repository.

@@ -26,13 +26,16 @@ pretrained-model breakthrough.
 
 ### 1.2 What we have shipped (Phase 0–1, complete)
 
+> **These entries cite commits from branches that are not in this repository.** Nine of the ten hashes below (`d289348`, `a4c8dc6`, `e5a8fba`, `6f49638`, `91a95b0`, `1779422`, `7e6188e`, `60043ca`, `1e500c3`) belong to archived branches, so their figures are a record of what those runs produced and cannot be recomputed from here. The current, reproducible results are the ones in `results/`, which the committed code regenerates.
+
+
 ✅ **Multi-cancer fragmentomics** (Enhancement #1, `d289348`): Macro AUC 0.9703 on 5-class OvR (BRCA, CRC, HCC_J, LUAD, PAAD).
 
 ✅ **Sens@99% + published-test comparison** (Enhancement #2, `a4c8dc6` + `e5a8fba`): Sens@99% = 0.755 (frag), 0.843 (fusion). Competitive with Galleri (51.5% @ 99.5%).
 
 ✅ **Per-sample risk-score CLI** (Enhancement #3, `6f49638`): `cfdna-score` works in 0.3s with cache, 86.7% risk-tier accuracy on 30-sample demo.
 
-✅ **Tissue-of-origin from fragmentomics** (Enhancement #4, `91a95b0`): Macro AUC 0.9338 within-Cristiano (batch-effect removed), Top-1 79.4%, Top-2 90.7%.
+✅ **Tissue-of-origin from fragmentomics** (Enhancement #4, `91a95b0`): Macro AUC 0.9338 within-Cristiano (batch-effect removed), Top-1 79.4%, Top-2 90.7%. **These figures come from an archived run whose input and output are not in this repository** &mdash; `91a95b0` is not in this repository's history, and the deconvolution model that produced them is not committed either, so they can be read but not recomputed here.
 
 ✅ **Optimization round** (this session, commits `1779422`–`7e6188e`): 1.4–6× speedup on the pipeline; honest memory report; honest no-improvement on sens@99% calibration sweep.
 
